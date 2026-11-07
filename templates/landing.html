@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InfoSociety — Banking Software for Cooperative Societies | InfopathSolutions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg { background: linear-gradient(135deg, #1e3a5f 0%, #3730a3 50%, #4f46e5 100%); }
+        .hero-bg {
+            background: linear-gradient(135deg, rgba(30,58,95,0.75) 0%, rgba(55,48,163,0.7) 50%, rgba(79,70,229,0.65) 100%),
+                        url('/static/img/hero-bg.avif') center/cover no-repeat;
+        }
+        .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.12); }
+    </style>
+</head>
+<body class="bg-white text-gray-800 antialiased">
+
+<!-- Navbar -->
+<nav class="fixed top-0 w-full bg-white/95 backdrop-blur shadow-sm z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+            <a href="#" class="flex items-center space-x-2">
+                <img src="/static/img/logo.png" alt="InfoSociety" class="h-10">
+            </a>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#features" class="text-gray-600 hover:text-indigo-600 font-medium">Features</a>
+                <a href="#pricing" class="text-gray-600 hover:text-indigo-600 font-medium">Pricing</a>
+                <a href="#faq" class="text-gray-600 hover:text-indigo-600 font-medium">FAQ</a>
+                <a href="/accounts/login/" class="text-gray-600 hover:text-indigo-600 font-medium">Login</a>
+                <a href="/signup/" class="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 font-medium transition">Start Free Trial</a>
+            </div>
+            <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-gray-100">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+        </div>
+    </div>
+    <div id="mobile-menu" class="hidden md:hidden border-t bg-white px-4 pb-4">
+        <a href="#features" class="block py-2 text-gray-600">Features</a>
+        <a href="#pricing" class="block py-2 text-gray-600">Pricing</a>
+        <a href="#faq" class="block py-2 text-gray-600">FAQ</a>
+        <a href="/accounts/login/" class="block py-2 text-gray-600">Login</a>
+        <a href="/signup/" class="block mt-2 text-center bg-indigo-600 text-white px-5 py-2 rounded-lg">Start Free Trial</a>
+    </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero-bg pt-28 pb-20 md:pt-36 md:pb-28">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight">
+            Banking Software for<br>Cooperative Societies
+        </h1>
+        <p class="mt-6 text-lg sm:text-xl text-indigo-100 max-w-3xl mx-auto">
+            Manage members, deposits, loans, and accounting — all in one cloud platform. No installation needed.
+        </p>
+        <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
+            <a href="/signup/" class="bg-white text-indigo-700 px-8 py-4 rounded-xl text-lg font-bold hover:bg-indigo-50 transition shadow-lg">
+                Start Free Trial
+            </a>
+            <a href="#how-it-works" class="border-2 border-white text-white px-8 py-4 rounded-xl text-lg font-bold hover:bg-white/10 transition">
+                See How It Works
+            </a>
+        </div>
+        <p class="mt-4 text-indigo-200 text-sm">90 days free. No credit card required.</p>
+    </div>
+</section>
+
+<!-- Problem -->
+<section class="py-16 md:py-24 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">Still using registers and Tally?</h2>
+            <p class="mt-4 text-lg text-gray-600">Your society deserves better.</p>
+        </div>
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-100">
+                <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900">Manual Errors in Interest</h3>
+                <p class="mt-2 text-gray-600">Manual interest calculation leads to errors, disputes, and member distrust. Automate it with daily precision.</p>
+            </div>
+            <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-100">
+                <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900">No Real-time Visibility</h3>
+                <p class="mt-2 text-gray-600">Members can't check their balance. Staff wastes time answering passbook queries. Give everyone instant access.</p>
+            </div>
+            <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-100">
+                <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900">Audit Takes Weeks</h3>
+                <p class="mt-2 text-gray-600">Preparing for RCS audit means weeks of compiling data. Generate every report in one click.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features -->
+<section id="features" class="py-16 md:py-24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">Everything Your Society Needs</h2>
+            <p class="mt-4 text-lg text-gray-600">One platform to run all your banking operations</p>
+        </div>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="card-hover bg-white rounded-xl p-8 border border-gray-100 shadow-sm">
+                <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900">Member Management</h3>
+                <p class="mt-2 text-gray-600">KYC, photos, nominees, documents. Import from Excel. Search & filter instantly. Multi-branch member register.</p>
+            </div>
+            <div class="card-hover bg-white rounded-xl p-8 border border-gray-100 shadow-sm">
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900">Savings & Deposits</h3>
+                <p class="mt-2 text-gray-600">Daily interest accrual, passbook printing, deposit/withdrawal receipts. Automatic interest posting.</p>
+            </div>
+            <div class="card-hover bg-white rounded-xl p-8 border border-gray-100 shadow-sm">
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900">Loan Management</h3>
+                <p class="mt-2 text-gray-600">Flat & reducing balance EMI. Auto-schedule generation, overdue tracking, NPA classification, guarantor management.</p>
+            </div>
+            <div class="card-hover bg-white rounded-xl p-8 border border-gray-100 shadow-sm">
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900">Fixed & Recurring Deposits</h3>
+                <p class="mt-2 text-gray-600">FD with slab-based interest, auto-maturity, TDS calculation. RD with installment tracking and penalties.</p>
+            </div>
+            <div class="card-hover bg-white rounded-xl p-8 border border-gray-100 shadow-sm">
+                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900">Double-Entry Accounting</h3>
+                <p class="mt-2 text-gray-600">Automatic journal entries for every transaction. Trial balance, P&L, balance sheet — always balanced.</p>
+            </div>
+            <div class="card-hover bg-white rounded-xl p-8 border border-gray-100 shadow-sm">
+                <div class="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900">Reports & Compliance</h3>
+                <p class="mt-2 text-gray-600">16+ reports for RCS audit. Day book, cash book, NPA report, TDS certificate. PDF & Excel export.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section id="how-it-works" class="py-16 md:py-24 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">Get Started in 3 Simple Steps</h2>
+            <p class="mt-4 text-lg text-gray-600">Your society can be up and running today</p>
+        </div>
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <span class="text-2xl font-bold text-white">1</span>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">Sign Up Your Society</h3>
+                <p class="text-gray-600">Fill a simple form with your society details. Takes just 2 minutes. Your portal is created instantly.</p>
+            </div>
+            <div class="text-center">
+                <div class="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <span class="text-2xl font-bold text-white">2</span>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">Add Members & Accounts</h3>
+                <p class="text-gray-600">Add members one-by-one or import from Excel. Open savings accounts, create loan products, configure shares.</p>
+            </div>
+            <div class="text-center">
+                <div class="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <span class="text-2xl font-bold text-white">3</span>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">Start Banking</h3>
+                <p class="text-gray-600">Accept deposits, disburse loans, run day-end processing. Everything is automated and audit-ready.</p>
+            </div>
+        </div>
+        <div class="text-center mt-12">
+            <a href="/signup/" class="bg-indigo-600 text-white px-8 py-4 rounded-xl text-lg font-bold hover:bg-indigo-700 transition shadow-lg inline-block">
+                Start Free Trial — 90 Days Free
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Pricing -->
+<section id="pricing" class="py-16 md:py-24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">Simple, Transparent Pricing</h2>
+            <p class="mt-4 text-lg text-gray-600">Start free, upgrade as you grow. No hidden charges.</p>
+        </div>
+        <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <!-- Starter -->
+            <div class="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
+                <h3 class="text-xl font-bold text-gray-900">Starter</h3>
+                <p class="mt-2 text-gray-500">For small societies</p>
+                <div class="mt-6">
+                    <span class="text-4xl font-extrabold text-gray-900">&#8377;2,000</span>
+                    <span class="text-gray-500">/month</span>
+                </div>
+                <ul class="mt-8 space-y-3">
+                    <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Up to 200 members</li>
+                    <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>2 branches</li>
+                    <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>5 user accounts</li>
+                    <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>All banking features</li>
+                    <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Email support</li>
+                </ul>
+                <a href="/signup/" class="mt-8 block text-center bg-indigo-50 text-indigo-700 px-6 py-3 rounded-lg font-semibold hover:bg-indigo-100 transition">
+                    Start Free Trial
+                </a>
+            </div>
+            <!-- Professional -->
+            <div class="bg-indigo-600 rounded-2xl p-8 shadow-xl relative">
+                <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-yellow-400 text-yellow-900 text-sm font-bold px-4 py-1 rounded-full">Most Popular</div>
+                <h3 class="text-xl font-bold text-white">Professional</h3>
+                <p class="mt-2 text-indigo-200">For growing societies</p>
+                <div class="mt-6">
+                    <span class="text-4xl font-extrabold text-white">&#8377;5,000</span>
+                    <span class="text-indigo-200">/month</span>
+                </div>
+                <ul class="mt-8 space-y-3 text-white">
+                    <li class="flex items-center"><svg class="w-5 h-5 text-yellow-300 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Up to 1,000 members</li>
+                    <li class="flex items-center"><svg class="w-5 h-5 text-yellow-300 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>5 branches</li>
+                    <li class="flex items-center"><svg class="w-5 h-5 text-yellow-300 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>15 user accounts</li>
+                    <li class="flex items-center"><svg class="w-5 h-5 text-yellow-300 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>SMS notifications</li>
+                    <li class="flex items-center"><svg class="w-5 h-5 text-yellow-300 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Priority support</li>
+                </ul>
+                <a href="/signup/" class="mt-8 block text-center bg-white text-indigo-700 px-6 py-3 rounded-lg font-bold hover:bg-indigo-50 transition">
+                    Start Free Trial
+                </a>
+            </div>
+            <!-- Enterprise -->
+            <div class="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
+                <h3 class="text-xl font-bold text-gray-900">Enterprise</h3>
+                <p class="mt-2 text-gray-500">For large societies</p>
+                <div class="mt-6">
+                    <span class="text-4xl font-extrabold text-gray-900">&#8377;12,000</span>
+                    <span class="text-gray-500">/month</span>
+                </div>
+                <ul class="mt-8 space-y-3">
+                    <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Unlimited members</li>
+                    <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Unlimited branches</li>
+                    <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Unlimited users</li>
+                    <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Dedicated support</li>
+                    <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Custom branding</li>
+                </ul>
+                <a href="/signup/" class="mt-8 block text-center bg-indigo-50 text-indigo-700 px-6 py-3 rounded-lg font-semibold hover:bg-indigo-100 transition">
+                    Start Free Trial
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Trust -->
+<section class="py-16 md:py-24 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">Your Data is Safe</h2>
+            <p class="mt-4 text-lg text-gray-600">Bank-grade security for your society's financial data</p>
+        </div>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="bg-white rounded-xl p-6 text-center border border-gray-100">
+                <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+                </div>
+                <h3 class="font-semibold text-gray-900">AWS Mumbai Servers</h3>
+                <p class="mt-1 text-sm text-gray-500">Data stays in India, fast access</p>
+            </div>
+            <div class="bg-white rounded-xl p-6 text-center border border-gray-100">
+                <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
+                </div>
+                <h3 class="font-semibold text-gray-900">Daily Backups</h3>
+                <p class="mt-1 text-sm text-gray-500">Automated backups every 6 hours</p>
+            </div>
+            <div class="bg-white rounded-xl p-6 text-center border border-gray-100">
+                <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                </div>
+                <h3 class="font-semibold text-gray-900">SSL Encryption</h3>
+                <p class="mt-1 text-sm text-gray-500">256-bit encryption for all data</p>
+            </div>
+            <div class="bg-white rounded-xl p-6 text-center border border-gray-100">
+                <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                </div>
+                <h3 class="font-semibold text-gray-900">Complete Audit Trail</h3>
+                <p class="mt-1 text-sm text-gray-500">Every action logged, tamper-proof</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" class="py-16 md:py-24">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">Frequently Asked Questions</h2>
+        </div>
+        <div class="space-y-4">
+            <details class="bg-white rounded-xl border border-gray-200 overflow-hidden group" open>
+                <summary class="p-6 cursor-pointer font-semibold text-gray-900 flex justify-between items-center hover:bg-gray-50">
+                    Is my society's data safe?
+                    <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </summary>
+                <p class="px-6 pb-6 text-gray-600">Absolutely. Your data is stored on AWS servers in Mumbai (India), encrypted with 256-bit SSL, and backed up every 6 hours. Each society has its own isolated database — no other society can see your data. We maintain a complete audit trail of every action.</p>
+            </details>
+            <details class="bg-white rounded-xl border border-gray-200 overflow-hidden group">
+                <summary class="p-6 cursor-pointer font-semibold text-gray-900 flex justify-between items-center hover:bg-gray-50">
+                    Can I import existing member data from Excel?
+                    <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </summary>
+                <p class="px-6 pb-6 text-gray-600">Yes. You can import your member data from Excel/CSV files. We provide a template with the required columns. Upload your file and members are added instantly. You can also export all data to Excel anytime.</p>
+            </details>
+            <details class="bg-white rounded-xl border border-gray-200 overflow-hidden group">
+                <summary class="p-6 cursor-pointer font-semibold text-gray-900 flex justify-between items-center hover:bg-gray-50">
+                    Do I need to install anything?
+                    <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </summary>
+                <p class="px-6 pb-6 text-gray-600">No installation needed. InfoSociety is fully cloud-based. Just open your browser, log in, and start working. Works on any computer, tablet, or phone. Updates are automatic — you always have the latest version.</p>
+            </details>
+            <details class="bg-white rounded-xl border border-gray-200 overflow-hidden group">
+                <summary class="p-6 cursor-pointer font-semibold text-gray-900 flex justify-between items-center hover:bg-gray-50">
+                    What happens after the free trial?
+                    <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </summary>
+                <p class="px-6 pb-6 text-gray-600">After 90 days, choose a plan that fits your society. Your data stays as-is — nothing is lost. If you decide not to continue, you can export all your data before your account is deactivated.</p>
+            </details>
+            <details class="bg-white rounded-xl border border-gray-200 overflow-hidden group">
+                <summary class="p-6 cursor-pointer font-semibold text-gray-900 flex justify-between items-center hover:bg-gray-50">
+                    Can I export my data?
+                    <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </summary>
+                <p class="px-6 pb-6 text-gray-600">Yes. All reports can be exported to PDF and Excel. You can download member lists, transaction history, account statements, and financial reports at any time. Your data belongs to you.</p>
+            </details>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="gradient-bg py-16 md:py-20">
+    <div class="max-w-4xl mx-auto px-4 text-center">
+        <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white">Ready to Modernize Your Society?</h2>
+        <p class="mt-4 text-lg text-indigo-100">Join societies across India who trust InfoSociety for their daily operations.</p>
+        <a href="/signup/" class="mt-8 inline-block bg-white text-indigo-700 px-10 py-4 rounded-xl text-lg font-bold hover:bg-indigo-50 transition shadow-lg">
+            Start Your Free Trial Today
+        </a>
+        <p class="mt-3 text-indigo-200 text-sm">No credit card required. Setup in 2 minutes.</p>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-gray-900 text-gray-400 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid md:grid-cols-3 gap-8">
+            <div>
+                <div class="flex items-center space-x-2 mb-4">
+                    <img src="/static/img/logo.png" alt="InfoSociety" class="h-8">
+                </div>
+                <p class="text-sm">Cloud banking software for cooperative societies, nidhi companies, and thrift societies across India. A product by InfopathSolutions.</p>
+            </div>
+            <div>
+                <h4 class="font-semibold text-white mb-4">Quick Links</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#features" class="hover:text-indigo-400 transition">Features</a></li>
+                    <li><a href="#pricing" class="hover:text-indigo-400 transition">Pricing</a></li>
+                    <li><a href="#faq" class="hover:text-indigo-400 transition">FAQ</a></li>
+                    <li><a href="/accounts/login/" class="hover:text-indigo-400 transition">Login</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-semibold text-white mb-4">Contact</h4>
+                <ul class="space-y-2 text-sm">
+                    <li>support@infopathsolutions.com</li>
+                    <li>+91 98765 43210</li>
+                    <li>Mon-Sat, 9 AM - 7 PM IST</li>
+                </ul>
+            </div>
+        </div>
+        <div class="mt-8 pt-8 border-t border-gray-800 text-sm text-center">
+            &copy; 2026 InfoSociety by InfopathSolutions. All rights reserved. — To innovate your business process
+        </div>
+    </div>
+</footer>
+
+<script>
+document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+    document.getElementById('mobile-menu').classList.toggle('hidden');
+});
+</script>
+</body>
+</html>

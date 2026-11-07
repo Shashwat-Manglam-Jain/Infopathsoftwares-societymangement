@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Withdrawal Receipt #{{ txn.receipt_no|default:txn.voucher_no }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #1a1a1a; }
+        .receipt-container { display: flex; gap: 20px; padding: 15px; }
+        .receipt { width: 50%; border: 2px solid #333; padding: 20px; position: relative; }
+        .receipt::after { content: ''; position: absolute; right: -12px; top: 0; bottom: 0; border-right: 2px dashed #999; }
+        .receipt:last-child::after { display: none; }
+
+        .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 12px; }
+        .society-name { font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #7b341e; }
+        .branch-name { font-size: 11px; color: #555; margin-top: 2px; }
+        .receipt-title { font-size: 14px; font-weight: 700; margin-top: 6px; text-transform: uppercase;
+                         background: #7b341e; color: white; display: inline-block; padding: 2px 16px; border-radius: 3px; }
+        .copy-label { font-size: 10px; color: #888; font-style: italic; margin-top: 4px; }
+
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
+        .info-row .label { color: #555; font-size: 12px; }
+        .info-row .value { font-weight: 600; }
+
+        .member-section { background: #fffaf0; border: 1px solid #feebc8; border-radius: 4px; padding: 10px; margin: 12px 0; }
+        .member-section .label { font-size: 11px; color: #666; }
+        .member-section .value { font-weight: 600; font-size: 14px; }
+
+        .amount-box { border: 2px solid #7b341e; border-radius: 6px; padding: 12px; margin: 12px 0; text-align: center; }
+        .amount-figures { font-size: 22px; font-weight: 700; color: #7b341e; }
+        .rupee { font-size: 16px; }
+        .amount-words { font-size: 11px; color: #555; margin-top: 4px; font-style: italic; }
+
+        .details-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        .details-table td { padding: 4px 0; font-size: 12px; }
+        .details-table td:first-child { color: #555; width: 40%; }
+        .details-table td:last-child { font-weight: 600; text-align: right; }
+
+        .footer { margin-top: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .signature-line { border-top: 1px solid #333; width: 120px; text-align: center; font-size: 10px; color: #555; padding-top: 4px; }
+
+        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg);
+                      font-size: 55px; color: rgba(0,0,0,0.03); font-weight: 900; pointer-events: none; }
+
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .receipt-container { padding: 0; }
+            .no-print { display: none !important; }
+            @page { margin: 10mm; size: A4 landscape; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="text-align: center; padding: 10px; background: #f0f0f0;">
+        <button onclick="window.print()" style="padding: 8px 24px; background: #7b341e; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+            Print Receipt
+        </button>
+        <button onclick="window.close()" style="padding: 8px 24px; background: #e2e8f0; color: #333; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; margin-left: 8px;">
+            Close
+        </button>
+    </div>
+
+    <div class="receipt-container">
+        {% for copy in "12" %}
+        <div class="receipt">
+            <div class="watermark">WITHDRAWAL</div>
+
+            <div class="header">
+                <div class="society-name">{{ txn.account.member.branch.branch_name|default:"Society Name" }}</div>
+                <div class="branch-name">Branch: {{ txn.branch.branch_name }}</div>
+                <div class="receipt-title">Withdrawal Receipt</div>
+                <div class="copy-label">{% if forloop.first %}Original{% else %}Society Copy{% endif %}</div>
+            </div>
+
+            <div class="info-row">
+                <div><span class="label">Receipt No:</span> <span class="value">{{ txn.receipt_no|default:txn.voucher_no|default:"--" }}</span></div>
+                <div><span class="label">Date:</span> <span class="value">{{ txn.txn_date|date:"d-M-Y" }}</span></div>
+            </div>
+
+            <div class="member-section">
+                <div class="info-row" style="margin-bottom:4px">
+                    <div><span class="label">Member:</span> <span class="value">{{ txn.account.member.name }}</span></div>
+                    <div><span class="label">No:</span> <span class="value">{{ txn.account.member.member_no }}</span></div>
+                </div>
+                <div class="info-row" style="margin-bottom:0">
+                    <div><span class="label">A/c No:</span> <span class="value">{{ txn.account.account_no }}</span></div>
+                    <div><span class="label">Type:</span> <span class="value">{{ txn.account.get_account_type_display }}</span></div>
+                </div>
+            </div>
+
+            <div class="amount-box">
+                <div class="amount-figures"><span class="rupee">&#8377;</span> {{ txn.amount|floatformat:2 }}</div>
+                <div class="amount-words">{{ amount_words }}</div>
+            </div>
+
+            <table class="details-table">
+                <tr><td>Payment Mode</td><td>{{ txn.get_payment_mode_display }}</td></tr>
+                {% if txn.cheque_no %}<tr><td>Cheque No</td><td>{{ txn.cheque_no }}</td></tr>{% endif %}
+                <tr><td>Narration</td><td>{{ txn.narration|default:"Cash Withdrawal" }}</td></tr>
+                <tr><td>Balance After</td><td>&#8377; {{ txn.running_balance|floatformat:2 }}</td></tr>
+            </table>
+
+            <div class="footer">
+                <div class="signature-line">Member Sign</div>
+                <div class="signature-line">{{ txn.created_by.get_full_name|default:txn.created_by.username }}<br>Cashier</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

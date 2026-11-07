@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Notification Templates{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-semibold text-gray-900">Notification Templates</h1>
+    </div>
+
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Channel</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Updated</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for tmpl in templates %}
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ tmpl.name }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                            {% if tmpl.channel == 'sms' %}bg-blue-100 text-blue-800
+                            {% elif tmpl.channel == 'email' %}bg-green-100 text-green-800
+                            {% else %}bg-purple-100 text-purple-800{% endif %}">
+                            {{ tmpl.get_channel_display }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {% if tmpl.is_active %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Active</span>
+                        {% else %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ tmpl.updated_at|date:"d M Y H:i" }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                        <a href="{% url 'notifications:template_edit' tmpl.pk %}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-6 py-12 text-center text-sm text-gray-500">No notification templates configured.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h3 class="text-sm font-medium text-blue-800">Available Placeholders</h3>
+        <p class="mt-1 text-sm text-blue-700">
+            {% verbatim %}
+            <code class="bg-blue-100 px-1 rounded">{{member_name}}</code>,
+            <code class="bg-blue-100 px-1 rounded">{{amount}}</code>,
+            <code class="bg-blue-100 px-1 rounded">{{balance}}</code>,
+            <code class="bg-blue-100 px-1 rounded">{{loan_no}}</code>,
+            <code class="bg-blue-100 px-1 rounded">{{due_date}}</code>,
+            <code class="bg-blue-100 px-1 rounded">{{fd_no}}</code>,
+            <code class="bg-blue-100 px-1 rounded">{{maturity_date}}</code>,
+            <code class="bg-blue-100 px-1 rounded">{{maturity_amount}}</code>
+            {% endverbatim %}
+        </p>
+    </div>
+</div>
+{% endblock %}

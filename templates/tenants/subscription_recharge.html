@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recharge Subscription — InfoSociety</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe',
+                            300: '#a5b4fc', 400: '#818cf8', 500: '#6366f1',
+                            600: '#4f46e5', 700: '#4338ca', 800: '#3730a3',
+                            900: '#312e81', 950: '#1e1b4b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="h-full flex items-center justify-center p-4">
+    <div class="max-w-lg w-full space-y-6">
+
+        <div class="text-center">
+            <div class="mx-auto h-16 w-16 rounded-full bg-primary-100 flex items-center justify-center mb-4">
+                <svg class="h-8 w-8 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900">Recharge Subscription</h1>
+            <p class="text-gray-500 mt-1">
+                {% if tenant %}{{ tenant.name }} &mdash;{% endif %}
+                Renew your subscription to continue operations.
+            </p>
+        </div>
+
+        {% if subscription %}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
+            <h2 class="text-lg font-semibold text-gray-900">Current Plan</h2>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <p class="text-gray-500">Plan Name</p>
+                    <p class="font-semibold text-gray-900">{{ subscription.plan.name }}</p>
+                </div>
+                <div>
+                    <p class="text-gray-500">Monthly Price</p>
+                    <p class="font-semibold text-gray-900">Rs. {{ subscription.plan.price_monthly }}/mo</p>
+                </div>
+                <div>
+                    <p class="text-gray-500">Status</p>
+                    <p class="font-semibold {% if subscription.is_expired %}text-red-600{% else %}text-green-600{% endif %}">
+                        {{ subscription.get_status_display }}
+                    </p>
+                </div>
+                {% if subscription.end_date %}
+                <div>
+                    <p class="text-gray-500">{% if subscription.is_expired %}Expired On{% else %}Expires On{% endif %}</p>
+                    <p class="font-semibold text-gray-900">{{ subscription.end_date|date:"d M Y" }}</p>
+                </div>
+                {% endif %}
+                <div>
+                    <p class="text-gray-500">Max Members</p>
+                    <p class="font-semibold text-gray-900">{{ subscription.plan.max_members }}</p>
+                </div>
+                <div>
+                    <p class="text-gray-500">Max Users</p>
+                    <p class="font-semibold text-gray-900">{{ subscription.plan.max_users }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-primary-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-3">Renew for 30 Days</h2>
+            <div class="flex items-center justify-between mb-4 p-3 bg-primary-50 rounded-lg">
+                <div>
+                    <p class="text-sm font-medium text-gray-900">{{ subscription.plan.name }}</p>
+                    <p class="text-xs text-gray-500">30-day renewal</p>
+                </div>
+                <p class="text-xl font-bold text-primary-700">Rs. {{ subscription.plan.price_monthly }}</p>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit"
+                        class="w-full px-6 py-3 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 shadow-lg transition">
+                    Pay & Renew Now
+                </button>
+            </form>
+            <p class="text-xs text-gray-400 text-center mt-3">Payment gateway integration coming soon. For now, click to activate 30-day renewal.</p>
+        </div>
+        {% else %}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
+            <p class="text-gray-500">No subscription found. Please contact support.</p>
+        </div>
+        {% endif %}
+
+        <div class="flex justify-center space-x-4">
+            <a href="/" class="text-sm text-primary-600 hover:text-primary-800 font-medium">Back to Dashboard</a>
+            <span class="text-gray-300">&middot;</span>
+            <form method="post" action="{% url 'accounts:logout' %}" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="text-sm text-gray-500 hover:text-gray-700 font-medium">Logout</button>
+            </form>
+        </div>
+
+        <p class="text-xs text-gray-400 text-center">InfoSociety by InfopathSolutions &mdash; To innovate your business process</p>
+    </div>
+</body>
+</html>

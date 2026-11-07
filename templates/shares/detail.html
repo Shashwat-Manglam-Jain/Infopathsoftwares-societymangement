@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Shares — {{ holding.member.name }} — InfoSociety{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">{{ holding.member.name }}</h1>
+            <p class="text-sm text-gray-500">Certificate: {{ holding.certificate_no }} — {{ holding.member.member_no }}</p>
+        </div>
+        <a href="{% url 'shares:list' %}" class="text-gray-500 hover:text-gray-700 text-sm">&larr; Back</a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <p class="text-xs text-gray-500 uppercase">Shares Held</p>
+            <p class="text-3xl font-bold text-gray-900 mt-1">{{ holding.share_count }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <p class="text-xs text-gray-500 uppercase">Total Value</p>
+            <p class="text-3xl font-bold text-green-600 mt-1">&#8377;{{ holding.total_amount|floatformat:2 }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <p class="text-xs text-gray-500 uppercase">Purchase Date</p>
+            <p class="text-xl font-bold text-gray-700 mt-1">{{ holding.purchase_date|date:"d M Y" }}</p>
+        </div>
+    </div>
+
+    <!-- Transaction History -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-sm font-semibold text-gray-500 uppercase">Share Transactions</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Shares</th>
+                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Receipt</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for txn in transactions %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-sm text-gray-900">{{ txn.txn_date }}</td>
+                        <td class="px-4 py-3 text-sm">
+                            <span class="px-2 py-0.5 rounded-full text-xs font-medium {% if txn.txn_type == 'purchase' %}bg-green-100 text-green-700{% elif txn.txn_type == 'surrender' %}bg-red-100 text-red-700{% else %}bg-blue-100 text-blue-700{% endif %}">{{ txn.get_txn_type_display }}</span>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-right font-medium">{{ txn.shares_count }}</td>
+                        <td class="px-4 py-3 text-sm text-right font-medium">&#8377;{{ txn.amount|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm">
+                            <a href="{% url 'shares:receipt' txn_id=txn.pk %}" class="text-primary-600 hover:underline">View Receipt</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="px-4 py-8 text-center text-sm text-gray-400">No transactions.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

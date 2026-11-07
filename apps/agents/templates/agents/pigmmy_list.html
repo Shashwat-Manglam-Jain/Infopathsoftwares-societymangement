@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load currency_tags %}
+
+{% block title %}Pigmmy Accounts{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-semibold text-gray-900">Pigmmy / Daily Deposit Accounts</h1>
+    </div>
+
+    <!-- Agent filter -->
+    <form method="get" class="flex items-center space-x-3">
+        <label class="text-sm text-gray-600">Filter by Agent:</label>
+        <select name="agent" onchange="this.form.submit()"
+                class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500">
+            <option value="">All Agents</option>
+            {% for a in agents %}
+            <option value="{{ a.id }}" {% if request.GET.agent == a.id|stringformat:"d" %}selected{% endif %}>
+                {{ a.agent_code }} — {{ a.member.name }}
+            </option>
+            {% endfor %}
+        </select>
+    </form>
+
+    <div class="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Account No</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Member</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Agent</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Installment</th>
+                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Balance</th>
+                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Paid / Total</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Maturity</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for ac in accounts %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ ac.account_no }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">{{ ac.member.name }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-500">{{ ac.agent.agent_code }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-500">{{ ac.get_deposit_type_display }}</td>
+                    <td class="px-4 py-3 text-sm text-right text-gray-700">{{ ac.installment_amount|indian_currency }}</td>
+                    <td class="px-4 py-3 text-sm text-right font-medium text-green-700">{{ ac.current_balance|indian_currency }}</td>
+                    <td class="px-4 py-3 text-sm text-center text-gray-700">{{ ac.paid_installments }}/{{ ac.total_installments }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-500">{{ ac.maturity_date|date:"d-M-Y" }}</td>
+                    <td class="px-4 py-3">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                            {% if ac.status == 'active' %}bg-green-100 text-green-800
+                            {% elif ac.status == 'matured' %}bg-blue-100 text-blue-800
+                            {% else %}bg-red-100 text-red-800{% endif %}">
+                            {{ ac.get_status_display }}
+                        </span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="px-4 py-8 text-center text-gray-400">No pigmmy accounts found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

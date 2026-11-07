@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Fixed Deposits — InfoSociety{% endblock %}
+{% block page_title %}Fixed Deposits{% endblock %}
+
+{% block content %}
+<div class="space-y-4">
+
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+            <h2 class="text-xl font-bold text-gray-900">Fixed Deposits</h2>
+            <p class="text-sm text-gray-500 mt-1">{{ fds|length }} deposit{{ fds|length|pluralize }}</p>
+        </div>
+        <a href="{% url 'deposits:fd_create' %}" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">
+            <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            New FD
+        </a>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">FD No</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Member</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Amount</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Rate</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Start</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">Maturity</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for fd in fds %}
+                    <tr class="hover:bg-gray-50 transition-colors cursor-pointer" onclick="window.location='{% url 'deposits:fd_detail' pk=fd.pk %}'">
+                        <td class="px-4 py-3 text-sm font-mono text-primary-600 font-medium"><a href="{% url 'deposits:fd_detail' pk=fd.pk %}" class="hover:underline">{{ fd.fd_no }}</a></td>
+                        <td class="px-4 py-3 text-sm text-gray-900">{{ fd.member.name }}</td>
+                        <td class="px-4 py-3 text-sm text-right font-medium text-gray-900">{{ fd.deposit_amount|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-600 hidden md:table-cell">{{ fd.interest_rate }}%</td>
+                        <td class="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">{{ fd.start_date|date:"d M Y" }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500 hidden lg:table-cell">{{ fd.maturity_date|date:"d M Y" }}</td>
+                        <td class="px-4 py-3">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if fd.status == 'active' %}bg-green-100 text-green-800{% elif fd.status == 'matured' %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-600{% endif %}">{{ fd.get_status_display }}</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-sm text-gray-400">No fixed deposits found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

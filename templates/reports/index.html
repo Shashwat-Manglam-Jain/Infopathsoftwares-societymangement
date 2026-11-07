@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Reports — InfoSociety{% endblock %}
+{% block page_title %}Reports{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <div>
+        <h2 class="text-xl font-bold text-gray-900">Reports</h2>
+        <p class="text-sm text-gray-500 mt-1">Generate financial statements and operational reports</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+        <!-- Financial Reports -->
+        <a href="{% url 'reports:trial_balance' %}" class="bg-white rounded-lg shadow-sm border border-gray-200 p-5 hover:border-primary-300 hover:shadow-md transition-all group">
+            <div class="flex items-start gap-4">
+                <div class="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-200 transition-colors">
+                    <svg class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900 group-hover:text-primary-700">Trial Balance</h3>
+                    <p class="text-xs text-gray-500 mt-1">Debit & Credit balances of all GL heads for a date range</p>
+                </div>
+            </div>
+        </a>
+
+        <a href="{% url 'reports:profit_loss' %}" class="bg-white rounded-lg shadow-sm border border-gray-200 p-5 hover:border-primary-300 hover:shadow-md transition-all group">
+            <div class="flex items-start gap-4">
+                <div class="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0 group-hover:bg-green-200 transition-colors">
+                    <svg class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900 group-hover:text-primary-700">Profit & Loss</h3>
+                    <p class="text-xs text-gray-500 mt-1">Income vs Expenditure statement for a date range</p>
+                </div>
+            </div>
+        </a>
+
+        <a href="{% url 'reports:balance_sheet' %}" class="bg-white rounded-lg shadow-sm border border-gray-200 p-5 hover:border-primary-300 hover:shadow-md transition-all group">
+            <div class="flex items-start gap-4">
+                <div class="h-10 w-10 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0 group-hover:bg-purple-200 transition-colors">
+                    <svg class="h-5 w-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900 group-hover:text-primary-700">Balance Sheet</h3>
+                    <p class="text-xs text-gray-500 mt-1">Assets & Liabilities as on a given date</p>
+                </div>
+            </div>
+        </a>
+
+        <!-- Operational Reports -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5 opacity-60">
+            <div class="flex items-start gap-4">
+                <div class="h-10 w-10 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+                    <svg class="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900">Member Report</h3>
+                    <p class="text-xs text-gray-500 mt-1">Member-wise account summary and statements</p>
+                    <span class="inline-block mt-2 px-2 py-0.5 bg-gray-100 text-gray-500 rounded text-xs">Coming Soon</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5 opacity-60">
+            <div class="flex items-start gap-4">
+                <div class="h-10 w-10 rounded-lg bg-rose-100 flex items-center justify-center flex-shrink-0">
+                    <svg class="h-5 w-5 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900">Loan Report</h3>
+                    <p class="text-xs text-gray-500 mt-1">NPA, overdue, demand register and recovery reports</p>
+                    <span class="inline-block mt-2 px-2 py-0.5 bg-gray-100 text-gray-500 rounded text-xs">Coming Soon</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5 opacity-60">
+            <div class="flex items-start gap-4">
+                <div class="h-10 w-10 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0">
+                    <svg class="h-5 w-5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900">Deposit Reports</h3>
+                    <p class="text-xs text-gray-500 mt-1">FD/RD maturity schedule, interest payable, agent collection</p>
+                    <span class="inline-block mt-2 px-2 py-0.5 bg-gray-100 text-gray-500 rounded text-xs">Coming Soon</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

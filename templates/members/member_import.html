@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Import Members{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Import Members</h1>
+            <p class="mt-1 text-sm text-gray-500">Upload an Excel (.xlsx) or CSV file with member data</p>
+        </div>
+        <a href="{% url 'members:list' %}" class="text-sm text-primary-600 hover:text-primary-700">
+            &larr; Back to Members
+        </a>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Branch selector -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <label for="branch" class="block text-sm font-medium text-gray-700 mb-2">Select Branch</label>
+            <select name="branch" id="branch" required
+                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm py-2 px-3 border">
+                <option value="">-- Choose Branch --</option>
+                {% for branch in branches %}
+                <option value="{{ branch.id }}">{{ branch.branch_name }}{% if branch.is_head_office %} (HO){% endif %}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- File upload area -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <label class="block text-sm font-medium text-gray-700 mb-3">Upload File</label>
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-primary-400 transition-colors"
+                 x-data="{ dragover: false }"
+                 :class="{ 'border-primary-500 bg-primary-50': dragover }"
+                 @dragover.prevent="dragover = true"
+                 @dragleave.prevent="dragover = false"
+                 @drop.prevent="dragover = false; $refs.fileInput.files = $event.dataTransfer.files; $refs.fileName.textContent = $event.dataTransfer.files[0].name">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                </svg>
+                <p class="mt-2 text-sm text-gray-600">
+                    <label for="file" class="font-medium text-primary-600 hover:text-primary-500 cursor-pointer">
+                        Click to upload
+                    </label>
+                    or drag and drop
+                </p>
+                <p class="mt-1 text-xs text-gray-500">.xlsx or .csv files</p>
+                <p x-ref="fileName" class="mt-2 text-sm font-medium text-primary-700"></p>
+                <input type="file" name="file" id="file" x-ref="fileInput" required accept=".xlsx,.xls,.csv"
+                       class="sr-only"
+                       @change="$refs.fileName.textContent = $event.target.files[0]?.name || ''">
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center justify-between">
+            <a href="{% url 'members:import_template' %}"
+               class="inline-flex items-center text-sm text-primary-600 hover:text-primary-800">
+                <svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+                Download Sample Template
+            </a>
+            <button type="submit"
+                    class="inline-flex items-center px-6 py-2.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/>
+                </svg>
+                Import Members
+            </button>
+        </div>
+    </form>
+
+    <!-- Column guide -->
+    <div class="mt-8 bg-white rounded-lg shadow overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-sm font-medium text-gray-900">Column Reference</h3>
+        </div>
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Column</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Required</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Format</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                <tr><td class="px-6 py-2 text-sm text-gray-900">member_no</td><td class="px-6 py-2 text-sm text-gray-500">Optional</td><td class="px-6 py-2 text-sm text-gray-500">Auto-generated if blank (e.g. M0001)</td></tr>
+                <tr class="bg-gray-50"><td class="px-6 py-2 text-sm font-medium text-gray-900">name</td><td class="px-6 py-2 text-sm text-red-600 font-medium">Required</td><td class="px-6 py-2 text-sm text-gray-500">Full name</td></tr>
+                <tr><td class="px-6 py-2 text-sm text-gray-900">father_name</td><td class="px-6 py-2 text-sm text-gray-500">Optional</td><td class="px-6 py-2 text-sm text-gray-500">Father/spouse name</td></tr>
+                <tr class="bg-gray-50"><td class="px-6 py-2 text-sm text-gray-900">dob</td><td class="px-6 py-2 text-sm text-gray-500">Optional</td><td class="px-6 py-2 text-sm text-gray-500">DD-MM-YYYY or DD/MM/YYYY</td></tr>
+                <tr><td class="px-6 py-2 text-sm text-gray-900">gender</td><td class="px-6 py-2 text-sm text-gray-500">Optional</td><td class="px-6 py-2 text-sm text-gray-500">M / F / O (defaults to M)</td></tr>
+                <tr class="bg-gray-50"><td class="px-6 py-2 text-sm text-gray-900">phone</td><td class="px-6 py-2 text-sm text-gray-500">Optional</td><td class="px-6 py-2 text-sm text-gray-500">10-digit mobile number</td></tr>
+                <tr><td class="px-6 py-2 text-sm text-gray-900">email</td><td class="px-6 py-2 text-sm text-gray-500">Optional</td><td class="px-6 py-2 text-sm text-gray-500">Email address</td></tr>
+                <tr class="bg-gray-50"><td class="px-6 py-2 text-sm text-gray-900">address</td><td class="px-6 py-2 text-sm text-gray-500">Optional</td><td class="px-6 py-2 text-sm text-gray-500">Full address</td></tr>
+                <tr><td class="px-6 py-2 text-sm text-gray-900">city / state / pincode</td><td class="px-6 py-2 text-sm text-gray-500">Optional</td><td class="px-6 py-2 text-sm text-gray-500">City, state, 6-digit pincode</td></tr>
+                <tr class="bg-gray-50"><td class="px-6 py-2 text-sm text-gray-900">aadhar_no</td><td class="px-6 py-2 text-sm text-gray-500">Optional</td><td class="px-6 py-2 text-sm text-gray-500">12-digit Aadhaar number</td></tr>
+                <tr><td class="px-6 py-2 text-sm text-gray-900">pan_no</td><td class="px-6 py-2 text-sm text-gray-500">Optional</td><td class="px-6 py-2 text-sm text-gray-500">PAN card number</td></tr>
+                <tr class="bg-gray-50"><td class="px-6 py-2 text-sm text-gray-900">occupation</td><td class="px-6 py-2 text-sm text-gray-500">Optional</td><td class="px-6 py-2 text-sm text-gray-500">Member occupation</td></tr>
+                <tr><td class="px-6 py-2 text-sm text-gray-900">category</td><td class="px-6 py-2 text-sm text-gray-500">Optional</td><td class="px-6 py-2 text-sm text-gray-500">A / B / C (defaults to A)</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

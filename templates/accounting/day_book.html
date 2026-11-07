@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Day Book — InfoSociety{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+            <h2 class="text-xl font-bold text-gray-900">Day Book</h2>
+            <p class="text-sm text-gray-500 mt-1">All journal entries for {{ book_date }}</p>
+        </div>
+        <form method="get" class="flex items-center gap-2">
+            <input type="date" name="date" value="{{ book_date|date:'Y-m-d' }}" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
+            <button type="submit" class="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">View</button>
+        </form>
+    </div>
+
+    {% for entry in entries %}
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-5 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="font-mono text-sm font-semibold text-gray-900">{{ entry.voucher_no }}</span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+                    {% if entry.voucher_type == 'receipt' %}bg-green-100 text-green-800
+                    {% elif entry.voucher_type == 'payment' %}bg-red-100 text-red-800
+                    {% elif entry.voucher_type == 'journal' %}bg-blue-100 text-blue-800
+                    {% else %}bg-purple-100 text-purple-800{% endif %}">{{ entry.get_voucher_type_display }}</span>
+            </div>
+            <span class="text-xs text-gray-500">{{ entry.branch.branch_name }} &middot; {{ entry.created_by.get_short_name }}</span>
+        </div>
+        <table class="min-w-full">
+            <tbody class="divide-y divide-gray-100">
+                {% for line in entry.lines.all %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-5 py-2 text-sm">
+                        <span class="font-mono text-gray-500">{{ line.gl_account.code }}</span>
+                        <span class="ml-2 text-gray-900">{{ line.gl_account.name }}</span>
+                    </td>
+                    <td class="px-5 py-2 text-sm text-right w-32">
+                        {% if line.debit_amount > 0 %}
+                        <span class="font-medium text-gray-900">{{ line.debit_amount|floatformat:2 }}</span>
+                        {% else %}<span class="text-gray-300">—</span>{% endif %}
+                    </td>
+                    <td class="px-5 py-2 text-sm text-right w-32">
+                        {% if line.credit_amount > 0 %}
+                        <span class="font-medium text-gray-900">{{ line.credit_amount|floatformat:2 }}</span>
+                        {% else %}<span class="text-gray-300">—</span>{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if entry.narration %}
+        <div class="px-5 py-2 border-t bg-gray-50 text-xs text-gray-500">{{ entry.narration }}</div>
+        {% endif %}
+    </div>
+    {% empty %}
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+        <p class="text-gray-400 text-sm">No journal entries for {{ book_date }}.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,407 @@
+{% extends "base.html" %}
+{% load currency_tags %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-6" x-data="{ hour: new Date().getHours() }">
+
+    <!-- Greeting -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-semibold text-gray-900">
+                <span x-show="hour < 12">Good morning</span>
+                <span x-show="hour >= 12 && hour < 17">Good afternoon</span>
+                <span x-show="hour >= 17">Good evening</span>,
+                {{ request.user.get_full_name|default:request.user.username }}
+            </h1>
+            <p class="text-sm text-gray-500 mt-1">{{ today|date:"l, d F Y" }}</p>
+        </div>
+    </div>
+
+    <!-- Subscription Status -->
+    {% if subscription %}
+    <div class="bg-primary-950 rounded-xl shadow-sm border border-primary-800 p-4">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="h-10 w-10 rounded-lg {% if subscription.days_remaining is not None and subscription.days_remaining <= 7 %}bg-red-500/20{% else %}bg-primary-800{% endif %} flex items-center justify-center">
+                    <svg class="h-5 w-5 {% if subscription.days_remaining is not None and subscription.days_remaining <= 7 %}text-red-400{% else %}text-primary-300{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-white">{{ subscription.plan.name }} Plan</p>
+                    <p class="text-xs text-primary-300">
+                        {% if subscription.days_remaining is not None %}
+                            {% if subscription.days_remaining == 0 %}
+                                <span class="text-red-400 font-medium">Expires today</span>
+                            {% elif subscription.days_remaining <= 7 %}
+                                <span class="text-red-400 font-medium">{{ subscription.days_remaining }} days remaining</span>
+                            {% else %}
+                                {{ subscription.days_remaining }} days remaining
+                            {% endif %}
+                            &middot; Ends {{ subscription.end_date|date:"d M Y" }}
+                        {% else %}
+                            {{ subscription.get_status_display }}
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            <a href="/subscription/recharge/" class="px-4 py-2 {% if subscription.days_remaining is not None and subscription.days_remaining <= 7 %}bg-red-600 hover:bg-red-700{% else %}bg-primary-600 hover:bg-primary-500{% endif %} text-white text-sm font-medium rounded-lg shadow-sm transition-colors">
+                {% if subscription.days_remaining is not None and subscription.days_remaining <= 7 %}Renew Now{% else %}Upgrade{% endif %}
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Setup Wizard (only if not all done) -->
+    {% if not setup_progress.all_done %}
+    <div class="bg-white rounded-xl shadow-sm border border-blue-200 p-6">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center space-x-3">
+                <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                    <svg class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900">Get Started</h2>
+                    <p class="text-sm text-gray-500">Complete your setup ({{ setup_progress.completed }}/{{ setup_progress.total }} done)</p>
+                </div>
+            </div>
+            <span class="text-sm font-bold text-blue-600">{{ setup_progress.percent }}%</span>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="w-full bg-gray-200 rounded-full h-2.5 mb-5">
+            <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style="width: {{ setup_progress.percent }}%"></div>
+        </div>
+
+        <!-- Steps -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {% for step in setup_progress.steps %}
+            <div class="flex items-center space-x-3 p-3 rounded-lg {% if step.done %}bg-green-50 border border-green-200{% else %}bg-gray-50 border border-gray-200{% endif %}">
+                {% if step.done %}
+                <div class="flex-shrink-0 h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-green-800">{{ step.name }}{% if step.count %} ({{ step.count }}){% endif %}</p>
+                    <p class="text-xs text-green-600">Done</p>
+                </div>
+                {% else %}
+                <div class="flex-shrink-0 h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center">
+                    <div class="h-3 w-3 bg-gray-400 rounded-full"></div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-800">{{ step.name }}</p>
+                    <p class="text-xs text-gray-500">{{ step.description }}</p>
+                </div>
+                <a href="{{ step.url }}" class="flex-shrink-0 text-xs font-medium text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition">
+                    Set Up
+                </a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+        <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Quick Actions</h2>
+        <div class="grid grid-cols-3 sm:grid-cols-6 gap-3">
+            <a href="{% url 'savings:list' %}" class="group flex flex-col items-center p-3 rounded-xl border-2 border-transparent hover:border-green-300 hover:bg-green-50 transition-all">
+                <div class="h-11 w-11 rounded-full bg-green-100 flex items-center justify-center group-hover:bg-green-200 transition">
+                    <svg class="h-5 w-5 text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                </div>
+                <span class="mt-2 text-xs font-medium text-gray-700">Deposit</span>
+            </a>
+            <a href="{% url 'savings:list' %}" class="group flex flex-col items-center p-3 rounded-xl border-2 border-transparent hover:border-red-300 hover:bg-red-50 transition-all">
+                <div class="h-11 w-11 rounded-full bg-red-100 flex items-center justify-center group-hover:bg-red-200 transition">
+                    <svg class="h-5 w-5 text-red-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+                    </svg>
+                </div>
+                <span class="mt-2 text-xs font-medium text-gray-700">Withdraw</span>
+            </a>
+            <a href="{% url 'loans:list' %}" class="group flex flex-col items-center p-3 rounded-xl border-2 border-transparent hover:border-amber-300 hover:bg-amber-50 transition-all">
+                <div class="h-11 w-11 rounded-full bg-amber-100 flex items-center justify-center group-hover:bg-amber-200 transition">
+                    <svg class="h-5 w-5 text-amber-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                </div>
+                <span class="mt-2 text-xs font-medium text-gray-700">Collect EMI</span>
+            </a>
+            <a href="{% url 'members:list' %}" class="group flex flex-col items-center p-3 rounded-xl border-2 border-transparent hover:border-indigo-300 hover:bg-indigo-50 transition-all">
+                <div class="h-11 w-11 rounded-full bg-indigo-100 flex items-center justify-center group-hover:bg-indigo-200 transition">
+                    <svg class="h-5 w-5 text-indigo-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                    </svg>
+                </div>
+                <span class="mt-2 text-xs font-medium text-gray-700">New Member</span>
+            </a>
+            <a href="{% url 'loans:list' %}" class="group flex flex-col items-center p-3 rounded-xl border-2 border-transparent hover:border-orange-300 hover:bg-orange-50 transition-all">
+                <div class="h-11 w-11 rounded-full bg-orange-100 flex items-center justify-center group-hover:bg-orange-200 transition">
+                    <svg class="h-5 w-5 text-orange-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </div>
+                <span class="mt-2 text-xs font-medium text-gray-700">New Loan</span>
+            </a>
+            <a href="{% url 'deposits:fd_list' %}" class="group flex flex-col items-center p-3 rounded-xl border-2 border-transparent hover:border-purple-300 hover:bg-purple-50 transition-all">
+                <div class="h-11 w-11 rounded-full bg-purple-100 flex items-center justify-center group-hover:bg-purple-200 transition">
+                    <svg class="h-5 w-5 text-purple-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                    </svg>
+                </div>
+                <span class="mt-2 text-xs font-medium text-gray-700">New FD</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0 h-10 w-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                    <svg class="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500">Members</p>
+                    <p class="text-lg font-bold text-gray-900">{{ total_members }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0 h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center">
+                    <svg class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500">Savings</p>
+                    <p class="text-lg font-bold text-green-700">{{ total_savings|short_currency }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0 h-10 w-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                    <svg class="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500">Loans O/S</p>
+                    <p class="text-lg font-bold text-amber-700">{{ total_loans|short_currency }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <svg class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500">Fixed Deposits</p>
+                    <p class="text-lg font-bold text-blue-700">{{ total_fd|short_currency }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0 h-10 w-10 bg-teal-100 rounded-lg flex items-center justify-center">
+                    <svg class="h-5 w-5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500">Recurring Dep</p>
+                    <p class="text-lg font-bold text-teal-700">{{ total_rd }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0 h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <svg class="h-5 w-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500">Share Capital</p>
+                    <p class="text-lg font-bold text-purple-700">{{ total_shares|short_currency }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Cards -->
+    {% if overdue_count > 0 or npa_count > 0 or pending_approvals > 0 or fd_maturing_soon > 0 %}
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {% if overdue_count > 0 %}
+        <a href="{% url 'loans:list' %}" class="block bg-yellow-50 border border-yellow-200 rounded-xl p-4 hover:bg-yellow-100 transition">
+            <div class="flex items-center space-x-3">
+                <div class="h-10 w-10 bg-yellow-200 rounded-full flex items-center justify-center">
+                    <svg class="h-5 w-5 text-yellow-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-yellow-800">{{ overdue_count }}</p>
+                    <p class="text-xs text-yellow-700 font-medium">Overdue Loans</p>
+                </div>
+            </div>
+        </a>
+        {% endif %}
+
+        {% if npa_count > 0 %}
+        <a href="{% url 'loans:list' %}" class="block bg-red-50 border border-red-200 rounded-xl p-4 hover:bg-red-100 transition">
+            <div class="flex items-center space-x-3">
+                <div class="h-10 w-10 bg-red-200 rounded-full flex items-center justify-center">
+                    <svg class="h-5 w-5 text-red-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-red-800">{{ npa_count }}</p>
+                    <p class="text-xs text-red-700 font-medium">NPA Loans</p>
+                </div>
+            </div>
+        </a>
+        {% endif %}
+
+        {% if pending_approvals > 0 %}
+        <a href="{% url 'loans:list' %}" class="block bg-blue-50 border border-blue-200 rounded-xl p-4 hover:bg-blue-100 transition">
+            <div class="flex items-center space-x-3">
+                <div class="h-10 w-10 bg-blue-200 rounded-full flex items-center justify-center">
+                    <svg class="h-5 w-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-blue-800">{{ pending_approvals }}</p>
+                    <p class="text-xs text-blue-700 font-medium">Pending Approvals</p>
+                </div>
+            </div>
+        </a>
+        {% endif %}
+
+        {% if fd_maturing_soon > 0 %}
+        <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
+            <div class="flex items-center space-x-3">
+                <div class="h-10 w-10 bg-indigo-200 rounded-full flex items-center justify-center">
+                    <svg class="h-5 w-5 text-indigo-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-indigo-800">{{ fd_maturing_soon }}</p>
+                    <p class="text-xs text-indigo-700 font-medium">FDs Maturing (30d)</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Today's Summary -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+        <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Today's Activity</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="text-center p-3 bg-green-50 rounded-lg">
+                <p class="text-xl font-bold text-green-700">{{ today_deposits|indian_currency }}</p>
+                <p class="text-xs text-green-600 mt-1">Deposits</p>
+            </div>
+            <div class="text-center p-3 bg-red-50 rounded-lg">
+                <p class="text-xl font-bold text-red-700">{{ today_withdrawals|indian_currency }}</p>
+                <p class="text-xs text-red-600 mt-1">Withdrawals</p>
+            </div>
+            <div class="text-center p-3 bg-amber-50 rounded-lg">
+                <p class="text-xl font-bold text-amber-700">{{ today_emi|indian_currency }}</p>
+                <p class="text-xs text-amber-600 mt-1">EMI Collected</p>
+            </div>
+            <div class="text-center p-3 bg-gray-50 rounded-lg">
+                <p class="text-xl font-bold text-gray-700">{{ today_txn_count }}</p>
+                <p class="text-xs text-gray-600 mt-1">Transactions</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    {% if recent_transactions %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+            <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Recent Transactions</h2>
+            <a href="{% url 'savings:list' %}" class="text-xs text-primary-600 hover:text-primary-800 font-medium">View All</a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Member</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Branch</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for txn in recent_transactions %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-sm text-gray-500">{{ txn.created_at|date:"H:i" }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900">
+                            {% if txn.account and txn.account.member %}
+                                {{ txn.account.member.name|default:txn.account.member }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3">
+                            {% if txn.txn_type == 'deposit' %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Deposit</span>
+                            {% elif txn.txn_type == 'withdrawal' %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Withdrawal</span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">{{ txn.txn_type|title }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3 text-sm text-right font-medium {% if txn.txn_type == 'deposit' %}text-green-700{% elif txn.txn_type == 'withdrawal' %}text-red-700{% else %}text-gray-900{% endif %}">
+                            {{ txn.amount|indian_currency }}
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-500">
+                            {% if txn.branch %}{{ txn.branch.branch_name }}{% else %}—{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Day End shortcut -->
+    <div class="flex justify-end">
+        <a href="{% url 'dayend:index' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition">
+            <svg class="h-4 w-4 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Run Day-End Process
+        </a>
+    </div>
+
+</div>
+{% endblock %}

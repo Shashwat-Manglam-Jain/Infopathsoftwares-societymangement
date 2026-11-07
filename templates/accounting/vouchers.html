@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Voucher Entry — InfoSociety{% endblock %}
+{% block page_title %}Voucher Entry{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+            <h2 class="text-xl font-bold text-gray-900">Voucher Entry</h2>
+            <p class="text-sm text-gray-500 mt-1">Journal, contra and other manual vouchers</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{% url 'accounting:voucher_create' %}" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">
+                <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                New Voucher
+            </a>
+            <a href="{% url 'accounting:receipt' %}" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">Receipt</a>
+            <a href="{% url 'accounting:payment' %}" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">Payment</a>
+            <a href="{% url 'accounting:cashbook' %}" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">Cashbook</a>
+        </div>
+    </div>
+
+    <!-- Recent Entries -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-200">
+            <h3 class="text-sm font-semibold text-gray-700">Recent Vouchers</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Voucher No</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Date</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Type</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Narration</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">Branch</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">Created By</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for entry in entries %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-sm font-mono text-gray-900">{{ entry.voucher_no }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">{{ entry.entry_date|date:"d M Y" }}</td>
+                        <td class="px-4 py-3">
+                            {% if entry.voucher_type == 'receipt' %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Receipt</span>
+                            {% elif entry.voucher_type == 'payment' %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Payment</span>
+                            {% elif entry.voucher_type == 'journal' %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Journal</span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">Contra</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-600 hidden md:table-cell max-w-xs truncate">{{ entry.narration|default:"—" }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600 hidden lg:table-cell">{{ entry.branch.branch_name }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600 hidden lg:table-cell">{{ entry.created_by.get_short_name }}</td>
+                        <td class="px-4 py-3 text-center">
+                            {% if entry.is_reversed %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">Reversed</span>
+                            {% elif entry.is_posted %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Posted</span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Draft</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-sm text-gray-400">No voucher entries found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

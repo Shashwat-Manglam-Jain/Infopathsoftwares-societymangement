@@ -1,0 +1,27 @@
+[Unit]
+Description=Celery Worker for Society Software
+After=network.target postgresql.service redis.service
+
+[Service]
+Type=forking
+User=www-data
+Group=www-data
+WorkingDirectory=/app
+Environment="DJANGO_SETTINGS_MODULE=config.settings.production"
+ExecStart=/app/venv/bin/celery -A config multi start worker1 \
+    --pidfile=/var/run/celery/%n.pid \
+    --logfile=/var/log/celery/%n.log \
+    --loglevel=info \
+    --concurrency=2
+ExecStop=/app/venv/bin/celery -A config multi stopwait worker1 \
+    --pidfile=/var/run/celery/%n.pid
+ExecReload=/app/venv/bin/celery -A config multi restart worker1 \
+    --pidfile=/var/run/celery/%n.pid \
+    --logfile=/var/log/celery/%n.log \
+    --loglevel=info \
+    --concurrency=2
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Share Certificate #{{ txn.id }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #1a1a1a; }
+        .receipt-container { display: flex; gap: 20px; padding: 15px; }
+        .receipt { width: 50%; border: 2px solid #333; padding: 20px; position: relative; }
+        .receipt::after { content: ''; position: absolute; right: -12px; top: 0; bottom: 0; border-right: 2px dashed #999; }
+        .receipt:last-child::after { display: none; }
+
+        .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 12px; }
+        .society-name { font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #553c9a; }
+        .branch-name { font-size: 11px; color: #555; margin-top: 2px; }
+        .receipt-title { font-size: 14px; font-weight: 700; margin-top: 6px; text-transform: uppercase;
+                         background: #553c9a; color: white; display: inline-block; padding: 2px 16px; border-radius: 3px; }
+        .copy-label { font-size: 10px; color: #888; font-style: italic; margin-top: 4px; }
+
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
+        .info-row .label { color: #555; font-size: 12px; }
+        .info-row .value { font-weight: 600; }
+
+        .member-section { background: #faf5ff; border: 1px solid #e9d8fd; border-radius: 4px; padding: 10px; margin: 12px 0; }
+        .member-section .label { font-size: 11px; color: #666; }
+        .member-section .value { font-weight: 600; font-size: 14px; }
+
+        .amount-box { border: 2px solid #553c9a; border-radius: 6px; padding: 12px; margin: 12px 0; text-align: center; }
+        .amount-figures { font-size: 22px; font-weight: 700; color: #553c9a; }
+        .rupee { font-size: 16px; }
+        .amount-words { font-size: 11px; color: #555; margin-top: 4px; font-style: italic; }
+
+        .details-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        .details-table td { padding: 5px 0; font-size: 12px; }
+        .details-table td:first-child { color: #555; width: 45%; }
+        .details-table td:last-child { font-weight: 600; text-align: right; }
+
+        .footer { margin-top: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .signature-line { border-top: 1px solid #333; width: 120px; text-align: center; font-size: 10px; color: #555; padding-top: 4px; }
+
+        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg);
+                      font-size: 50px; color: rgba(0,0,0,0.03); font-weight: 900; pointer-events: none; }
+
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .receipt-container { padding: 0; }
+            .no-print { display: none !important; }
+            @page { margin: 10mm; size: A4 landscape; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="text-align: center; padding: 10px; background: #f0f0f0;">
+        <button onclick="window.print()" style="padding: 8px 24px; background: #553c9a; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+            Print Receipt
+        </button>
+        <button onclick="window.close()" style="padding: 8px 24px; background: #e2e8f0; color: #333; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; margin-left: 8px;">
+            Close
+        </button>
+    </div>
+
+    <div class="receipt-container">
+        {% for copy in "12" %}
+        <div class="receipt">
+            <div class="watermark">SHARES</div>
+
+            <div class="header">
+                <div class="society-name">{{ txn.branch.branch_name|default:"Society Name" }}</div>
+                <div class="branch-name">Branch: {{ txn.branch.branch_name }}</div>
+                <div class="receipt-title">Share {{ txn.get_txn_type_display }} Receipt</div>
+                <div class="copy-label">{% if forloop.first %}Original{% else %}Society Copy{% endif %}</div>
+            </div>
+
+            <div class="info-row">
+                <div><span class="label">Txn No:</span> <span class="value">#{{ txn.id }}</span></div>
+                <div><span class="label">Date:</span> <span class="value">{{ txn.txn_date|date:"d-M-Y" }}</span></div>
+            </div>
+
+            <div class="member-section">
+                <div class="info-row" style="margin-bottom:0">
+                    <div><span class="label">Member:</span> <span class="value">{{ txn.member.name }}</span></div>
+                    <div><span class="label">No:</span> <span class="value">{{ txn.member.member_no }}</span></div>
+                </div>
+            </div>
+
+            <div class="amount-box">
+                <div class="amount-figures"><span class="rupee">&#8377;</span> {{ txn.amount|floatformat:2 }}</div>
+                <div class="amount-words">{{ amount_words }}</div>
+            </div>
+
+            <table class="details-table">
+                <tr><td>Number of Shares</td><td>{{ txn.shares_count }}</td></tr>
+                <tr><td>Face Value per Share</td><td>&#8377; {{ face_value|floatformat:2 }}</td></tr>
+                <tr><td>Transaction Type</td><td>{{ txn.get_txn_type_display }}</td></tr>
+                {% if txn.transfer_to_member %}
+                <tr><td>Transferred To</td><td>{{ txn.transfer_to_member.name }} ({{ txn.transfer_to_member.member_no }})</td></tr>
+                {% endif %}
+                {% if certificate_no %}
+                <tr><td>Certificate No</td><td>{{ certificate_no }}</td></tr>
+                {% endif %}
+                {% if txn.narration %}
+                <tr><td>Narration</td><td>{{ txn.narration }}</td></tr>
+                {% endif %}
+            </table>
+
+            <div class="footer">
+                <div class="signature-line">Member Sign</div>
+                <div class="signature-line">{{ txn.created_by.get_full_name|default:txn.created_by.username }}<br>Authorized</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

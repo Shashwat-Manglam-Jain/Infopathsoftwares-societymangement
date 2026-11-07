@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block title %}{{ member.name }} — InfoSociety{% endblock %}
+{% block page_title %}Member Detail{% endblock %}
+
+{% block extra_head %}
+<style>@media print { .no-print { display: none !important; } }</style>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 no-print">
+        <div class="flex items-center gap-4">
+            {% if member.photo %}
+            <img src="{{ member.photo.url }}" alt="{{ member.name }}" class="h-16 w-16 rounded-full object-cover border-2 border-gray-200">
+            {% else %}
+            <div class="h-16 w-16 rounded-full bg-primary-100 flex items-center justify-center border-2 border-primary-200">
+                <span class="text-primary-700 text-xl font-bold">{{ member.name|make_list|first|upper }}</span>
+            </div>
+            {% endif %}
+            <div>
+                <h2 class="text-xl font-bold text-gray-900">{{ member.prefix }} {{ member.name }}</h2>
+                {% if member.name_regional %}<p class="text-sm text-gray-600">{{ member.name_regional }}</p>{% endif %}
+                <p class="text-sm text-gray-500">{{ member.member_no }} &middot; {{ member.branch.branch_name }}</p>
+                {% if member.status == 'active' %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mt-1">Active</span>
+                {% elif member.status == 'inactive' %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 mt-1">Inactive</span>
+                {% elif member.status == 'deceased' %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 mt-1">Deceased</span>
+                {% else %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 mt-1">{{ member.get_status_display }}</span>
+                {% endif %}
+            </div>
+            {% if member.signature %}
+            <div class="ml-auto hidden sm:block">
+                <p class="text-xs text-gray-400 mb-1">Signature</p>
+                <img src="{{ member.signature.url }}" alt="Signature" class="h-12 w-24 object-contain border border-gray-200 rounded bg-white">
+            </div>
+            {% endif %}
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{% url 'members:edit' member.pk %}" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">
+                <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                Edit
+            </a>
+            <button onclick="window.print()" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">
+                <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                Print
+            </button>
+        </div>
+    </div>
+
+    <!-- Account Summary Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
+            <p class="text-xs text-gray-500 uppercase font-medium">Shares</p>
+            <p class="text-lg font-bold text-gray-900 mt-1">{{ shares.count }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
+            <p class="text-xs text-gray-500 uppercase font-medium">Savings</p>
+            <p class="text-lg font-bold text-gray-900 mt-1">{{ savings.count }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
+            <p class="text-xs text-gray-500 uppercase font-medium">Fixed Deposits</p>
+            <p class="text-lg font-bold text-gray-900 mt-1">{{ fds.count }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
+            <p class="text-xs text-gray-500 uppercase font-medium">Recurring</p>
+            <p class="text-lg font-bold text-gray-900 mt-1">{{ rds.count }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
+            <p class="text-xs text-gray-500 uppercase font-medium">Loans</p>
+            <p class="text-lg font-bold text-gray-900 mt-1">{{ loans.count }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
+            <p class="text-xs text-gray-500 uppercase font-medium">Pigmmy</p>
+            <p class="text-lg font-bold text-gray-900 mt-1">{{ pigmmy.count }}</p>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div x-data="{ tab: 'personal' }">
+        <div class="border-b border-gray-200 no-print">
+            <nav class="flex gap-6 overflow-x-auto" aria-label="Tabs">
+                <button @click="tab = 'personal'" :class="tab === 'personal' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap border-b-2 py-3 px-1 text-sm font-medium">Personal</button>
+                <button @click="tab = 'accounts'" :class="tab === 'accounts' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap border-b-2 py-3 px-1 text-sm font-medium">Accounts</button>
+                <button @click="tab = 'nominees'" :class="tab === 'nominees' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap border-b-2 py-3 px-1 text-sm font-medium">Nominees</button>
+                <button @click="tab = 'documents'" :class="tab === 'documents' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap border-b-2 py-3 px-1 text-sm font-medium">Documents</button>
+            </nav>
+        </div>
+
+        <!-- Personal Tab -->
+        <div x-show="tab === 'personal'" class="mt-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="px-5 py-3 bg-gray-50 border-b border-gray-200">
+                        <h4 class="text-sm font-semibold text-gray-700">Basic Information</h4>
+                    </div>
+                    <dl class="divide-y divide-gray-100">
+                        <div class="grid grid-cols-3 gap-4 px-5 py-2.5"><dt class="text-sm text-gray-500">Father's Name</dt><dd class="text-sm text-gray-900 col-span-2">{{ member.father_name|default:"—" }}</dd></div>
+                        <div class="grid grid-cols-3 gap-4 px-5 py-2.5"><dt class="text-sm text-gray-500">Mother's Name</dt><dd class="text-sm text-gray-900 col-span-2">{{ member.mother_name|default:"—" }}</dd></div>
+                        <div class="grid grid-cols-3 gap-4 px-5 py-2.5"><dt class="text-sm text-gray-500">Date of Birth</dt><dd class="text-sm text-gray-900 col-span-2">{{ member.dob|date:"d M Y"|default:"—" }}</dd></div>
+                        <div class="grid grid-cols-3 gap-4 px-5 py-2.5"><dt class="text-sm text-gray-500">Gender</dt><dd class="text-sm text-gray-900 col-span-2">{{ member.get_gender_display|default:"—" }}</dd></div>
+                        <div class="grid grid-cols-3 gap-4 px-5 py-2.5"><dt class="text-sm text-gray-500">Marital Status</dt><dd class="text-sm text-gray-900 col-span-2">{{ member.marital_status|default:"—" }}</dd></div>
+                        <div class="grid grid-cols-3 gap-4 px-5 py-2.5"><dt class="text-sm text-gray-500">Blood Group</dt><dd class="text-sm text-gray-900 col-span-2">{{ member.blood_group|default:"—" }}</dd></div>
+                        <div class="grid grid-cols-3 gap-4 px-5 py-2.5"><dt class="text-sm text-gray-500">Category</dt><dd class="text-sm text-gray-900 col-span-2">{{ member.get_category_display|default:"—" }}</dd></div>
+                        <div class="grid grid-cols-3 gap-4 px-5 py-2.5"><dt class="text-sm text-gray-500">Join Date</dt><dd class="text-sm text-gray-900 col-span-2">{{ member.join_date|date:"d M Y"|default:"—" }}</dd></div>
+                    </dl>
+                </div>
+                <div class="space-y-6">
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                        <div class="px-5 py-3 bg-gray-50 border-b border-gray-200">
+                            <h4 class="text-sm font-semibold text-gray-700">Contact</h4>
+                        </div>
+                        <dl class="divide-y divide-gray-100">
+                            <div class="grid grid-cols-3 gap-4 px-5 py-2.5"><dt class="text-sm text-gray-500">Phone</dt><dd class="text-sm text-gray-900 col-span-2">{{ member.phone|default:"—" }}</dd></div>
+                            <div class="grid grid-cols-3 gap-4 px-5 py-2.5"><dt class="text-sm text-gray-500">Alt Phone</dt><dd class="text-sm text-gray-900 col-span-2">{{ member.alt_phone|default:"—" }}</dd></div>
+                            <div class="grid grid-cols-3 gap-4 px-5 py-2.5"><dt class="text-sm text-gray-500">Email</dt><dd class="text-sm text-gray-900 col-span-2">{{ member.email|default:"—" }}</dd></div>
+                            <div class="grid grid-cols-3 gap-4 px-5 py-2.5"><dt class="text-sm text-gray-500">Address</dt><dd class="text-sm text-gray-900 col-span-2">{{ member.address|default:"" }}{% if member.city %}, {{ member.city }}{% endif %}{% if member.district %}, {{ member.district }}{% endif %}{% if member.state %}, {{ member.state }}{% endif %} {{ member.pincode|default:"" }}</dd></div>
+                        </dl>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                        <div class="px-5 py-3 bg-gray-50 border-b border-gray-200">
+                            <h4 class="text-sm font-semibold text-gray-700">Identity</h4>
+                        </div>
+                        <dl class="divide-y divide-gray-100">
+                            <div class="grid grid-cols-3 gap-4 px-5 py-2.5"><dt class="text-sm text-gray-500">Aadhaar</dt><dd class="text-sm text-gray-900 col-span-2 font-mono">{{ member.aadhar_no|default:"—" }}</dd></div>
+                            <div class="grid grid-cols-3 gap-4 px-5 py-2.5"><dt class="text-sm text-gray-500">PAN</dt><dd class="text-sm text-gray-900 col-span-2 font-mono">{{ member.pan_no|default:"—" }}</dd></div>
+                            <div class="grid grid-cols-3 gap-4 px-5 py-2.5"><dt class="text-sm text-gray-500">Voter ID</dt><dd class="text-sm text-gray-900 col-span-2 font-mono">{{ member.voter_id|default:"—" }}</dd></div>
+                            <div class="grid grid-cols-3 gap-4 px-5 py-2.5"><dt class="text-sm text-gray-500">Driving Licence</dt><dd class="text-sm text-gray-900 col-span-2 font-mono">{{ member.driving_licence_no|default:"—" }}</dd></div>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-6 bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+                <h4 class="text-sm font-semibold text-gray-700 mb-3">Member Type</h4>
+                <div class="flex flex-wrap gap-2">
+                    {% if member.is_director %}<span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">Director</span>{% endif %}
+                    {% if member.is_employee %}<span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">Employee</span>{% endif %}
+                    {% if member.is_senior_citizen %}<span class="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-medium">Senior Citizen</span>{% endif %}
+                    {% if member.is_widow %}<span class="px-3 py-1 bg-pink-100 text-pink-800 rounded-full text-xs font-medium">Widow</span>{% endif %}
+                    {% if member.is_physically_disabled %}<span class="px-3 py-1 bg-teal-100 text-teal-800 rounded-full text-xs font-medium">Physically Disabled</span>{% endif %}
+                    {% if member.is_ex_military %}<span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Ex-Military</span>{% endif %}
+                    {% if member.is_minor %}<span class="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium">Minor</span>{% endif %}
+                    {% if member.is_nominal_member %}<span class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-xs font-medium">Nominal Member</span>{% endif %}
+                    {% if not member.is_director and not member.is_employee and not member.is_senior_citizen and not member.is_widow and not member.is_physically_disabled and not member.is_ex_military and not member.is_minor and not member.is_nominal_member %}
+                        <span class="text-sm text-gray-400">Regular Member</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Accounts Tab -->
+        <div x-show="tab === 'accounts'" x-cloak class="mt-6 space-y-4">
+            {% if savings %}
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+                <h4 class="text-sm font-semibold text-gray-700 mb-3">Savings Accounts</h4>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm">
+                        <thead><tr class="text-left text-gray-500 border-b"><th class="pb-2 pr-4">Account No</th><th class="pb-2 pr-4">Type</th><th class="pb-2 pr-4 text-right">Balance</th><th class="pb-2">Status</th></tr></thead>
+                        <tbody>{% for sa in savings %}<tr class="border-b border-gray-50"><td class="py-2 pr-4 font-mono text-sm">{{ sa.account_no }}</td><td class="py-2 pr-4">{{ sa.get_account_type_display }}</td><td class="py-2 pr-4 text-right font-medium">{{ sa.current_balance|floatformat:2 }}</td><td class="py-2"><span class="px-2 py-0.5 rounded-full text-xs {% if sa.status == 'active' %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-600{% endif %}">{{ sa.get_status_display }}</span></td></tr>{% endfor %}</tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+            {% if fds %}
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+                <h4 class="text-sm font-semibold text-gray-700 mb-3">Fixed Deposits</h4>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm">
+                        <thead><tr class="text-left text-gray-500 border-b"><th class="pb-2 pr-4">FD No</th><th class="pb-2 pr-4 text-right">Amount</th><th class="pb-2 pr-4">Rate</th><th class="pb-2">Maturity</th></tr></thead>
+                        <tbody>{% for fd in fds %}<tr class="border-b border-gray-50"><td class="py-2 pr-4 font-mono text-sm">{{ fd.fd_no }}</td><td class="py-2 pr-4 text-right font-medium">{{ fd.amount|floatformat:2 }}</td><td class="py-2 pr-4">{{ fd.interest_rate }}%</td><td class="py-2">{{ fd.maturity_date|date:"d M Y" }}</td></tr>{% endfor %}</tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+            {% if loans %}
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+                <h4 class="text-sm font-semibold text-gray-700 mb-3">Loan Accounts</h4>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm">
+                        <thead><tr class="text-left text-gray-500 border-b"><th class="pb-2 pr-4">Loan No</th><th class="pb-2 pr-4">Product</th><th class="pb-2 pr-4 text-right">Outstanding</th><th class="pb-2">Status</th></tr></thead>
+                        <tbody>{% for la in loans %}<tr class="border-b border-gray-50"><td class="py-2 pr-4 font-mono text-sm">{{ la.loan_no }}</td><td class="py-2 pr-4">{{ la.loan_product.name }}</td><td class="py-2 pr-4 text-right font-medium">{{ la.outstanding_principal|floatformat:2 }}</td><td class="py-2"><span class="px-2 py-0.5 rounded-full text-xs {% if la.status == 'disbursed' %}bg-blue-100 text-blue-800{% elif la.status == 'closed' %}bg-gray-100 text-gray-600{% else %}bg-yellow-100 text-yellow-800{% endif %}">{{ la.get_status_display }}</span></td></tr>{% endfor %}</tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+            {% if shares %}
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+                <h4 class="text-sm font-semibold text-gray-700 mb-3">Share Holdings</h4>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm">
+                        <thead><tr class="text-left text-gray-500 border-b"><th class="pb-2 pr-4">Certificate No</th><th class="pb-2 pr-4 text-right">Shares</th><th class="pb-2 pr-4 text-right">Amount</th><th class="pb-2">Issue Date</th></tr></thead>
+                        <tbody>{% for sh in shares %}<tr class="border-b border-gray-50"><td class="py-2 pr-4 font-mono text-sm">{{ sh.certificate_no }}</td><td class="py-2 pr-4 text-right">{{ sh.no_of_shares }}</td><td class="py-2 pr-4 text-right font-medium">{{ sh.total_amount|floatformat:2 }}</td><td class="py-2">{{ sh.issue_date|date:"d M Y" }}</td></tr>{% endfor %}</tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+            {% if not savings and not fds and not loans and not shares %}
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+                <p class="text-gray-400 text-sm">No accounts found for this member.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Nominees Tab -->
+        <div x-show="tab === 'nominees'" x-cloak class="mt-6">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+                <h4 class="text-sm font-semibold text-gray-700 mb-4">Nominees</h4>
+                {% if nominees %}
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm">
+                        <thead><tr class="text-left text-gray-500 border-b"><th class="pb-2 pr-4">Name</th><th class="pb-2 pr-4">Relation</th><th class="pb-2 pr-4 text-right">Share %</th></tr></thead>
+                        <tbody>{% for n in nominees %}<tr class="border-b border-gray-50"><td class="py-2 pr-4 font-medium">{{ n.name }}</td><td class="py-2 pr-4">{{ n.relation }}</td><td class="py-2 pr-4 text-right">{{ n.share_percentage }}%</td></tr>{% endfor %}</tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-gray-400 text-sm text-center py-4">No nominees added.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Documents Tab -->
+        <div x-show="tab === 'documents'" x-cloak class="mt-6 space-y-4">
+            <!-- Upload Form -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5 no-print">
+                <h4 class="text-sm font-semibold text-gray-700 mb-3">Upload Document</h4>
+                <form method="post" action="{% url 'members:upload_document' pk=member.pk %}" enctype="multipart/form-data" class="flex flex-wrap items-end gap-3">
+                    {% csrf_token %}
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Document Type</label>
+                        <select name="document_type" required class="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500">
+                            <option value="aadhar">Aadhaar Card</option>
+                            <option value="pan">PAN Card</option>
+                            <option value="photo">Photograph</option>
+                            <option value="signature">Signature</option>
+                            <option value="address_proof">Address Proof</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">File</label>
+                        <input type="file" name="file" required class="text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border file:border-gray-300 file:text-sm file:bg-white file:text-gray-700 hover:file:bg-gray-50">
+                    </div>
+                    <button type="submit" class="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">Upload</button>
+                </form>
+            </div>
+
+            <!-- Document List -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+                <h4 class="text-sm font-semibold text-gray-700 mb-4">Uploaded Documents</h4>
+                {% if documents %}
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {% for doc in documents %}
+                    <a href="{{ doc.file.url }}" target="_blank" class="border border-gray-200 rounded-lg p-3 flex items-center gap-3 hover:bg-gray-50 transition-colors">
+                        <div class="h-10 w-10 rounded bg-gray-100 flex items-center justify-center flex-shrink-0">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-medium text-gray-900 truncate">{{ doc.get_document_type_display }}</p>
+                            <p class="text-xs text-gray-500">{{ doc.uploaded_at|date:"d M Y" }}</p>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-gray-400 text-sm text-center py-4">No documents uploaded. Use the form above to upload Aadhaar, PAN card, signature, and other KYC documents.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

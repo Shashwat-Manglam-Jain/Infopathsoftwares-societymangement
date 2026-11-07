@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} — InfoSociety{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+    <div>
+        <h2 class="text-xl font-bold text-gray-900">{{ title }}</h2>
+        <p class="text-sm text-gray-500 mt-1">Define GL account head properties for trial balance, P&L and balance sheet.</p>
+    </div>
+
+    {% if form.errors %}
+    <div class="rounded-lg bg-red-50 border border-red-200 p-4">
+        <h3 class="text-sm font-medium text-red-800">Please correct the errors below</h3>
+        <ul class="mt-1 text-sm text-red-700 list-disc list-inside">
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}<li>{{ field|title }}: {{ error }}</li>{% endfor %}
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="post" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-5">
+        {% csrf_token %}
+
+        <!-- Basic -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Head Code <span class="text-red-500">*</span></label>
+                {{ form.code }}
+                <p class="text-xs text-gray-500 mt-1">Unique identifier (e.g. 003). First 3 digits become part of account numbers under this head.</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Head Name <span class="text-red-500">*</span></label>
+                {{ form.name }}
+                <p class="text-xs text-gray-500 mt-1">Display name shown in Trial Balance, Profit &amp; Loss, and Balance Sheet reports.</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Account Group <span class="text-red-500">*</span></label>
+                {{ form.account_group }}
+                <p class="text-xs text-gray-500 mt-1">Determines which report section this head appears in (Asset, Liability, Income, Expense, or Equity).</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Parent Head</label>
+                {{ form.parent }}
+                <p class="text-xs text-gray-500 mt-1">Groups related heads under a parent for hierarchy display.</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Related Table Name <span class="text-red-500">*</span></label>
+                {{ form.related_table_name }}
+                <p class="text-xs text-gray-500 mt-1"><strong>Critical:</strong> Determines which module handles accounts — Saving = Savings, Fixed = FD, Loan = Loans, Client = Pigmmy, etc.</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Report Position</label>
+                {{ form.report_position }}
+                <p class="text-xs text-gray-500 mt-1">Where this head's balance appears: Balance Sheet, Profit &amp; Loss, Trial Balance only, or None.</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Interest Income/Expense Head</label>
+                {{ form.interest_code }}
+                <p class="text-xs text-gray-500 mt-1">When interest is calculated on accounts under this head, the interest amount posts to this linked head.</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Display Order</label>
+                {{ form.display_order }}
+                <p class="text-xs text-gray-500 mt-1">Controls sort order in the Chart of Accounts list and reports.</p>
+            </div>
+        </div>
+
+        <!-- Flags -->
+        <div class="border-t pt-4">
+            <h4 class="text-sm font-semibold text-gray-700 mb-3">Behavior Flags</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <label class="flex items-start gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                    <div class="pt-0.5">{{ form.interest_affected }}</div>
+                    <div>
+                        <span class="text-sm text-gray-700 font-medium">Interest Affected</span>
+                        <p class="text-xs text-gray-500">Interest calculation affects this head's GL balance.</p>
+                    </div>
+                </label>
+                <label class="flex items-start gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                    <div class="pt-0.5">{{ form.overdue_affected }}</div>
+                    <div>
+                        <span class="text-sm text-gray-700 font-medium">Overdue Affected</span>
+                        <p class="text-xs text-gray-500">NPA/overdue calculation affects this head's balance.</p>
+                    </div>
+                </label>
+                <label class="flex items-start gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                    <div class="pt-0.5">{{ form.interest_given }}</div>
+                    <div>
+                        <span class="text-sm text-gray-700 font-medium">Interest Given</span>
+                        <p class="text-xs text-gray-500">Interest is credited/debited to individual accounts under this head.</p>
+                    </div>
+                </label>
+                <label class="flex items-start gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                    <div class="pt-0.5">{{ form.allow_transactions }}</div>
+                    <div>
+                        <span class="text-sm text-gray-700 font-medium">Allow Transactions</span>
+                        <p class="text-xs text-gray-500">Enable receipt/payment transactions. Disable for display-only group heads.</p>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-4 border-t">
+            <a href="{% url 'accounting:heads' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
+            <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">Save</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

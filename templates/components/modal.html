@@ -1,0 +1,43 @@
+<!-- Reusable HTMX modal. Trigger with hx-target="#modal-container" hx-swap="innerHTML" -->
+<div id="modal-backdrop" class="fixed inset-0 z-50 overflow-y-auto" x-data="{ show: true }"
+     x-show="show" x-transition:enter="ease-out duration-200" x-transition:leave="ease-in duration-150">
+
+    <!-- Overlay -->
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+         @click="show = false; setTimeout(() => document.getElementById('modal-container').innerHTML = '', 200)"></div>
+
+    <!-- Modal panel -->
+    <div class="flex min-h-full items-center justify-center p-4">
+        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-lg transform transition-all"
+             x-show="show" x-transition>
+
+            <!-- Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">
+                    {% block modal_title %}Modal Title{% endblock %}
+                </h3>
+                <button @click="show = false; setTimeout(() => document.getElementById('modal-container').innerHTML = '', 200)"
+                        class="text-gray-400 hover:text-gray-600">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="px-6 py-4">
+                {% block modal_body %}{% endblock %}
+            </div>
+
+            <!-- Footer -->
+            <div class="flex items-center justify-end gap-3 px-6 py-4 bg-gray-50 rounded-b-xl">
+                {% block modal_footer %}
+                <button @click="show = false; setTimeout(() => document.getElementById('modal-container').innerHTML = '', 200)"
+                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                    Cancel
+                </button>
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+</div>

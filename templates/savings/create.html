@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Open {{ create_title|default:"Account" }} — InfoSociety{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+
+    <div>
+        <h2 class="text-xl font-bold text-gray-900">Open {{ create_title|default:"Account" }}</h2>
+        <p class="text-sm text-gray-500 mt-1">Create a new savings, current, or security deposit account for a member.</p>
+    </div>
+
+    {% if form.errors %}
+    <div class="rounded-lg bg-red-50 border border-red-200 p-4">
+        <div class="flex">
+            <svg class="h-5 w-5 text-red-400 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-red-800">Please correct the errors below</h3>
+                <ul class="mt-1 text-sm text-red-700 list-disc list-inside">
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}<li>{{ field|title }}: {{ error }}</li>{% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 class="text-base font-semibold text-gray-900 mb-4">Account Details</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Member <span class="text-red-500">*</span></label>
+                    {{ form.member }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Branch <span class="text-red-500">*</span></label>
+                    {{ form.branch }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Account Type <span class="text-red-500">*</span></label>
+                    {{ form.account_type }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Interest Rate (%)</label>
+                    {{ form.interest_rate }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Minimum Balance</label>
+                    {{ form.minimum_balance }}
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3">
+            <a href="{% url 'savings:list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
+            <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">Open Account</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Society Created — InfoSociety | InfopathSolutions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<!-- Navbar -->
+<nav class="bg-white shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+            <a href="/" class="flex items-center space-x-2">
+                <img src="/static/img/logo.png" alt="InfoSociety" class="h-10">
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="max-w-2xl mx-auto px-4 py-12 sm:py-20">
+    <!-- Success Card -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 sm:p-12 text-center">
+        <!-- Checkmark -->
+        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+            </svg>
+        </div>
+
+        <h1 class="text-3xl font-bold text-gray-900">Your Society is Ready!</h1>
+        <p class="mt-3 text-lg text-gray-600">
+            <strong>{{ society_name }}</strong> has been set up successfully.
+        </p>
+
+        <!-- Credentials -->
+        <div class="mt-8 bg-indigo-50 rounded-xl p-6 text-left">
+            <h3 class="font-semibold text-indigo-900 mb-4">Your Login Details</h3>
+            <div class="space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center">
+                    <span class="text-sm text-indigo-600 font-medium w-32">Login URL:</span>
+                    <code class="bg-white px-3 py-1.5 rounded border border-indigo-200 text-sm text-gray-800 break-all">
+                        http://{{ domain }}{{ port }}
+                    </code>
+                </div>
+                <div class="flex flex-col sm:flex-row sm:items-center">
+                    <span class="text-sm text-indigo-600 font-medium w-32">Username:</span>
+                    <code class="bg-white px-3 py-1.5 rounded border border-indigo-200 text-sm text-gray-800">
+                        {{ username }}
+                    </code>
+                </div>
+                <div class="flex flex-col sm:flex-row sm:items-center">
+                    <span class="text-sm text-indigo-600 font-medium w-32">Password:</span>
+                    <span class="text-sm text-gray-600">The password you chose during signup</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Button -->
+        <a href="http://{{ domain }}{{ port }}/accounts/login/"
+           class="mt-8 inline-block bg-indigo-600 text-white px-10 py-4 rounded-xl text-lg font-bold hover:bg-indigo-700 transition shadow-lg">
+            Login Now
+        </a>
+    </div>
+
+    <!-- What's Next -->
+    <div class="mt-8 bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+        <h2 class="text-xl font-bold text-gray-900 mb-6">What to Do Next</h2>
+        <div class="space-y-5">
+            <div class="flex items-start">
+                <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span class="text-indigo-700 font-bold text-sm">1</span>
+                </div>
+                <div class="ml-4">
+                    <h3 class="font-semibold text-gray-900">Add Your Branches</h3>
+                    <p class="text-sm text-gray-600">Head office is created automatically. Add sub-branches if your society has them.</p>
+                </div>
+            </div>
+            <div class="flex items-start">
+                <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span class="text-indigo-700 font-bold text-sm">2</span>
+                </div>
+                <div class="ml-4">
+                    <h3 class="font-semibold text-gray-900">Add Members</h3>
+                    <p class="text-sm text-gray-600">Add members one-by-one or import from Excel. Upload KYC documents and photos.</p>
+                </div>
+            </div>
+            <div class="flex items-start">
+                <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span class="text-indigo-700 font-bold text-sm">3</span>
+                </div>
+                <div class="ml-4">
+                    <h3 class="font-semibold text-gray-900">Open Savings Accounts</h3>
+                    <p class="text-sm text-gray-600">Create savings accounts for your members. Accept deposits and start operations.</p>
+                </div>
+            </div>
+            <div class="flex items-start">
+                <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span class="text-indigo-700 font-bold text-sm">4</span>
+                </div>
+                <div class="ml-4">
+                    <h3 class="font-semibold text-gray-900">Start Banking Operations</h3>
+                    <p class="text-sm text-gray-600">Disburse loans, collect EMIs, open FDs/RDs. Run day-end to auto-calculate interest.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help -->
+    <div class="mt-6 text-center text-sm text-gray-500">
+        Need help getting started?
+        <a href="mailto:support@infopathsolutions.com" class="text-indigo-600 hover:underline">support@infopathsolutions.com</a>
+        or call <strong>+91 98765 43210</strong>
+    </div>
+</div>
+
+</body>
+</html>

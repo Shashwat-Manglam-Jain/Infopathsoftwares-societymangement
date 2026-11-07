@@ -1,0 +1,40 @@
+{% if user.can_access_all_branches and available_branches %}
+<div x-data="{ open: false }" class="relative">
+    <button @click="open = !open"
+            class="flex items-center space-x-2 px-3 py-1.5 bg-primary-800 text-primary-200 rounded-lg text-sm font-medium hover:bg-primary-700 hover:text-white border border-primary-700">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+        </svg>
+        <span>{{ current_branch.branch_name|default:"Select Branch" }}</span>
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+    </button>
+
+    <div x-show="open" @click.away="open = false" x-cloak
+         class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+        <p class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Switch Branch</p>
+        {% for branch in available_branches %}
+        <a href="{% url 'branches:switch' branch.id %}"
+           class="block px-4 py-2 text-sm hover:bg-gray-50
+                  {% if branch.id == current_branch.id %}text-primary-700 bg-primary-50 font-medium{% else %}text-gray-700{% endif %}">
+            <span class="flex items-center justify-between">
+                {{ branch.branch_name }}
+                {% if branch.is_head_office %}
+                <span class="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">HO</span>
+                {% endif %}
+            </span>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+<div class="flex items-center space-x-2 px-3 py-1.5 bg-primary-800 text-primary-200 rounded-lg text-sm font-medium border border-primary-700">
+    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+    </svg>
+    <span>{{ current_branch.branch_name|default:"Head Office" }}</span>
+</div>
+{% endif %}

@@ -1,0 +1,19 @@
+[Unit]
+Description=Celery Beat Scheduler for Society Software
+After=network.target postgresql.service redis.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/app
+Environment="DJANGO_SETTINGS_MODULE=config.settings.production"
+ExecStart=/app/venv/bin/celery -A config beat \
+    --loglevel=info \
+    --schedule=/var/run/celery/celerybeat-schedule \
+    --pidfile=/var/run/celery/beat.pid
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

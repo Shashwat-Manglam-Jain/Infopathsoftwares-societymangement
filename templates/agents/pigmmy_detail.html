@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Pigmmy {{ account.account_no }} — InfoSociety{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+            <h2 class="text-xl font-bold text-gray-900">{{ account.member.name }}</h2>
+            <p class="text-sm text-gray-500 mt-1">Pigmmy A/C: <span class="font-mono">{{ account.account_no }}</span> &middot; Agent: {{ account.agent.agent_code }}</p>
+        </div>
+        <a href="{% url 'agents:pigmmy_list' %}" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">Back</a>
+    </div>
+
+    <!-- Account Summary -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <p class="text-xs text-gray-500">Installment</p>
+            <p class="text-lg font-bold text-gray-900 mt-1">{{ account.installment_amount|floatformat:2 }}</p>
+            <p class="text-xs text-gray-400">{{ account.get_deposit_type_display }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <p class="text-xs text-gray-500">Current Balance</p>
+            <p class="text-lg font-bold text-green-700 mt-1">{{ account.current_balance|floatformat:2 }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <p class="text-xs text-gray-500">Installments</p>
+            <p class="text-lg font-bold text-gray-900 mt-1">{{ account.paid_installments }} / {{ account.total_installments }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <p class="text-xs text-gray-500">Maturity</p>
+            <p class="text-lg font-bold text-gray-900 mt-1">{{ account.maturity_amount|floatformat:2 }}</p>
+            <p class="text-xs text-gray-400">{{ account.maturity_date }}</p>
+        </div>
+    </div>
+
+    <!-- Account Info -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div><span class="text-gray-500">Opening Date:</span> <span class="font-medium">{{ account.opening_date }}</span></div>
+            <div><span class="text-gray-500">Interest Rate:</span> <span class="font-medium">{{ account.interest_rate }}%</span></div>
+            <div><span class="text-gray-500">Period:</span> <span class="font-medium">{{ account.deposit_period_months }} months</span></div>
+            <div><span class="text-gray-500">Status:</span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if account.status == 'active' %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-600{% endif %}">{{ account.get_status_display }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction History -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-200">
+            <h3 class="text-sm font-semibold text-gray-700">Transaction History</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Date</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Inst #</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Amount</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Balance</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Narration</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for txn in transactions %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-sm text-gray-900">{{ txn.txn_date }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-600">{{ txn.installment_no|default:"—" }}</td>
+                        <td class="px-4 py-3 text-sm text-right font-medium text-green-700">+{{ txn.amount|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-right font-medium text-gray-900">{{ txn.running_balance|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">{{ txn.narration|default:"—" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="px-4 py-6 text-center text-sm text-gray-400">No transactions yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

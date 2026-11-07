@@ -1,0 +1,130 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}InfoSociety — Society Banking Software{% endblock %}</title>
+
+    <!-- Tailwind CSS (CDN for dev — replace with compiled in prod) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe',
+                            300: '#a5b4fc', 400: '#818cf8', 500: '#6366f1',
+                            600: '#4f46e5', 700: '#4338ca', 800: '#3730a3',
+                            900: '#312e81', 950: '#1e1b4b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@2.0.3"></script>
+    <!-- Alpine.js + Collapse plugin -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.14.3/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+
+    <style>
+        [x-cloak] { display: none !important; }
+        .htmx-indicator { opacity: 0; transition: opacity 200ms ease-in; }
+        .htmx-request .htmx-indicator { opacity: 1; }
+        /* Hide desktop sidebar below lg; above lg Alpine x-show controls it */
+        @media (max-width: 1023px) {
+            .desktop-sidebar { display: none !important; }
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body class="h-full" x-data="{
+    sidebarOpen: false,
+    desktopSidebar: localStorage.getItem('desktopSidebar') !== 'false',
+    toggleSidebar() { this.desktopSidebar = !this.desktopSidebar; localStorage.setItem('desktopSidebar', this.desktopSidebar); }
+}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+
+    {% if user.is_authenticated %}
+    <div class="min-h-full">
+
+        <!-- Mobile sidebar overlay -->
+        <div x-show="sidebarOpen" x-cloak class="fixed inset-0 z-40 lg:hidden">
+            <div class="fixed inset-0 bg-gray-600 bg-opacity-75" @click="sidebarOpen = false"></div>
+            <div class="fixed inset-y-0 left-0 flex w-64 flex-col bg-primary-900">
+                <div class="flex items-center justify-between h-16 px-4">
+                    <div class="flex items-center space-x-2 min-w-0">
+                        <img src="{% static 'img/logo.png' %}" alt="InfoSociety" class="h-8 flex-shrink-0">
+                        <span class="text-white text-xs font-semibold truncate">{{ request.tenant.name|default:"InfoSociety" }}</span>
+                    </div>
+                    <button @click="sidebarOpen = false" class="text-primary-200 hover:text-white flex-shrink-0">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                {% include "includes/sidebar.html" %}
+            </div>
+        </div>
+
+        <!-- Desktop sidebar (hidden below lg via CSS; Alpine toggles visibility on lg+) -->
+        <div x-cloak
+             :class="desktopSidebar ? 'flex' : 'hidden'"
+             class="desktop-sidebar fixed inset-y-0 left-0 w-64 flex-col z-30 transition-transform duration-200">
+            <div class="flex min-h-0 flex-1 flex-col bg-primary-900">
+                <div class="flex h-16 items-center justify-between px-4 bg-primary-950">
+                    <div class="flex items-center space-x-2 min-w-0">
+                        <img src="{% static 'img/logo.png' %}" alt="InfoSociety" class="h-9 flex-shrink-0">
+                        <span class="text-white text-sm font-semibold truncate">{{ request.tenant.name|default:"InfoSociety" }}</span>
+                    </div>
+                    <button @click="toggleSidebar()" class="text-primary-300 hover:text-white flex-shrink-0 ml-2" title="Hide sidebar">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
+                    </button>
+                </div>
+                {% include "includes/sidebar.html" %}
+            </div>
+        </div>
+
+        <!-- Main content area -->
+        <div :class="desktopSidebar ? 'lg:pl-64' : ''" class="flex flex-col min-h-screen transition-all duration-200">
+
+            <!-- Topbar -->
+            {% include "includes/topbar.html" %}
+
+            <!-- Horizontal nav bar (visible only on lg+ when sidebar is hidden) -->
+            <template x-if="!desktopSidebar">
+                <div class="hidden lg:block bg-primary-900 border-b border-primary-800 shadow-sm z-40 relative">
+                    {% include "includes/navbar_horizontal.html" %}
+                </div>
+            </template>
+
+            <!-- Alerts -->
+            {% include "components/alerts.html" %}
+
+            <!-- Page content -->
+            <main class="flex-1 p-6">
+                {% block content %}{% endblock %}
+            </main>
+
+            <!-- Footer -->
+            <footer class="border-t border-gray-200 bg-white px-6 py-3">
+                <p class="text-xs text-gray-400 text-center">InfoSociety by InfopathSolutions &copy; {% now "Y" %} &mdash; To innovate your business process</p>
+            </footer>
+        </div>
+    </div>
+
+    {% else %}
+        <!-- Unauthenticated pages (login, signup) -->
+        {% include "components/alerts.html" %}
+        {% block unauthenticated_content %}{% endblock %}
+    {% endif %}
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

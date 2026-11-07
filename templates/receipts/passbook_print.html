@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Passbook - {{ account.account_no }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Courier New', monospace; font-size: 11px; color: #000; }
+
+        .no-print { text-align: center; padding: 10px; background: #f0f0f0; }
+        .no-print button { padding: 8px 24px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+        .print-btn { background: #1a365d; color: white; }
+        .close-btn { background: #e2e8f0; color: #333; margin-left: 8px; }
+
+        .passbook-page { width: 180mm; margin: 0 auto; padding: 8mm 6mm; }
+
+        .passbook-header { text-align: center; margin-bottom: 8px; border-bottom: 1px solid #000; padding-bottom: 6px; }
+        .passbook-header .society { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .passbook-header .branch { font-size: 10px; color: #555; }
+
+        .account-info { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 11px; }
+        .account-info .label { color: #555; }
+        .account-info .val { font-weight: 700; }
+
+        .txn-table { width: 100%; border-collapse: collapse; }
+        .txn-table th { background: #eee; font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px;
+                        padding: 4px 6px; text-align: left; border-bottom: 2px solid #333; }
+        .txn-table th:nth-child(3), .txn-table th:nth-child(4), .txn-table th:nth-child(5) { text-align: right; }
+        .txn-table td { padding: 3px 6px; border-bottom: 1px dotted #ccc; font-size: 10px; }
+        .txn-table td:nth-child(3), .txn-table td:nth-child(4), .txn-table td:nth-child(5) { text-align: right; font-family: 'Courier New', monospace; }
+        .txn-table tr:nth-child(even) { background: #fafafa; }
+
+        .page-break { page-break-after: always; }
+        .printed-on { text-align: right; font-size: 9px; color: #888; margin-top: 6px; }
+
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .no-print { display: none !important; }
+            .passbook-page { padding: 5mm 4mm; width: 100%; }
+            @page { margin: 5mm; size: A5 landscape; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <button class="print-btn" onclick="window.print()">Print Passbook</button>
+        <button class="close-btn" onclick="window.close()">Close</button>
+        <p style="margin-top:6px; font-size:12px; color:#666; font-family:sans-serif;">
+            Showing {{ transactions|length }} transaction{{ transactions|length|pluralize }}
+            {% if from_date %} from {{ from_date|date:"d-M-Y" }}{% endif %}
+            {% if to_date %} to {{ to_date|date:"d-M-Y" }}{% endif %}
+        </p>
+    </div>
+
+    {% for page in pages %}
+    <div class="passbook-page {% if not forloop.last %}page-break{% endif %}">
+
+        {% if forloop.first %}
+        <div class="passbook-header">
+            <div class="society">{{ account.branch.branch_name|default:"Society Name" }}</div>
+            <div class="branch">{{ account.branch.address|default:"" }}</div>
+        </div>
+
+        <div class="account-info">
+            <div>
+                <span class="label">Name:</span> <span class="val">{{ account.member.name }}</span>
+            </div>
+            <div>
+                <span class="label">Member No:</span> <span class="val">{{ account.member.member_no }}</span>
+            </div>
+            <div>
+                <span class="label">A/c No:</span> <span class="val">{{ account.account_no }}</span>
+            </div>
+        </div>
+        {% endif %}
+
+        <table class="txn-table">
+            <thead>
+                <tr>
+                    <th style="width:15%">Date</th>
+                    <th style="width:35%">Particulars</th>
+                    <th style="width:16%">Withdrawal</th>
+                    <th style="width:16%">Deposit</th>
+                    <th style="width:18%">Balance</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for txn in page %}
+                <tr>
+                    <td>{{ txn.txn_date|date:"d-m-Y" }}</td>
+                    <td>{{ txn.narration|default:txn.get_txn_type_display|truncatechars:35 }}</td>
+                    <td>{% if txn.txn_type == 'withdrawal' or txn.txn_type == 'charge' %}{{ txn.amount|floatformat:2 }}{% endif %}</td>
+                    <td>{% if txn.txn_type == 'deposit' or txn.txn_type == 'interest_credit' %}{{ txn.amount|floatformat:2 }}{% endif %}</td>
+                    <td>{{ txn.running_balance|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="printed-on">
+            Page {{ forloop.counter }} of {{ pages|length }}
+            &nbsp;|&nbsp; Printed: {% now "d-M-Y H:i" %}
+        </div>
+    </div>
+    {% endfor %}
+</body>
+</html>
