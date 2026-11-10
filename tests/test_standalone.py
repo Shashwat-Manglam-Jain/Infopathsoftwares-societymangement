@@ -2,18 +2,21 @@
 
 Tests pure business logic functions — no database required.
 """
+
 import unittest
 from decimal import Decimal
 
 
 class AmountToWordsTests(unittest.TestCase):
-
     def setUp(self):
-        import django
         import os
+
+        import django
+
         os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.development')
         django.setup()
         from apps.core.account_utils import amount_to_words
+
         self.amount_to_words = amount_to_words
 
     def test_zero(self):
@@ -67,13 +70,15 @@ class AmountToWordsTests(unittest.TestCase):
 
 
 class IndianCurrencyFilterTests(unittest.TestCase):
-
     def setUp(self):
-        import django
         import os
+
+        import django
+
         os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.development')
         django.setup()
         from apps.dashboard.templatetags.currency_tags import indian_currency, short_currency
+
         self.indian_currency = indian_currency
         self.short_currency = short_currency
 
@@ -125,11 +130,14 @@ class EMICalculationTests(unittest.TestCase):
     """Test SBI reducing balance EMI formula."""
 
     def setUp(self):
-        import django
         import os
+
+        import django
+
         os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.development')
         django.setup()
         from apps.loans.services import calculate_emi
+
         self.calculate_emi = calculate_emi
 
     def test_basic_emi(self):
@@ -162,21 +170,20 @@ class EMICalculationTests(unittest.TestCase):
 
 
 class FDMaturityCalculationTests(unittest.TestCase):
-
     def setUp(self):
-        import django
         import os
+
+        import django
+
         os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.development')
         django.setup()
         from apps.deposits.services import calculate_fd_maturity
+
         self.calculate_fd_maturity = calculate_fd_maturity
 
     def test_cumulative_interest(self):
         maturity = self.calculate_fd_maturity(
-            principal=Decimal('100000'),
-            annual_rate=Decimal('8.00'),
-            tenure_days=365,
-            compounding='cumulative'
+            principal=Decimal('100000'), annual_rate=Decimal('8.00'), tenure_days=365, compounding='cumulative'
         )
         self.assertIsInstance(maturity, Decimal)
         self.assertGreater(maturity, Decimal('100000'))
@@ -185,25 +192,16 @@ class FDMaturityCalculationTests(unittest.TestCase):
 
     def test_quarterly_compounding_higher_than_cumulative(self):
         quarterly = self.calculate_fd_maturity(
-            principal=Decimal('100000'),
-            annual_rate=Decimal('8.00'),
-            tenure_days=365,
-            compounding='quarterly'
+            principal=Decimal('100000'), annual_rate=Decimal('8.00'), tenure_days=365, compounding='quarterly'
         )
         cumulative = self.calculate_fd_maturity(
-            principal=Decimal('100000'),
-            annual_rate=Decimal('8.00'),
-            tenure_days=365,
-            compounding='cumulative'
+            principal=Decimal('100000'), annual_rate=Decimal('8.00'), tenure_days=365, compounding='cumulative'
         )
         self.assertGreater(quarterly, cumulative)
 
     def test_interest_earned_cumulative(self):
         maturity = self.calculate_fd_maturity(
-            principal=Decimal('100000'),
-            annual_rate=Decimal('8.00'),
-            tenure_days=365,
-            compounding='cumulative'
+            principal=Decimal('100000'), annual_rate=Decimal('8.00'), tenure_days=365, compounding='cumulative'
         )
         interest = maturity - Decimal('100000')
         self.assertGreater(interest, 0)

@@ -1,32 +1,70 @@
 {% extends "base.html" %}
 {% block title %}Shares — {{ holding.member.name }} — InfoSociety{% endblock %}
+{% block page_title %}Share Details{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto">
-    <div class="flex items-center justify-between mb-6">
+<div class="max-w-5xl mx-auto space-y-6">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">{{ holding.member.name }}</h1>
-            <p class="text-sm text-gray-500">Certificate: {{ holding.certificate_no }} — {{ holding.member.member_no }}</p>
+            <h2 class="text-xl font-bold text-gray-900">Share Holding — {{ holding.certificate_no }}</h2>
+            <p class="text-sm text-gray-500 mt-1">
+                <a href="{% url 'members:detail' holding.member.pk %}" class="text-primary-600 hover:underline">{{ holding.member.name }}</a>
+                &middot; {{ holding.member.member_no }} &middot; {{ holding.branch.branch_name }}
+                {% if holding.member.phone %} &middot; {{ holding.member.phone }}{% endif %}
+            </p>
         </div>
-        <a href="{% url 'shares:list' %}" class="text-gray-500 hover:text-gray-700 text-sm">&larr; Back</a>
+        <div class="flex items-center gap-2">
+            {% if holding.status == 'active' and request.user.is_manager %}
+            <a href="{% url 'shares:transfer' %}" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">Transfer</a>
+            <a href="{% url 'shares:surrender' %}" class="inline-flex items-center px-3 py-2 border border-red-300 text-sm font-medium rounded-lg text-red-700 bg-white hover:bg-red-50">Surrender</a>
+            {% endif %}
+            <a href="{% url 'shares:list' %}" class="text-gray-500 hover:text-gray-700 text-sm">&larr; Back</a>
+        </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <!-- Stat Cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
             <p class="text-xs text-gray-500 uppercase">Shares Held</p>
             <p class="text-3xl font-bold text-gray-900 mt-1">{{ holding.share_count }}</p>
         </div>
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
             <p class="text-xs text-gray-500 uppercase">Total Value</p>
-            <p class="text-3xl font-bold text-green-600 mt-1">&#8377;{{ holding.total_amount|floatformat:2 }}</p>
+            <p class="text-2xl font-bold text-green-600 mt-1">&#8377;{{ holding.total_amount|floatformat:2 }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <p class="text-xs text-gray-500 uppercase">Face Value</p>
+            <p class="text-xl font-bold text-gray-700 mt-1">&#8377;{% if config %}{{ config.face_value_per_share|floatformat:2 }}{% else %}{{ holding.face_value_per_share|floatformat:2 }}{% endif %}</p>
         </div>
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
             <p class="text-xs text-gray-500 uppercase">Purchase Date</p>
             <p class="text-xl font-bold text-gray-700 mt-1">{{ holding.purchase_date|date:"d M Y" }}</p>
         </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <p class="text-xs text-gray-500 uppercase">Status</p>
+            <p class="mt-2">
+                {% if holding.status == 'active' %}
+                <span class="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">Active</span>
+                {% elif holding.status == 'transferred' %}
+                <span class="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700">Transferred</span>
+                {% elif holding.status == 'surrendered' %}
+                <span class="px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700">Surrendered</span>
+                {% endif %}
+            </p>
+        </div>
     </div>
 
-    <!-- Transaction History -->
+    <!-- Meeting Info -->
+    {% if holding.meeting_no or holding.meeting_date %}
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <h4 class="text-sm font-semibold text-gray-700 mb-2">Meeting Details</h4>
+        <p class="text-sm text-gray-600">Meeting No: {{ holding.meeting_no|default:"—" }} &middot; Date: {{ holding.meeting_date|date:"d M Y"|default:"—" }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Share Transactions -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200">
             <h3 class="text-sm font-semibold text-gray-500 uppercase">Share Transactions</h3>
@@ -45,9 +83,15 @@
                 <tbody class="divide-y divide-gray-100">
                     {% for txn in transactions %}
                     <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-3 text-sm text-gray-900">{{ txn.txn_date }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900">{{ txn.txn_date|date:"d M Y" }}</td>
                         <td class="px-4 py-3 text-sm">
-                            <span class="px-2 py-0.5 rounded-full text-xs font-medium {% if txn.txn_type == 'purchase' %}bg-green-100 text-green-700{% elif txn.txn_type == 'surrender' %}bg-red-100 text-red-700{% else %}bg-blue-100 text-blue-700{% endif %}">{{ txn.get_txn_type_display }}</span>
+                            <span class="px-2 py-0.5 rounded-full text-xs font-medium
+                                {% if txn.txn_type == 'purchase' %}bg-green-100 text-green-700
+                                {% elif txn.txn_type == 'surrender' %}bg-red-100 text-red-700
+                                {% elif txn.txn_type == 'dividend' %}bg-yellow-100 text-yellow-700
+                                {% else %}bg-blue-100 text-blue-700{% endif %}">
+                                {{ txn.get_txn_type_display }}
+                            </span>
                         </td>
                         <td class="px-4 py-3 text-sm text-right font-medium">{{ txn.shares_count }}</td>
                         <td class="px-4 py-3 text-sm text-right font-medium">&#8377;{{ txn.amount|floatformat:2 }}</td>
@@ -62,5 +106,29 @@
             </table>
         </div>
     </div>
+
+    <!-- Dividend History -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+        <h4 class="text-sm font-semibold text-gray-700 mb-3">Dividend History</h4>
+        {% if dividends %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead><tr class="text-left text-gray-500 border-b">
+                    <th class="pb-2 pr-4">Date</th>
+                    <th class="pb-2 pr-4 text-right">Amount</th>
+                    <th class="pb-2">Narration</th>
+                </tr></thead>
+                <tbody>{% for d in dividends %}<tr class="border-b border-gray-50">
+                    <td class="py-2 pr-4">{{ d.txn_date|date:"d M Y" }}</td>
+                    <td class="py-2 pr-4 text-right font-medium text-green-700">&#8377;{{ d.amount|floatformat:2 }}</td>
+                    <td class="py-2 text-gray-600">{{ d.narration|default:"—" }}</td>
+                </tr>{% endfor %}</tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-gray-400 text-sm text-center py-4">No dividends distributed yet.</p>
+        {% endif %}
+    </div>
+
 </div>
 {% endblock %}

@@ -29,13 +29,14 @@
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Start</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">Maturity</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     {% for fd in fds %}
                     <tr class="hover:bg-gray-50 transition-colors cursor-pointer" onclick="window.location='{% url 'deposits:fd_detail' pk=fd.pk %}'">
                         <td class="px-4 py-3 text-sm font-mono text-primary-600 font-medium"><a href="{% url 'deposits:fd_detail' pk=fd.pk %}" class="hover:underline">{{ fd.fd_no }}</a></td>
-                        <td class="px-4 py-3 text-sm text-gray-900">{{ fd.member.name }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900">{{ fd.member.name }}<a href="{% url 'members:detail' fd.member.pk %}" class="ml-1 text-gray-300 hover:text-primary-500" title="View Member" onclick="event.stopPropagation()"><svg class="h-3.5 w-3.5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></a></td>
                         <td class="px-4 py-3 text-sm text-right font-medium text-gray-900">{{ fd.deposit_amount|floatformat:2 }}</td>
                         <td class="px-4 py-3 text-sm text-right text-gray-600 hidden md:table-cell">{{ fd.interest_rate }}%</td>
                         <td class="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">{{ fd.start_date|date:"d M Y" }}</td>
@@ -43,15 +44,21 @@
                         <td class="px-4 py-3">
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if fd.status == 'active' %}bg-green-100 text-green-800{% elif fd.status == 'matured' %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-600{% endif %}">{{ fd.get_status_display }}</span>
                         </td>
+                        <td class="px-4 py-3 text-center" onclick="event.stopPropagation()">
+                            <a href="{% url 'deposits:fd_detail' pk=fd.pk %}" class="p-1.5 text-gray-400 hover:text-primary-600 rounded" title="View FD">
+                                <svg class="h-4 w-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            </a>
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="7" class="px-4 py-8 text-center text-sm text-gray-400">No fixed deposits found.</td>
+                        <td colspan="8" class="px-4 py-8 text-center text-sm text-gray-400">No fixed deposits found.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
+    {% include "includes/pagination.html" %}
 </div>
 {% endblock %}

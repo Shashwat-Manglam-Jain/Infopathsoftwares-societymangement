@@ -34,6 +34,29 @@ class FDProduct(models.Model):
         return None
 
 
+class RDProduct(models.Model):
+    name = models.CharField(max_length=100)
+    min_installment = models.DecimalField(max_digits=15, decimal_places=2, default=100)
+    max_installment = models.DecimalField(max_digits=15, decimal_places=2, default=100000)
+    min_tenure_months = models.IntegerField(default=6)
+    max_tenure_months = models.IntegerField(default=120)
+    interest_rates = models.JSONField(default=list, help_text='[{min_months, max_months, rate, senior_rate}]')
+    default_penalty_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    max_defaults_allowed = models.IntegerField(default=3)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+
+    def get_rate_for_tenure(self, tenure_months, is_senior=False):
+        for slab in self.interest_rates:
+            min_m = slab.get('min_months', 0)
+            max_m = slab.get('max_months', 99999)
+            if min_m <= tenure_months <= max_m:
+                return slab.get('senior_rate' if is_senior else 'rate')
+        return None
+
+
 class FixedDeposit(models.Model):
     STATUS_CHOICES = [
         ('active', 'Active'),
@@ -43,8 +66,17 @@ class FixedDeposit(models.Model):
     ]
     member = models.ForeignKey('members.Member', on_delete=models.PROTECT, related_name='fixed_deposits')
     branch = models.ForeignKey('branches.Branch', on_delete=models.PROTECT)
-    fd_product = models.ForeignKey(FDProduct, on_delete=models.PROTECT)
+    fd_product = models.ForeignKey(FDProduct, on_delete=models.SET_NULL, null=True, blank=True)
+    gl_head = models.ForeignKey(
+        'accounting.ChartOfAccounts',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='fixed_deposits',
+    )
     fd_no = models.CharField(max_length=20, unique=True)
+    ledger_number = models.PositiveBigIntegerField(null=True, blank=True)
+    folio_number = models.CharField(max_length=10, blank=True)
     deposit_amount = models.DecimalField(max_digits=15, decimal_places=2)
     interest_rate = models.DecimalField(max_digits=5, decimal_places=2)
     senior_citizen_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0)
@@ -69,9 +101,21 @@ class FixedDeposit(models.Model):
         related_name='fd_transfer_target',
         help_text='Savings account for maturity credit',
     )
+    premature_penalty_percent = models.DecimalField(max_digits=5, decimal_places=2, default=1.0)
     tds_applicable = models.BooleanField(default=False)
     tds_deducted = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     certificate_no = models.CharField(max_length=50, blank=True)
+    meeting_no = models.CharField(max_length=20, blank=True, help_text='Board Meeting Number')
+    meeting_date = models.DateField(null=True, blank=True, help_text='Board Meeting Date')
+    introducer = models.ForeignKey(
+        'members.Member',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='introduced_fds',
+        help_text='Existing member who introduced this account',
+    )
+    sign = models.IntegerField(default=0, help_text='1=debit nature, -1=credit nature, 0=default')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -91,7 +135,17 @@ class RecurringDeposit(models.Model):
     ]
     member = models.ForeignKey('members.Member', on_delete=models.PROTECT, related_name='recurring_deposits')
     branch = models.ForeignKey('branches.Branch', on_delete=models.PROTECT)
+    rd_product = models.ForeignKey(RDProduct, on_delete=models.PROTECT, null=True, blank=True)
+    gl_head = models.ForeignKey(
+        'accounting.ChartOfAccounts',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='recurring_deposits',
+    )
     rd_no = models.CharField(max_length=20, unique=True)
+    ledger_number = models.PositiveBigIntegerField(null=True, blank=True)
+    folio_number = models.CharField(max_length=10, blank=True)
     monthly_installment = models.DecimalField(max_digits=15, decimal_places=2)
     interest_rate = models.DecimalField(max_digits=5, decimal_places=2)
     start_date = models.DateField()
@@ -104,6 +158,17 @@ class RecurringDeposit(models.Model):
     linked_savings_account = models.ForeignKey(
         'savings.SavingsAccount', on_delete=models.SET_NULL, null=True, blank=True
     )
+    meeting_no = models.CharField(max_length=20, blank=True, help_text='Board Meeting Number')
+    meeting_date = models.DateField(null=True, blank=True, help_text='Board Meeting Date')
+    introducer = models.ForeignKey(
+        'members.Member',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='introduced_rds',
+        help_text='Existing member who introduced this account',
+    )
+    sign = models.IntegerField(default=0, help_text='1=debit nature, -1=credit nature, 0=default')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now_add=True)
 

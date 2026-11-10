@@ -1,13 +1,29 @@
 {% load static %}
 <div class="flex-1 flex flex-col overflow-hidden" x-data="{
-    masters: true, accounts: true, agents: true, txn: true, reports: true, admin: true
+    master: false, accounts: false, pigmy: false, txn: false, reports: false, dayend: false,
+    acSavings: false, acLoans: false, acShares: false,
+    rptStatements: false, rptFinancial: false, rptAccounts: false,
+    keys: ['master','accounts','pigmy','txn','reports','dayend','acSavings','acLoans','acShares','rptStatements','rptFinancial','rptAccounts'],
+    toggle(key) {
+        this[key] = !this[key];
+        this._save();
+    },
+    _save() {
+        let s = {};
+        this.keys.forEach(k => s[k] = !!this[k]);
+        localStorage.setItem('sidebar_state', JSON.stringify(s));
+    },
+    init() {
+        let saved = JSON.parse(localStorage.getItem('sidebar_state') || '{}');
+        this.keys.forEach(k => { if (saved[k] !== undefined) this[k] = saved[k]; });
+    }
 }">
 <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
 
     <!-- Dashboard -->
     <a href="{% url 'dashboard:index' %}"
        class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-              {% if request.resolver_match.app_name == 'dashboard' %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
+              {% if request.resolver_match.app_name == 'dashboard' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
         <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
@@ -15,233 +31,354 @@
         Dashboard
     </a>
 
-    <!-- Masters -->
-    <button @click="masters = !masters" class="w-full flex items-center justify-between px-3 py-2 mt-3 text-xs font-semibold text-primary-400 uppercase tracking-wider hover:text-white">
-        <span>Masters</span>
-        <svg class="h-4 w-4 transition-transform" :class="masters && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+    {% if not request.user.is_member_only %}
+    <!-- MASTER -->
+    <button @click="toggle('master')" class="w-full flex items-center justify-between px-3 py-2 mt-3 text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-gray-700">
+        <span>Master</span>
+        <svg class="h-4 w-4 transition-transform" :class="master && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
     </button>
-    <div x-show="masters" x-collapse class="space-y-0.5">
+    <div x-show="master" x-collapse class="space-y-0.5">
+        {% if request.user.is_manager %}
+        <a href="{% url 'branches:list' %}"
+           class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
+                  {% if request.resolver_match.app_name == 'branches' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+            Branches
+        </a>
+        <a href="{% url 'accounts:staff_list' %}"
+           class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
+                  {% if 'staff' in request.path and request.resolver_match.app_name == 'accounts' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg>
+            Staff &amp; Users
+        </a>
+        {% endif %}
         <a href="{% url 'members:list' %}"
            class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if request.resolver_match.app_name == 'members' %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
+                  {% if request.resolver_match.app_name == 'members' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
             <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            Customer Master
+            Members
         </a>
         <a href="{% url 'accounting:heads' %}"
            class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if 'heads' in request.path and request.resolver_match.app_name == 'accounting' %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
+                  {% if 'heads' in request.path and request.resolver_match.app_name == 'accounting' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
             <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
-            Head Master
-        </a>
-        <a href="{% url 'branches:list' %}"
-           class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if request.resolver_match.app_name == 'branches' %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
-            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-            Branch Master
-        </a>
-        <a href="{% url 'deposits:fd_product_list' %}"
-           class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if 'products' in request.path and request.resolver_match.app_name == 'deposits' %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
-            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
-            FD Interest Rates
-        </a>
-        <a href="{% url 'loans:product_list' %}"
-           class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if 'products' in request.path and request.resolver_match.app_name == 'loans' %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
-            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-            Loan Interest Rates
+            Account Heads
         </a>
     </div>
 
-    <!-- Account Opening -->
-    <button @click="accounts = !accounts" class="w-full flex items-center justify-between px-3 py-2 mt-1 text-xs font-semibold text-primary-400 uppercase tracking-wider hover:text-white">
-        <span>Account Opening</span>
+    <!-- ACCOUNTS — nested sub-groups -->
+    <button @click="toggle('accounts')" class="w-full flex items-center justify-between px-3 py-2 mt-1 text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-gray-700">
+        <span>Accounts</span>
         <svg class="h-4 w-4 transition-transform" :class="accounts && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
     </button>
     <div x-show="accounts" x-collapse class="space-y-0.5">
-        <a href="{% url 'shares:list' %}"
-           class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if request.resolver_match.app_name == 'shares' %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
-            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
-            Shares
-        </a>
-        <a href="{% url 'savings:list' %}"
-           class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if request.resolver_match.app_name == 'savings' and 'type' not in request.GET.urlencode %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
-            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
-            Savings Account
-        </a>
-        <a href="{% url 'savings:list' %}?type=current"
-           class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if request.resolver_match.app_name == 'savings' and request.GET.type == 'current' %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
-            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-            Current Account
-        </a>
-        <a href="{% url 'savings:list' %}?type=security"
-           class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if request.resolver_match.app_name == 'savings' and request.GET.type == 'security' %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
-            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-            Security Deposit
-        </a>
-        <a href="{% url 'deposits:fd_list' %}"
-           class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if request.resolver_match.app_name == 'deposits' and 'fd' in request.path and 'product' not in request.path %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
-            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-            Fixed Deposits
-        </a>
-        <a href="{% url 'deposits:rd_list' %}"
-           class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if request.resolver_match.app_name == 'deposits' and 'rd' in request.path %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
-            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-            Recurring Deposits
-        </a>
-        <a href="{% url 'loans:list' %}"
-           class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if request.resolver_match.app_name == 'loans' and 'product' not in request.path %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
-            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            Loans
-        </a>
+
+        <!-- Savings sub-group -->
+        <button @click="toggle('acSavings')" class="w-full flex items-center justify-between px-3 py-1.5 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-lg hover:bg-gray-50">
+            <span class="flex items-center">
+                <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                Savings
+            </span>
+            <svg class="h-3.5 w-3.5 transition-transform" :class="acSavings && 'rotate-90'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <div x-show="acSavings" x-collapse class="pl-5 space-y-0.5">
+            <a href="{% url 'savings:list' %}"
+               class="group flex items-center px-3 py-1.5 text-sm rounded-lg
+                      {% if request.resolver_match.app_name == 'savings' and 'type' not in request.GET.urlencode %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+                Savings Accounts
+            </a>
+            <a href="{% url 'savings:list' %}?type=current"
+               class="group flex items-center px-3 py-1.5 text-sm rounded-lg
+                      {% if request.resolver_match.app_name == 'savings' and request.GET.type == 'current' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+                Current Accounts
+            </a>
+            <a href="{% url 'savings:list' %}?type=security"
+               class="group flex items-center px-3 py-1.5 text-sm rounded-lg
+                      {% if request.resolver_match.app_name == 'savings' and request.GET.type == 'security' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+                Security Deposits
+            </a>
+            <a href="{% url 'deposits:fd_list' %}"
+               class="group flex items-center px-3 py-1.5 text-sm rounded-lg
+                      {% if request.resolver_match.app_name == 'deposits' and 'fd' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+                Fixed Deposits
+            </a>
+            <a href="{% url 'deposits:rd_list' %}"
+               class="group flex items-center px-3 py-1.5 text-sm rounded-lg
+                      {% if request.resolver_match.app_name == 'deposits' and 'rd' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+                Recurring Deposits
+            </a>
+            <a href="{% url 'accounting:interest_master' %}"
+               class="group flex items-center px-3 py-1.5 text-sm rounded-lg
+                      {% if 'interest-master' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+                Interest Slabs
+            </a>
+        </div>
+
+        <!-- Loans sub-group -->
+        <button @click="toggle('acLoans')" class="w-full flex items-center justify-between px-3 py-1.5 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-lg hover:bg-gray-50">
+            <span class="flex items-center">
+                <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Loans
+            </span>
+            <svg class="h-3.5 w-3.5 transition-transform" :class="acLoans && 'rotate-90'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <div x-show="acLoans" x-collapse class="pl-5 space-y-0.5">
+            <a href="{% url 'loans:list' %}"
+               class="group flex items-center px-3 py-1.5 text-sm rounded-lg
+                      {% if request.resolver_match.app_name == 'loans' and 'product' not in request.path and 'charge' not in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+                Loan Accounts
+            </a>
+            <a href="{% url 'loans:product_list' %}"
+               class="group flex items-center px-3 py-1.5 text-sm rounded-lg
+                      {% if 'products' in request.path and request.resolver_match.app_name == 'loans' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+                Loan Products
+            </a>
+            <a href="{% url 'loans:loan_charge_list' %}"
+               class="group flex items-center px-3 py-1.5 text-sm rounded-lg
+                      {% if 'loan-charge' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+                Loan Charges
+            </a>
+        </div>
+
+        <!-- Shares sub-group -->
+        <button @click="toggle('acShares')" class="w-full flex items-center justify-between px-3 py-1.5 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-lg hover:bg-gray-50">
+            <span class="flex items-center">
+                <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+                Shares
+            </span>
+            <svg class="h-3.5 w-3.5 transition-transform" :class="acShares && 'rotate-90'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <div x-show="acShares" x-collapse class="pl-5 space-y-0.5">
+            <a href="{% url 'shares:list' %}"
+               class="group flex items-center px-3 py-1.5 text-sm rounded-lg
+                      {% if request.resolver_match.app_name == 'shares' and 'config' not in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+                Share Holdings
+            </a>
+            {% if request.user.is_admin %}
+            <a href="{% url 'shares:config_list' %}"
+               class="group flex items-center px-3 py-1.5 text-sm rounded-lg
+                      {% if 'config' in request.path and request.resolver_match.app_name == 'shares' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+                Share Config
+            </a>
+            {% endif %}
+        </div>
+
     </div>
 
-    <!-- Agents / Pigmmy -->
-    <button @click="agents = !agents" class="w-full flex items-center justify-between px-3 py-2 mt-1 text-xs font-semibold text-primary-400 uppercase tracking-wider hover:text-white">
-        <span>Pigmmy / Agents</span>
-        <svg class="h-4 w-4 transition-transform" :class="agents && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+    <!-- PIGMY / AGENTS -->
+    <button @click="toggle('pigmy')" class="w-full flex items-center justify-between px-3 py-2 mt-1 text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-gray-700">
+        <span>Pigmy / Agents</span>
+        <svg class="h-4 w-4 transition-transform" :class="pigmy && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
     </button>
-    <div x-show="agents" x-collapse class="space-y-0.5">
+    <div x-show="pigmy" x-collapse class="space-y-0.5">
         <a href="{% url 'agents:list' %}"
            class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if request.resolver_match.app_name == 'agents' and 'pigmmy' not in request.path and 'collections' not in request.path %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
+                  {% if request.resolver_match.app_name == 'agents' and 'pigmmy' not in request.path and 'collections' not in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
             <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
             Agents
         </a>
         <a href="{% url 'agents:pigmmy_list' %}"
            class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if 'pigmmy' in request.path %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
+                  {% if 'pigmmy' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
             <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-            Pigmmy Accounts
+            Pigmy Accounts
         </a>
         <a href="{% url 'agents:collection_list' %}"
            class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if 'collections' in request.path %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
+                  {% if 'collections' in request.path and 'posting' not in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
             <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
-            Daily Collections
+            Daily Collection
+        </a>
+        <a href="{% url 'agents:collection_posting' %}"
+           class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
+                  {% if 'posting' in request.path and request.resolver_match.app_name == 'agents' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Collection Posting
         </a>
     </div>
+    {% endif %}
 
-    <!-- Transactions -->
-    <button @click="txn = !txn" class="w-full flex items-center justify-between px-3 py-2 mt-1 text-xs font-semibold text-primary-400 uppercase tracking-wider hover:text-white">
+    {% if request.user.is_staff_role %}
+    <!-- TRANSACTIONS -->
+    <button @click="toggle('txn')" class="w-full flex items-center justify-between px-3 py-2 mt-1 text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-gray-700">
         <span>Transactions</span>
         <svg class="h-4 w-4 transition-transform" :class="txn && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
     </button>
     <div x-show="txn" x-collapse class="space-y-0.5">
+        {% if request.user.is_cashier %}
         <a href="{% url 'accounting:receipt' %}"
            class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if 'receipt' in request.path and request.resolver_match.app_name == 'accounting' %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
+                  {% if 'receipt' in request.path and request.resolver_match.app_name == 'accounting' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
             <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            Receipt (Credit)
+            Receipt
         </a>
         <a href="{% url 'accounting:payment' %}"
            class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if 'payment' in request.path and request.resolver_match.app_name == 'accounting' %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
+                  {% if 'payment' in request.path and request.resolver_match.app_name == 'accounting' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
             <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
-            Payment (Debit)
+            Payment
         </a>
+        {% endif %}
         <a href="{% url 'accounting:cashbook' %}"
            class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if 'cashbook' in request.path and request.resolver_match.app_name == 'accounting' %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
+                  {% if request.resolver_match.url_name == 'cashbook' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
             <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
             Cashbook
         </a>
+        {% if request.user.is_accountant %}
         <a href="{% url 'accounting:voucher_create' %}"
            class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if 'voucher/create' in request.path %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
+                  {% if 'voucher/create' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
             <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            Voucher Entry
+            New Voucher
         </a>
+        <a href="{% url 'accounting:vouchers' %}"
+           class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
+                  {% if request.resolver_match.url_name == 'vouchers' or request.resolver_match.url_name == 'voucher_edit' or request.resolver_match.url_name == 'voucher_cancel' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            All Vouchers
+        </a>
+        {% endif %}
     </div>
+    {% endif %}
 
-    <!-- Reports -->
-    <button @click="reports = !reports" class="w-full flex items-center justify-between px-3 py-2 mt-1 text-xs font-semibold text-primary-400 uppercase tracking-wider hover:text-white">
+    {% if not request.user.is_member_only %}
+    <!-- REPORTS — nested sub-groups -->
+    <button @click="toggle('reports')" class="w-full flex items-center justify-between px-3 py-2 mt-1 text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-gray-700">
         <span>Reports</span>
         <svg class="h-4 w-4 transition-transform" :class="reports && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
     </button>
     <div x-show="reports" x-collapse class="space-y-0.5">
-        <a href="{% url 'reports:personal_ledger' %}"
+
+        <!-- Statements sub-group -->
+        <button @click="toggle('rptStatements')" class="w-full flex items-center justify-between px-3 py-1.5 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-lg hover:bg-gray-50">
+            <span class="flex items-center">
+                <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                Statements
+            </span>
+            <svg class="h-3.5 w-3.5 transition-transform" :class="rptStatements && 'rotate-90'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <div x-show="rptStatements" x-collapse class="pl-5 space-y-0.5">
+            <a href="{% url 'reports:personal_ledger' %}"
+               class="group flex items-center px-3 py-1.5 text-sm rounded-lg
+                      {% if 'personal-ledger' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+                Personal Ledger
+            </a>
+            <a href="{% url 'accounting:general_ledger' %}"
+               class="group flex items-center px-3 py-1.5 text-sm rounded-lg
+                      {% if 'general-ledger' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+                General Ledger
+            </a>
+            <a href="{% url 'accounting:day_book' %}"
+               class="group flex items-center px-3 py-1.5 text-sm rounded-lg
+                      {% if 'day-book' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+                Day Book
+            </a>
+        </div>
+
+        <!-- Financial sub-group -->
+        <button @click="toggle('rptFinancial')" class="w-full flex items-center justify-between px-3 py-1.5 text-sm font-medium text-gray-500 hover:text-gray-900 rounded-lg hover:bg-gray-50">
+            <span class="flex items-center">
+                <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+                Financial
+            </span>
+            <svg class="h-3.5 w-3.5 transition-transform" :class="rptFinancial && 'rotate-90'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <div x-show="rptFinancial" x-collapse class="pl-5 space-y-0.5">
+            <a href="{% url 'reports:trial_balance' %}"
+               class="group flex items-center px-3 py-1.5 text-sm rounded-lg
+                      {% if 'trial-balance' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+                Trial Balance
+            </a>
+            <a href="{% url 'reports:profit_loss' %}"
+               class="group flex items-center px-3 py-1.5 text-sm rounded-lg
+                      {% if 'profit-loss' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+                Profit &amp; Loss
+            </a>
+            <a href="{% url 'reports:balance_sheet' %}"
+               class="group flex items-center px-3 py-1.5 text-sm rounded-lg
+                      {% if 'balance-sheet' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+                Balance Sheet
+            </a>
+        </div>
+
+        <!-- All Reports -->
+        <a href="{% url 'reports:index' %}"
            class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if 'personal-ledger' in request.path %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
-            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-            Personal Ledger
-        </a>
-        <a href="{% url 'accounting:general_ledger' %}"
-           class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if 'general-ledger' in request.path %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
-            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
-            General Ledger
-        </a>
-        <a href="{% url 'accounting:day_book' %}"
-           class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if 'day-book' in request.path %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
-            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-            Day Book
-        </a>
-        <a href="{% url 'reports:trial_balance' %}"
-           class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if 'trial-balance' in request.path %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
-            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
-            Trial Balance
-        </a>
-        <a href="{% url 'reports:profit_loss' %}"
-           class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if 'profit-loss' in request.path %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
-            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
-            Profit & Loss
-        </a>
-        <a href="{% url 'reports:balance_sheet' %}"
-           class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if 'balance-sheet' in request.path %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
-            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            Balance Sheet
+                  {% if request.resolver_match.url_name == 'index' and request.resolver_match.app_name == 'reports' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+            All Reports
         </a>
     </div>
+    {% endif %}
 
-    <!-- Administration -->
-    <button @click="admin = !admin" class="w-full flex items-center justify-between px-3 py-2 mt-1 text-xs font-semibold text-primary-400 uppercase tracking-wider hover:text-white">
-        <span>Administration</span>
-        <svg class="h-4 w-4 transition-transform" :class="admin && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+    {% if request.user.is_accountant or request.user.is_manager or request.user.is_admin %}
+    <!-- DAY END & ADMIN -->
+    <button @click="toggle('dayend')" class="w-full flex items-center justify-between px-3 py-2 mt-1 text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-gray-700">
+        <span>Day End &amp; Admin</span>
+        <svg class="h-4 w-4 transition-transform" :class="dayend && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
     </button>
-    <div x-show="admin" x-collapse class="space-y-0.5">
+    <div x-show="dayend" x-collapse class="space-y-0.5">
         <a href="{% url 'dayend:index' %}"
            class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if request.resolver_match.app_name == 'dayend' %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
+                  {% if request.resolver_match.app_name == 'dayend' and request.resolver_match.url_name == 'index' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
             <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            Day / Month / Year End
+            Day Operations
         </a>
-        <a href="{% url 'accounts:staff_list' %}"
+        <a href="{% url 'dayend:interest_calculate' %}"
            class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if 'staff' in request.path and request.resolver_match.app_name == 'accounts' %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
-            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg>
-            Staff / User Manager
+                  {% if 'interest-calculate' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+            Interest Calculate
         </a>
-        <a href="{% url 'accounting:vouchers' %}"
+        <a href="{% url 'dayend:interest_post' %}"
            class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if request.resolver_match.app_name == 'accounting' and 'voucher' in request.path and 'create' not in request.path %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
-            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            Voucher History
+                  {% if 'interest-post' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+            Interest Post
         </a>
+        {% if request.user.is_admin %}
+        <a href="{% url 'accounting:opening_balance' %}"
+           class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
+                  {% if 'opening-balance' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/></svg>
+            Opening Balance
+        </a>
+        <a href="{% url 'dayend:reupdate_balance' %}"
+           class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
+                  {% if 'reupdate-balance' in request.path and 'gl' not in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            Repair Balances
+        </a>
+        <a href="{% url 'dayend:reupdate_gl_balance' %}"
+           class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
+                  {% if 'reupdate-gl-balance' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            Repair GL Balances
+        </a>
+        {% endif %}
         <a href="{% url 'audit:log' %}"
            class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
-                  {% if request.resolver_match.app_name == 'audit' %}bg-primary-800 text-white{% else %}text-primary-200 hover:bg-primary-800 hover:text-white{% endif %}">
+                  {% if request.resolver_match.app_name == 'audit' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
             <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
             Audit Trail
         </a>
+        {% if request.user.is_manager %}
+        <a href="{% url 'notifications:send_bulk' %}"
+           class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
+                  {% if request.resolver_match.app_name == 'notifications' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+            Notifications
+        </a>
+        {% endif %}
     </div>
+    {% endif %}
 
-    </nav>
+</nav>
 
     <!-- Subscription -->
-    <div class="px-3 py-3 bg-primary-950 border-t border-primary-800 flex-shrink-0">
-        <a href="/subscription/recharge/" class="flex items-center px-3 py-2.5 text-sm font-medium text-primary-200 hover:bg-primary-800 hover:text-white rounded-lg transition-colors">
+    <div class="px-3 py-3 bg-gray-50 border-t border-gray-200 flex-shrink-0">
+        <a href="/subscription/recharge/" class="flex items-center px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors">
             <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
             Upgrade / Recharge
         </a>

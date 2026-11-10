@@ -2,7 +2,7 @@ from datetime import date
 
 from django import forms
 
-tw = 'w-full rounded border-gray-300'
+tw = 'w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500'
 
 
 class DayEndForm(forms.Form):

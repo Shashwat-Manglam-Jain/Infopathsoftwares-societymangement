@@ -2,6 +2,7 @@
 {% load currency_tags %}
 
 {% block title %}{{ page_title|default:"Accounts" }} — InfoSociety{% endblock %}
+{% block page_title %}Accounts{% endblock %}
 
 {% block content %}
 <div class="space-y-4">
@@ -35,6 +36,7 @@
                         <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Balance</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">Opened</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -43,22 +45,35 @@
                         <td class="px-4 py-3 text-sm font-mono text-primary-600 font-medium">
                             <a href="{% url 'savings:detail' pk=a.pk %}" class="hover:underline">{{ a.account_no }}</a>
                         </td>
-                        <td class="px-4 py-3 text-sm text-gray-900">{{ a.member.name }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900">{{ a.member.name }}<a href="{% url 'members:detail' a.member.pk %}" class="ml-1 text-gray-300 hover:text-primary-500" title="View Member" onclick="event.stopPropagation()"><svg class="h-3.5 w-3.5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></a></td>
                         <td class="px-4 py-3 text-sm text-gray-600 hidden md:table-cell">{{ a.get_account_type_display }}</td>
                         <td class="px-4 py-3 text-sm text-right font-medium text-gray-900">{{ a.current_balance|floatformat:2 }}</td>
                         <td class="px-4 py-3 text-sm text-gray-500 hidden lg:table-cell">{{ a.opening_date|date:"d M Y" }}</td>
                         <td class="px-4 py-3">
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if a.status == 'active' %}bg-green-100 text-green-800{% elif a.status == 'dormant' %}bg-yellow-100 text-yellow-800{% else %}bg-gray-100 text-gray-600{% endif %}">{{ a.get_status_display }}</span>
                         </td>
+                        <td class="px-4 py-3 text-center" onclick="event.stopPropagation()">
+                            <div class="inline-flex items-center gap-2">
+                                <a href="{% url 'savings:detail' pk=a.pk %}" class="p-1.5 text-gray-400 hover:text-primary-600 rounded" title="View">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                </a>
+                                {% if request.user.is_manager and a.status != 'closed' %}
+                                <a href="{% url 'savings:edit' pk=a.pk %}" class="p-1.5 text-gray-400 hover:text-primary-600 rounded" title="Edit">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="6" class="px-4 py-8 text-center text-sm text-gray-400">No savings accounts found.</td>
+                        <td colspan="7" class="px-4 py-8 text-center text-sm text-gray-400">No savings accounts found.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
+    {% include "includes/pagination.html" %}
 </div>
 {% endblock %}

@@ -1,13 +1,39 @@
 {% extends "base.html" %}
 
 {% block title %}New Pigmmy Account — InfoSociety{% endblock %}
+{% block page_title %}New Pigmmy Account{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto space-y-6">
-    <div>
-        <h2 class="text-xl font-bold text-gray-900">Open Pigmmy / Daily Deposit Account</h2>
-        <p class="text-sm text-gray-500 mt-1">Link a member to an agent for daily/weekly/monthly collection.</p>
+<div class="max-w-3xl mx-auto space-y-6" x-data="pigmmyCreate()">
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-xl font-bold text-gray-900">Open Pigmmy / Daily Deposit Account</h2>
+            <p class="text-sm text-gray-500 mt-1">Link a member to an agent for daily/weekly/monthly collection.</p>
+        </div>
+        {% if selected_agent %}
+        <a href="{% url 'agents:detail' pk=selected_agent.pk %}" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">Back to {{ selected_agent.agent_code }}</a>
+        {% endif %}
     </div>
+
+    {% if selected_agent %}
+    <div class="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 flex items-center gap-3">
+        <svg class="h-5 w-5 text-blue-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+        <div>
+            <p class="text-sm font-medium text-blue-900">Adding client for Agent: {{ selected_agent.agent_code }} — {{ selected_agent.member.name }}</p>
+            <p class="text-xs text-blue-700">Area: {{ selected_agent.area|default:"—" }} &middot; Branch: {{ selected_agent.branch.branch_name }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if slabs_json == '[]' %}
+    <div class="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 flex items-center gap-3">
+        <svg class="h-5 w-5 text-amber-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div>
+            <p class="text-sm font-medium text-amber-900">No Pigmmy Interest Slabs Configured</p>
+            <p class="text-xs text-amber-700">Interest rates cannot be auto-filled. <a href="{% url 'accounting:interest_master_create' %}" class="underline font-medium">Configure Interest Master</a></p>
+        </div>
+    </div>
+    {% endif %}
 
     {% if messages %}
     <div class="space-y-2">
@@ -49,17 +75,57 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Period (Months)</label>
-                {{ form.deposit_period_months }}
+                <input type="number" name="deposit_period_months" x-model="months" @input="autoFillRate()" min="1" required
+                       class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Interest Rate (%)</label>
-                {{ form.interest_rate }}
+                <input type="number" name="interest_rate" x-model="rate" step="0.01" min="0" required readonly tabindex="-1"
+                       class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500 bg-gray-50 cursor-not-allowed"
+                       :class="rate ? 'bg-green-50 border-green-300' : ''">
+                <template x-if="rate">
+                    <p class="text-xs text-green-600 mt-1">Auto-filled from Interest Master</p>
+                </template>
+                <template x-if="rateError">
+                    <p class="text-xs text-red-600 mt-1">
+                        <span x-text="rateError"></span>
+                        <a href="{% url 'accounting:interest_master_create' %}" class="underline ml-1">Configure Interest Master</a>
+                    </p>
+                </template>
             </div>
         </div>
         <div class="flex items-center justify-end gap-3 pt-4 border-t">
-            <a href="{% url 'agents:pigmmy_list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
-            <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">Open Account</button>
+            <a href="{% if selected_agent %}{% url 'agents:detail' pk=selected_agent.pk %}{% else %}{% url 'agents:pigmmy_list' %}{% endif %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
+            <button type="submit" :disabled="!rate"
+                    class="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm"
+                    :class="!rate ? 'opacity-50 cursor-not-allowed' : ''">Open Account</button>
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block extra_head %}
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('pigmmyCreate', () => ({
+        slabs: {{ slabs_json|safe }},
+        months: '',
+        rate: '',
+        rateError: '',
+        autoFillRate() {
+            this.rate = '';
+            this.rateError = '';
+            const m = parseInt(this.months);
+            if (isNaN(m) || m < 1) return;
+            for (const slab of this.slabs) {
+                if (m >= slab.min_months && m <= slab.max_months) {
+                    this.rate = slab.rate;
+                    return;
+                }
+            }
+            this.rateError = 'No interest slab found for this tenure.';
+        }
+    }));
+});
+</script>
 {% endblock %}

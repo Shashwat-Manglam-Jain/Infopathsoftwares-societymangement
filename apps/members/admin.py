@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Member, MemberDocument, MemberNominee
+from .models import AccountNominee, Member, MemberDocument, MemberNominee
 
 
 class MemberNomineeInline(admin.TabularInline):
@@ -27,3 +27,10 @@ class MemberAdmin(admin.ModelAdmin):
     search_fields = ['member_no', 'name', 'phone', 'aadhar_no']
     inlines = [MemberNomineeInline, MemberDocumentInline]
     readonly_fields = ['created_at', 'updated_at']
+
+
+@admin.register(AccountNominee)
+class AccountNomineeAdmin(admin.ModelAdmin):
+    list_display = ['account_number', 'name', 'relation', 'nj_type']
+    list_filter = ['nj_type']
+    search_fields = ['account_number', 'name']

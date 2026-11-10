@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 
 
@@ -18,15 +19,40 @@ class SavingsAccount(models.Model):
         ('security', 'Security Deposit'),
     ]
     account_type = models.CharField(max_length=10, choices=ACCOUNT_TYPE_CHOICES, default='savings')
+    gl_head = models.ForeignKey(
+        'accounting.ChartOfAccounts',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='savings_accounts',
+        help_text='GL head this account belongs to',
+    )
+    ledger_number = models.PositiveBigIntegerField(null=True, blank=True)
+    folio_number = models.CharField(max_length=10, blank=True)
     opening_date = models.DateField()
     closing_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
     current_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    overdue_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    interest_charged = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    interest_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    penal_interest = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     interest_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     accrued_interest = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     last_interest_calculated_date = models.DateField(null=True, blank=True)
     last_interest_posted_date = models.DateField(null=True, blank=True)
     minimum_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    introducer = models.ForeignKey(
+        'members.Member',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='introduced_savings',
+        help_text='Existing member who introduced this account',
+    )
+    sign = models.IntegerField(default=0, help_text='1=debit nature, -1=credit nature, 0=default')
+    meeting_no = models.CharField(max_length=20, blank=True, help_text='Board Meeting Number')
+    meeting_date = models.DateField(null=True, blank=True, help_text='Board Meeting Date')
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -42,6 +68,18 @@ class SavingsAccount(models.Model):
 
     def __str__(self):
         return f'{self.account_no} - {self.member.name}'
+
+    def clean(self):
+        if self.account_type == 'savings' and self.status == 'active':
+            qs = SavingsAccount.objects.filter(
+                member=self.member,
+                account_type='savings',
+                status='active',
+            )
+            if self.pk:
+                qs = qs.exclude(pk=self.pk)
+            if qs.exists():
+                raise ValidationError('Member already has an active savings account.')
 
     def save(self, *args, **kwargs):
         if not self.account_no:

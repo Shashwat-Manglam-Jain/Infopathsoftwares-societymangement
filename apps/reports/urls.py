@@ -10,4 +10,5 @@ urlpatterns = [
     path('profit-loss/', views.profit_loss, name='profit_loss'),
     path('balance-sheet/', views.balance_sheet, name='balance_sheet'),
     path('personal-ledger/', views.personal_ledger, name='personal_ledger'),
+    path('cashbook/', views.cashbook_report, name='cashbook_report'),
 ]

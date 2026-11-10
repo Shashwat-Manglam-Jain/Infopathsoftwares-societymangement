@@ -14,7 +14,4 @@ urlpatterns = [
     path('rd/create/', views.rd_create, name='rd_create'),
     path('rd/<int:pk>/', views.rd_detail, name='rd_detail'),
     path('rd/<int:pk>/collect/', views.rd_collect, name='rd_collect'),
-    path('products/', views.fd_product_list, name='fd_product_list'),
-    path('products/create/', views.fd_product_create, name='fd_product_create'),
-    path('products/<int:pk>/edit/', views.fd_product_edit, name='fd_product_edit'),
 ]

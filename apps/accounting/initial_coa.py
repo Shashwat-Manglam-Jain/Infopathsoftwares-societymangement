@@ -172,7 +172,7 @@ DEFAULT_CHART_OF_ACCOUNTS = [
     },
     {
         'code': '3002', 'name': 'Processing Fees / Loan Form Fees', 'group': 'income', 'type': 'other',
-        'parent': '3000', 'related': 'general', 'report': 'profit_loss', 'order': 302,
+        'parent': '3000', 'related': 'processing_fee_income', 'report': 'profit_loss', 'order': 302,
     },
     {
         'code': '3003', 'name': 'Penal Interest Received', 'group': 'income', 'type': 'other',

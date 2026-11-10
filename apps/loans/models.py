@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 
 
@@ -79,6 +80,16 @@ class LoanAccount(models.Model):
     branch = models.ForeignKey('branches.Branch', on_delete=models.PROTECT)
     loan_product = models.ForeignKey(LoanProduct, on_delete=models.PROTECT)
     loan_no = models.CharField(max_length=20, unique=True)
+    ledger_number = models.PositiveBigIntegerField(null=True, blank=True)
+    folio_number = models.CharField(max_length=10, blank=True)
+    gl_head = models.ForeignKey(
+        'accounting.ChartOfAccounts',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='loan_accounts',
+        help_text='GL head this loan belongs to',
+    )
     applied_date = models.DateField()
     applied_amount = models.DecimalField(max_digits=15, decimal_places=2)
     approved_date = models.DateField(null=True, blank=True)
@@ -89,11 +100,22 @@ class LoanAccount(models.Model):
     disbursed_date = models.DateField(null=True, blank=True)
     disbursed_amount = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
     interest_rate = models.DecimalField(max_digits=5, decimal_places=2)
+    penal_interest_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     tenure_months = models.IntegerField()
     emi_amount = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+    date_of_first_recovery = models.DateField(null=True, blank=True)
+    loan_expiry_date = models.DateField(null=True, blank=True)
     total_interest_payable = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
     outstanding_principal = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     outstanding_interest = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    bal_repayment = models.DecimalField(
+        max_digits=15, decimal_places=2, default=0, help_text='Balance repayment remaining'
+    )
+    bal_interest = models.DecimalField(
+        max_digits=15, decimal_places=2, default=0, help_text='Balance interest remaining'
+    )
+    bal_penal = models.DecimalField(max_digits=15, decimal_places=2, default=0, help_text='Balance penal interest')
+    bal_others = models.DecimalField(max_digits=15, decimal_places=2, default=0, help_text='Other outstanding charges')
     overdue_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     overdue_days = models.IntegerField(default=0)
     last_interest_calculated_date = models.DateField(null=True, blank=True)
@@ -101,6 +123,8 @@ class LoanAccount(models.Model):
     closure_date = models.DateField(null=True, blank=True)
     closure_type = models.CharField(max_length=15, choices=CLOSURE_TYPE_CHOICES, blank=True)
     remarks = models.TextField(blank=True)
+
+    sign = models.IntegerField(default=0, help_text='1=debit nature, -1=credit nature, 0=default')
 
     # InfoSociety extended fields
     loan_form_no = models.CharField(max_length=20, blank=True)
@@ -151,6 +175,31 @@ class LoanAccount(models.Model):
     def __str__(self):
         return f'{self.loan_no} - {self.member.name} - {self.disbursed_amount or self.applied_amount}'
 
+    def clean(self):
+        if self.director_recommendation and not self.director_recommendation.is_director:
+            raise ValidationError(
+                {
+                    'director_recommendation': 'Selected member must be a board director.',
+                }
+            )
+        if (
+            self.loan_product
+            and not self.loan_product.allow_multiple
+            and self.status in ('applied', 'approved', 'disbursed')
+        ):
+            qs = LoanAccount.objects.filter(
+                member=self.member,
+                loan_product=self.loan_product,
+                status__in=['applied', 'approved', 'disbursed', 'npa'],
+            )
+            if self.pk:
+                qs = qs.exclude(pk=self.pk)
+            if qs.exists():
+                raise ValidationError(
+                    'Member already has an active non-mortgage loan of this type. '
+                    'Close existing loan before opening a new one.'
+                )
+
 
 class LoanGuarantor(models.Model):
     loan = models.ForeignKey(LoanAccount, on_delete=models.CASCADE, related_name='guarantors')
@@ -164,6 +213,24 @@ class LoanGuarantor(models.Model):
 
     def __str__(self):
         return f'{self.guarantor_member.name} for {self.loan.loan_no}'
+
+    def clean(self):
+        from apps.shares.models import ShareHolding
+
+        if not ShareHolding.objects.filter(
+            member=self.guarantor_member,
+            status='active',
+        ).exists():
+            raise ValidationError('Guarantor must have an active share holding.')
+
+    @staticmethod
+    def active_guarantee_count(member):
+        """Count active loans where this member is guarantor (non-zero balance only)."""
+        return LoanGuarantor.objects.filter(
+            guarantor_member=member,
+            loan__status__in=['disbursed', 'npa'],
+            loan__outstanding_principal__gt=0,
+        ).count()
 
 
 class LoanCollateral(models.Model):

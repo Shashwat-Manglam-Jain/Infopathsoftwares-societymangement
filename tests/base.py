@@ -42,7 +42,7 @@ class BaseTestCase(TestCase):
             username='admin',
             password='testpass123',
             email='admin@test.com',
-            role='super_admin',
+            role='admin',
             branch=self.head_office,
             can_access_all_branches=True,
         )

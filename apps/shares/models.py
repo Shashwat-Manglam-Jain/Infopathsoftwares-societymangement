@@ -1,24 +1,22 @@
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 
 
 class ShareConfig(models.Model):
+    name = models.CharField(max_length=100, default='Default')
     face_value_per_share = models.DecimalField(max_digits=15, decimal_places=2)
     max_shares_per_member = models.PositiveIntegerField(default=100)
     min_shares_required = models.PositiveIntegerField(default=1)
-    dividend_rate = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        null=True,
-        blank=True,
-    )
     is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:
         verbose_name = 'Share Configuration'
+        ordering = ['-is_active', '-created_at']
 
     def __str__(self):
-        return f'Share Config - Rs.{self.face_value_per_share}/share'
+        return f'{self.name} - Rs.{self.face_value_per_share}/share'
 
 
 class ShareHolding(models.Model):
@@ -43,8 +41,19 @@ class ShareHolding(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['-purchase_date']
+
     def __str__(self):
         return f'{self.member.member_no} - {self.share_count} shares'
+
+    def clean(self):
+        if self.status == 'active':
+            qs = ShareHolding.objects.filter(member=self.member, status='active')
+            if self.pk:
+                qs = qs.exclude(pk=self.pk)
+            if qs.exists():
+                raise ValidationError('Member already has an active share holding. Only one active share per member.')
 
 
 class ShareTransaction(models.Model):

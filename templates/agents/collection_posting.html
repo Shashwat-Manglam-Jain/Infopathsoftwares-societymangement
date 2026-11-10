@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Collection Posting — InfoSociety{% endblock %}
+{% block page_title %}Pigmmy Module{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Tab Navigation -->
+    {% include "agents/_tabs.html" %}
+
+    <div>
+        <h2 class="text-xl font-bold text-gray-900">Collection Posting</h2>
+        <p class="text-sm text-gray-500 mt-1">Post submitted agent collections to credit respective customer pigmmy accounts.</p>
+    </div>
+
+    <!-- Pending Collections -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-sm font-semibold text-gray-700">Pending Collections (Submitted)</h3>
+        </div>
+        {% if pending %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Date</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Agent</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Branch</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Clients</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Collected</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for c in pending %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-sm text-gray-900">{{ c.collection_date|date:"d-M-Y" }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900">{{ c.agent.agent_code }} — {{ c.agent.member.name }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">{{ c.branch.branch_name }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-900">{{ c.total_clients_collected }}</td>
+                        <td class="px-4 py-3 text-sm text-right font-medium text-gray-900">{{ c.collected_amount|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-center">
+                            {% if request.user.is_cashier %}
+                            <form method="post" action="{% url 'agents:collection_post' c.pk %}" class="inline"
+                                  onsubmit="return confirm('Post collection of {{ c.collected_amount|floatformat:2 }} for {{ c.agent.agent_code }} on {{ c.collection_date }}?');">
+                                {% csrf_token %}
+                                <button type="submit" class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700">
+                                    <svg class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                    Post
+                                </button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="px-6 py-8 text-center">
+            <p class="text-sm text-gray-400">No pending collections to post.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Recently Posted -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-sm font-semibold text-gray-700">Recently Posted (Reconciled)</h3>
+        </div>
+        {% if posted %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Date</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Agent</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Branch</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Clients</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Amount</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Posted By</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for c in posted %}
+                    <tr>
+                        <td class="px-4 py-3 text-sm text-gray-900">{{ c.collection_date|date:"d-M-Y" }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900">{{ c.agent.agent_code }} — {{ c.agent.member.name }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">{{ c.branch.branch_name }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-900">{{ c.total_clients_collected }}</td>
+                        <td class="px-4 py-3 text-sm text-right font-medium text-green-700">{{ c.collected_amount|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">{{ c.reconciled_by.get_full_name|default:c.reconciled_by.username|default:"—" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="px-6 py-8 text-center">
+            <p class="text-sm text-gray-400">No recently posted collections.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

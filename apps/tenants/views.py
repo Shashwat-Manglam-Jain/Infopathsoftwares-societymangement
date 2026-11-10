@@ -3,11 +3,13 @@ from decimal import Decimal
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.shortcuts import redirect, render
 from django.views import View
 from django_tenants.utils import tenant_context
 
+from apps.accounts.permissions import admin_required, manager_required
 from apps.tenants.forms import SocietySignupForm
 from apps.tenants.models import Domain, Society, SubscriptionPlan
 
@@ -102,7 +104,7 @@ class SocietySignupView(View):
             phone=form.cleaned_data['phone'],
             first_name=first_name,
             last_name=last_name,
-            role='super_admin',
+            role='admin',
             branch=ho,
             can_access_all_branches=True,
         )
@@ -191,12 +193,16 @@ def subscription_expired_view(request):
     if tenant:
         try:
             sub = tenant.subscription
-        except Exception:
+        except ObjectDoesNotExist:
             pass
-    return render(request, 'tenants/subscription_expired.html', {
-        'subscription': sub,
-        'tenant': tenant,
-    })
+    return render(
+        request,
+        'tenants/subscription_expired.html',
+        {
+            'subscription': sub,
+            'tenant': tenant,
+        },
+    )
 
 
 @login_required
@@ -206,15 +212,51 @@ def subscription_recharge_view(request):
     if tenant:
         try:
             sub = tenant.subscription
-        except Exception:
+        except ObjectDoesNotExist:
             pass
+
+    plans = SubscriptionPlan.objects.filter(is_active=True).order_by('price_monthly')
+
     if request.method == 'POST' and sub:
+        plan_id = request.POST.get('plan_id')
+        if plan_id:
+            new_plan = SubscriptionPlan.objects.filter(pk=plan_id, is_active=True).first()
+            if new_plan:
+                sub.plan = new_plan
         sub.end_date = date.today() + timedelta(days=30)
         sub.status = 'active'
         sub.save()
         messages.success(request, 'Subscription renewed for 30 days.')
         return redirect('dashboard:index')
-    return render(request, 'tenants/subscription_recharge.html', {
-        'subscription': sub,
-        'tenant': tenant,
-    })
+
+    return render(
+        request,
+        'tenants/subscription_recharge.html',
+        {
+            'subscription': sub,
+            'tenant': tenant,
+            'plans': plans,
+        },
+    )
+
+
+@manager_required
+def society_detail(request):
+    society = request.tenant
+    return render(request, 'tenants/detail.html', {'society': society})
+
+
+@admin_required
+def society_edit(request):
+    from apps.tenants.forms import SocietyEditForm
+
+    society = request.tenant
+    if request.method == 'POST':
+        form = SocietyEditForm(request.POST, request.FILES, instance=society)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Society details updated.')
+            return redirect('society_detail')
+    else:
+        form = SocietyEditForm(instance=society)
+    return render(request, 'tenants/edit.html', {'form': form, 'society': society})

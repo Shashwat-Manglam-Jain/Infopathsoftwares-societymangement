@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('members', '0002_member_exit_date_membernominee_is_primary'),
     ]

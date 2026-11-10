@@ -3,6 +3,7 @@ from decimal import ROUND_HALF_UP, Decimal
 
 from django.db import transaction
 
+from apps.core.date_utils import get_transaction_date
 from apps.deposits.models import FixedDeposit, RDInstallment, RecurringDeposit
 
 
@@ -27,33 +28,62 @@ def calculate_fd_maturity(principal, annual_rate, tenure_days, compounding='quar
 
 def create_fd(
     member,
-    product,
     amount,
     tenure_days,
     branch,
     user,
+    product=None,
     is_auto_renew=False,
     linked_savings_account=None,
     is_senior=False,
+    compounding='quarterly',
 ):
+    from apps.accounting.models import ChartOfAccounts, InterestMaster
+
     amount = Decimal(str(amount))
 
-    if amount < product.min_amount or amount > product.max_amount:
-        raise ValueError(f'Amount must be between {product.min_amount} and {product.max_amount}')
-    if tenure_days < product.min_tenure_days or tenure_days > product.max_tenure_days:
-        raise ValueError(f'Tenure must be between {product.min_tenure_days} and {product.max_tenure_days} days')
+    if product:
+        # Backward-compatible path: use FDProduct
+        if amount < product.min_amount or amount > product.max_amount:
+            raise ValueError(f'Amount must be between {product.min_amount} and {product.max_amount}')
+        if tenure_days < product.min_tenure_days or tenure_days > product.max_tenure_days:
+            raise ValueError(f'Tenure must be between {product.min_tenure_days} and {product.max_tenure_days} days')
 
-    rate = product.get_rate_for_tenure(tenure_days, is_senior)
-    if rate is None:
-        raise ValueError('No interest rate slab found for this tenure')
-    rate = Decimal(str(rate))
+        rate = product.get_rate_for_tenure(tenure_days, is_senior)
+        if rate is None:
+            raise ValueError('No interest rate slab found for this tenure')
+        rate = Decimal(str(rate))
+        compounding = product.compounding
+        penalty = Decimal(str(product.premature_penalty_percent))
+    else:
+        # New path: look up rate from InterestMaster
+        head = ChartOfAccounts.objects.filter(
+            related_table_name='fixed', is_active=True
+        ).first()
+        if not head:
+            raise ValueError('No GL head configured for Fixed Deposits')
+
+        slab = InterestMaster.objects.filter(
+            account_head=head,
+            is_active=True,
+            period_unit='days',
+            min_period__lte=tenure_days,
+            max_period__gte=tenure_days,
+        ).first()
+        if not slab:
+            raise ValueError(f'No interest slab found for {tenure_days} days tenure')
+
+        rate = Decimal(str(slab.interest_rate))
+        if is_senior:
+            rate += Decimal(str(slab.senior_citizen_extra))
+        penalty = Decimal(str(slab.penal_rate)) if slab.penal_rate > 0 else Decimal('1.0')
 
     bonus = member.get_fd_interest_bonus()
     if bonus > Decimal('0'):
         rate += bonus
 
-    maturity_amount = calculate_fd_maturity(amount, rate, tenure_days, product.compounding)
-    start = date.today()
+    maturity_amount = calculate_fd_maturity(amount, rate, tenure_days, compounding)
+    start = get_transaction_date(branch)
     maturity_date = start + timedelta(days=tenure_days)
 
     with transaction.atomic():
@@ -73,7 +103,8 @@ def create_fd(
             tenure_days=tenure_days,
             maturity_amount=maturity_amount,
             is_auto_renew=is_auto_renew,
-            compounding_type=product.compounding,
+            compounding_type=compounding,
+            premature_penalty_percent=penalty,
             linked_savings_account=linked_savings_account,
             certificate_no=cert_no,
             created_by=user,
@@ -118,7 +149,7 @@ def premature_close_fd(fd, user):
 
     with transaction.atomic():
         held_days = (date.today() - fd.start_date).days
-        penalty_rate = fd.fd_product.premature_penalty_percent
+        penalty_rate = getattr(fd, 'premature_penalty_percent', Decimal('1.0'))
         effective_rate = fd.interest_rate - penalty_rate
         if effective_rate < 0:
             effective_rate = Decimal('0')
@@ -131,7 +162,7 @@ def premature_close_fd(fd, user):
         )
 
         fd.status = 'prematurely_closed'
-        fd.premature_closure_date = date.today()
+        fd.premature_closure_date = get_transaction_date(fd.branch)
         fd.premature_amount = premature_amount
         fd.accrued_interest = premature_amount - fd.deposit_amount
         fd.save()
@@ -143,22 +174,48 @@ def premature_close_fd(fd, user):
 def renew_fd(fd, user):
     return create_fd(
         member=fd.member,
-        product=fd.fd_product,
         amount=fd.maturity_amount,
         tenure_days=fd.tenure_days,
         branch=fd.branch,
         user=user,
+        product=fd.fd_product,
         is_auto_renew=fd.is_auto_renew,
         linked_savings_account=fd.linked_savings_account,
+        compounding=fd.compounding_type,
     )
 
 
-def create_rd(member, monthly_installment, tenure_months, interest_rate, branch, user, linked_savings_account=None):
+def create_rd(
+    member,
+    monthly_installment,
+    tenure_months,
+    interest_rate,
+    branch,
+    user,
+    linked_savings_account=None,
+    rd_product=None,
+):
+    from apps.accounting.models import ChartOfAccounts, InterestMaster
+
     monthly_installment = Decimal(str(monthly_installment))
+
+    # Look up rate from InterestMaster; fall back to passed interest_rate
+    head = ChartOfAccounts.objects.filter(related_table_name='recurring', is_active=True).first()
+    if head:
+        slab = InterestMaster.objects.filter(
+            account_head=head,
+            is_active=True,
+            period_unit='months',
+            min_period__lte=tenure_months,
+            max_period__gte=tenure_months,
+        ).first()
+        if slab:
+            interest_rate = float(slab.interest_rate)
+
     interest_rate = Decimal(str(interest_rate))
 
     maturity_amount = _calculate_rd_maturity(monthly_installment, interest_rate, tenure_months)
-    start = date.today()
+    start = get_transaction_date(branch)
     maturity_date = date(
         start.year + (start.month + tenure_months - 1) // 12,
         (start.month + tenure_months - 1) % 12 + 1,
@@ -169,6 +226,7 @@ def create_rd(member, monthly_installment, tenure_months, interest_rate, branch,
         rd_no = _generate_rd_no(branch)
         rd = RecurringDeposit.objects.create(
             member=member,
+            rd_product=None,
             branch=branch,
             rd_no=rd_no,
             monthly_installment=monthly_installment,
@@ -210,8 +268,9 @@ def collect_rd_installment(rd, amount, branch, user):
         raise ValueError('No pending installment found')
 
     with transaction.atomic():
+        txn_date = get_transaction_date(branch)
         installment.paid_amount = amount
-        installment.paid_date = date.today()
+        installment.paid_date = txn_date
         installment.branch = branch
         installment.status = 'paid'
         installment.save()
@@ -277,8 +336,10 @@ def _generate_rd_no(branch):
 
 def _create_fd_creation_journal(fd, branch, user):
     from apps.accounting.services import create_journal_entry
+    from apps.core.gl_utils import get_account_gl_code
     from apps.savings.services import _get_cash_code
 
+    fd_code = get_account_gl_code(fd, 'fixed', '2002')
     create_journal_entry(
         entry_date=fd.start_date,
         voucher_type='receipt',
@@ -286,7 +347,7 @@ def _create_fd_creation_journal(fd, branch, user):
         narration=f'FD creation {fd.fd_no}',
         lines=[
             {'account_code': _get_cash_code(branch), 'debit': fd.deposit_amount, 'credit': Decimal('0')},
-            {'account_code': '2002', 'debit': Decimal('0'), 'credit': fd.deposit_amount},
+            {'account_code': fd_code, 'debit': Decimal('0'), 'credit': fd.deposit_amount},
         ],
         user=user,
         reference_type='fd_creation',
@@ -296,18 +357,23 @@ def _create_fd_creation_journal(fd, branch, user):
 
 def _create_fd_maturity_journal(fd, branch, user, amount=None):
     from apps.accounting.services import create_journal_entry
+    from apps.core.gl_utils import get_account_gl_code, get_gl_code, get_interest_head_code
     from apps.savings.services import _get_cash_code
+
+    fd_code = get_account_gl_code(fd, 'fixed', '2002')
+    gl_head = fd.gl_head if hasattr(fd, 'gl_head') and fd.gl_head_id else None
+    interest_expense_code = get_interest_head_code(gl_head, get_gl_code('interest_paid', '4002'))
 
     payout = amount or fd.maturity_amount
     interest = payout - fd.deposit_amount
     lines = [
-        {'account_code': '2002', 'debit': fd.deposit_amount, 'credit': Decimal('0')},
+        {'account_code': fd_code, 'debit': fd.deposit_amount, 'credit': Decimal('0')},
     ]
     if interest > 0:
-        lines.append({'account_code': '4002', 'debit': interest, 'credit': Decimal('0')})
+        lines.append({'account_code': interest_expense_code, 'debit': interest, 'credit': Decimal('0')})
     lines.append({'account_code': _get_cash_code(branch), 'debit': Decimal('0'), 'credit': payout})
     create_journal_entry(
-        entry_date=date.today(),
+        entry_date=get_transaction_date(branch),
         voucher_type='payment',
         branch=branch,
         narration=f'FD maturity/closure {fd.fd_no}',
@@ -320,16 +386,18 @@ def _create_fd_maturity_journal(fd, branch, user, amount=None):
 
 def _create_rd_journal(rd, amount, branch, user, installment):
     from apps.accounting.services import create_journal_entry
+    from apps.core.gl_utils import get_account_gl_code
     from apps.savings.services import _get_cash_code
 
+    rd_code = get_account_gl_code(rd, 'recurring', '2003')
     create_journal_entry(
-        entry_date=date.today(),
+        entry_date=get_transaction_date(branch),
         voucher_type='receipt',
         branch=branch,
         narration=f'RD installment {rd.rd_no} #{installment.installment_no}',
         lines=[
             {'account_code': _get_cash_code(branch), 'debit': amount, 'credit': Decimal('0')},
-            {'account_code': '2003', 'debit': Decimal('0'), 'credit': amount},
+            {'account_code': rd_code, 'debit': Decimal('0'), 'credit': amount},
         ],
         user=user,
         reference_type='rd_installment',

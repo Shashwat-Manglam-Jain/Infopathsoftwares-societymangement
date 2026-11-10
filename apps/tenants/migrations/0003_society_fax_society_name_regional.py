@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('tenants', '0002_society_authorized_capital_society_gst_no_and_more'),
     ]

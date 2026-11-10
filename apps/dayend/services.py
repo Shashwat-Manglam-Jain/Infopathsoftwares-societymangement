@@ -2,7 +2,7 @@ from datetime import date, timedelta
 from decimal import ROUND_HALF_UP, Decimal
 
 from django.db import transaction
-from django.db.models import Sum
+from django.db.models import Q, Sum
 from django.utils import timezone
 
 from .models import DayEndLog, MonthEndLog, WorkingDay, YearEndLog
@@ -258,9 +258,7 @@ def run_year_end(branch, financial_year, user):
                 ).aggregate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
                 net = (bal['cr'] or Decimal('0')) - (bal['dr'] or Decimal('0'))
                 if net > 0:
-                    closing_lines.append(
-                        {'account_code': account.code, 'debit': net, 'credit': Decimal('0')}
-                    )
+                    closing_lines.append({'account_code': account.code, 'debit': net, 'credit': Decimal('0')})
             for account in expense_accounts:
                 bal = JournalLine.objects.filter(
                     gl_account=account,
@@ -269,9 +267,7 @@ def run_year_end(branch, financial_year, user):
                 ).aggregate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
                 net = (bal['dr'] or Decimal('0')) - (bal['cr'] or Decimal('0'))
                 if net > 0:
-                    closing_lines.append(
-                        {'account_code': account.code, 'debit': Decimal('0'), 'credit': net}
-                    )
+                    closing_lines.append({'account_code': account.code, 'debit': Decimal('0'), 'credit': net})
 
             if profit_or_loss > 0:
                 closing_lines.append(
@@ -339,9 +335,7 @@ def _accrue_savings_interest(branch, processing_date):
     accounts = SavingsAccount.objects.filter(branch=branch, status='active', interest_rate__gt=0)
     for account in accounts:
         daily_rate = account.interest_rate / (Decimal('100') * days_in_year)
-        daily_interest = (account.current_balance * daily_rate).quantize(
-            Decimal('0.01'), rounding=ROUND_HALF_UP
-        )
+        daily_interest = (account.current_balance * daily_rate).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
         account.accrued_interest = (account.accrued_interest or Decimal('0')) + daily_interest
         account.last_interest_calculated_date = processing_date
         account.save(update_fields=['accrued_interest', 'last_interest_calculated_date'])
@@ -397,18 +391,60 @@ def _mark_npa_loans(branch, processing_date):
 
 
 def _auto_cashbook_posting(branch, processing_date, user):
-    """Verify day's transactions are posted to GL.
+    """Aggregate day's journal entries into CashbookMaster.
 
-    Individual savings/loan/pigmmy transactions already create journal
-    entries at transaction time. This step verifies the day's postings
-    are consistent and logs the count. No duplicate GL entries are created.
+    Individual transactions already create journal entries at transaction
+    time. This step aggregates them into a daily cashbook summary with
+    opening/closing balances per branch.
     """
-    from apps.accounting.models import JournalEntry
+    from apps.accounting.models import CashbookMaster, JournalEntry, JournalLine
 
-    entries_posted = JournalEntry.objects.filter(
+    entries = JournalEntry.objects.filter(
         branch=branch,
         entry_date=processing_date,
         is_reversed=False,
-    ).count()
+    )
+    entries_count = entries.count()
 
-    return entries_posted
+    agg = JournalLine.objects.filter(
+        journal_entry__in=entries,
+    ).aggregate(
+        receipt_total=Sum(
+            'debit_amount',
+            filter=Q(journal_entry__voucher_type='receipt'),
+            default=Decimal('0'),
+        ),
+        payment_total=Sum(
+            'credit_amount',
+            filter=Q(journal_entry__voucher_type='payment'),
+            default=Decimal('0'),
+        ),
+    )
+    receipt_total = agg['receipt_total'] or Decimal('0')
+    payment_total = agg['payment_total'] or Decimal('0')
+
+    previous_cb = (
+        CashbookMaster.objects.filter(
+            branch=branch,
+            txn_date__lt=processing_date,
+            is_closed=True,
+        )
+        .order_by('-txn_date')
+        .first()
+    )
+    opening = previous_cb.closing_balance if previous_cb else Decimal('0')
+
+    _cb, _created = CashbookMaster.objects.update_or_create(
+        branch=branch,
+        txn_date=processing_date,
+        defaults={
+            'opening_balance': opening,
+            'total_receipts': receipt_total,
+            'total_payments': payment_total,
+            'closing_balance': opening + receipt_total - payment_total,
+            'is_closed': True,
+            'closed_by': user,
+        },
+    )
+
+    return entries_count

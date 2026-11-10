@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} — InfoSociety{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+    <div>
+        <h2 class="text-xl font-bold text-gray-900">{{ title }}</h2>
+        <p class="text-sm text-gray-500 mt-1">Loan {{ loan.loan_no }} — {{ loan.member.name }} — {{ loan.loan_product.name }}</p>
+    </div>
+
+    <!-- Loan Info -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+                <p class="text-xs text-gray-500">Loan No</p>
+                <p class="text-sm font-semibold font-mono">{{ loan.loan_no }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500">Member</p>
+                <p class="text-sm font-semibold">{{ loan.member.name }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500">Product</p>
+                <p class="text-sm font-semibold">{{ loan.loan_product.name }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500">Status</p>
+                <p class="text-sm font-semibold">{{ loan.get_status_display }}</p>
+            </div>
+        </div>
+    </div>
+
+    {% if form.errors %}
+    <div class="rounded-lg bg-red-50 border border-red-200 p-4">
+        <h3 class="text-sm font-medium text-red-800">Please correct the errors below</h3>
+        <ul class="mt-1 text-sm text-red-700 list-disc list-inside">
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}<li>{{ field|title }}: {{ error }}</li>{% endfor %}
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 class="text-sm font-semibold text-gray-700 mb-4">Guarantor Details</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Guarantor Member <span class="text-red-500">*</span></label>
+                    {{ form.guarantor_member }}
+                    {% if form.guarantor_member.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.guarantor_member.errors.0 }}</p>
+                    {% endif %}
+                    <p class="text-xs text-gray-400 mt-1">Member must have active shares to be a guarantor.</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Guarantee Amount <span class="text-red-500">*</span></label>
+                    {{ form.guarantee_amount }}
+                    {% if form.guarantee_amount.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.guarantee_amount.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Share Account</label>
+                    {{ form.guarantor_share_account }}
+                    <p class="text-xs text-gray-400 mt-1">Auto-populated from the member's active shareholding.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3">
+            <a href="{% url 'loans:detail' pk=loan.pk %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
+            <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">Save Guarantor</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

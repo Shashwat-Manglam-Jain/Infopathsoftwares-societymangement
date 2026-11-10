@@ -134,8 +134,14 @@ Example: 001-01-201-0000001
 
 ### 2. Accounts (`apps/accounts/`)
 - Custom User model (`AUTH_USER_MODEL = 'accounts.CustomUser'`)
-- Role-based access: Admin, Manager, Cashier, Clerk
-- Branch-level permissions
+- Role-based access with 6 roles:
+  - **admin** — Full access, all branches
+  - **branch_manager** — Full access within assigned branch
+  - **cashier** — Receipt/payment, account operations
+  - **accountant** — Vouchers, ledgers, financial reports
+  - **auditor** — Read-only access across all modules
+  - **member** — Self-service portal only
+- Branch-level permissions (`can_access_all_branches` flag)
 - Login/logout, password management, profile
 
 ### 3. Branches (`apps/branches/`)
@@ -200,22 +206,31 @@ Example: 001-01-201-0000001
 - Daily collection recording and reconciliation
 
 ### 11. Accounting (`apps/accounting/`)
-- Hierarchical Chart of Accounts with `related_table_name` field determining module behavior
+- **Account Heads** (ChartOfAccounts) with `related_table_name` field linking GL heads to functional modules
+- `account_code` (3-digit) used in account number generation
 - Double-entry journal entries with voucher types (Receipt, Payment, Journal, Contra)
 - Automatic voucher number generation per branch
-- Receipt and Payment transaction entry
-- Cashbook view with summary
-- Trial balance generation
+- Receipt and Payment transaction entry with GL head account search
+- Cashbook — today's receipts/payments split view with GL details
 - General ledger with opening/closing balances
-- Day book view
+- Day book — all journal entries for a date
+- Cashbook Summary Report — CashbookMaster entries (created by Day End)
+- Interest Master — configurable interest rate slabs
+- Opening Balance entry (admin only)
 - Journal entry reversal
 
 ### 12. Day End (`apps/dayend/`)
 - Per-branch day-end batch processing
 - Working day management (open/close)
+- **Interest Calculate** — Daily interest accrual on savings accounts (daily product method: balance × rate / 365)
+- **Interest Post** — Credit accrued interest to savings balance, create journal entries
+- Day End — Accrue interest, mark overdue loans, post cashbook, close day
+- Month End — Generate EMI demand for loans, mark RD installments due
+- Year End — Close financial year, zero P&L accounts, carry forward balances
 - Financial year management with year-end closing
-- Month-end interest posting
-- Processing logs with summary and error tracking
+- **Repair Balances** — Recalculate running balances from transactions (admin recovery tool)
+- **Repair GL Balances** — Recalculate GL head balances from journal lines (admin recovery tool)
+- Processing logs with summary and error tracking (DayEndLog, MonthEndLog, YearEndLog)
 
 ### 13. Reports (`apps/reports/`)
 - Financial: Trial Balance, Profit & Loss, Balance Sheet
@@ -958,6 +973,20 @@ society_software/
 
 ## URL Structure
 
+### Navigation Sections (6 sections in sidebar/navbar)
+
+| Section | Items |
+|---------|-------|
+| **Dashboard** | Home dashboard with summary cards |
+| **Setup & Masters** | Organization (Society, Branches, Staff) + Masters (Members, Account Heads, Loan Products, FD/RD Schemes, Interest Slabs, Loan Charges, Share Config) |
+| **Accounts** | Shares, Savings, Current, Security Deposit, Fixed Deposit, Recurring Deposit, Loans |
+| **Pigmy / Agents** | Agents, Pigmy Accounts, Daily Collection, Collection Posting |
+| **Transactions** | Receipt, Payment, Cashbook, New Voucher, All Vouchers |
+| **Reports** | Ledgers (Personal, General, Day Book, Cashbook Summary) · Financial (Trial Balance, P&L, Balance Sheet) · Account Reports (Deposits, Loans, Balances, Pigmy) · Tools (Enquiry, Calculator, Customer 360) |
+| **Day End & Admin** | Day Operations, Interest Calculate, Interest Post, Opening Balance, Repair Balances, Repair GL Balances, Audit Trail, Notifications |
+
+### URL Patterns
+
 | URL Pattern | App | Description |
 |-------------|-----|-------------|
 | `/` | dashboard | Dashboard with summary cards |
@@ -965,28 +994,98 @@ society_software/
 | `/members/new/` | members | Create member |
 | `/members/<id>/` | members | Member detail |
 | `/members/<id>/edit/` | members | Edit member |
-| `/savings/` | savings | Savings account list |
+| `/savings/` | savings | Savings account list (filter by ?type=current or ?type=security) |
 | `/loans/` | loans | Loan list |
-| `/deposits/` | deposits | FD & RD lists |
+| `/loans/products/` | loans | Loan products |
+| `/loans/loan-charges/` | loans | Loan charges (StandingInstruction) |
+| `/deposits/fd/` | deposits | Fixed deposit list |
+| `/deposits/rd/` | deposits | Recurring deposit list |
+| `/deposits/fd-products/` | deposits | FD product schemes |
+| `/deposits/rd-products/` | deposits | RD product schemes |
 | `/shares/` | shares | Share holdings |
 | `/agents/` | agents | Pigmmy agents |
+| `/agents/pigmmy/` | agents | Pigmy accounts |
+| `/agents/collections/` | agents | Daily collection |
+| `/agents/collections/posting/` | agents | Collection posting |
 | `/branches/` | branches | Branch list |
-| `/accounting/` | accounting | Chart of accounts & GL |
+| `/accounting/heads/` | accounting | Account heads (GL) |
 | `/accounting/receipt/` | accounting | Receipt transaction entry |
 | `/accounting/payment/` | accounting | Payment transaction entry |
-| `/accounting/cashbook/` | accounting | Cashbook view |
-| `/dayend/` | dayend | Day-end processing |
-| `/reports/` | reports | Report index |
+| `/accounting/cashbook/` | accounting | Today's cashbook |
+| `/accounting/voucher/create/` | accounting | Create journal voucher |
+| `/accounting/` | accounting | All vouchers list |
+| `/accounting/general-ledger/` | accounting | General ledger |
+| `/accounting/day-book/` | accounting | Day book |
+| `/accounting/cashbook-report/` | accounting | Cashbook summary report |
+| `/accounting/interest-master/` | accounting | Interest rate slabs |
+| `/accounting/opening-balance/` | accounting | Set opening balances |
+| `/dayend/` | dayend | Day operations (begin/end/month/year) |
+| `/dayend/interest-calculate/` | dayend | Calculate savings interest |
+| `/dayend/interest-post/` | dayend | Post accrued interest |
+| `/dayend/reupdate-balance/` | dayend | Repair account balances |
+| `/dayend/reupdate-gl-balance/` | dayend | Repair GL balances |
 | `/reports/trial-balance/` | reports | Trial Balance |
 | `/reports/profit-loss/` | reports | Profit & Loss |
 | `/reports/balance-sheet/` | reports | Balance Sheet |
+| `/reports/personal-ledger/` | reports | Personal ledger |
+| `/reports/deposit-reports/` | reports | Deposit reports |
+| `/reports/loan-reports/` | reports | Loan reports |
+| `/reports/balance-report/` | reports | Balance report |
+| `/reports/pigmy-reports/` | reports | Pigmy reports |
+| `/reports/enquiry/` | reports | Member enquiry |
+| `/reports/ready-reckoner/` | reports | Interest calculator |
+| `/reports/customer-accounts/` | reports | Customer 360 view |
 | `/audit/` | audit | Audit trail |
-| `/notifications/` | notifications | SMS management |
+| `/notifications/send-bulk/` | notifications | Bulk SMS |
 | `/accounts/login/` | accounts | Login |
 | `/accounts/profile/` | accounts | User profile |
 | `/api/` | api | REST API root |
 | `/api/docs/` | api | Swagger documentation |
-| `/admin/` | django | Django admin |
+
+---
+
+## Key Model Reference (47 models across 14 apps)
+
+### Field Name Quick Reference
+
+These field names have been corrected and verified against the codebase. Use these exact names in queries and templates:
+
+| Model | Key Fields | Notes |
+|-------|-----------|-------|
+| `Member` | `member_no`, `name`, `status` | Auto-generated `M0001` format |
+| `SavingsAccount` | `account_no`, `account_type`, `current_balance`, `accrued_interest`, `folio_number` | `account_type`: savings/current/security |
+| `FixedDeposit` | `fd_no`, `fd_product` (FK), `deposit_amount`, `maturity_amount` | FK is `fd_product` not `product` |
+| `RecurringDeposit` | `rd_no`, `rd_product` (FK), `monthly_installment` | Field is `monthly_installment` not `monthly_amount` |
+| `LoanAccount` | `loan_no`, `loan_product` (FK), `disbursed_amount`, `outstanding_balance` | |
+| `LoanProduct` | `name`, `interest_rate`, `interest_type`, `loan_category`, `mortgage_type` | |
+| `ShareHolding` | `share_count`, `total_amount`, `face_value_per_share` | `share_count` not `total_shares` |
+| `Agent` | `agent_code`, `member` (FK), `savings_account` (FK), `commission_rate` | |
+| `PigmmyAccount` | `account_no`, `folio_number`, `installment_amount`, `total_installments`, `paid_installments` | |
+| `ChartOfAccounts` | `code`, `name`, `account_code`, `related_table_name`, `head_type` | `head_type`: asset/liability/equity/income/expense |
+| `JournalEntry` | `voucher_no`, `entry_date`, `voucher_type`, `narration`, `is_reversed` | `total_amount` is a property (sum of debit lines) |
+| `JournalLine` | `gl_account` (FK), `debit_amount`, `credit_amount`, `account_number`, `narration` | |
+| `CashbookMaster` | `txn_date`, `opening_balance`, `total_receipts`, `total_payments`, `closing_balance` | Created by Day End process |
+| `WorkingDay` | `current_date`, `is_day_open`, `day_end_completed`, `last_working_date` | Per-branch |
+| `CustomUser` | `role`, `branch` (FK), `can_access_all_branches` | 6 roles: admin, branch_manager, cashier, accountant, auditor, member |
+
+### Model Counts by App
+
+| App | Models | Total Fields |
+|-----|--------|-------------|
+| loans | 7 | LoanProduct, LoanAccount, LoanGuarantor, LoanCollateral, EMISchedule, LoanRepayment, StandingInstruction |
+| agents | 5 | Agent, PigmmyAccount, PigmmyTransaction, AgentCollection, AgentCommission |
+| accounting | 5 | ChartOfAccounts, JournalEntry, JournalLine, InterestMaster, CashbookMaster |
+| dayend | 5 | FinancialYear, WorkingDay, DayEndLog, MonthEndLog, YearEndLog |
+| deposits | 5 | FDProduct, RDProduct, FixedDeposit, RecurringDeposit, RDInstallment |
+| members | 4 | Member, MemberNominee, AccountNominee, MemberDocument |
+| core | 4 | StandardSetup, SetupMaster, DescriptionMaster, JointAccountHolder |
+| shares | 3 | ShareConfig, ShareHolding, ShareTransaction |
+| notifications | 3 | SMSTemplate, SMSLog, BulkSMSBatch |
+| savings | 2 | SavingsAccount, AccountTransaction |
+| tenants | 2 | Society, Domain |
+| branches | 1 | Branch |
+| audit | 1 | AuditTrail |
+| **Total** | **47** | |
 
 ---
 

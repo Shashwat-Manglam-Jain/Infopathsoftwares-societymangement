@@ -86,6 +86,7 @@ class Subscription(models.Model):
     @property
     def is_expired(self):
         from datetime import date
+
         if self.status == 'cancelled':
             return True
         if self.end_date and self.end_date < date.today():
@@ -95,6 +96,7 @@ class Subscription(models.Model):
     @property
     def days_remaining(self):
         from datetime import date
+
         if not self.end_date:
             return None
         return max(0, (self.end_date - date.today()).days)

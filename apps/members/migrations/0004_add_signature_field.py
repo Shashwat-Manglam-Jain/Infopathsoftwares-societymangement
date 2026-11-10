@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('members', '0003_member_area_member_city_village_member_info_and_more'),
     ]

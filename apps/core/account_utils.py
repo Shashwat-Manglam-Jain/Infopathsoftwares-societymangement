@@ -1,11 +1,29 @@
+from django.db import transaction
 from django.db.models import Max
 
 
 def amount_to_words(amount):
     ones = [
-        '', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
-        'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen',
-        'Seventeen', 'Eighteen', 'Nineteen',
+        '',
+        'One',
+        'Two',
+        'Three',
+        'Four',
+        'Five',
+        'Six',
+        'Seven',
+        'Eight',
+        'Nine',
+        'Ten',
+        'Eleven',
+        'Twelve',
+        'Thirteen',
+        'Fourteen',
+        'Fifteen',
+        'Sixteen',
+        'Seventeen',
+        'Eighteen',
+        'Nineteen',
     ]
     tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety']
 
@@ -46,24 +64,20 @@ def amount_to_words(amount):
     return result
 
 
+@transaction.atomic
 def generate_account_number(branch, account_code):
     """Generate account number: SocietyCode(3) + BranchCode(2) + AccountCode(3) + Sequential(7).
 
-    Format: 001011003-0000001
-      society_code = 3-digit tenant/society code (from branch)
-      branch_code  = 2-digit branch code
-      account_code = 3-digit GL code from ChartOfAccounts
-      sequential   = 7-digit zero-padded, auto-incremented per prefix
-
-    Supports up to 99,99,999 accounts per head per branch.
+    Uses select_for_update to prevent race conditions — concurrent calls block
+    until the first transaction commits.
     """
+    from apps.agents.models import PigmmyAccount
     from apps.deposits.models import FixedDeposit, RecurringDeposit
     from apps.loans.models import LoanAccount
     from apps.savings.models import SavingsAccount
 
-    society_code = getattr(branch, 'society_code', '001')
-    if not society_code:
-        society_code = '001'
+    society = getattr(branch, 'society', None)
+    society_code = getattr(society, 'society_code', None) or getattr(branch, 'society_code', None) or '001'
     branch_part = branch.branch_code[:2].zfill(2)
     acct_part = account_code[:3].zfill(3)
 
@@ -75,8 +89,10 @@ def generate_account_number(branch, account_code):
         (LoanAccount, 'loan_no'),
         (FixedDeposit, 'fd_no'),
         (RecurringDeposit, 'rd_no'),
+        (PigmmyAccount, 'account_no'),
     ]:
-        result = model.objects.filter(**{f'{field}__startswith': prefix}).aggregate(max_no=Max(field))
+        qs = model.objects.select_for_update().filter(**{f'{field}__startswith': prefix})
+        result = qs.aggregate(max_no=Max(field))
         if result['max_no']:
             try:
                 seq = int(result['max_no'][-7:])

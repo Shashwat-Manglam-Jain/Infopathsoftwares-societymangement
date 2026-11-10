@@ -1,8 +1,8 @@
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic import FormView, ListView, UpdateView
 
+from apps.accounts.permissions import ManagerRequiredMixin
 from apps.members.models import Member
 
 from .forms import BulkSMSForm, NotificationTemplateForm
@@ -10,13 +10,13 @@ from .models import NotificationTemplate, SMSLog
 from .services import send_sms
 
 
-class NotificationTemplateListView(LoginRequiredMixin, ListView):
+class NotificationTemplateListView(ManagerRequiredMixin, ListView):
     model = NotificationTemplate
     template_name = 'notifications/template_list.html'
     context_object_name = 'templates'
 
 
-class NotificationTemplateUpdateView(LoginRequiredMixin, UpdateView):
+class NotificationTemplateUpdateView(ManagerRequiredMixin, UpdateView):
     model = NotificationTemplate
     form_class = NotificationTemplateForm
     template_name = 'notifications/template_form.html'
@@ -27,7 +27,7 @@ class NotificationTemplateUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class SMSLogListView(LoginRequiredMixin, ListView):
+class SMSLogListView(ManagerRequiredMixin, ListView):
     model = SMSLog
     template_name = 'notifications/sms_log.html'
     context_object_name = 'logs'
@@ -52,7 +52,7 @@ class SMSLogListView(LoginRequiredMixin, ListView):
         return qs
 
 
-class SendBulkSMSView(LoginRequiredMixin, FormView):
+class SendBulkSMSView(ManagerRequiredMixin, FormView):
     form_class = BulkSMSForm
     template_name = 'notifications/send_bulk.html'
     success_url = reverse_lazy('notifications:sms_log')

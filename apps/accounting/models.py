@@ -42,9 +42,13 @@ class ChartOfAccounts(models.Model):
 
     code = models.CharField(max_length=10, unique=True)
     name = models.CharField(max_length=200)
+    head_name_regional = models.CharField(max_length=200, blank=True, help_text='Name in regional language')
     account_group = models.CharField(max_length=10, choices=ACCOUNT_GROUP_CHOICES)
     account_type = models.CharField(max_length=50, blank=True)
     parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='children')
+    account_code = models.CharField(
+        max_length=3, blank=True, help_text='3-digit code used in account number generation'
+    )
     is_system = models.BooleanField(default=False)
     branch = models.ForeignKey(
         'branches.Branch',
@@ -53,7 +57,11 @@ class ChartOfAccounts(models.Model):
         blank=True,
         help_text='NULL = society-wide, set = branch-specific (e.g. cash book)',
     )
+    opening_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    credit_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    debit_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     current_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    sub_group = models.CharField(max_length=10, blank=True, help_text='Sub-group classification for reporting')
     is_active = models.BooleanField(default=True)
 
     related_table_name = models.CharField(
@@ -138,6 +146,10 @@ class JournalEntry(models.Model):
         verbose_name_plural = 'journal entries'
         ordering = ['-entry_date', '-created_at']
 
+    @property
+    def total_amount(self):
+        return self.lines.aggregate(t=models.Sum('debit_amount'))['t'] or 0
+
     def __str__(self):
         return f'{self.voucher_no} - {self.entry_date}'
 
@@ -153,3 +165,66 @@ class JournalLine(models.Model):
         if self.debit_amount:
             return f'DR {self.gl_account.name}: {self.debit_amount}'
         return f'CR {self.gl_account.name}: {self.credit_amount}'
+
+
+class InterestMaster(models.Model):
+    """Period-based interest rates per account head (scheme_code)."""
+
+    PERIOD_UNIT_CHOICES = [
+        ('days', 'Days'),
+        ('months', 'Months'),
+        ('years', 'Years'),
+    ]
+
+    account_head = models.ForeignKey(
+        ChartOfAccounts,
+        on_delete=models.CASCADE,
+        related_name='interest_slabs',
+        help_text='GL head this rate applies to',
+    )
+    min_period = models.IntegerField(help_text='Minimum period (inclusive)')
+    max_period = models.IntegerField(help_text='Maximum period (inclusive)')
+    period_unit = models.CharField(max_length=6, choices=PERIOD_UNIT_CHOICES, default='months')
+    interest_rate = models.DecimalField(max_digits=5, decimal_places=2)
+    penal_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    senior_citizen_extra = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    widow_extra = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    ex_military_extra = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    disabled_extra = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    employee_extra = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    director_extra = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    last_posting_date = models.DateField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['account_head', 'min_period']
+        unique_together = ['account_head', 'min_period', 'max_period', 'period_unit']
+
+    def __str__(self):
+        return f'{self.account_head.code} {self.min_period}-{self.max_period} {self.period_unit}: {self.interest_rate}%'
+
+
+class CashbookMaster(models.Model):
+    """Daily cashbook per branch — tracks opening/closing cash balance."""
+
+    branch = models.ForeignKey('branches.Branch', on_delete=models.PROTECT)
+    txn_date = models.DateField()
+    opening_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    total_receipts = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    total_payments = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    closing_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    is_closed = models.BooleanField(default=False)
+    closed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ['branch', 'txn_date']
+        ordering = ['-txn_date']
+
+    def __str__(self):
+        return f'{self.branch.branch_code} - {self.txn_date}'

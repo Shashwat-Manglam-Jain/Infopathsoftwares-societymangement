@@ -5,12 +5,16 @@ from django.urls import include, path
 from django.views.generic import RedirectView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
-from apps.tenants.views import subscription_expired_view, subscription_recharge_view
+from apps.core.views import avatar_view, error_403, error_404, error_500
+from apps.tenants.views import society_detail, society_edit, subscription_expired_view, subscription_recharge_view
 
 urlpatterns = [
+    path('avatar/<str:name>/<int:size>/', avatar_view, name='avatar'),
     path('login', RedirectView.as_view(url='/accounts/login/', permanent=True)),
     path('subscription/expired/', subscription_expired_view, name='subscription_expired'),
     path('subscription/recharge/', subscription_recharge_view, name='subscription_recharge'),
+    path('society/', society_detail, name='society_detail'),
+    path('society/edit/', society_edit, name='society_edit'),
     path('admin/', admin.site.urls),
     path('', include('apps.dashboard.urls')),
     path('branches/', include('apps.branches.urls')),
@@ -31,6 +35,10 @@ urlpatterns = [
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
 ]
+
+handler403 = error_403
+handler404 = error_404
+handler500 = error_500
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

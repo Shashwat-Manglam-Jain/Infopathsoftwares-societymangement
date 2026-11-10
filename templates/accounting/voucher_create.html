@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Create Voucher — InfoSociety{% endblock %}
+{% block title %}{{ title|default:"Create Voucher" }} — InfoSociety{% endblock %}
+{% block page_title %}{{ title|default:"Create Voucher" }}{% endblock %}
 
 {% block content %}
 <div class="max-w-3xl mx-auto space-y-6">
     <div>
-        <h2 class="text-xl font-bold text-gray-900">Create Voucher Entry</h2>
-        <p class="text-sm text-gray-500 mt-1">Record a manual journal / contra voucher between two GL accounts.</p>
+        <h2 class="text-xl font-bold text-gray-900">{{ title|default:"Create Voucher Entry" }}</h2>
+        <p class="text-sm text-gray-500 mt-1">{% if is_edit %}Modify an existing voucher — the old entry will be reversed and a new one created.{% else %}Record a manual journal / contra voucher between two GL accounts.{% endif %}</p>
     </div>
 
     {% if messages %}

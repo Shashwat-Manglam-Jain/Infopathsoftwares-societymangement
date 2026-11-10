@@ -6,7 +6,6 @@ test runner can exercise model logic, utilities, and URL resolution
 without a live PostgreSQL instance.
 """
 
-import os
 from pathlib import Path
 
 from dotenv import load_dotenv

@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 {% block title %}FD {{ fd.fd_no }} — InfoSociety{% endblock %}
+{% block page_title %}Fixed Deposit Details{% endblock %}
 
 {% block content %}
 <div class="max-w-4xl mx-auto">
     <div class="flex items-center justify-between mb-6">
         <div>
             <h1 class="text-2xl font-bold text-gray-900">{{ fd.fd_no }}</h1>
-            <p class="text-sm text-gray-500">{{ fd.member.name }} — Fixed Deposit</p>
+            <p class="text-sm text-gray-500"><a href="{% url 'members:detail' fd.member.pk %}" class="text-primary-600 hover:underline">{{ fd.member.name }}</a> — Fixed Deposit</p>
         </div>
         <a href="{% url 'deposits:fd_list' %}" class="text-gray-500 hover:text-gray-700 text-sm">&larr; Back</a>
     </div>
@@ -35,7 +36,7 @@
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
         <h3 class="text-sm font-semibold text-gray-500 uppercase mb-4">Deposit Details</h3>
         <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 text-sm">
-            <div class="flex justify-between"><dt class="text-gray-500">Member</dt><dd class="font-medium">{{ fd.member.name }} ({{ fd.member.member_no }})</dd></div>
+            <div class="flex justify-between"><dt class="text-gray-500">Member</dt><dd class="font-medium"><a href="{% url 'members:detail' fd.member.pk %}" class="text-primary-600 hover:underline">{{ fd.member.name }}</a> ({{ fd.member.member_no }})</dd></div>
             <div class="flex justify-between"><dt class="text-gray-500">Branch</dt><dd class="font-medium">{{ fd.branch.branch_name }}</dd></div>
             <div class="flex justify-between"><dt class="text-gray-500">Opening Date</dt><dd class="font-medium">{{ fd.start_date|date:"d M Y" }}</dd></div>
             <div class="flex justify-between"><dt class="text-gray-500">Maturity Date</dt><dd class="font-medium">{{ fd.maturity_date|date:"d M Y" }}</dd></div>
@@ -47,6 +48,7 @@
     </div>
 
     {% if fd.status == 'active' %}
+    {% if request.user.is_manager %}
     <div class="flex gap-4">
         <form method="post" action="{% url 'deposits:fd_premature_close' pk=fd.pk %}" onsubmit="return confirm('Are you sure you want to prematurely close this FD?');">
             {% csrf_token %}
@@ -57,6 +59,7 @@
             <button type="submit" class="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 font-medium">Renew FD</button>
         </form>
     </div>
+    {% endif %}
     {% endif %}
 </div>
 {% endblock %}

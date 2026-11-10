@@ -29,15 +29,23 @@ def create_pigmmy_account(
     if not SavingsAccount.objects.filter(member=agent.member, status='active', account_type='security').exists():
         raise ValueError('Agent must have an active security deposit account.')
 
-    last = PigmmyAccount.objects.order_by('-id').first()
-    if last:
-        try:
-            seq = int(''.join(filter(str.isdigit, last.account_no))) + 1
-        except ValueError:
-            seq = PigmmyAccount.objects.count() + 1
-    else:
-        seq = 1
-    account_no = f'PG{seq:06d}'
+    # Soft override: use InterestMaster slab rate if available
+    from apps.accounting.models import ChartOfAccounts, InterestMaster
+    head = ChartOfAccounts.objects.filter(related_table_name='client', is_active=True).first()
+    if head:
+        slab = InterestMaster.objects.filter(
+            account_head=head, is_active=True, period_unit='months',
+            min_period__lte=deposit_period_months,
+            max_period__gte=deposit_period_months,
+        ).first()
+        if slab:
+            interest_rate = Decimal(str(slab.interest_rate))
+
+    from apps.core.account_utils import generate_account_number
+
+    type_codes = {'daily': '010', 'weekly': '011', 'monthly': '012'}
+    ac_code = type_codes.get(deposit_type, '010')
+    account_no = generate_account_number(branch, ac_code)
 
     if deposit_type == 'daily':
         total_installments = deposit_period_months * 26
@@ -49,7 +57,9 @@ def create_pigmmy_account(
     monthly_rate = Decimal(str(interest_rate)) / Decimal('1200')
     maturity_amount = Decimal('0')
     for i in range(total_installments):
-        remaining_months = Decimal(str(deposit_period_months)) - (Decimal(str(i)) * Decimal(str(deposit_period_months)) / Decimal(str(total_installments)))
+        remaining_months = Decimal(str(deposit_period_months)) - (
+            Decimal(str(i)) * Decimal(str(deposit_period_months)) / Decimal(str(total_installments))
+        )
         maturity_amount += installment_amount * (Decimal('1') + monthly_rate) ** remaining_months
     maturity_amount = maturity_amount.quantize(Decimal('0.01'))
 
@@ -83,10 +93,11 @@ def create_pigmmy_account(
 
 
 @transaction.atomic
-def record_agent_collection(agent, collection_date, client_payments, branch, created_by):
+def record_agent_collection(agent, collection_date, client_payments, branch, created_by, agent_collection_amount=None):
     """Record daily collection by an agent for multiple clients.
 
     client_payments: list of dicts [{'account_id': int, 'amount': Decimal}, ...]
+    agent_collection_amount: amount the agent declares they collected (for reconciliation)
     """
     collection, _ = AgentCollection.objects.get_or_create(
         agent=agent,
@@ -129,7 +140,10 @@ def record_agent_collection(agent, collection_date, client_payments, branch, cre
         clients_collected += 1
 
     collection.total_clients_collected = clients_collected
-    collection.collected_amount = total_collected
+    if agent_collection_amount is not None:
+        collection.collected_amount = Decimal(str(agent_collection_amount))
+    else:
+        collection.collected_amount = total_collected
     collection.deposited_amount = total_collected
     collection.status = 'submitted'
     collection.save()
@@ -165,6 +179,51 @@ def record_agent_collection(agent, collection_date, client_payments, branch, cre
         )
 
     return collection
+
+
+@transaction.atomic
+def post_collection(collection, posted_by):
+    """Post a submitted AgentCollection — credit amounts to respective pigmmy accounts' linked savings.
+
+    Posting is only allowed when the agent's declared collection amount matches
+    the sum of individual client transaction amounts (reconciliation check).
+    """
+    if collection.status != 'submitted':
+        raise ValueError(f'Collection must be in "submitted" status to post (current: {collection.status}).')
+
+    client_total = PigmmyTransaction.objects.filter(
+        collected_by=collection.agent,
+        txn_date=collection.collection_date,
+        is_reversed=False,
+    ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+
+    if collection.collected_amount != client_total:
+        raise ValueError(
+            f'Agent collection amount ({collection.collected_amount}) does not match '
+            f'client transaction total ({client_total}). '
+            f'Correct the transactions before posting.'
+        )
+
+    transactions = PigmmyTransaction.objects.filter(
+        collected_by=collection.agent,
+        txn_date=collection.collection_date,
+        is_reversed=False,
+    ).select_related('account', 'account__linked_savings_account')
+
+    posted_count = 0
+    for txn in transactions:
+        pigmmy_acct = txn.account
+        savings_acct = pigmmy_acct.linked_savings_account
+        if savings_acct:
+            savings_acct.current_balance += txn.amount
+            savings_acct.save()
+            posted_count += 1
+
+    collection.status = 'reconciled'
+    collection.reconciled_by = posted_by
+    collection.save()
+
+    return {'posted_count': posted_count, 'total_amount': collection.collected_amount}
 
 
 def calculate_agent_commission(agent, month_start, month_end):

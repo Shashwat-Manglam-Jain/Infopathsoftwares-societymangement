@@ -94,6 +94,17 @@ class Member(models.Model):
     def __str__(self):
         return f'{self.member_no} - {self.name}'
 
+    def save(self, *args, **kwargs):
+        if not self.member_no:
+            last = Member.objects.order_by('-id').first()
+            if last and last.member_no:
+                digits = ''.join(filter(str.isdigit, last.member_no))
+                num = int(digits) + 1 if digits else Member.objects.count() + 1
+            else:
+                num = 1
+            self.member_no = f'M{num:04d}'
+        super().save(*args, **kwargs)
+
     def get_fd_interest_bonus(self):
         """Extra interest rate percentage for special categories on FD."""
         bonus = Decimal('0.00')
@@ -124,6 +135,29 @@ class MemberNominee(models.Model):
 
     def __str__(self):
         return f'{self.name} ({self.relation}) - {self.member.member_no}'
+
+
+class AccountNominee(models.Model):
+    """Per-account nominee as per NOMINATION_MASTER — linked by account number, not member."""
+
+    NJ_TYPE_CHOICES = [
+        ('N', 'Nominee'),
+        ('J', 'Joint Holder'),
+    ]
+    account_number = models.CharField(max_length=20, db_index=True)
+    name = models.CharField(max_length=200)
+    relation = models.CharField(max_length=50, blank=True)
+    address = models.CharField(max_length=200, blank=True)
+    city = models.CharField(max_length=50, blank=True)
+    pincode = models.CharField(max_length=10, blank=True)
+    phone = models.CharField(max_length=15, blank=True)
+    nj_type = models.CharField(max_length=1, choices=NJ_TYPE_CHOICES, default='N')
+
+    class Meta:
+        ordering = ['account_number', 'pk']
+
+    def __str__(self):
+        return f'{self.account_number} - {self.name} ({self.get_nj_type_display()})'
 
 
 class MemberDocument(models.Model):

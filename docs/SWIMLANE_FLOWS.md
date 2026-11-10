@@ -8,7 +8,7 @@ Paste each code block into [Mermaid Live Editor](https://mermaid.live) or any Me
 
 ```mermaid
 sequenceDiagram
-    actor SA as Super Admin
+    actor SA as Admin
     participant SYS as System
     participant DB as Database
     actor ADM as Society Admin
@@ -41,7 +41,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor M as Member
-    actor C as Cashier/Clerk
+    actor C as Cashier
     participant SYS as System
     participant DB as Database
 
@@ -834,4 +834,123 @@ flowchart LR
 
     style DR fill:#fee,stroke:#c00
     style CR fill:#efe,stroke:#0a0
+```
+
+---
+
+## 26. Interest Calculation (Daily Accrual)
+
+```mermaid
+sequenceDiagram
+    actor ACC as Accountant/Admin
+    participant SYS as System
+    participant DB as Database
+
+    ACC->>SYS: Navigate to Day End → Interest Calculate
+    ACC->>SYS: Click "Calculate Interest"
+    SYS->>SYS: Verify working day is open
+
+    rect rgb(240, 248, 255)
+        Note over SYS,DB: Daily Product Method
+        loop Each active SavingsAccount in branch
+            SYS->>DB: Read current_balance
+            SYS->>SYS: daily_interest = current_balance × annual_rate / 365
+            SYS->>DB: UPDATE SavingsAccount SET accrued_interest += daily_interest
+        end
+    end
+
+    SYS-->>ACC: Show count of accounts processed & total interest accrued
+```
+
+---
+
+## 27. Interest Posting (Credit to Balance)
+
+```mermaid
+sequenceDiagram
+    actor ACC as Accountant/Admin
+    participant SYS as System
+    participant DB as Database
+    participant GL as Accounting Engine
+
+    ACC->>SYS: Navigate to Day End → Interest Post
+    ACC->>SYS: Click "Post Interest"
+    SYS->>SYS: Verify working day is open
+
+    rect rgb(240, 255, 240)
+        Note over SYS,DB: Post Accrued Interest to Balance
+        loop Each SavingsAccount where accrued_interest > 0
+            SYS->>DB: UPDATE SavingsAccount SET current_balance += accrued_interest
+            SYS->>DB: UPDATE SavingsAccount SET accrued_interest = 0
+            SYS->>DB: INSERT AccountTransaction (type=interest_credit)
+            SYS->>GL: CREATE JournalEntry
+            Note over GL: Dr. Interest Expense (4001)<br/>Cr. Savings Deposits (2001)
+        end
+    end
+
+    SYS-->>ACC: Show count posted & total amount credited
+```
+
+---
+
+## 28. Agent / Pigmy Complete Flow
+
+```mermaid
+flowchart TD
+    A[Create Agent] --> B[Assign Member + Savings Account + Branch]
+    B --> C[Create Pigmy Accounts for Clients]
+    C --> D[Daily: Agent Collects from Clients]
+    D --> E[Record Collection Amounts per Client]
+    E --> F{Collection Matches?}
+    F -->|Yes| G[Submit Collection]
+    F -->|No| H[Reconcile Difference]
+    H --> G
+    G --> I[Manager: Post Collection]
+    I --> J[Credit Pigmy Account Balances]
+    J --> K[Create Journal Entries]
+    K --> L[Dr. Cash / Cr. Pigmy Deposits]
+
+    style A fill:#e0f2fe
+    style I fill:#fef3c7
+    style L fill:#d1fae5
+```
+
+---
+
+## 29. Complete Navigation & Role Access Map
+
+```mermaid
+flowchart LR
+    subgraph ROLES["User Roles"]
+        R1[Admin]
+        R2[Branch Manager]
+        R3[Cashier]
+        R4[Accountant]
+        R5[Auditor]
+        R6[Member]
+    end
+
+    subgraph NAV["Navigation Sections"]
+        N1[Dashboard]
+        N2[Setup & Masters]
+        N3[Accounts]
+        N4[Pigmy / Agents]
+        N5[Transactions]
+        N6[Reports]
+        N7[Day End & Admin]
+    end
+
+    R1 --> N1 & N2 & N3 & N4 & N5 & N6 & N7
+    R2 --> N1 & N2 & N3 & N4 & N5 & N6 & N7
+    R3 --> N1 & N3 & N4 & N5 & N6
+    R4 --> N1 & N3 & N5 & N6 & N7
+    R5 --> N1 & N3 & N4 & N6
+    R6 --> N1
+
+    style R1 fill:#dc2626,color:#fff
+    style R2 fill:#ea580c,color:#fff
+    style R3 fill:#2563eb,color:#fff
+    style R4 fill:#7c3aed,color:#fff
+    style R5 fill:#059669,color:#fff
+    style R6 fill:#6b7280,color:#fff
 ```

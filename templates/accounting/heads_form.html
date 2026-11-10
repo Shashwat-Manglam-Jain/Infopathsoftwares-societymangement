@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}{{ title }} — InfoSociety{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
 
 {% block content %}
 <div class="max-w-3xl mx-auto space-y-6">
@@ -28,17 +29,32 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Head Code <span class="text-red-500">*</span></label>
                 {{ form.code }}
-                <p class="text-xs text-gray-500 mt-1">Unique identifier (e.g. 003). First 3 digits become part of account numbers under this head.</p>
+                <p class="text-xs text-gray-500 mt-1">Unique identifier (e.g. A001).</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Account Code</label>
+                {{ form.account_code }}
+                <p class="text-xs text-gray-500 mt-1">3-digit code used in account number generation (e.g. 003 for shares).</p>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Head Name <span class="text-red-500">*</span></label>
                 {{ form.name }}
-                <p class="text-xs text-gray-500 mt-1">Display name shown in Trial Balance, Profit &amp; Loss, and Balance Sheet reports.</p>
+                <p class="text-xs text-gray-500 mt-1">Display name for Trial Balance, P&amp;L and Balance Sheet.</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Head Name (Regional)</label>
+                {{ form.head_name_regional }}
+                <p class="text-xs text-gray-500 mt-1">Name in Marathi/Hindi for regional reports.</p>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Account Group <span class="text-red-500">*</span></label>
                 {{ form.account_group }}
-                <p class="text-xs text-gray-500 mt-1">Determines which report section this head appears in (Asset, Liability, Income, Expense, or Equity).</p>
+                <p class="text-xs text-gray-500 mt-1">Report section: Asset, Liability, Income, Expense, or Equity.</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Sub Group</label>
+                {{ form.sub_group }}
+                <p class="text-xs text-gray-500 mt-1">Sub-group for detailed classification within the main group.</p>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Parent Head</label>
@@ -48,22 +64,45 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Related Table Name <span class="text-red-500">*</span></label>
                 {{ form.related_table_name }}
-                <p class="text-xs text-gray-500 mt-1"><strong>Critical:</strong> Determines which module handles accounts — Saving = Savings, Fixed = FD, Loan = Loans, Client = Pigmmy, etc.</p>
+                <p class="text-xs text-gray-500 mt-1"><strong>Critical:</strong> Determines which module handles accounts under this head.</p>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Report Position</label>
-                {{ form.report_position }}
-                <p class="text-xs text-gray-500 mt-1">Where this head's balance appears: Balance Sheet, Profit &amp; Loss, Trial Balance only, or None.</p>
+        </div>
+
+        <!-- Balances -->
+        <div class="border-t pt-4">
+            <h4 class="text-sm font-semibold text-gray-700 mb-3">Balances</h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Opening Balance</label>
+                    {{ form.opening_balance }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Credit Balance</label>
+                    {{ form.credit_balance }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Debit Balance</label>
+                    {{ form.debit_balance }}
+                </div>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Interest Income/Expense Head</label>
-                {{ form.interest_code }}
-                <p class="text-xs text-gray-500 mt-1">When interest is calculated on accounts under this head, the interest amount posts to this linked head.</p>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Display Order</label>
-                {{ form.display_order }}
-                <p class="text-xs text-gray-500 mt-1">Controls sort order in the Chart of Accounts list and reports.</p>
+        </div>
+
+        <!-- Reporting -->
+        <div class="border-t pt-4">
+            <h4 class="text-sm font-semibold text-gray-700 mb-3">Reporting &amp; Interest</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Report Position</label>
+                    {{ form.report_position }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Interest Income/Expense Head</label>
+                    {{ form.interest_code }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Display Order</label>
+                    {{ form.display_order }}
+                </div>
             </div>
         </div>
 

@@ -1,20 +1,35 @@
 {% extends "base.html" %}
 {% block title %}Open Recurring Deposit — InfoSociety{% endblock %}
+{% block page_title %}Open Recurring Deposit{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto">
+<div class="max-w-3xl mx-auto" x-data="rdCreate()">
     <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold text-gray-900">Open Recurring Deposit</h1>
         <a href="{% url 'deposits:rd_list' %}" class="text-gray-500 hover:text-gray-700 text-sm">&larr; Back</a>
     </div>
 
+    {% if slabs_json == '[]' %}
+    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+        <div class="flex items-start gap-3">
+            <svg class="h-5 w-5 text-amber-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+            <div>
+                <h3 class="text-sm font-semibold text-amber-800">No RD Interest Slabs Configured</h3>
+                <p class="text-sm text-amber-700 mt-1">Configure Interest Master slabs for Recurring Deposits before opening an RD.</p>
+                <a href="{% url 'accounting:interest_master_create' %}" class="inline-flex items-center mt-2 text-sm font-medium text-amber-800 underline hover:text-amber-900">Configure Interest Master &rarr;</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <form method="post">
             {% csrf_token %}
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Member</label>
-                    <select name="member" required class="w-full rounded-lg border-gray-300 px-3 py-2">
+                    <select name="member" required class="searchable w-full rounded-lg border-gray-300 px-3 py-2">
                         <option value="">Select Member</option>
                         {% for m in members %}
                         <option value="{{ m.pk }}">{{ m.member_no }} — {{ m.name }}</option>
@@ -23,21 +38,59 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Monthly Installment (&#8377;)</label>
-                    <input type="number" name="monthly_installment" step="0.01" min="1" required class="w-full rounded-lg border-gray-300 px-3 py-2">
+                    <input type="number" name="monthly_installment" x-model="installment" step="0.01" min="1" required class="w-full rounded-lg border-gray-300 px-3 py-2">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tenure (Months)</label>
-                    <input type="number" name="tenure_months" min="1" required class="w-full rounded-lg border-gray-300 px-3 py-2">
+                    <input type="number" name="tenure_months" x-model="tenure" @input="autoFillRate()" min="1" required class="w-full rounded-lg border-gray-300 px-3 py-2">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Interest Rate (%)</label>
-                    <input type="number" name="interest_rate" step="0.01" min="0" required class="w-full rounded-lg border-gray-300 px-3 py-2">
+                    <input type="number" name="interest_rate" x-model="rate" step="0.01" min="0" required readonly tabindex="-1"
+                           class="w-full rounded-lg border-gray-300 px-3 py-2 bg-gray-50 cursor-not-allowed"
+                           :class="rate ? 'bg-green-50 border-green-300' : ''">
+                    <template x-if="rate">
+                        <p class="text-xs text-green-600 mt-1">Auto-filled from Interest Master</p>
+                    </template>
+                    <template x-if="rateError">
+                        <p class="text-xs text-red-600 mt-1">
+                            <span x-text="rateError"></span>
+                            <a href="{% url 'accounting:interest_master_create' %}" class="underline ml-1">Configure Interest Master</a>
+                        </p>
+                    </template>
                 </div>
             </div>
             <div class="mt-6 flex justify-end">
-                <button type="submit" class="bg-primary-600 text-white px-8 py-2 rounded-lg hover:bg-primary-700 font-medium">Create RD</button>
+                <button type="submit" :disabled="!rate" class="bg-primary-600 text-white px-8 py-2 rounded-lg hover:bg-primary-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed">Create RD</button>
             </div>
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_head %}
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('rdCreate', () => ({
+        slabs: {{ slabs_json|safe }},
+        installment: '',
+        tenure: '',
+        rate: '',
+        rateError: '',
+        autoFillRate() {
+            this.rate = '';
+            this.rateError = '';
+            const t = parseInt(this.tenure);
+            if (isNaN(t) || t < 1) return;
+            for (const slab of this.slabs) {
+                if (t >= slab.min_months && t <= slab.max_months) {
+                    this.rate = slab.rate;
+                    return;
+                }
+            }
+            this.rateError = 'No interest slab found for this tenure.';
+        }
+    }));
+});
+</script>
 {% endblock %}

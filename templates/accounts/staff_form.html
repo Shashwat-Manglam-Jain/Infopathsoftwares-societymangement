@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}{{ title }} — InfoSociety{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
 
 {% block content %}
 <div class="max-w-3xl mx-auto space-y-6">
@@ -25,7 +26,7 @@
     </div>
     {% endif %}
 
-    <form method="post" class="space-y-6">
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
         {% csrf_token %}
 
         {% if not edit_user %}
@@ -109,10 +110,8 @@
                         <option value="accountant" {% if form.role.value == 'accountant' %}selected{% endif %}>Accountant</option>
                         <option value="branch_manager" {% if form.role.value == 'branch_manager' %}selected{% endif %}>Branch Manager</option>
                         <option value="auditor" {% if form.role.value == 'auditor' %}selected{% endif %}>Auditor</option>
-                        <option value="super_admin" {% if form.role.value == 'super_admin' %}selected{% endif %}>Super Admin</option>
-                        <option value="member" {% if form.role.value == 'member' %}selected{% endif %}>Member</option>
                     </select>
-                    <p class="text-xs text-gray-500 mt-1">Super Admin and Branch Manager can manage other staff.</p>
+                    <p class="text-xs text-gray-500 mt-1">Branch Manager can manage other staff.</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Branch</label>

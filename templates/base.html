@@ -57,13 +57,13 @@
         <!-- Mobile sidebar overlay -->
         <div x-show="sidebarOpen" x-cloak class="fixed inset-0 z-40 lg:hidden">
             <div class="fixed inset-0 bg-gray-600 bg-opacity-75" @click="sidebarOpen = false"></div>
-            <div class="fixed inset-y-0 left-0 flex w-64 flex-col bg-primary-900">
-                <div class="flex items-center justify-between h-16 px-4">
+            <div class="fixed inset-y-0 left-0 flex w-64 flex-col bg-white border-r border-gray-200">
+                <div class="flex items-center justify-between h-16 px-4 bg-gray-50 border-b border-gray-200">
                     <div class="flex items-center space-x-2 min-w-0">
                         <img src="{% static 'img/logo.png' %}" alt="InfoSociety" class="h-8 flex-shrink-0">
-                        <span class="text-white text-xs font-semibold truncate">{{ request.tenant.name|default:"InfoSociety" }}</span>
+                        <span class="text-gray-900 text-xs font-semibold truncate">{{ request.tenant.name|default:"InfoSociety" }}</span>
                     </div>
-                    <button @click="sidebarOpen = false" class="text-primary-200 hover:text-white flex-shrink-0">
+                    <button @click="sidebarOpen = false" class="text-gray-400 hover:text-gray-700 flex-shrink-0">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
@@ -77,13 +77,13 @@
         <div x-cloak
              :class="desktopSidebar ? 'flex' : 'hidden'"
              class="desktop-sidebar fixed inset-y-0 left-0 w-64 flex-col z-30 transition-transform duration-200">
-            <div class="flex min-h-0 flex-1 flex-col bg-primary-900">
-                <div class="flex h-16 items-center justify-between px-4 bg-primary-950">
+            <div class="flex min-h-0 flex-1 flex-col bg-white border-r border-gray-200">
+                <div class="flex h-16 items-center justify-between px-4 bg-gray-50 border-b border-gray-200">
                     <div class="flex items-center space-x-2 min-w-0">
                         <img src="{% static 'img/logo.png' %}" alt="InfoSociety" class="h-9 flex-shrink-0">
-                        <span class="text-white text-sm font-semibold truncate">{{ request.tenant.name|default:"InfoSociety" }}</span>
+                        <span class="text-gray-900 text-sm font-semibold truncate">{{ request.tenant.name|default:"InfoSociety" }}</span>
                     </div>
-                    <button @click="toggleSidebar()" class="text-primary-300 hover:text-white flex-shrink-0 ml-2" title="Hide sidebar">
+                    <button @click="toggleSidebar()" class="text-gray-400 hover:text-gray-700 flex-shrink-0 ml-2" title="Hide sidebar">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
                     </button>
                 </div>
@@ -99,7 +99,7 @@
 
             <!-- Horizontal nav bar (visible only on lg+ when sidebar is hidden) -->
             <template x-if="!desktopSidebar">
-                <div class="hidden lg:block bg-primary-900 border-b border-primary-800 shadow-sm z-40 relative">
+                <div class="hidden lg:block bg-white border-b border-gray-200 shadow-sm sticky top-16 z-40">
                     {% include "includes/navbar_horizontal.html" %}
                 </div>
             </template>
@@ -126,5 +126,67 @@
     {% endif %}
 
     {% block extra_js %}{% endblock %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('select.searchable').forEach(function(sel) {
+            var wrap = document.createElement('div');
+            wrap.className = 'relative';
+            sel.parentNode.insertBefore(wrap, sel);
+
+            var input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = 'Type to search...';
+            input.className = sel.className.replace('searchable', '').trim();
+            input.autocomplete = 'off';
+
+            var list = document.createElement('div');
+            list.className = 'absolute z-50 w-full mt-1 max-h-48 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-lg hidden';
+
+            var opts = [];
+            for (var i = 0; i < sel.options.length; i++) {
+                var o = sel.options[i];
+                opts.push({value: o.value, text: o.textContent, selected: o.selected});
+                if (o.selected && o.value) input.value = o.textContent;
+            }
+
+            sel.style.display = 'none';
+            wrap.appendChild(input);
+            wrap.appendChild(list);
+            wrap.appendChild(sel);
+
+            function render(filter) {
+                list.innerHTML = '';
+                var f = filter.toLowerCase();
+                var count = 0;
+                opts.forEach(function(o) {
+                    if (!o.value) return;
+                    if (f && o.text.toLowerCase().indexOf(f) === -1) return;
+                    if (count++ > 50) return;
+                    var div = document.createElement('div');
+                    div.textContent = o.text;
+                    div.className = 'px-3 py-2 text-sm cursor-pointer hover:bg-primary-50' + (o.value === sel.value ? ' bg-primary-100 font-medium' : '');
+                    div.addEventListener('mousedown', function(e) {
+                        e.preventDefault();
+                        sel.value = o.value;
+                        sel.dispatchEvent(new Event('change'));
+                        input.value = o.text;
+                        list.classList.add('hidden');
+                    });
+                    list.appendChild(div);
+                });
+                if (count === 0) {
+                    var empty = document.createElement('div');
+                    empty.textContent = 'No matches';
+                    empty.className = 'px-3 py-2 text-sm text-gray-400';
+                    list.appendChild(empty);
+                }
+            }
+
+            input.addEventListener('focus', function() { render(input.value); list.classList.remove('hidden'); });
+            input.addEventListener('input', function() { render(input.value); list.classList.remove('hidden'); });
+            input.addEventListener('blur', function() { setTimeout(function() { list.classList.add('hidden'); }, 200); });
+        });
+    });
+    </script>
 </body>
 </html>

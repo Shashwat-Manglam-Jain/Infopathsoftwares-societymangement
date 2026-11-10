@@ -189,7 +189,7 @@ class ShareTransferTests(BaseTestCase):
             user=self.admin_user,
         )
         from_txn = ShareTransaction.objects.filter(member=self.member1, txn_type='transfer')
-        to_txn = ShareTransaction.objects.filter(member=self.member2, txn_type='purchase')
+        to_txn = ShareTransaction.objects.filter(member=self.member2, txn_type='transfer')
         self.assertTrue(from_txn.exists())
         self.assertTrue(to_txn.exists())
 
@@ -274,7 +274,6 @@ class DividendTests(BaseTestCase):
             face_value_per_share=Decimal('100.00'),
             max_shares_per_member=100,
             min_shares_required=10,
-            dividend_rate=Decimal('10.00'),
             is_active=True,
         )
         self._setup_coa()

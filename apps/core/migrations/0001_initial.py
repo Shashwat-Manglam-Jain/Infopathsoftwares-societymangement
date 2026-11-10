@@ -4,11 +4,9 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
@@ -68,8 +66,14 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('share_rate', models.DecimalField(decimal_places=2, default=0, max_digits=10)),
-                ('penal_interest_code', models.CharField(blank=True, help_text='GL head code for penal interest', max_length=10)),
-                ('cash_balance_code', models.CharField(blank=True, help_text='GL head code for cash account', max_length=10)),
+                (
+                    'penal_interest_code',
+                    models.CharField(blank=True, help_text='GL head code for penal interest', max_length=10),
+                ),
+                (
+                    'cash_balance_code',
+                    models.CharField(blank=True, help_text='GL head code for cash account', max_length=10),
+                ),
                 ('penal_interest_rate', models.DecimalField(decimal_places=2, default=0, max_digits=5)),
                 ('penal_charge_after_days', models.IntegerField(default=45)),
                 ('penal_on_balance', models.BooleanField(default=False)),
@@ -80,7 +84,10 @@ class Migration(migrations.Migration):
                 ('nominal_member_fees', models.DecimalField(decimal_places=2, default=0, max_digits=10)),
                 ('max_guarantees_per_person', models.IntegerField(default=2)),
                 ('taran_loan_code', models.CharField(blank=True, max_length=10)),
-                ('slip_printing_message', models.CharField(blank=True, default='Software By - INFOPATH SOLUTIONS', max_length=300)),
+                (
+                    'slip_printing_message',
+                    models.CharField(blank=True, default='Software By - INFOPATH SOLUTIONS', max_length=300),
+                ),
             ],
             options={
                 'verbose_name': 'Standard Setup',

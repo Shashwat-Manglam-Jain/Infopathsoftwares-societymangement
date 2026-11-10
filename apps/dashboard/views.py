@@ -39,10 +39,13 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             share_qs = share_qs.filter(branch=branch)
 
         context['total_members'] = member_qs.count()
-        context['total_savings'] = savings_qs.aggregate(total=Sum('current_balance'))['total'] or Decimal('0')
-        context['total_loans'] = loan_qs.aggregate(total=Sum('outstanding_principal'))['total'] or Decimal('0')
-        context['total_fd'] = fd_qs.aggregate(total=Sum('deposit_amount'))['total'] or Decimal('0')
+        total_savings = savings_qs.aggregate(total=Sum('current_balance'))['total'] or Decimal('0')
+        total_fd = fd_qs.aggregate(total=Sum('deposit_amount'))['total'] or Decimal('0')
+        context['total_savings'] = total_savings
+        context['total_fd'] = total_fd
         context['total_rd'] = rd_qs.count()
+        context['total_deposits'] = total_savings + total_fd
+        context['total_loans'] = loan_qs.aggregate(total=Sum('outstanding_principal'))['total'] or Decimal('0')
         context['total_shares'] = share_qs.aggregate(total=Sum('total_amount'))['total'] or Decimal('0')
 
         context['overdue_count'] = loan_qs.filter(overdue_days__gt=0).count()
@@ -67,7 +70,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         context['recent_transactions'] = AccountTransaction.objects.select_related(
             'account__member', 'branch'
-        ).order_by('-created_at')[:10]
+        ).order_by('-created_at')[:5]
 
         context['today'] = today
 

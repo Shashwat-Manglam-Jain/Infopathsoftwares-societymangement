@@ -1,15 +1,56 @@
 {% extends "base.html" %}
 
 {% block title %}Agent {{ agent.agent_code }} — InfoSociety{% endblock %}
+{% block page_title %}Agent Details{% endblock %}
 
 {% block content %}
 <div class="space-y-6">
+    <!-- Header + Actions -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
             <h2 class="text-xl font-bold text-gray-900">{{ agent.member.name }}</h2>
             <p class="text-sm text-gray-500 mt-1">Agent Code: <span class="font-mono">{{ agent.agent_code }}</span> &middot; {{ agent.branch.branch_name }}</p>
         </div>
-        <a href="{% url 'agents:list' %}" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">Back to Agents</a>
+        <div class="flex items-center gap-2 flex-wrap">
+            <a href="{% url 'agents:pigmmy_create' %}?agent={{ agent.pk }}" class="inline-flex items-center px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 shadow-sm">
+                <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+                Add Client
+            </a>
+            {% if request.user.is_cashier %}
+            <a href="{% url 'agents:collection_create' %}?agent={{ agent.pk }}" class="inline-flex items-center px-3 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">
+                <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                Record Collection
+            </a>
+            {% endif %}
+            <a href="{% url 'agents:agent_client_sheet' agent.pk %}" target="_blank"
+               class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">
+                <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2z"/></svg>
+                Print Client Sheet
+            </a>
+            <a href="{% url 'agents:list' %}" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">Back</a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <p class="text-xs text-gray-500 uppercase tracking-wide">Clients</p>
+            <p class="text-2xl font-bold text-gray-900 mt-1">{{ client_accounts|length }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <p class="text-xs text-gray-500 uppercase tracking-wide">Collections</p>
+            <p class="text-2xl font-bold text-gray-900 mt-1">{{ recent_collections|length }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <p class="text-xs text-gray-500 uppercase tracking-wide">Commission Rate</p>
+            <p class="text-2xl font-bold text-gray-900 mt-1">{{ agent.commission_rate }}%</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <p class="text-xs text-gray-500 uppercase tracking-wide">Status</p>
+            <p class="mt-1">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-sm font-medium {% if agent.status == 'active' %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-600{% endif %}">{{ agent.get_status_display }}</span>
+            </p>
+        </div>
     </div>
 
     <!-- Agent Info -->
@@ -18,12 +59,8 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div><span class="text-gray-500">Phone:</span> <span class="font-medium">{{ agent.phone }}</span></div>
             <div><span class="text-gray-500">Area:</span> <span class="font-medium">{{ agent.area|default:"—" }}</span></div>
-            <div><span class="text-gray-500">Commission:</span> <span class="font-medium">{{ agent.commission_rate }}%</span></div>
-            <div><span class="text-gray-500">Joined:</span> <span class="font-medium">{{ agent.joining_date }}</span></div>
+            <div><span class="text-gray-500">Joined:</span> <span class="font-medium">{{ agent.joining_date|date:"d-M-Y" }}</span></div>
             <div><span class="text-gray-500">Savings A/C:</span> <span class="font-mono font-medium">{{ agent.savings_account.account_no }}</span></div>
-            <div><span class="text-gray-500">Status:</span>
-                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if agent.status == 'active' %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-600{% endif %}">{{ agent.get_status_display }}</span>
-            </div>
         </div>
     </div>
 
@@ -58,7 +95,7 @@
                         </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="6" class="px-4 py-6 text-center text-sm text-gray-400">No client accounts.</td></tr>
+                    <tr><td colspan="6" class="px-4 py-6 text-center text-sm text-gray-400">No client accounts yet. <a href="{% url 'agents:pigmmy_create' %}?agent={{ agent.pk }}" class="text-primary-600 hover:underline">Add one</a></td></tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -69,7 +106,9 @@
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
             <h3 class="text-sm font-semibold text-gray-700">Recent Collections</h3>
+            {% if request.user.is_cashier %}
             <a href="{% url 'agents:collection_create' %}?agent={{ agent.pk }}" class="text-sm text-primary-600 hover:text-primary-800 font-medium">+ New Collection</a>
+            {% endif %}
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
@@ -84,7 +123,7 @@
                 <tbody class="divide-y divide-gray-100">
                     {% for col in recent_collections %}
                     <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-3 text-sm text-gray-900">{{ col.collection_date }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900">{{ col.collection_date|date:"d-M-Y" }}</td>
                         <td class="px-4 py-3 text-sm text-right text-gray-900">{{ col.total_clients_collected }}</td>
                         <td class="px-4 py-3 text-sm text-right font-medium text-gray-900">{{ col.collected_amount|floatformat:2 }}</td>
                         <td class="px-4 py-3 text-sm">

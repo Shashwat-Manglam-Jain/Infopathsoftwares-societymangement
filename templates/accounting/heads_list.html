@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Chart of Accounts — InfoSociety{% endblock %}
+{% block title %}Account Heads — InfoSociety{% endblock %}
+{% block page_title %}Account Heads{% endblock %}
 
 {% block content %}
 <div class="space-y-4">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-            <h2 class="text-xl font-bold text-gray-900">Chart of Accounts (Head Master)</h2>
+            <h2 class="text-xl font-bold text-gray-900">Account Heads (GL Master)</h2>
             <p class="text-sm text-gray-500 mt-1">{{ total }} account head{{ total|pluralize:"s" }}</p>
         </div>
         <a href="{% url 'accounting:heads_create' %}" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">
@@ -97,6 +98,11 @@
                 </tbody>
             </table>
         </div>
+    </div>
+    {% empty %}
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+        <p class="text-gray-400 text-sm">No account heads configured yet.</p>
+        <a href="{% url 'accounting:heads_create' %}" class="mt-3 inline-flex items-center px-3 py-1.5 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700">Create First Head</a>
     </div>
     {% endfor %}
 </div>

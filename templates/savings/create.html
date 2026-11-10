@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}Open {{ create_title|default:"Account" }} — InfoSociety{% endblock %}
+{% block page_title %}Open Account{% endblock %}
 
 {% block content %}
 <div class="max-w-3xl mx-auto space-y-6">
@@ -47,6 +48,16 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Interest Rate (%)</label>
                     {{ form.interest_rate }}
+                    <p id="rate-hint" class="text-xs text-gray-400 mt-1 hidden">Auto-filled from Interest Master slab</p>
+                    <div id="rate-missing-banner" class="hidden mt-2 rounded-lg bg-amber-50 border border-amber-200 p-3">
+                        <div class="flex items-start gap-2">
+                            <svg class="h-4 w-4 text-amber-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                            <div>
+                                <p class="text-xs font-medium text-amber-800">No interest slab found for this account type.</p>
+                                <a href="{% url 'accounting:interest_master_create' %}" class="text-xs font-medium text-amber-800 underline hover:text-amber-900">Configure Interest Master first &rarr;</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Minimum Balance</label>
@@ -57,8 +68,60 @@
 
         <div class="flex items-center justify-end gap-3">
             <a href="{% url 'savings:list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
-            <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">Open Account</button>
+            <button id="submit-btn" type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">Open Account</button>
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var typeSelect = document.querySelector('[name="account_type"]');
+    var rateInput = document.querySelector('[name="interest_rate"]');
+    var hint = document.getElementById('rate-hint');
+    var banner = document.getElementById('rate-missing-banner');
+    var submitBtn = document.getElementById('submit-btn');
+
+    function setSubmitState(enabled) {
+        if (!submitBtn) return;
+        submitBtn.disabled = !enabled;
+        if (enabled) {
+            submitBtn.className = 'px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm';
+        } else {
+            submitBtn.className = 'px-6 py-2 bg-gray-300 text-gray-500 text-sm font-medium rounded-lg cursor-not-allowed shadow-sm';
+        }
+    }
+
+    function fetchRate() {
+        if (!typeSelect.value) {
+            rateInput.value = '';
+            if (hint) hint.classList.add('hidden');
+            if (banner) banner.classList.add('hidden');
+            setSubmitState(true);
+            return;
+        }
+        fetch('/savings/api/account-type-rate/?type=' + typeSelect.value)
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                if (d.rate > 0) {
+                    rateInput.value = d.rate;
+                    if (hint) { hint.classList.remove('hidden'); hint.textContent = 'Auto-filled from Interest Master slab'; hint.className = 'text-xs text-green-600 mt-1'; }
+                    if (banner) banner.classList.add('hidden');
+                    setSubmitState(true);
+                } else {
+                    rateInput.value = '0';
+                    if (hint) hint.classList.add('hidden');
+                    if (banner) banner.classList.remove('hidden');
+                    setSubmitState(false);
+                }
+            });
+    }
+
+    if (typeSelect && rateInput) {
+        typeSelect.addEventListener('change', fetchRate);
+        if (typeSelect.value) fetchRate();
+    }
+});
+</script>
 {% endblock %}

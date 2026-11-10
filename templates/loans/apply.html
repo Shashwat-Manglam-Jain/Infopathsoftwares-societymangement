@@ -1,17 +1,31 @@
 {% extends "base.html" %}
 
 {% block title %}Apply for Loan — InfoSociety{% endblock %}
+{% block page_title %}Apply for Loan{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto space-y-6">
+<div class="max-w-3xl mx-auto space-y-6" x-data="loanForm()">
 
     <div class="flex items-center justify-between">
         <h2 class="text-xl font-bold text-gray-900">New Loan Application</h2>
-        <a href="{% url 'loans:list' %}" class="text-sm text-indigo-600 hover:text-indigo-800">&larr; Back to Loans</a>
+        <a href="{% url 'loans:list' %}" class="text-sm text-primary-600 hover:text-primary-800">&larr; Back to Loans</a>
     </div>
 
     <form method="post" class="space-y-6">
         {% csrf_token %}
+
+        {% if not form.loan_product.field.queryset.exists %}
+        <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+            <div class="flex items-start gap-3">
+                <svg class="h-5 w-5 text-amber-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                <div>
+                    <h3 class="text-sm font-semibold text-amber-800">No Loan Products Configured</h3>
+                    <p class="text-sm text-amber-700 mt-1">Create at least one loan product before applying for loans.</p>
+                    <a href="{% url 'loans:product_create' %}" class="inline-flex items-center mt-2 text-sm font-medium text-amber-800 hover:text-amber-900 underline">Create Loan Product &rarr;</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
 
         <!-- Loan Details -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
@@ -25,18 +39,37 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Loan Product *</label>
-                    {{ form.loan_product }}
+                    <select name="loan_product" required class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500" x-model="selectedProduct" @change="updateRates()">
+                        <option value="">---------</option>
+                        {% for product in form.loan_product.field.queryset %}
+                        <option value="{{ product.pk }}" {% if form.loan_product.value|stringformat:"s" == product.pk|stringformat:"s" %}selected{% endif %}>{{ product }}</option>
+                        {% endfor %}
+                    </select>
                     {% if form.loan_product.errors %}<p class="text-red-600 text-xs mt-1">{{ form.loan_product.errors.0 }}</p>{% endif %}
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Applied Amount *</label>
                     {{ form.applied_amount }}
+                    <template x-if="maxAmount">
+                        <p class="text-xs text-gray-500 mt-1">Max: ₹<span x-text="maxAmount"></span></p>
+                    </template>
                     {% if form.applied_amount.errors %}<p class="text-red-600 text-xs mt-1">{{ form.applied_amount.errors.0 }}</p>{% endif %}
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tenure (Months) *</label>
                     {{ form.tenure_months }}
+                    <template x-if="maxTenure">
+                        <p class="text-xs text-gray-500 mt-1">Max: <span x-text="maxTenure"></span> months</p>
+                    </template>
                     {% if form.tenure_months.errors %}<p class="text-red-600 text-xs mt-1">{{ form.tenure_months.errors.0 }}</p>{% endif %}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Interest Rate (%)</label>
+                    <input type="text" readonly class="w-full rounded border-gray-200 bg-gray-50 text-gray-600 px-3 py-2" :value="interestRate || '—'">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Penal Interest Rate (%)</label>
+                    <input type="text" readonly class="w-full rounded border-gray-200 bg-gray-50 text-gray-600 px-3 py-2" :value="penalRate || '—'">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Director Recommendation</label>
@@ -52,33 +85,43 @@
 
         <!-- Guarantors -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
-            <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">Guarantors</h3>
-            <p class="text-sm text-gray-500">Guarantors must be active shareholders of the society.</p>
+            <div class="flex items-center justify-between border-b pb-2">
+                <h3 class="text-lg font-semibold text-gray-800">Guarantors</h3>
+                <template x-if="requiresGuarantor">
+                    <span class="text-xs font-medium px-2 py-1 rounded-full bg-red-100 text-red-700">
+                        Min <span x-text="minGuarantors"></span> required
+                    </span>
+                </template>
+            </div>
+            <p class="text-sm text-gray-500">Guarantors must be active shareholders of the society. A member cannot guarantee their own loan.</p>
 
             {{ guarantor_formset.management_form }}
-            <table class="w-full text-sm">
-                <thead>
-                    <tr class="border-b">
-                        <th class="text-left py-2 font-medium text-gray-600">Guarantor Member</th>
-                        <th class="text-left py-2 font-medium text-gray-600">Guarantee Amount</th>
-                        <th class="text-left py-2 font-medium text-gray-600 w-16">Remove</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for gform in guarantor_formset %}
-                    <tr class="border-b border-gray-100">
-                        <td class="py-2 pr-2">{{ gform.guarantor_member }}
-                            {% if gform.guarantor_member.errors %}<p class="text-red-600 text-xs">{{ gform.guarantor_member.errors.0 }}</p>{% endif %}
-                        </td>
-                        <td class="py-2 pr-2">{{ gform.guarantee_amount }}
-                            {% if gform.guarantee_amount.errors %}<p class="text-red-600 text-xs">{{ gform.guarantee_amount.errors.0 }}</p>{% endif %}
-                        </td>
-                        <td class="py-2">{{ gform.DELETE }}</td>
-                        {{ gform.id }}
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="space-y-4">
+                {% for gform in guarantor_formset %}
+                <div class="border border-gray-200 rounded-lg p-4 bg-gray-50 overflow-visible">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Guarantor {{ forloop.counter }}</span>
+                        <label class="inline-flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer">
+                            {{ gform.DELETE }}
+                            <span>Remove</span>
+                        </label>
+                    </div>
+                    {{ gform.id }}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Guarantor Member</label>
+                            {{ gform.guarantor_member }}
+                            {% if gform.guarantor_member.errors %}<p class="text-red-600 text-xs mt-1">{{ gform.guarantor_member.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Guarantee Amount</label>
+                            {{ gform.guarantee_amount }}
+                            {% if gform.guarantee_amount.errors %}<p class="text-red-600 text-xs mt-1">{{ gform.guarantee_amount.errors.0 }}</p>{% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
             {% if guarantor_formset.non_form_errors %}
             <p class="text-red-600 text-sm">{{ guarantor_formset.non_form_errors.0 }}</p>
             {% endif %}
@@ -86,11 +129,47 @@
 
         <div class="flex justify-end gap-3">
             <a href="{% url 'loans:list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Cancel</a>
-            <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium">
+            <button type="submit" class="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium">
                 Submit Application
             </button>
         </div>
     </form>
 
 </div>
+
+<script>
+function loanForm() {
+    return {
+        products: {{ products_json|safe }},
+        selectedProduct: '{{ form.loan_product.value|default:"" }}',
+        interestRate: null,
+        penalRate: null,
+        maxAmount: null,
+        maxTenure: null,
+        requiresGuarantor: false,
+        minGuarantors: 0,
+        maxGuarantors: 0,
+        init() { this.updateRates(); },
+        updateRates() {
+            this.interestRate = null;
+            this.penalRate = null;
+            this.maxAmount = null;
+            this.maxTenure = null;
+            this.requiresGuarantor = false;
+            this.minGuarantors = 0;
+            this.maxGuarantors = 0;
+            if (!this.selectedProduct) return;
+            const product = this.products.find(p => p.id == this.selectedProduct);
+            if (!product) return;
+            this.interestRate = product.interest_rate;
+            this.penalRate = product.penal_interest_rate;
+            this.maxAmount = product.max_amount;
+            this.maxTenure = product.max_tenure_months;
+            this.requiresGuarantor = product.requires_guarantor;
+            this.minGuarantors = product.min_guarantors;
+            this.maxGuarantors = product.max_guarantors;
+        }
+    };
+}
+</script>
 {% endblock %}

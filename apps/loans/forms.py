@@ -1,9 +1,9 @@
 from django import forms
 from django.forms import inlineformset_factory
 
-from apps.loans.models import LoanAccount, LoanCollateral, LoanGuarantor, LoanProduct
+from apps.loans.models import LoanAccount, LoanGuarantor, LoanProduct
 
-tw = 'w-full rounded border-gray-300'
+tw = 'w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500'
 
 
 class LoanProductForm(forms.ModelForm):
@@ -30,11 +30,18 @@ class LoanProductForm(forms.ModelForm):
             'npa_days_threshold',
             'is_active',
         ]
-        widgets = {
-            'interest_type': forms.Select(attrs={'class': tw}),
-            'loan_category': forms.Select(attrs={'class': tw}),
-            'mortgage_type': forms.Select(attrs={'class': tw}),
-        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for _name, field in self.fields.items():
+            if isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs.setdefault(
+                    'class', 'rounded border-gray-300 text-primary-600 focus:ring-primary-500'
+                )
+            elif isinstance(field.widget, forms.Select):
+                field.widget.attrs['class'] = tw
+            else:
+                field.widget.attrs['class'] = tw
 
 
 class LoanApplicationForm(forms.ModelForm):
@@ -42,11 +49,11 @@ class LoanApplicationForm(forms.ModelForm):
         model = LoanAccount
         fields = ['member', 'loan_product', 'applied_amount', 'tenure_months', 'director_recommendation', 'remarks']
         widgets = {
-            'member': forms.Select(attrs={'class': tw}),
+            'member': forms.Select(attrs={'class': 'searchable ' + tw}),
             'loan_product': forms.Select(attrs={'class': tw}),
             'applied_amount': forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
             'tenure_months': forms.NumberInput(attrs={'class': tw}),
-            'director_recommendation': forms.Select(attrs={'class': tw}),
+            'director_recommendation': forms.Select(attrs={'class': 'searchable ' + tw}),
             'remarks': forms.Textarea(attrs={'class': tw, 'rows': 3}),
         }
 
@@ -56,12 +63,18 @@ class LoanApplicationForm(forms.ModelForm):
         from apps.shares.models import ShareHolding
 
         director_ids = Member.objects.filter(
-            is_director=True, status='active',
+            is_director=True,
+            status='active',
         ).values_list('id', flat=True)
-        shareholder_ids = ShareHolding.objects.filter(
-            status='active', share_count__gt=0,
-            member_id__in=director_ids,
-        ).values_list('member_id', flat=True).distinct()
+        shareholder_ids = (
+            ShareHolding.objects.filter(
+                status='active',
+                share_count__gt=0,
+                member_id__in=director_ids,
+            )
+            .values_list('member_id', flat=True)
+            .distinct()
+        )
         self.fields['director_recommendation'].queryset = Member.objects.filter(
             id__in=shareholder_ids,
         )
@@ -101,11 +114,26 @@ class EMICollectionForm(forms.Form):
 class GuarantorForm(forms.ModelForm):
     class Meta:
         model = LoanGuarantor
-        fields = ['guarantor_member', 'guarantee_amount']
+        fields = ['guarantor_member', 'guarantee_amount', 'guarantor_share_account']
+        widgets = {
+            'guarantor_member': forms.Select(attrs={'class': 'searchable ' + tw}),
+            'guarantee_amount': forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
+            'guarantor_share_account': forms.TextInput(attrs={'class': tw, 'readonly': 'readonly'}),
+        }
 
     def clean_guarantor_member(self):
         member = self.cleaned_data.get('guarantor_member')
         if member:
+            if hasattr(self, '_loan') and self._loan and self._loan.member_id == member.pk:
+                raise forms.ValidationError('A member cannot be a guarantor for their own loan.')
+
+            if hasattr(self, '_loan') and self._loan:
+                existing = self._loan.guarantors.filter(guarantor_member=member)
+                if self.instance and self.instance.pk:
+                    existing = existing.exclude(pk=self.instance.pk)
+                if existing.exists():
+                    raise forms.ValidationError(f'{member.name} is already a guarantor on this loan.')
+
             from apps.shares.models import ShareHolding
 
             has_shares = ShareHolding.objects.filter(
@@ -117,6 +145,24 @@ class GuarantorForm(forms.ModelForm):
                 raise forms.ValidationError(
                     f'{member.name} does not have active shares. Guarantor must be a shareholder.'
                 )
+            # Auto-populate share account from active shareholding
+            sh = ShareHolding.objects.filter(
+                member=member,
+                status='active',
+            ).first()
+            if sh:
+                self.cleaned_data['_share_account'] = sh.certificate_no or f'SH-{sh.pk}'
+
+            from apps.loans.services import get_active_guarantee_count
+
+            count = get_active_guarantee_count(member)
+            if count >= 3:
+                raise forms.ValidationError(
+                    f'{member.name} already has {count} active loan guarantees. '
+                    f'Maximum 3 active guarantees allowed per member.'
+                )
+            if count > 0:
+                self.cleaned_data['_guarantee_count'] = count
         return member
 
 
@@ -129,10 +175,3 @@ GuarantorFormSet = inlineformset_factory(
     can_delete=True,
 )
 
-CollateralFormSet = inlineformset_factory(
-    LoanAccount,
-    LoanCollateral,
-    fields=['collateral_type', 'description', 'estimated_value', 'document'],
-    extra=1,
-    can_delete=True,
-)

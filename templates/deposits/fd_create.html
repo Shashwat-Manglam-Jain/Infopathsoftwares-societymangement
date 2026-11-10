@@ -1,12 +1,26 @@
 {% extends "base.html" %}
 {% block title %}Open Fixed Deposit — InfoSociety{% endblock %}
+{% block page_title %}Open Fixed Deposit{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto">
+<div class="max-w-3xl mx-auto" x-data="fdForm()">
     <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold text-gray-900">Open Fixed Deposit</h1>
         <a href="{% url 'deposits:fd_list' %}" class="text-gray-500 hover:text-gray-700 text-sm">&larr; Back</a>
     </div>
+
+    {% if not slabs_json or slabs_json == "[]" %}
+    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+        <div class="flex items-start gap-3">
+            <svg class="h-5 w-5 text-amber-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+            <div>
+                <h3 class="text-sm font-semibold text-amber-800">No FD Interest Slabs Configured</h3>
+                <p class="text-sm text-amber-700 mt-1">Configure interest rate slabs in the Interest Master before opening a Fixed Deposit.</p>
+                <a href="{% url 'accounting:interest_master_create' %}" class="inline-flex items-center mt-2 text-sm font-medium text-amber-800 underline hover:text-amber-900">Configure Interest Master &rarr;</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <form method="post">
@@ -14,19 +28,10 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Member</label>
-                    <select name="member" required class="w-full rounded-lg border-gray-300 px-3 py-2">
+                    <select name="member" required class="searchable w-full rounded-lg border-gray-300 px-3 py-2">
                         <option value="">Select Member</option>
                         {% for m in members %}
                         <option value="{{ m.pk }}">{{ m.member_no }} — {{ m.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">FD Product</label>
-                    <select name="product" required class="w-full rounded-lg border-gray-300 px-3 py-2">
-                        <option value="">Select Product</option>
-                        {% for p in products %}
-                        <option value="{{ p.pk }}">{{ p.name }} ({{ p.min_amount }}–{{ p.max_amount }})</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -36,7 +41,11 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tenure (Days)</label>
-                    <input type="number" name="tenure_days" min="1" required class="w-full rounded-lg border-gray-300 px-3 py-2">
+                    <input type="number" name="tenure_days" min="1" required class="w-full rounded-lg border-gray-300 px-3 py-2" x-model="tenureDays" @input="calcRate()">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Compounding</label>
+                    {{ form.compounding }}
                 </div>
                 <div class="flex items-center gap-4 col-span-full">
                     <label class="flex items-center gap-2">
@@ -44,15 +53,56 @@
                         <span class="text-sm text-gray-700">Auto Renew</span>
                     </label>
                     <label class="flex items-center gap-2">
-                        <input type="checkbox" name="is_senior" class="rounded border-gray-300">
+                        <input type="checkbox" name="is_senior" class="rounded border-gray-300" x-model="isSenior" @change="calcRate()">
                         <span class="text-sm text-gray-700">Senior Citizen Rate</span>
                     </label>
                 </div>
             </div>
+
+            <template x-if="interestRate !== null">
+                <div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <p class="text-sm font-medium text-green-800">
+                        Interest Rate: <span class="text-lg font-bold" x-text="interestRate + '%'"></span>
+                        <span class="text-xs text-green-600 ml-2" x-text="isSenior ? '(Senior Citizen Rate)' : '(Regular Rate)'"></span>
+                    </p>
+                </div>
+            </template>
+            <template x-if="rateError">
+                <div class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <p class="text-sm text-amber-800" x-text="rateError"></p>
+                    <a href="{% url 'accounting:interest_master_create' %}" class="text-xs font-medium text-amber-800 underline hover:text-amber-900 mt-1 inline-block">Configure Interest Master slabs &rarr;</a>
+                </div>
+            </template>
+
             <div class="mt-6 flex justify-end">
                 <button type="submit" class="bg-primary-600 text-white px-8 py-2 rounded-lg hover:bg-primary-700 font-medium">Create FD</button>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+function fdForm() {
+    return {
+        slabs: {{ slabs_json|safe }},
+        tenureDays: '',
+        isSenior: false,
+        interestRate: null,
+        rateError: '',
+        calcRate() {
+            this.interestRate = null;
+            this.rateError = '';
+            const days = parseInt(this.tenureDays);
+            if (isNaN(days) || days < 1) return;
+            for (const slab of this.slabs) {
+                if (days >= slab.min_days && days <= slab.max_days) {
+                    this.interestRate = this.isSenior ? (slab.rate + slab.senior_extra) : slab.rate;
+                    return;
+                }
+            }
+            this.rateError = 'No interest slab found for this tenure.';
+        }
+    };
+}
+</script>
 {% endblock %}

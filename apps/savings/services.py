@@ -4,6 +4,7 @@ from decimal import ROUND_HALF_UP, Decimal
 
 from django.db import transaction
 
+from apps.core.date_utils import get_transaction_date
 from apps.savings.models import AccountTransaction
 
 
@@ -20,12 +21,13 @@ def deposit(
         account.current_balance += amount
         account.save(update_fields=['current_balance', 'updated_at'])
 
+        txn_date = get_transaction_date(branch)
         receipt_no = _generate_receipt_no(branch, 'deposit')
         txn = AccountTransaction.objects.create(
             account=account,
             branch=branch,
-            txn_date=date.today(),
-            value_date=date.today(),
+            txn_date=txn_date,
+            value_date=txn_date,
             txn_type='deposit',
             amount=amount,
             running_balance=account.current_balance,
@@ -55,12 +57,13 @@ def withdraw(account, amount, branch, user, payment_mode='cash', narration=''):
         account.current_balance -= amount
         account.save(update_fields=['current_balance', 'updated_at'])
 
+        txn_date = get_transaction_date(branch)
         receipt_no = _generate_receipt_no(branch, 'withdrawal')
         txn = AccountTransaction.objects.create(
             account=account,
             branch=branch,
-            txn_date=date.today(),
-            value_date=date.today(),
+            txn_date=txn_date,
+            value_date=txn_date,
             txn_type='withdrawal',
             amount=amount,
             running_balance=account.current_balance,
@@ -177,7 +180,9 @@ def reverse_transaction(txn, user):
 
 def _create_deposit_journal(account, amount, branch, user, txn):
     from apps.accounting.services import create_journal_entry
+    from apps.core.gl_utils import get_account_gl_code
 
+    savings_code = get_account_gl_code(account, 'saving', '2001')
     create_journal_entry(
         entry_date=txn.txn_date,
         voucher_type='receipt',
@@ -185,7 +190,7 @@ def _create_deposit_journal(account, amount, branch, user, txn):
         narration=f'Deposit to {account.account_no}',
         lines=[
             {'account_code': _get_cash_code(branch), 'debit': amount, 'credit': Decimal('0')},
-            {'account_code': '2001', 'debit': Decimal('0'), 'credit': amount},
+            {'account_code': savings_code, 'debit': Decimal('0'), 'credit': amount},
         ],
         user=user,
         reference_type='savings_txn',
@@ -195,14 +200,16 @@ def _create_deposit_journal(account, amount, branch, user, txn):
 
 def _create_withdrawal_journal(account, amount, branch, user, txn):
     from apps.accounting.services import create_journal_entry
+    from apps.core.gl_utils import get_account_gl_code
 
+    savings_code = get_account_gl_code(account, 'saving', '2001')
     create_journal_entry(
         entry_date=txn.txn_date,
         voucher_type='payment',
         branch=branch,
         narration=f'Withdrawal from {account.account_no}',
         lines=[
-            {'account_code': '2001', 'debit': amount, 'credit': Decimal('0')},
+            {'account_code': savings_code, 'debit': amount, 'credit': Decimal('0')},
             {'account_code': _get_cash_code(branch), 'debit': Decimal('0'), 'credit': amount},
         ],
         user=user,
@@ -213,15 +220,19 @@ def _create_withdrawal_journal(account, amount, branch, user, txn):
 
 def _create_interest_journal(account, amount, branch, user, txn):
     from apps.accounting.services import create_journal_entry
+    from apps.core.gl_utils import get_account_gl_code, get_gl_code, get_interest_head_code
 
+    savings_code = get_account_gl_code(account, 'saving', '2001')
+    gl_head = account.gl_head if hasattr(account, 'gl_head') and account.gl_head_id else None
+    interest_expense_code = get_interest_head_code(gl_head, get_gl_code('interest_paid', '4001'))
     create_journal_entry(
         entry_date=txn.txn_date,
         voucher_type='journal',
         branch=branch,
         narration=f'Interest on savings {account.account_no}',
         lines=[
-            {'account_code': '4001', 'debit': amount, 'credit': Decimal('0')},
-            {'account_code': '2001', 'debit': Decimal('0'), 'credit': amount},
+            {'account_code': interest_expense_code, 'debit': amount, 'credit': Decimal('0')},
+            {'account_code': savings_code, 'debit': Decimal('0'), 'credit': amount},
         ],
         user=user,
         reference_type='interest_posting',
@@ -231,10 +242,14 @@ def _create_interest_journal(account, amount, branch, user, txn):
 
 def _generate_receipt_no(branch, txn_type):
     prefix = 'RCT' if txn_type == 'deposit' else 'PMT'
-    last = AccountTransaction.objects.filter(
-        branch=branch,
-        receipt_no__startswith=prefix,
-    ).order_by('-id').first()
+    last = (
+        AccountTransaction.objects.filter(
+            branch=branch,
+            receipt_no__startswith=prefix,
+        )
+        .order_by('-id')
+        .first()
+    )
     if last and last.receipt_no:
         try:
             seq = int(last.receipt_no.split('-')[-1]) + 1

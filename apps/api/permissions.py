@@ -16,6 +16,6 @@ class IsBranchManagerOrAbove(BasePermission):
         if not request.user or not request.user.is_authenticated:
             return False
         return getattr(request.user, 'role', '') in (
-            'super_admin',
+            'admin',
             'branch_manager',
         )

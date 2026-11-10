@@ -2,19 +2,27 @@ from datetime import date, datetime
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
+from apps.accounting.models import ChartOfAccounts, InterestMaster
+from apps.accounts.permissions import (
+    AuditorOrAboveMixin,
+    auditor_or_above,
+    cashier_required,
+    manager_required,
+)
 from apps.core.account_utils import amount_to_words as _amount_to_words
 from apps.members.models import Member
 
 from . import services
-from .forms import DepositForm, SavingsAccountForm, WithdrawalForm
+from .forms import DepositForm, SavingsAccountEditForm, SavingsAccountForm, WithdrawalForm
 from .models import AccountTransaction, SavingsAccount
 
 
-@login_required
+@auditor_or_above
 def savings_list(request):
     account_type = request.GET.get('type', '')
     accounts = SavingsAccount.objects.select_related('member', 'branch')
@@ -26,21 +34,45 @@ def savings_list(request):
     if not request.user.can_access_all_branches:
         accounts = accounts.filter(branch=request.current_branch)
     type_labels = {'savings': 'Savings Accounts', 'current': 'Current Accounts', 'security': 'Security Deposits'}
-    return render(request, 'savings/list.html', {
-        'accounts': accounts,
-        'account_type': account_type,
-        'page_title': type_labels.get(account_type, 'All Accounts'),
-    })
+    paginator = Paginator(accounts, 25)
+    page_obj = paginator.get_page(request.GET.get('page'))
+    return render(
+        request,
+        'savings/list.html',
+        {
+            'accounts': page_obj,
+            'account_type': account_type,
+            'page_title': type_labels.get(account_type, 'All Accounts'),
+            'page_obj': page_obj,
+            'is_paginated': page_obj.has_other_pages(),
+            'paginator': paginator,
+        },
+    )
 
 
-@login_required
+@cashier_required
 def savings_create(request):
+    branch = request.current_branch if not request.user.can_access_all_branches else None
     if request.method == 'POST':
-        form = SavingsAccountForm(request.POST)
+        form = SavingsAccountForm(request.POST, current_branch=branch)
         if form.is_valid():
             account = form.save(commit=False)
             account.opening_date = date.today()
             account.created_by = request.user
+            if not account.branch_id and request.current_branch:
+                account.branch = request.current_branch
+            type_map = {'savings': 'saving', 'current': 'current', 'security': 'security'}
+            related = type_map.get(account.account_type, '')
+            if related:
+                head = ChartOfAccounts.objects.filter(
+                    related_table_name=related, is_active=True,
+                ).first()
+                if head:
+                    slab = InterestMaster.objects.filter(
+                        account_head=head, is_active=True,
+                    ).first()
+                    if slab:
+                        account.interest_rate = slab.interest_rate
             account.save()
             messages.success(request, f'Savings account {account.account_no} created successfully.')
             return redirect('savings:detail', pk=account.pk)
@@ -49,20 +81,56 @@ def savings_create(request):
         account_type = request.GET.get('type', '')
         if account_type in ('savings', 'current', 'security'):
             initial['account_type'] = account_type
-        form = SavingsAccountForm(initial=initial)
+        form = SavingsAccountForm(initial=initial, current_branch=branch)
 
-    if not request.user.can_access_all_branches:
+    if branch:
         form.fields['member'].queryset = Member.objects.filter(
-            branch=request.current_branch, status='active',
+            branch=request.current_branch,
+            status='active',
         )
-        form.fields['branch'].initial = request.current_branch
 
     type_labels = {'savings': 'Savings Account', 'current': 'Current Account', 'security': 'Security Deposit'}
     create_title = type_labels.get(request.GET.get('type', ''), 'Account')
     return render(request, 'savings/create.html', {'form': form, 'create_title': create_title})
 
 
-@login_required
+@manager_required
+def savings_edit(request, pk):
+    account = get_object_or_404(SavingsAccount, pk=pk)
+    if not request.user.can_access_all_branches and account.branch != request.current_branch:
+        messages.error(request, 'You do not have access to this account.')
+        return redirect('savings:list')
+    if account.status == 'closed':
+        messages.error(request, 'Cannot edit a closed account.')
+        return redirect('savings:detail', pk=pk)
+
+    if request.method == 'POST':
+        form = SavingsAccountEditForm(request.POST, instance=account)
+        if form.is_valid():
+            acct = form.save(commit=False)
+            # Server-side enforce interest_rate from InterestMaster slab
+            type_map = {'savings': 'saving', 'current': 'current', 'security': 'security'}
+            related = type_map.get(acct.account_type, '')
+            if related:
+                head = ChartOfAccounts.objects.filter(
+                    related_table_name=related, is_active=True,
+                ).first()
+                if head:
+                    slab = InterestMaster.objects.filter(
+                        account_head=head, is_active=True,
+                    ).first()
+                    if slab:
+                        acct.interest_rate = slab.interest_rate
+            acct.save()
+            messages.success(request, f'Account {account.account_no} updated successfully.')
+            return redirect('savings:detail', pk=pk)
+    else:
+        form = SavingsAccountEditForm(instance=account)
+
+    return render(request, 'savings/edit.html', {'form': form, 'account': account})
+
+
+@auditor_or_above
 def savings_detail(request, pk):
     account = get_object_or_404(
         SavingsAccount.objects.select_related('member', 'branch', 'created_by'),
@@ -75,15 +143,19 @@ def savings_detail(request, pk):
     transactions = account.transactions.order_by('-txn_date', '-created_at')[:20]
     deposit_form = DepositForm(initial={'account_id': account.pk})
     withdrawal_form = WithdrawalForm(initial={'account_id': account.pk})
-    return render(request, 'savings/detail.html', {
-        'account': account,
-        'transactions': transactions,
-        'deposit_form': deposit_form,
-        'withdrawal_form': withdrawal_form,
-    })
+    return render(
+        request,
+        'savings/detail.html',
+        {
+            'account': account,
+            'transactions': transactions,
+            'deposit_form': deposit_form,
+            'withdrawal_form': withdrawal_form,
+        },
+    )
 
 
-@login_required
+@cashier_required
 def savings_deposit(request, pk):
     account = get_object_or_404(SavingsAccount, pk=pk)
     if not request.user.can_access_all_branches and account.branch != request.current_branch:
@@ -114,7 +186,7 @@ def savings_deposit(request, pk):
     return redirect('savings:detail', pk=pk)
 
 
-@login_required
+@cashier_required
 def savings_withdraw(request, pk):
     account = get_object_or_404(SavingsAccount, pk=pk)
     if not request.user.can_access_all_branches and account.branch != request.current_branch:
@@ -142,7 +214,7 @@ def savings_withdraw(request, pk):
     return redirect('savings:detail', pk=pk)
 
 
-@login_required
+@auditor_or_above
 def savings_statement(request, pk):
     account = get_object_or_404(
         SavingsAccount.objects.select_related('member', 'branch'),
@@ -162,21 +234,26 @@ def savings_statement(request, pk):
             td = datetime.strptime(to_date, '%Y-%m-%d').date()
             transactions = list(
                 account.transactions.filter(
-                    txn_date__gte=fd, txn_date__lte=td,
+                    txn_date__gte=fd,
+                    txn_date__lte=td,
                 ).order_by('txn_date', 'created_at')
             )
         except ValueError:
             messages.error(request, 'Invalid date format.')
 
-    return render(request, 'savings/statement.html', {
-        'account': account,
-        'transactions': transactions,
-        'from_date': from_date or '',
-        'to_date': to_date or '',
-    })
+    return render(
+        request,
+        'savings/statement.html',
+        {
+            'account': account,
+            'transactions': transactions,
+            'from_date': from_date or '',
+            'to_date': to_date or '',
+        },
+    )
 
 
-@login_required
+@manager_required
 def savings_change_status(request, pk):
     account = get_object_or_404(SavingsAccount, pk=pk)
     if not request.user.can_access_all_branches and account.branch != request.current_branch:
@@ -196,7 +273,7 @@ def savings_change_status(request, pk):
     return redirect('savings:detail', pk=pk)
 
 
-class DepositReceiptView(LoginRequiredMixin, View):
+class DepositReceiptView(AuditorOrAboveMixin, View):
     def get(self, request, txn_id):
         txn = get_object_or_404(
             AccountTransaction.objects.select_related(
@@ -219,7 +296,7 @@ class DepositReceiptView(LoginRequiredMixin, View):
         )
 
 
-class PassbookPrintView(LoginRequiredMixin, View):
+class PassbookPrintView(AuditorOrAboveMixin, View):
     def get(self, request, account_id):
         account = get_object_or_404(
             SavingsAccount.objects.select_related('member', 'branch'),
@@ -257,3 +334,26 @@ class PassbookPrintView(LoginRequiredMixin, View):
                 'to_date': to_date,
             },
         )
+
+
+@login_required
+def account_type_rate_api(request):
+    account_type = request.GET.get('type', '')
+    type_map = {'savings': 'saving', 'current': 'current', 'security': 'security'}
+    related = type_map.get(account_type, '')
+
+    rate = 0
+    if related:
+        head = ChartOfAccounts.objects.filter(
+            related_table_name=related,
+            is_active=True,
+        ).first()
+        if head:
+            slab = InterestMaster.objects.filter(
+                account_head=head,
+                is_active=True,
+            ).first()
+            if slab:
+                rate = float(slab.interest_rate)
+
+    return JsonResponse({'rate': rate, 'account_type': account_type})

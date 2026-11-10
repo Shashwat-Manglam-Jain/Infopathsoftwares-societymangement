@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Re-update Account Balance{% endblock %}
+{% block page_title %}Re-update Account Balance{% endblock %}
+{% block content %}
+<div class="space-y-6">
+    <h1 class="text-2xl font-semibold text-gray-900">Re-update Account Balance</h1>
+    <p class="text-sm text-gray-500">Recalculates account balances from transaction history. Use this to correct any balance discrepancies.</p>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <form method="post" class="flex flex-wrap items-end gap-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Account Type</label>
+                <select name="account_type" class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    <option value="savings">Savings / Current / Security</option>
+                    <option value="loan">Loan Accounts</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Recalculate From</label>
+                <input type="date" name="from_date" required
+                       class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
+            </div>
+            <button type="submit" class="bg-primary-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition"
+                    onclick="return confirm('Recalculate balances? This will update account balances based on transaction history.')">
+                Re-update Balances
+            </button>
+        </form>
+    </div>
+
+    {% if results is not None %}
+    <div class="bg-{% if results %}yellow-50 border-yellow-200{% else %}green-50 border-green-200{% endif %} border rounded-xl p-4">
+        <p class="{% if results %}text-yellow-800{% else %}text-green-800{% endif %} font-medium">
+            {% if results %}{{ results|length }} account(s) corrected.{% else %}All account balances are correct. No corrections needed.{% endif %}
+        </p>
+    </div>
+
+    {% if results %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Account No</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Member</th>
+                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Old Balance</th>
+                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">New Balance</th>
+                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Difference</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for r in results %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-sm font-mono text-gray-900">{{ r.account }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">{{ r.member }}</td>
+                        <td class="px-4 py-3 text-sm text-red-600 text-right">₹{{ r.old|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-green-700 font-medium text-right">₹{{ r.new|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600 text-right">₹{{ r.difference|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

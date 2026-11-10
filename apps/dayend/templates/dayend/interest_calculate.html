@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Interest Calculation{% endblock %}
+{% block page_title %}Interest Calculation{% endblock %}
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-semibold text-gray-900">Interest Calculation</h1>
+        <a href="{% url 'dayend:interest_post' %}" class="text-sm text-primary-600 hover:text-primary-800 font-medium">Go to Interest Posting &rarr;</a>
+    </div>
+
+    <!-- Calculate Form -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4">Calculate Daily Interest</h2>
+        <p class="text-sm text-gray-500 mb-4">Computes daily interest on active savings/current accounts and adds to accrued interest. Formula: (Balance &times; Rate / 100) / 365</p>
+        <form method="post" class="flex flex-wrap items-end gap-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Calculation Date</label>
+                <input type="date" name="calc_date" value="{{ calc_date|date:'Y-m-d' }}"
+                       class="px-3 py-2 border border-gray-300 rounded-lg text-sm _tw">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Account Type</label>
+                <select name="account_type" class="px-3 py-2 border border-gray-300 rounded-lg text-sm _tw">
+                    <option value="all" {% if account_type == 'all' %}selected{% endif %}>All Types</option>
+                    <option value="savings" {% if account_type == 'savings' %}selected{% endif %}>Savings Only</option>
+                    <option value="current" {% if account_type == 'current' %}selected{% endif %}>Current Only</option>
+                    <option value="security" {% if account_type == 'security' %}selected{% endif %}>Security Deposit Only</option>
+                </select>
+            </div>
+            <button type="submit" class="bg-primary-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition"
+                    onclick="return confirm('Calculate daily interest for all eligible accounts?')">
+                Calculate Interest
+            </button>
+        </form>
+    </div>
+
+    {% if results %}
+    <!-- Calculation Results -->
+    <div class="bg-green-50 border border-green-200 rounded-xl p-4">
+        <p class="text-green-800 font-medium">Interest calculated for {{ calculated_count }} accounts. Total daily interest: ₹{{ total_interest|floatformat:2 }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Summary -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <p class="text-xs text-gray-500 uppercase tracking-wider">Eligible Accounts</p>
+            <p class="text-2xl font-bold text-gray-900 mt-1">{{ summary.total_accounts }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <p class="text-xs text-gray-500 uppercase tracking-wider">Total Balance</p>
+            <p class="text-2xl font-bold text-gray-900 mt-1">₹{{ summary.total_balance|floatformat:2|default:"0.00" }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <p class="text-xs text-gray-500 uppercase tracking-wider">Total Accrued Interest</p>
+            <p class="text-2xl font-bold text-amber-600 mt-1">₹{{ summary.total_accrued|floatformat:2|default:"0.00" }}</p>
+        </div>
+    </div>
+
+    <!-- Account List -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-200">
+            <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Accounts with Interest</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Account No</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Member</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Balance</th>
+                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Rate %</th>
+                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Accrued</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Last Calculated</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for acct in accounts %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ acct.account_no }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">{{ acct.member.name }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">{{ acct.get_account_type_display }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-900">₹{{ acct.current_balance|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-600">{{ acct.interest_rate }}%</td>
+                        <td class="px-4 py-3 text-sm text-right font-medium {% if acct.accrued_interest > 0 %}text-amber-600{% else %}text-gray-400{% endif %}">₹{{ acct.accrued_interest|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">{% if acct.last_interest_calculated_date %}{{ acct.last_interest_calculated_date|date:"d M Y" }}{% else %}Never{% endif %}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-gray-400">No eligible accounts found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

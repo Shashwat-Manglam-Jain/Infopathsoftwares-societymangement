@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} — InfoSociety{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+    <div>
+        <h2 class="text-xl font-bold text-gray-900">{{ title }}</h2>
+        <p class="text-sm text-gray-500 mt-1">Define period-based interest rates. Extra rates for special categories (senior citizen, widow, etc.) are added on top of the base rate.</p>
+    </div>
+
+    {% if form.errors %}
+    <div class="rounded-lg bg-red-50 border border-red-200 p-4">
+        <h3 class="text-sm font-medium text-red-800">Please correct the errors below</h3>
+        <ul class="mt-1 text-sm text-red-700 list-disc list-inside">
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}<li>{{ field|title }}: {{ error }}</li>{% endfor %}
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="post" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-5">
+        {% csrf_token %}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Account Head <span class="text-red-500">*</span></label>
+                {{ form.account_head }}
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Min Period <span class="text-red-500">*</span></label>
+                {{ form.min_period }}
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Max Period <span class="text-red-500">*</span></label>
+                {{ form.max_period }}
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Period Unit <span class="text-red-500">*</span></label>
+                {{ form.period_unit }}
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Interest Rate % <span class="text-red-500">*</span></label>
+                {{ form.interest_rate }}
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Penal Rate %</label>
+                {{ form.penal_rate }}
+            </div>
+        </div>
+
+        <div class="border-t pt-4">
+            <h4 class="text-sm font-semibold text-gray-700 mb-3">Extra Rates by Category</h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Senior Citizen Extra %</label>
+                    {{ form.senior_citizen_extra }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Widow Extra %</label>
+                    {{ form.widow_extra }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Ex-Military Extra %</label>
+                    {{ form.ex_military_extra }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Disabled Extra %</label>
+                    {{ form.disabled_extra }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Employee Extra %</label>
+                    {{ form.employee_extra }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Director Extra %</label>
+                    {{ form.director_extra }}
+                </div>
+            </div>
+        </div>
+
+        <div class="border-t pt-4">
+            <label class="inline-flex items-center gap-2 text-sm font-medium text-gray-700">
+                {{ form.is_active }}
+                Active
+            </label>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-4 border-t">
+            <a href="{% url 'accounting:interest_master' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
+            <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">Save</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,19 +1,23 @@
 {% extends "base.html" %}
 
 {% block title %}Loan {{ loan.loan_no }} — InfoSociety{% endblock %}
+{% block page_title %}Loan Details{% endblock %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto space-y-6">
+<style>[x-cloak] { display: none !important; }</style>
 
+<div class="max-w-5xl mx-auto space-y-6" x-data="{ tab: 'overview' }">
+
+    <!-- Header — always visible -->
     <div class="flex items-center justify-between">
         <div>
             <h2 class="text-xl font-bold text-gray-900">Loan {{ loan.loan_no }}</h2>
-            <p class="text-sm text-gray-500">{{ loan.member.name }} — {{ loan.loan_product.name }}</p>
+            <p class="text-sm text-gray-500"><a href="{% url 'members:detail' loan.member.pk %}" class="text-primary-600 hover:underline">{{ loan.member.name }}</a> ({{ loan.member.member_no }}) — {{ loan.loan_product.name }}</p>
         </div>
-        <a href="{% url 'loans:list' %}" class="text-sm text-indigo-600 hover:text-indigo-800">&larr; Back to Loans</a>
+        <a href="{% url 'loans:list' %}" class="text-sm text-primary-600 hover:text-primary-800">&larr; Back to Loans</a>
     </div>
 
-    <!-- Status Badge -->
+    <!-- Status Badge — always visible -->
     <div class="flex items-center gap-3">
         {% if loan.status == 'applied' %}
         <span class="px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">Applied</span>
@@ -32,249 +36,410 @@
         {% endif %}
     </div>
 
-    <!-- Loan Info Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Tab Navigation -->
+    <div class="border-b border-gray-200">
+        <nav class="flex gap-6 -mb-px" aria-label="Tabs">
+            <button @click="tab = 'overview'" :class="tab === 'overview' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="py-3 px-1 text-sm font-medium border-b-2 whitespace-nowrap">Overview</button>
+            <button @click="tab = 'guarantors'" :class="tab === 'guarantors' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="py-3 px-1 text-sm font-medium border-b-2 whitespace-nowrap">
+                Guarantors
+                {% if loan.loan_product.requires_guarantor and guarantor_count < loan.loan_product.min_guarantors %}
+                <span class="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">!</span>
+                {% endif %}
+            </button>
+            <button @click="tab = 'emi'" :class="tab === 'emi' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="py-3 px-1 text-sm font-medium border-b-2 whitespace-nowrap">EMI & Repayments</button>
+            <button @click="tab = 'collaterals'" :class="tab === 'collaterals' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="py-3 px-1 text-sm font-medium border-b-2 whitespace-nowrap">Collaterals</button>
+        </nav>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- Tab 1: Overview                                              -->
+    <!-- ============================================================ -->
+    <div x-show="tab === 'overview'" class="space-y-6">
+
+        <!-- Loan Info Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 class="text-sm font-semibold text-gray-500 uppercase mb-3">Application Details</h3>
+                <dl class="space-y-2 text-sm">
+                    <div class="flex justify-between"><dt class="text-gray-500">Loan No</dt><dd class="font-mono font-medium">{{ loan.loan_no }}</dd></div>
+                    <div class="flex justify-between"><dt class="text-gray-500">Member</dt><dd><a href="{% url 'members:detail' loan.member.pk %}" class="text-primary-600 hover:underline">{{ loan.member.name }}</a> ({{ loan.member.member_no }})</dd></div>
+                    <div class="flex justify-between"><dt class="text-gray-500">Product</dt><dd>{{ loan.loan_product.name }}</dd></div>
+                    <div class="flex justify-between"><dt class="text-gray-500">Category</dt><dd>{{ loan.loan_product.get_loan_category_display }}</dd></div>
+                    <div class="flex justify-between"><dt class="text-gray-500">Applied Amount</dt><dd class="font-medium">{{ loan.applied_amount|floatformat:2 }}</dd></div>
+                    <div class="flex justify-between"><dt class="text-gray-500">Applied Date</dt><dd>{{ loan.applied_date|date:"d M Y" }}</dd></div>
+                    <div class="flex justify-between"><dt class="text-gray-500">Tenure</dt><dd>{{ loan.tenure_months }} months</dd></div>
+                    <div class="flex justify-between"><dt class="text-gray-500">Interest Rate</dt><dd>{{ loan.interest_rate }}% p.a.</dd></div>
+                    <div class="flex justify-between"><dt class="text-gray-500">Interest Type</dt><dd>{{ loan.loan_product.get_interest_type_display }}</dd></div>
+                    <div class="flex justify-between"><dt class="text-gray-500">Branch</dt><dd>{{ loan.branch.branch_name }}</dd></div>
+                    {% if loan.loan_form_no %}<div class="flex justify-between"><dt class="text-gray-500">Loan Form No</dt><dd>{{ loan.loan_form_no }}</dd></div>{% endif %}
+                    {% if loan.meeting_no %}<div class="flex justify-between"><dt class="text-gray-500">Meeting No</dt><dd>{{ loan.meeting_no }}</dd></div>{% endif %}
+                    {% if loan.director_recommendation %}<div class="flex justify-between"><dt class="text-gray-500">Director Recommendation</dt><dd>{{ loan.director_recommendation.name }}</dd></div>{% endif %}
+                </dl>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 class="text-sm font-semibold text-gray-500 uppercase mb-3">Financial Summary</h3>
+                <dl class="space-y-2 text-sm">
+                    {% if loan.approved_amount %}<div class="flex justify-between"><dt class="text-gray-500">Approved Amount</dt><dd class="font-medium text-green-700">{{ loan.approved_amount|floatformat:2 }}</dd></div>{% endif %}
+                    {% if loan.approved_date %}<div class="flex justify-between"><dt class="text-gray-500">Approved Date</dt><dd>{{ loan.approved_date|date:"d M Y" }}</dd></div>{% endif %}
+                    {% if loan.disbursed_amount %}<div class="flex justify-between"><dt class="text-gray-500">Disbursed Amount</dt><dd class="font-medium">{{ loan.disbursed_amount|floatformat:2 }}</dd></div>{% endif %}
+                    {% if loan.disbursed_date %}<div class="flex justify-between"><dt class="text-gray-500">Disbursed Date</dt><dd>{{ loan.disbursed_date|date:"d M Y" }}</dd></div>{% endif %}
+                    {% if loan.emi_amount %}<div class="flex justify-between"><dt class="text-gray-500">EMI Amount</dt><dd class="font-medium text-primary-700">{{ loan.emi_amount|floatformat:2 }}</dd></div>{% endif %}
+                    {% if loan.total_interest_payable %}<div class="flex justify-between"><dt class="text-gray-500">Total Interest</dt><dd>{{ loan.total_interest_payable|floatformat:2 }}</dd></div>{% endif %}
+                    <div class="flex justify-between border-t pt-2 mt-2">
+                        <dt class="text-gray-700 font-medium">Outstanding Principal</dt>
+                        <dd class="font-bold text-lg">{{ loan.outstanding_principal|floatformat:2 }}</dd>
+                    </div>
+                    {% if loan.outstanding_interest %}<div class="flex justify-between"><dt class="text-gray-500">Outstanding Interest</dt><dd class="text-red-600">{{ loan.outstanding_interest|floatformat:2 }}</dd></div>{% endif %}
+                    {% if loan.overdue_amount %}<div class="flex justify-between"><dt class="text-gray-500">Overdue Amount</dt><dd class="text-red-600 font-medium">{{ loan.overdue_amount|floatformat:2 }}</dd></div>{% endif %}
+                    {% if loan.overdue_days %}<div class="flex justify-between"><dt class="text-gray-500">Overdue Days</dt><dd class="text-red-600">{{ loan.overdue_days }} days</dd></div>{% endif %}
+                </dl>
+                {% if loan.remarks %}<p class="mt-3 text-sm text-gray-500 border-t pt-2">{{ loan.remarks }}</p>{% endif %}
+            </div>
+        </div>
+
+        <!-- Approve / Reject Form (status == 'applied') -->
+        {% if approval_form %}
+        <div class="bg-white rounded-lg shadow-sm border border-yellow-200 p-6">
+            <h3 class="text-sm font-semibold text-yellow-800 uppercase mb-3">Approve / Reject Loan</h3>
+            {% if not guarantor_ok %}
+            <div class="mb-3 rounded-md bg-yellow-50 border border-yellow-200 px-4 py-3">
+                <p class="text-sm text-yellow-800">Approval will fail: this loan requires {{ min_guarantors }} guarantor{{ min_guarantors|pluralize }} but only {{ guarantor_count }} {{ guarantor_count|pluralize:"is,are" }} assigned.</p>
+            </div>
+            {% endif %}
+            {% if loan.loan_product.requires_collateral and not collateral_ok %}
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+                <p class="text-sm text-amber-800 font-medium">Collateral Required</p>
+                <p class="text-xs text-amber-600 mt-1">This loan product requires collateral. Add collateral in the Collaterals tab before approving.</p>
+            </div>
+            {% endif %}
+            <form method="post" action="{% url 'loans:approve' pk=loan.pk %}" class="space-y-4">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Action</label>
+                        {{ approval_form.action }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Approved Amount</label>
+                        {{ approval_form.approved_amount }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
+                        {{ approval_form.remarks }}
+                    </div>
+                </div>
+                <button type="submit" class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-medium text-sm">
+                    Submit Decision
+                </button>
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- Disburse Form (status == 'approved') -->
+        {% if loan.status == 'approved' and request.user.is_manager %}
+        <div class="bg-white rounded-lg shadow-sm border border-green-200 p-6">
+            <h3 class="text-sm font-semibold text-green-800 uppercase mb-3">Disburse Loan</h3>
+            <p class="text-sm text-gray-600 mb-3">Approved amount: <strong>{{ loan.approved_amount|floatformat:2 }}</strong>. Disbursing will generate the EMI schedule and create the disbursement journal entry.</p>
+            {% if loan.loan_product.requires_collateral and not collateral_ok %}
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+                <p class="text-sm text-amber-800 font-medium">Collateral Required</p>
+                <p class="text-xs text-amber-600 mt-1">This loan product requires collateral. Add collateral in the Collaterals tab before approving.</p>
+            </div>
+            {% endif %}
+            {% if guarantor_ok %}
+            <form method="post" action="{% url 'loans:disburse' pk=loan.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-sm"
+                        onclick="return confirm('Disburse loan of {{ loan.approved_amount|floatformat:2 }} to {{ loan.member.name }}?')">
+                    Disburse Now
+                </button>
+            </form>
+            {% else %}
+            <div class="rounded-md bg-yellow-50 border border-yellow-200 px-4 py-3">
+                <p class="text-sm text-yellow-800">Cannot disburse: this loan requires at least {{ min_guarantors }} guarantor{{ min_guarantors|pluralize }}. Please <a href="{% url 'loans:guarantor_add' loan_pk=loan.pk %}" class="underline font-medium">add guarantors</a> first.</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- EMI Collection Form (status == 'disbursed' or 'npa') -->
+        {% if emi_form %}
+        <div class="bg-white rounded-lg shadow-sm border border-primary-200 p-6">
+            <h3 class="text-sm font-semibold text-primary-800 uppercase mb-3">Collect EMI / Repayment</h3>
+            <form method="post" action="{% url 'loans:collect' pk=loan.pk %}" class="flex flex-wrap items-end gap-4">
+                {% csrf_token %}
+                {{ emi_form.loan_id }}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+                    {{ emi_form.amount }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Payment Mode</label>
+                    {{ emi_form.payment_mode }}
+                </div>
+                <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium text-sm">
+                    Collect Payment
+                </button>
+            </form>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- Tab 2: Guarantors                                            -->
+    <!-- ============================================================ -->
+    <div x-show="tab === 'guarantors'" x-cloak class="space-y-6">
+
+        <div class="bg-white rounded-lg shadow-sm border {% if not guarantor_ok and loan.status in 'applied,approved' %}border-red-300{% else %}border-gray-200{% endif %} p-6">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-semibold text-gray-500 uppercase">
+                    Guarantors
+                    {% if min_guarantors %}
+                    <span class="text-xs font-normal text-gray-400 ml-1">({{ guarantor_count }}/{{ min_guarantors }} required)</span>
+                    {% endif %}
+                </h3>
+                {% if request.user.is_manager and loan.status not in 'closed,rejected,written_off' %}
+                <a href="{% url 'loans:guarantor_add' loan_pk=loan.pk %}" class="px-3 py-1.5 bg-primary-600 text-white text-xs font-medium rounded-lg hover:bg-primary-700 shadow-sm">+ Add Guarantor</a>
+                {% endif %}
+            </div>
+
+            <!-- Dependency warnings -->
+            {% if loan.loan_product.requires_guarantor and guarantor_count == 0 and loan.status in 'applied,approved' %}
+            <div class="mb-4 rounded-md bg-amber-50 border border-amber-200 px-4 py-3">
+                <div class="flex items-start gap-3">
+                    <svg class="h-5 w-5 text-amber-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                    <div>
+                        <p class="text-sm font-semibold text-amber-800">No Guarantors Added</p>
+                        <p class="text-sm text-amber-700 mt-1">This loan product requires at least {{ min_guarantors }} guarantor{{ min_guarantors|pluralize }}. Add guarantors before this loan can be approved or disbursed.</p>
+                        {% if request.user.is_manager %}
+                        <a href="{% url 'loans:guarantor_add' loan_pk=loan.pk %}" class="inline-flex items-center mt-2 text-sm font-medium text-amber-800 hover:text-amber-900 underline">Add Guarantor &rarr;</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% elif not guarantor_ok and loan.status in 'applied,approved' %}
+            <div class="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3">
+                <p class="text-sm text-red-700 font-medium">This loan requires at least {{ min_guarantors }} guarantor{{ min_guarantors|pluralize }} but only {{ guarantor_count }} {{ guarantor_count|pluralize:"is,are" }} assigned. Add guarantors before approving or disbursing.</p>
+            </div>
+            {% endif %}
+
+            <!-- Guarantor Cards -->
+            {% for g in guarantors %}
+            <div class="{% if not forloop.first %}border-t border-gray-100 mt-4 pt-4{% endif %}">
+                <div class="flex items-start justify-between mb-2">
+                    <div>
+                        <p class="text-sm font-semibold text-gray-900">{{ g.guarantor_member.name }}</p>
+                        <p class="text-xs text-gray-500">{{ g.guarantor_member.member_no }} &middot; {{ g.guarantor_member.branch.branch_name }}</p>
+                    </div>
+                    {% if request.user.is_manager and loan.status not in 'closed,rejected,written_off' %}
+                    <div class="flex gap-2">
+                        <a href="{% url 'loans:guarantor_edit' pk=g.pk %}" class="text-primary-600 hover:text-primary-800 text-xs font-medium">Edit</a>
+                        <form method="post" action="{% url 'loans:guarantor_delete' pk=g.pk %}" class="inline" onsubmit="return confirm('Remove guarantor {{ g.guarantor_member.name }}?')">
+                            {% csrf_token %}
+                            <button type="submit" class="text-red-600 hover:text-red-800 text-xs font-medium">Remove</button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                    <div>
+                        <p class="text-xs text-gray-400">Phone</p>
+                        <p class="text-gray-700">{{ g.guarantor_member.phone|default:"—" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400">Guarantee Amount</p>
+                        <p class="font-medium text-gray-900">{{ g.guarantee_amount|floatformat:2 }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400">Shares Held</p>
+                        <p class="text-gray-700">{{ g.share_count }} shares ({{ g.share_value|floatformat:2 }})</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400">Active Guarantees</p>
+                        <p class="{% if g.active_count > 1 %}text-amber-600 font-medium{% else %}text-gray-700{% endif %}">{{ g.active_count }} loan{{ g.active_count|pluralize }}</p>
+                    </div>
+                </div>
+                {% if g.guarantor_member.address %}
+                <p class="text-xs text-gray-500 mt-2">{{ g.guarantor_member.address|truncatewords:20 }}</p>
+                {% endif %}
+            </div>
+            {% empty %}
+            <p class="py-6 text-center text-sm text-gray-400">No guarantors assigned yet.</p>
+            {% endfor %}
+        </div>
+
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- Tab 3: EMI & Repayments                                      -->
+    <!-- ============================================================ -->
+    <div x-show="tab === 'emi'" x-cloak class="space-y-6">
+
+        <!-- EMI Schedule -->
+        {% if emi_schedule %}
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div class="p-4 border-b bg-gray-50">
+                <h3 class="text-sm font-semibold text-gray-700 uppercase">EMI Schedule</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">#</th>
+                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Due Date</th>
+                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">Principal</th>
+                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">Interest</th>
+                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">Total EMI</th>
+                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">Paid</th>
+                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for emi in emi_schedule %}
+                        <tr class="{% if emi.status == 'overdue' %}bg-red-50{% elif emi.status == 'paid' %}bg-green-50{% endif %}">
+                            <td class="px-3 py-2 text-gray-600">{{ emi.installment_no }}</td>
+                            <td class="px-3 py-2">{{ emi.due_date|date:"d M Y" }}</td>
+                            <td class="px-3 py-2 text-right">{{ emi.principal_component|floatformat:2 }}</td>
+                            <td class="px-3 py-2 text-right">{{ emi.interest_component|floatformat:2 }}</td>
+                            <td class="px-3 py-2 text-right font-medium">{{ emi.total_emi|floatformat:2 }}</td>
+                            <td class="px-3 py-2 text-right">{{ emi.paid_amount|floatformat:2 }}</td>
+                            <td class="px-3 py-2">
+                                {% if emi.status == 'paid' %}
+                                <span class="px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">Paid</span>
+                                {% elif emi.status == 'overdue' %}
+                                <span class="px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-700">Overdue</span>
+                                {% elif emi.status == 'partially_paid' %}
+                                <span class="px-2 py-0.5 rounded-full text-xs bg-yellow-100 text-yellow-700">Partial</span>
+                                {% else %}
+                                <span class="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600">Pending</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 class="text-sm font-semibold text-gray-500 uppercase mb-3">Application Details</h3>
-            <dl class="space-y-2 text-sm">
-                <div class="flex justify-between"><dt class="text-gray-500">Loan No</dt><dd class="font-mono font-medium">{{ loan.loan_no }}</dd></div>
-                <div class="flex justify-between"><dt class="text-gray-500">Member</dt><dd>{{ loan.member.name }} ({{ loan.member.member_no }})</dd></div>
-                <div class="flex justify-between"><dt class="text-gray-500">Product</dt><dd>{{ loan.loan_product.name }}</dd></div>
-                <div class="flex justify-between"><dt class="text-gray-500">Category</dt><dd>{{ loan.loan_product.get_loan_category_display }}</dd></div>
-                <div class="flex justify-between"><dt class="text-gray-500">Applied Amount</dt><dd class="font-medium">{{ loan.applied_amount|floatformat:2 }}</dd></div>
-                <div class="flex justify-between"><dt class="text-gray-500">Applied Date</dt><dd>{{ loan.applied_date|date:"d M Y" }}</dd></div>
-                <div class="flex justify-between"><dt class="text-gray-500">Tenure</dt><dd>{{ loan.tenure_months }} months</dd></div>
-                <div class="flex justify-between"><dt class="text-gray-500">Interest Rate</dt><dd>{{ loan.interest_rate }}% p.a.</dd></div>
-                <div class="flex justify-between"><dt class="text-gray-500">Interest Type</dt><dd>{{ loan.loan_product.get_interest_type_display }}</dd></div>
-                <div class="flex justify-between"><dt class="text-gray-500">Branch</dt><dd>{{ loan.branch.branch_name }}</dd></div>
-                {% if loan.loan_form_no %}<div class="flex justify-between"><dt class="text-gray-500">Loan Form No</dt><dd>{{ loan.loan_form_no }}</dd></div>{% endif %}
-                {% if loan.meeting_no %}<div class="flex justify-between"><dt class="text-gray-500">Meeting No</dt><dd>{{ loan.meeting_no }}</dd></div>{% endif %}
-                {% if loan.director_recommendation %}<div class="flex justify-between"><dt class="text-gray-500">Director Recommendation</dt><dd>{{ loan.director_recommendation.name }}</dd></div>{% endif %}
-            </dl>
+            <p class="text-center text-sm text-gray-400 py-4">No EMI schedule generated yet. The schedule is created upon loan disbursement.</p>
         </div>
+        {% endif %}
 
+        <!-- Repayment History -->
+        {% if repayments %}
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div class="p-4 border-b bg-gray-50">
+                <h3 class="text-sm font-semibold text-gray-700 uppercase">Recent Repayments</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Date</th>
+                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Receipt</th>
+                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">Amount</th>
+                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">Principal</th>
+                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">Interest</th>
+                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">Penalty</th>
+                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Mode</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for r in repayments %}
+                        <tr>
+                            <td class="px-3 py-2">{{ r.payment_date|date:"d M Y" }}</td>
+                            <td class="px-3 py-2">
+                                <a href="{% url 'loans:emi_receipt' repayment_id=r.pk %}" class="text-primary-600 hover:underline font-mono text-xs">{{ r.receipt_no }}</a>
+                            </td>
+                            <td class="px-3 py-2 text-right font-medium">{{ r.amount|floatformat:2 }}</td>
+                            <td class="px-3 py-2 text-right">{{ r.principal_adjusted|floatformat:2 }}</td>
+                            <td class="px-3 py-2 text-right">{{ r.interest_adjusted|floatformat:2 }}</td>
+                            <td class="px-3 py-2 text-right">{{ r.penalty_adjusted|floatformat:2 }}</td>
+                            <td class="px-3 py-2 text-gray-500">{{ r.payment_mode|title }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+        {% if emi_schedule %}
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 class="text-sm font-semibold text-gray-500 uppercase mb-3">Financial Summary</h3>
-            <dl class="space-y-2 text-sm">
-                {% if loan.approved_amount %}<div class="flex justify-between"><dt class="text-gray-500">Approved Amount</dt><dd class="font-medium text-green-700">{{ loan.approved_amount|floatformat:2 }}</dd></div>{% endif %}
-                {% if loan.approved_date %}<div class="flex justify-between"><dt class="text-gray-500">Approved Date</dt><dd>{{ loan.approved_date|date:"d M Y" }}</dd></div>{% endif %}
-                {% if loan.disbursed_amount %}<div class="flex justify-between"><dt class="text-gray-500">Disbursed Amount</dt><dd class="font-medium">{{ loan.disbursed_amount|floatformat:2 }}</dd></div>{% endif %}
-                {% if loan.disbursed_date %}<div class="flex justify-between"><dt class="text-gray-500">Disbursed Date</dt><dd>{{ loan.disbursed_date|date:"d M Y" }}</dd></div>{% endif %}
-                {% if loan.emi_amount %}<div class="flex justify-between"><dt class="text-gray-500">EMI Amount</dt><dd class="font-medium text-indigo-700">{{ loan.emi_amount|floatformat:2 }}</dd></div>{% endif %}
-                {% if loan.total_interest_payable %}<div class="flex justify-between"><dt class="text-gray-500">Total Interest</dt><dd>{{ loan.total_interest_payable|floatformat:2 }}</dd></div>{% endif %}
-                <div class="flex justify-between border-t pt-2 mt-2">
-                    <dt class="text-gray-700 font-medium">Outstanding Principal</dt>
-                    <dd class="font-bold text-lg">{{ loan.outstanding_principal|floatformat:2 }}</dd>
-                </div>
-                {% if loan.outstanding_interest %}<div class="flex justify-between"><dt class="text-gray-500">Outstanding Interest</dt><dd class="text-red-600">{{ loan.outstanding_interest|floatformat:2 }}</dd></div>{% endif %}
-                {% if loan.overdue_amount %}<div class="flex justify-between"><dt class="text-gray-500">Overdue Amount</dt><dd class="text-red-600 font-medium">{{ loan.overdue_amount|floatformat:2 }}</dd></div>{% endif %}
-                {% if loan.overdue_days %}<div class="flex justify-between"><dt class="text-gray-500">Overdue Days</dt><dd class="text-red-600">{{ loan.overdue_days }} days</dd></div>{% endif %}
-            </dl>
-            {% if loan.remarks %}<p class="mt-3 text-sm text-gray-500 border-t pt-2">{{ loan.remarks }}</p>{% endif %}
+            <p class="text-center text-sm text-gray-400 py-4">No repayments recorded yet.</p>
         </div>
+        {% endif %}
+        {% endif %}
+
     </div>
 
-    <!-- Guarantors -->
-    {% if guarantors %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 class="text-sm font-semibold text-gray-500 uppercase mb-3">Guarantors</h3>
-        <table class="w-full text-sm">
-            <thead>
-                <tr class="border-b">
-                    <th class="text-left py-2 text-gray-600">Member</th>
-                    <th class="text-left py-2 text-gray-600">Share A/C</th>
-                    <th class="text-right py-2 text-gray-600">Guarantee Amount</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for g in guarantors %}
-                <tr class="border-b border-gray-100">
-                    <td class="py-2">{{ g.guarantor_member.name }} ({{ g.guarantor_member.member_no }})</td>
-                    <td class="py-2 font-mono text-gray-600">{{ g.guarantor_share_account|default:"—" }}</td>
-                    <td class="py-2 text-right font-medium">{{ g.guarantee_amount|floatformat:2 }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% endif %}
+    <!-- ============================================================ -->
+    <!-- Tab 4: Collaterals                                           -->
+    <!-- ============================================================ -->
+    <div x-show="tab === 'collaterals'" x-cloak class="space-y-6">
 
-    <!-- Collaterals -->
-    {% if collaterals %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 class="text-sm font-semibold text-gray-500 uppercase mb-3">Collateral / Mortgage</h3>
-        <table class="w-full text-sm">
-            <thead>
-                <tr class="border-b">
-                    <th class="text-left py-2 text-gray-600">Type</th>
-                    <th class="text-left py-2 text-gray-600">Description</th>
-                    <th class="text-right py-2 text-gray-600">Estimated Value</th>
-                    <th class="text-left py-2 text-gray-600">Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for c in collaterals %}
-                <tr class="border-b border-gray-100">
-                    <td class="py-2">{{ c.get_collateral_type_display }}</td>
-                    <td class="py-2 text-gray-600">{{ c.description|truncatewords:15 }}</td>
-                    <td class="py-2 text-right font-medium">{{ c.estimated_value|floatformat:2 }}</td>
-                    <td class="py-2">
-                        <span class="px-2 py-0.5 rounded-full text-xs {% if c.status == 'pledged' %}bg-yellow-100 text-yellow-700{% else %}bg-green-100 text-green-700{% endif %}">{{ c.get_status_display }}</span>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% endif %}
-
-    <!-- Action Forms -->
-    {% if approval_form %}
-    <div class="bg-white rounded-lg shadow-sm border border-yellow-200 p-6">
-        <h3 class="text-sm font-semibold text-yellow-800 uppercase mb-3">Approve / Reject Loan</h3>
-        <form method="post" action="{% url 'loans:approve' pk=loan.pk %}" class="space-y-4">
-            {% csrf_token %}
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Action</label>
-                    {{ approval_form.action }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Approved Amount</label>
-                    {{ approval_form.approved_amount }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
-                    {{ approval_form.remarks }}
-                </div>
-            </div>
-            <button type="submit" class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-medium text-sm">
-                Submit Decision
-            </button>
-        </form>
-    </div>
-    {% endif %}
-
-    {% if loan.status == 'approved' %}
-    <div class="bg-white rounded-lg shadow-sm border border-green-200 p-6">
-        <h3 class="text-sm font-semibold text-green-800 uppercase mb-3">Disburse Loan</h3>
-        <p class="text-sm text-gray-600 mb-3">Approved amount: <strong>{{ loan.approved_amount|floatformat:2 }}</strong>. Disbursing will generate the EMI schedule and create the disbursement journal entry.</p>
-        <form method="post" action="{% url 'loans:disburse' pk=loan.pk %}">
-            {% csrf_token %}
-            <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-sm"
-                    onclick="return confirm('Disburse loan of {{ loan.approved_amount|floatformat:2 }} to {{ loan.member.name }}?')">
-                Disburse Now
-            </button>
-        </form>
-    </div>
-    {% endif %}
-
-    {% if emi_form %}
-    <div class="bg-white rounded-lg shadow-sm border border-indigo-200 p-6">
-        <h3 class="text-sm font-semibold text-indigo-800 uppercase mb-3">Collect EMI / Repayment</h3>
-        <form method="post" action="{% url 'loans:collect' pk=loan.pk %}" class="flex flex-wrap items-end gap-4">
-            {% csrf_token %}
-            {{ emi_form.loan_id }}
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
-                {{ emi_form.amount }}
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Payment Mode</label>
-                {{ emi_form.payment_mode }}
-            </div>
-            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium text-sm">
-                Collect Payment
-            </button>
-        </form>
-    </div>
-    {% endif %}
-
-    <!-- EMI Schedule -->
-    {% if emi_schedule %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div class="p-4 border-b bg-gray-50">
-            <h3 class="text-sm font-semibold text-gray-700 uppercase">EMI Schedule</h3>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full text-sm divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">#</th>
-                        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Due Date</th>
-                        <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">Principal</th>
-                        <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">Interest</th>
-                        <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">Total EMI</th>
-                        <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">Paid</th>
-                        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Status</th>
+        {% if collaterals %}
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 class="text-sm font-semibold text-gray-500 uppercase mb-3">Collateral / Mortgage</h3>
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b">
+                        <th class="text-left py-2 text-gray-600">Type</th>
+                        <th class="text-left py-2 text-gray-600">Description</th>
+                        <th class="text-right py-2 text-gray-600">Estimated Value</th>
+                        <th class="text-left py-2 text-gray-600">Status</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
-                    {% for emi in emi_schedule %}
-                    <tr class="{% if emi.status == 'overdue' %}bg-red-50{% elif emi.status == 'paid' %}bg-green-50{% endif %}">
-                        <td class="px-3 py-2 text-gray-600">{{ emi.installment_no }}</td>
-                        <td class="px-3 py-2">{{ emi.due_date|date:"d M Y" }}</td>
-                        <td class="px-3 py-2 text-right">{{ emi.principal_component|floatformat:2 }}</td>
-                        <td class="px-3 py-2 text-right">{{ emi.interest_component|floatformat:2 }}</td>
-                        <td class="px-3 py-2 text-right font-medium">{{ emi.total_emi|floatformat:2 }}</td>
-                        <td class="px-3 py-2 text-right">{{ emi.paid_amount|floatformat:2 }}</td>
-                        <td class="px-3 py-2">
-                            {% if emi.status == 'paid' %}
-                            <span class="px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">Paid</span>
-                            {% elif emi.status == 'overdue' %}
-                            <span class="px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-700">Overdue</span>
-                            {% elif emi.status == 'partially_paid' %}
-                            <span class="px-2 py-0.5 rounded-full text-xs bg-yellow-100 text-yellow-700">Partial</span>
-                            {% else %}
-                            <span class="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600">Pending</span>
-                            {% endif %}
+                <tbody>
+                    {% for c in collaterals %}
+                    <tr class="border-b border-gray-100">
+                        <td class="py-2">{{ c.get_collateral_type_display }}</td>
+                        <td class="py-2 text-gray-600">{{ c.description|truncatewords:15 }}</td>
+                        <td class="py-2 text-right font-medium">{{ c.estimated_value|floatformat:2 }}</td>
+                        <td class="py-2">
+                            <span class="px-2 py-0.5 rounded-full text-xs {% if c.status == 'pledged' %}bg-yellow-100 text-yellow-700{% else %}bg-green-100 text-green-700{% endif %}">{{ c.get_status_display }}</span>
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-    </div>
-    {% endif %}
-
-    <!-- Repayment History -->
-    {% if repayments %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div class="p-4 border-b bg-gray-50">
-            <h3 class="text-sm font-semibold text-gray-700 uppercase">Recent Repayments</h3>
+        {% else %}
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <p class="text-center text-sm text-gray-400 py-4">No collateral or mortgage recorded for this loan.</p>
         </div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full text-sm divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Date</th>
-                        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Receipt</th>
-                        <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">Amount</th>
-                        <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">Principal</th>
-                        <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">Interest</th>
-                        <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">Penalty</th>
-                        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Mode</th>
+        {% endif %}
+
+        <!-- Standing Instructions / Charges -->
+        {% if standing_instructions %}
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 class="text-sm font-semibold text-gray-500 uppercase mb-3">Standing Instructions / Charges</h3>
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b">
+                        <th class="text-left py-2 text-gray-600">Date</th>
+                        <th class="text-left py-2 text-gray-600">Type</th>
+                        <th class="text-right py-2 text-gray-600">Amount</th>
+                        <th class="text-left py-2 text-gray-600">Narration</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
-                    {% for r in repayments %}
-                    <tr>
-                        <td class="px-3 py-2">{{ r.payment_date|date:"d M Y" }}</td>
-                        <td class="px-3 py-2">
-                            <a href="{% url 'loans:emi_receipt' repayment_id=r.pk %}" class="text-indigo-600 hover:underline font-mono text-xs">{{ r.receipt_no }}</a>
-                        </td>
-                        <td class="px-3 py-2 text-right font-medium">{{ r.amount|floatformat:2 }}</td>
-                        <td class="px-3 py-2 text-right">{{ r.principal_adjusted|floatformat:2 }}</td>
-                        <td class="px-3 py-2 text-right">{{ r.interest_adjusted|floatformat:2 }}</td>
-                        <td class="px-3 py-2 text-right">{{ r.penalty_adjusted|floatformat:2 }}</td>
-                        <td class="px-3 py-2 text-gray-500">{{ r.payment_mode|title }}</td>
+                <tbody>
+                    {% for si in standing_instructions %}
+                    <tr class="border-b border-gray-100">
+                        <td class="py-2">{{ si.charge_date|date:"d M Y" }}</td>
+                        <td class="py-2">{{ si.get_charge_type_display }}</td>
+                        <td class="py-2 text-right font-medium">{{ si.amount|floatformat:2 }}</td>
+                        <td class="py-2 text-gray-600">{{ si.narration|default:"—" }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+        {% endif %}
+
     </div>
-    {% endif %}
 
 </div>
 {% endblock %}

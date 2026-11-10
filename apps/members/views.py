@@ -3,20 +3,25 @@ import io
 from datetime import date, datetime
 
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator
 from django.db import models
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from openpyxl import Workbook, load_workbook
 
+from apps.accounts.permissions import (
+    AuditorOrAboveMixin,
+    ManagerRequiredMixin,
+    auditor_or_above,
+    staff_required,
+)
 from apps.branches.models import Branch
 
 from .models import Member
 
 
-@login_required
+@auditor_or_above
 def member_list(request):
     members = Member.objects.select_related('branch').all()
     if not request.user.can_access_all_branches and request.current_branch:
@@ -25,9 +30,7 @@ def member_list(request):
     q = request.GET.get('q', '').strip()
     if q:
         members = members.filter(
-            models.Q(name__icontains=q)
-            | models.Q(member_no__icontains=q)
-            | models.Q(phone__icontains=q)
+            models.Q(name__icontains=q) | models.Q(member_no__icontains=q) | models.Q(phone__icontains=q)
         )
 
     status = request.GET.get('status', '')
@@ -38,7 +41,14 @@ def member_list(request):
     if category:
         members = members.filter(category=category)
 
-    return render(request, 'members/list.html', {'members': members})
+    paginator = Paginator(members, 25)
+    page_obj = paginator.get_page(request.GET.get('page'))
+    return render(request, 'members/list.html', {
+        'members': page_obj,
+        'page_obj': page_obj,
+        'is_paginated': page_obj.has_other_pages(),
+        'paginator': paginator,
+    })
 
 
 GENDER_MAP = {
@@ -51,7 +61,7 @@ GENDER_MAP = {
 }
 
 
-class MemberImportView(LoginRequiredMixin, View):
+class MemberImportView(ManagerRequiredMixin, View):
     def get(self, request):
         branches = Branch.objects.filter(status='active')
         return render(request, 'members/member_import.html', {'branches': branches})
@@ -180,7 +190,7 @@ class MemberImportView(LoginRequiredMixin, View):
         return [dict(zip(headers, row)) for row in rows[1:] if any(row)]
 
 
-class MemberExportView(LoginRequiredMixin, View):
+class MemberExportView(AuditorOrAboveMixin, View):
     def get(self, request):
         wb = Workbook()
         ws = wb.active
@@ -249,7 +259,7 @@ class MemberExportView(LoginRequiredMixin, View):
         return response
 
 
-class SampleImportTemplateView(LoginRequiredMixin, View):
+class SampleImportTemplateView(ManagerRequiredMixin, View):
     def get(self, request):
         wb = Workbook()
         ws = wb.active
@@ -347,39 +357,71 @@ class SampleImportTemplateView(LoginRequiredMixin, View):
         return response
 
 
-@login_required
+@auditor_or_above
 def member_detail(request, pk):
     member = get_object_or_404(Member, pk=pk)
+    from decimal import Decimal
     from apps.agents.models import PigmmyAccount
     from apps.deposits.models import FixedDeposit, RecurringDeposit
-    from apps.loans.models import LoanAccount
+    from apps.loans.models import LoanAccount, LoanGuarantor
     from apps.savings.models import SavingsAccount
     from apps.shares.models import ShareHolding
 
+    shares_list = list(ShareHolding.objects.filter(member=member, status='active'))
+    savings_list = list(SavingsAccount.objects.filter(member=member))
+    loans_list = list(LoanAccount.objects.filter(member=member).select_related('loan_product'))
+    fds_list = list(FixedDeposit.objects.filter(member=member, status='active'))
+    rds_list = list(RecurringDeposit.objects.filter(member=member, status='active'))
+    pigmmy_list = list(PigmmyAccount.objects.filter(member=member))
+
     context = {
         'member': member,
-        'shares': ShareHolding.objects.filter(member=member, status='active'),
-        'savings': SavingsAccount.objects.filter(member=member),
-        'loans': LoanAccount.objects.filter(member=member).exclude(status='closed'),
-        'fds': FixedDeposit.objects.filter(member=member, status='active'),
-        'rds': RecurringDeposit.objects.filter(member=member, status='active'),
-        'pigmmy': PigmmyAccount.objects.filter(member=member),
+        'shares': shares_list,
+        'savings': savings_list,
+        'loans': loans_list,
+        'fds': fds_list,
+        'rds': rds_list,
+        'pigmmy': pigmmy_list,
+        'guaranteed_loans': LoanGuarantor.objects.filter(
+            guarantor_member=member
+        ).select_related('loan', 'loan__member', 'loan__loan_product'),
         'nominees': member.nominees.all(),
         'documents': member.documents.all(),
+        'total_shares_amount': sum((s.total_amount for s in shares_list), Decimal('0.00')),
+        'total_savings_balance': sum((s.current_balance for s in savings_list), Decimal('0.00')),
+        'total_fd_amount': sum((f.deposit_amount for f in fds_list), Decimal('0.00')),
+        'total_rd_installment': sum((r.monthly_installment for r in rds_list), Decimal('0.00')),
+        'total_loan_outstanding': sum((l.outstanding_principal for l in loans_list), Decimal('0.00')),
+        'total_pigmmy_balance': sum((p.current_balance for p in pigmmy_list), Decimal('0.00')),
     }
     return render(request, 'members/detail.html', context)
 
 
-@login_required
+def _next_member_no():
+    last = Member.objects.order_by('-id').first()
+    if last and last.member_no:
+        digits = ''.join(filter(str.isdigit, last.member_no))
+        num = int(digits) + 1 if digits else Member.objects.count() + 1
+    else:
+        num = 1
+    return f'M{num:04d}'
+
+
+@staff_required
 def member_create(request):
     from .forms import MemberForm, MemberNomineeFormSet
 
     branches = Branch.objects.filter(status='active')
+    branch = getattr(request, 'current_branch', None)
     if request.method == 'POST':
-        form = MemberForm(request.POST, request.FILES)
+        form = MemberForm(request.POST, request.FILES, current_branch=branch)
         nominee_formset = MemberNomineeFormSet(request.POST, prefix='nominees')
         if form.is_valid() and nominee_formset.is_valid():
             member = form.save(commit=False)
+            if not member.member_no:
+                member.member_no = _next_member_no()
+            if not member.branch_id and branch:
+                member.branch = branch
             member.created_by = request.user
             member.save()
             nominee_formset.instance = member
@@ -387,17 +429,26 @@ def member_create(request):
             messages.success(request, f'Member {member.name} created successfully.')
             return redirect('members:detail', pk=member.pk)
     else:
-        form = MemberForm(initial={'join_date': date.today(), 'status': 'active'})
+        initial = {
+            'join_date': date.today(),
+            'status': 'active',
+        }
+        form = MemberForm(initial=initial, current_branch=branch)
         nominee_formset = MemberNomineeFormSet(prefix='nominees')
-    return render(request, 'members/form.html', {
-        'form': form,
-        'nominee_formset': nominee_formset,
-        'branches': branches,
-        'title': 'New Member',
-    })
+
+    return render(
+        request,
+        'members/form.html',
+        {
+            'form': form,
+            'nominee_formset': nominee_formset,
+            'branches': branches,
+            'title': 'New Member',
+        },
+    )
 
 
-@login_required
+@staff_required
 def member_edit(request, pk):
     member = get_object_or_404(Member, pk=pk)
     from .forms import MemberForm, MemberNomineeFormSet
@@ -414,16 +465,20 @@ def member_edit(request, pk):
     else:
         form = MemberForm(instance=member)
         nominee_formset = MemberNomineeFormSet(instance=member, prefix='nominees')
-    return render(request, 'members/form.html', {
-        'form': form,
-        'nominee_formset': nominee_formset,
-        'branches': branches,
-        'title': 'Edit Member',
-        'member': member,
-    })
+    return render(
+        request,
+        'members/form.html',
+        {
+            'form': form,
+            'nominee_formset': nominee_formset,
+            'branches': branches,
+            'title': 'Edit Member',
+            'member': member,
+        },
+    )
 
 
-@login_required
+@staff_required
 def member_document_upload(request, pk):
     member = get_object_or_404(Member, pk=pk)
     if request.method == 'POST':

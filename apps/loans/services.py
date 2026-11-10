@@ -3,6 +3,7 @@ from decimal import ROUND_HALF_UP, Decimal
 
 from django.db import models, transaction
 
+from apps.core.date_utils import get_transaction_date
 from apps.loans.models import EMISchedule, LoanAccount, LoanRepayment
 
 
@@ -88,8 +89,28 @@ def generate_emi_schedule(loan):
 def approve_loan(loan, approved_amount, approved_by):
     if loan.status != 'applied':
         raise ValueError('Loan is not in applied status')
+
+    product = loan.loan_product
+    if product.requires_guarantor:
+        from apps.loans.models import LoanGuarantor
+        count = LoanGuarantor.objects.filter(loan=loan).count()
+        if count < product.min_guarantors:
+            raise ValueError(
+                f'Cannot approve: this loan requires at least {product.min_guarantors} guarantor(s). '
+                f'Only {count} assigned.'
+            )
+
+    if product.requires_collateral:
+        from apps.loans.models import LoanCollateral
+        collateral_count = LoanCollateral.objects.filter(loan=loan).count()
+        if collateral_count == 0:
+            raise ValueError(
+                'Cannot approve: this loan product requires collateral. '
+                'Add at least one collateral before approving.'
+            )
+
     loan.status = 'approved'
-    loan.approved_date = date.today()
+    loan.approved_date = get_transaction_date(loan.branch)
     loan.approved_amount = Decimal(str(approved_amount))
     loan.approved_by = approved_by
     loan.save(
@@ -117,19 +138,52 @@ def disburse_loan(loan, branch, user):
     if loan.status != 'approved':
         raise ValueError('Loan is not in approved status')
 
+    product = loan.loan_product
+    if product.requires_guarantor:
+        from apps.loans.models import LoanGuarantor
+        count = LoanGuarantor.objects.filter(loan=loan).count()
+        if count < product.min_guarantors:
+            raise ValueError(
+                f'This loan requires at least {product.min_guarantors} guarantor(s). '
+                f'Only {count} assigned. Add guarantors before disbursing.'
+            )
+
     with transaction.atomic():
+        import calendar
+
+        txn_date = get_transaction_date(branch)
         loan.status = 'disbursed'
-        loan.disbursed_date = date.today()
+        loan.disbursed_date = txn_date
         loan.disbursed_amount = loan.approved_amount
         loan.outstanding_principal = loan.approved_amount
-        loan.last_interest_calculated_date = date.today()
+        loan.bal_repayment = loan.approved_amount
+        loan.last_interest_calculated_date = txn_date
+
+        start = txn_date
+        next_month = start.month + 1
+        year_offset = (next_month - 1) // 12
+        month = (next_month - 1) % 12 + 1
+        year = start.year + year_offset
+        last_day = calendar.monthrange(year, month)[1]
+        loan.date_of_first_recovery = date(year, month, min(start.day, last_day))
+
+        exp_month = start.month + loan.tenure_months
+        exp_year_offset = (exp_month - 1) // 12
+        exp_m = (exp_month - 1) % 12 + 1
+        exp_y = start.year + exp_year_offset
+        exp_last = calendar.monthrange(exp_y, exp_m)[1]
+        loan.loan_expiry_date = date(exp_y, exp_m, min(start.day, exp_last))
+
         loan.save(
             update_fields=[
                 'status',
                 'disbursed_date',
                 'disbursed_amount',
                 'outstanding_principal',
+                'bal_repayment',
                 'last_interest_calculated_date',
+                'date_of_first_recovery',
+                'loan_expiry_date',
                 'updated_at',
             ]
         )
@@ -153,6 +207,7 @@ def collect_emi(loan, amount, branch, user, payment_mode='cash'):
         raise ValueError('Amount must be positive')
 
     with transaction.atomic():
+        txn_date = get_transaction_date(branch)
         penalty_adjusted = Decimal('0')
         interest_adjusted = Decimal('0')
         principal_adjusted = Decimal('0')
@@ -172,6 +227,9 @@ def collect_emi(loan, amount, branch, user, payment_mode='cash'):
         loan.outstanding_principal -= principal_adjusted
         loan.outstanding_interest -= interest_adjusted
         loan.overdue_amount -= penalty_adjusted
+        loan.bal_repayment = max(loan.outstanding_principal, Decimal('0'))
+        loan.bal_interest = max(loan.outstanding_interest, Decimal('0'))
+        loan.bal_penal = max(loan.overdue_amount, Decimal('0'))
 
         emi_entry = EMISchedule.objects.filter(
             loan=loan,
@@ -179,7 +237,7 @@ def collect_emi(loan, amount, branch, user, payment_mode='cash'):
         ).first()
         if emi_entry:
             emi_entry.paid_amount += amount
-            emi_entry.paid_date = date.today()
+            emi_entry.paid_date = txn_date
             emi_entry.branch = branch
             if emi_entry.paid_amount >= emi_entry.total_emi:
                 emi_entry.status = 'paid'
@@ -190,7 +248,7 @@ def collect_emi(loan, amount, branch, user, payment_mode='cash'):
         if loan.outstanding_principal <= 0:
             loan.outstanding_principal = Decimal('0')
             loan.status = 'closed'
-            loan.closure_date = date.today()
+            loan.closure_date = txn_date
             loan.closure_type = 'normal'
 
         if loan.overdue_days > 0 and loan.overdue_amount <= 0:
@@ -202,7 +260,7 @@ def collect_emi(loan, amount, branch, user, payment_mode='cash'):
         repayment = LoanRepayment.objects.create(
             loan=loan,
             branch=branch,
-            payment_date=date.today(),
+            payment_date=txn_date,
             amount=amount,
             principal_adjusted=principal_adjusted,
             interest_adjusted=interest_adjusted,
@@ -237,7 +295,7 @@ def close_loan(loan, user):
     if loan.outstanding_principal > 0 or loan.outstanding_interest > 0:
         raise ValueError('Outstanding balance exists')
     loan.status = 'closed'
-    loan.closure_date = date.today()
+    loan.closure_date = get_transaction_date(loan.branch)
     loan.closure_type = 'normal'
     loan.save(update_fields=['status', 'closure_date', 'closure_type', 'updated_at'])
     return loan
@@ -269,11 +327,25 @@ def mark_npa(loan):
 
 def _create_disbursement_journal(loan, branch, user, processing_fee):
     from apps.accounting.services import create_journal_entry
+    from apps.core.gl_utils import get_account_gl_code, get_gl_code
+
+    loan_code = get_account_gl_code(loan, 'loan', '1003')
+    disbursed = loan.disbursed_amount
+    cash_credit = disbursed - processing_fee if processing_fee > 0 else disbursed
 
     lines = [
-        {'account_code': '1003', 'debit': loan.disbursed_amount, 'credit': Decimal('0')},
-        {'account_code': _get_cash_code(branch), 'debit': Decimal('0'), 'credit': loan.disbursed_amount},
+        {'account_code': loan_code, 'debit': disbursed, 'credit': Decimal('0')},
+        {'account_code': _get_cash_code(branch), 'debit': Decimal('0'), 'credit': cash_credit},
     ]
+    if processing_fee > 0:
+        from apps.accounting.models import ChartOfAccounts
+
+        fee_income_code = get_gl_code('processing_fee_income', '3002')
+        if ChartOfAccounts.objects.filter(code=fee_income_code).exists():
+            lines.append({'account_code': fee_income_code, 'debit': Decimal('0'), 'credit': processing_fee})
+        else:
+            cash_credit = disbursed
+            lines[1] = {'account_code': _get_cash_code(branch), 'debit': Decimal('0'), 'credit': cash_credit}
     create_journal_entry(
         entry_date=loan.disbursed_date,
         voucher_type='payment',
@@ -288,21 +360,26 @@ def _create_disbursement_journal(loan, branch, user, processing_fee):
 
 def _create_emi_collection_journal(loan, repayment, branch, user):
     from apps.accounting.services import create_journal_entry
+    from apps.core.gl_utils import get_account_gl_code, get_gl_code
+
+    loan_code = get_account_gl_code(loan, 'loan', '1003')
+    interest_income_code = get_gl_code('interest_received', '3001')
+    penal_income_code = get_gl_code('interest_receivable', '3003')
 
     lines = [
         {'account_code': _get_cash_code(branch), 'debit': repayment.amount, 'credit': Decimal('0')},
     ]
     if repayment.principal_adjusted > 0:
         lines.append(
-            {'account_code': '1003', 'debit': Decimal('0'), 'credit': repayment.principal_adjusted},
+            {'account_code': loan_code, 'debit': Decimal('0'), 'credit': repayment.principal_adjusted},
         )
     if repayment.interest_adjusted > 0:
         lines.append(
-            {'account_code': '3001', 'debit': Decimal('0'), 'credit': repayment.interest_adjusted},
+            {'account_code': interest_income_code, 'debit': Decimal('0'), 'credit': repayment.interest_adjusted},
         )
     if repayment.penalty_adjusted > 0:
         lines.append(
-            {'account_code': '3003', 'debit': Decimal('0'), 'credit': repayment.penalty_adjusted},
+            {'account_code': penal_income_code, 'debit': Decimal('0'), 'credit': repayment.penalty_adjusted},
         )
     create_journal_entry(
         entry_date=repayment.payment_date,
@@ -334,21 +411,6 @@ def get_active_guarantee_count(member):
     ).count()
 
 
-def validate_guarantor(member, loan_product):
-    """Validate that a member can be a guarantor."""
-    errors = []
-    if loan_product.guarantor_must_be_shareholder:
-        from apps.shares.models import ShareHolding
-
-        has_shares = ShareHolding.objects.filter(
-            member=member,
-            status='active',
-            share_count__gt=0,
-        ).exists()
-        if not has_shares:
-            errors.append(f'{member.name} does not have active shares. Guarantor must be a shareholder.')
-    return errors
-
 
 def validate_loan_application(member, loan_product, amount):
     """Validate if a member can apply for a loan."""
@@ -356,14 +418,18 @@ def validate_loan_application(member, loan_product, amount):
     amount = Decimal(str(amount))
 
     if not loan_product.allow_multiple:
-        active_loans = LoanAccount.objects.filter(
-            member=member,
-            loan_product__loan_category='non_mortgage',
-            status__in=['applied', 'approved', 'disbursed'],
-        ).filter(
-            models.Q(status__in=['applied', 'approved']) |
-            models.Q(status='disbursed', outstanding_principal__gt=Decimal('0'))
-        ).exists()
+        active_loans = (
+            LoanAccount.objects.filter(
+                member=member,
+                loan_product__loan_category='non_mortgage',
+                status__in=['applied', 'approved', 'disbursed'],
+            )
+            .filter(
+                models.Q(status__in=['applied', 'approved'])
+                | models.Q(status='disbursed', outstanding_principal__gt=Decimal('0'))
+            )
+            .exists()
+        )
         if active_loans:
             errors.append(
                 f'Member already has an active non-mortgage loan. '
@@ -391,13 +457,14 @@ def add_standing_instruction(loan, charge_type, amount, branch, narration, creat
     from apps.loans.models import StandingInstruction
 
     amount = Decimal(str(amount))
+    txn_date = get_transaction_date(branch)
 
     si = StandingInstruction.objects.create(
         loan=loan,
         branch=branch,
         charge_type=charge_type,
         amount=amount,
-        charge_date=date.today(),
+        charge_date=txn_date,
         narration=narration,
         created_by=created_by,
     )
@@ -407,19 +474,20 @@ def add_standing_instruction(loan, charge_type, amount, branch, narration, creat
 
     from apps.accounting.models import ChartOfAccounts
     from apps.accounting.services import create_journal_entry
+    from apps.core.gl_utils import get_account_gl_code, get_gl_code
 
-    loan_head = ChartOfAccounts.objects.filter(account_type='loans_given').first()
-    income_head = ChartOfAccounts.objects.filter(code='4004').first()
+    loan_code = get_account_gl_code(loan, 'loan', '1003')
+    fee_income_code = get_gl_code('interest_received', '4004')
 
-    if loan_head and income_head:
+    if ChartOfAccounts.objects.filter(code__in=[loan_code, fee_income_code]).count() == 2:
         create_journal_entry(
-            entry_date=date.today(),
+            entry_date=txn_date,
             voucher_type='journal',
             branch=branch,
             narration=narration,
             lines=[
-                {'account_code': loan_head.code, 'debit': amount, 'credit': Decimal('0')},
-                {'account_code': income_head.code, 'debit': Decimal('0'), 'credit': amount},
+                {'account_code': loan_code, 'debit': amount, 'credit': Decimal('0')},
+                {'account_code': fee_income_code, 'debit': Decimal('0'), 'credit': amount},
             ],
             user=created_by,
             reference_type='standing_instruction',

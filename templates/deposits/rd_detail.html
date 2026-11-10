@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 {% block title %}RD {{ rd.rd_no }} — InfoSociety{% endblock %}
+{% block page_title %}Recurring Deposit Details{% endblock %}
 
 {% block content %}
 <div class="max-w-5xl mx-auto">
     <div class="flex items-center justify-between mb-6">
         <div>
             <h1 class="text-2xl font-bold text-gray-900">{{ rd.rd_no }}</h1>
-            <p class="text-sm text-gray-500">{{ rd.member.name }} — Recurring Deposit</p>
+            <p class="text-sm text-gray-500"><a href="{% url 'members:detail' rd.member.pk %}" class="text-primary-600 hover:underline">{{ rd.member.name }}</a> — Recurring Deposit</p>
         </div>
         <a href="{% url 'deposits:rd_list' %}" class="text-gray-500 hover:text-gray-700 text-sm">&larr; Back</a>
     </div>
@@ -36,7 +37,7 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h3 class="text-sm font-semibold text-gray-500 uppercase mb-3">RD Details</h3>
             <dl class="space-y-2 text-sm">
-                <div class="flex justify-between"><dt class="text-gray-500">Member</dt><dd class="font-medium">{{ rd.member.name }}</dd></div>
+                <div class="flex justify-between"><dt class="text-gray-500">Member</dt><dd class="font-medium"><a href="{% url 'members:detail' rd.member.pk %}" class="text-primary-600 hover:underline">{{ rd.member.name }}</a></dd></div>
                 <div class="flex justify-between"><dt class="text-gray-500">Branch</dt><dd class="font-medium">{{ rd.branch.branch_name }}</dd></div>
                 <div class="flex justify-between"><dt class="text-gray-500">Interest Rate</dt><dd class="font-medium">{{ rd.interest_rate }}%</dd></div>
                 <div class="flex justify-between"><dt class="text-gray-500">Opening Date</dt><dd class="font-medium">{{ rd.start_date|date:"d M Y" }}</dd></div>
@@ -46,6 +47,7 @@
         </div>
 
         {% if rd.status == 'active' %}
+        {% if request.user.is_cashier %}
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col justify-between">
             <div>
                 <h3 class="text-sm font-semibold text-gray-500 uppercase mb-3">Collect Installment</h3>
@@ -56,6 +58,7 @@
                 <button type="submit" class="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-medium">Collect &#8377;{{ rd.monthly_installment|floatformat:2 }}</button>
             </form>
         </div>
+        {% endif %}
         {% endif %}
     </div>
 

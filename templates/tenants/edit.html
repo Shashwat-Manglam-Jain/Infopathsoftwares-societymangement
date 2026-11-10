@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Society — InfoSociety{% endblock %}
+{% block page_title %}Edit Society{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+    <div>
+        <h2 class="text-xl font-bold text-gray-900">Edit Society Details</h2>
+        <p class="text-sm text-gray-500 mt-1">Update your cooperative society's registration and contact details.</p>
+    </div>
+
+    {% if form.errors %}
+    <div class="rounded-lg bg-red-50 border border-red-200 p-4">
+        <h3 class="text-sm font-medium text-red-800">Please correct the errors below</h3>
+        <ul class="mt-1 text-sm text-red-700 list-disc list-inside">
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}<li>{{ field|title }}: {{ error }}</li>{% endfor %}
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Basic Info -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Basic Information</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Society Name <span class="text-red-500">*</span></label>
+                    {{ form.name }}
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Name (Regional)</label>
+                    {{ form.name_regional }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Society Type</label>
+                    {{ form.society_type }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    {{ form.society_category }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Registration -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Registration</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Registration No</label>
+                    {{ form.registration_no }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Registration Date</label>
+                    {{ form.registration_date }}
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Registration Authority</label>
+                    {{ form.registration_authority }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Contact &amp; Address</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                    {{ form.address }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
+                    {{ form.city }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
+                    {{ form.state }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Pincode</label>
+                    {{ form.pincode }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                    {{ form.phone }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Fax</label>
+                    {{ form.fax }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    {{ form.email }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Financial &amp; Tax</h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">PAN No</label>
+                    {{ form.pan_no }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">TAN No</label>
+                    {{ form.tan_no }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">GST No</label>
+                    {{ form.gst_no }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Authorized Capital</label>
+                    {{ form.authorized_capital }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Paid-up Capital</label>
+                    {{ form.paid_up_capital }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Share Nominal Value</label>
+                    {{ form.share_nominal_value }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Logo -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Logo</h4>
+            {% if society.logo %}
+            <div class="flex items-center gap-4 mb-3">
+                <img src="{{ society.logo.url }}" alt="Current logo" class="h-16 w-16 rounded object-contain border border-gray-200 bg-white p-1">
+                <span class="text-xs text-gray-400">Current logo</span>
+            </div>
+            {% endif %}
+            {{ form.logo }}
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-2">
+            <a href="{% url 'society_detail' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
+            <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">Save Changes</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

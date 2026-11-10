@@ -4,7 +4,7 @@ from django.db import models
 
 class CustomUser(AbstractUser):
     ROLE_CHOICES = [
-        ('super_admin', 'Super Admin'),
+        ('admin', 'Admin'),
         ('branch_manager', 'Branch Manager'),
         ('cashier', 'Cashier'),
         ('accountant', 'Accountant'),
@@ -35,12 +35,32 @@ class CustomUser(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.role == 'super_admin'
+        return self.role == 'admin'
 
     @property
     def is_manager(self):
-        return self.role in ('super_admin', 'branch_manager')
+        return self.role in ('admin', 'branch_manager')
 
     @property
     def is_cashier(self):
-        return self.role in ('super_admin', 'branch_manager', 'cashier')
+        """Cashier or above — can do counter transactions."""
+        return self.role in ('admin', 'branch_manager', 'cashier')
+
+    @property
+    def is_accountant(self):
+        """Accountant or above — can do cashbook, vouchers, day-end."""
+        return self.role in ('admin', 'branch_manager', 'accountant')
+
+    @property
+    def is_staff_role(self):
+        """Any operational staff — cashier, accountant, manager, admin. NOT auditor/member."""
+        return self.role in ('admin', 'branch_manager', 'cashier', 'accountant')
+
+    @property
+    def is_auditor_or_above(self):
+        """Everyone except member — can view all data."""
+        return self.role != 'member'
+
+    @property
+    def is_member_only(self):
+        return self.role == 'member'

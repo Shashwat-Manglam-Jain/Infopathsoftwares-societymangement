@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Cashbook Report — InfoSociety{% endblock %}
+{% block page_title %}Cashbook Report{% endblock %}
+
+{% block extra_head %}
+<style>
+@media print {
+    .no-print { display: none !important; }
+    .print-only { display: block !important; }
+    body { font-size: 12px; }
+}
+.print-only { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <a href="{% url 'reports:index' %}" class="inline-flex items-center text-sm text-gray-500 hover:text-primary-600 no-print">
+        <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Back to Reports
+    </a>
+
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 no-print">
+        <div>
+            <h2 class="text-xl font-bold text-gray-900">Cashbook Report</h2>
+            <p class="text-sm text-gray-500 mt-1">Daily cash summary with head-wise breakdown</p>
+        </div>
+        {% if cashbook %}
+        <button onclick="window.print()" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">
+            <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+            Print
+        </button>
+        {% endif %}
+    </div>
+
+    <form method="get" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 no-print">
+        <div class="flex flex-col sm:flex-row items-end gap-3">
+            <div class="flex-1">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                <input type="date" name="date" value="{{ report_date }}" max="{% now 'Y-m-d' %}" required class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
+            </div>
+            <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">Generate</button>
+        </div>
+    </form>
+
+    {% if cashbook %}
+    <div class="print-only text-center mb-4">
+        <h2 class="text-lg font-bold">Daily Cashbook</h2>
+        <p class="text-sm">Date: {{ report_date }}</p>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+            <p class="text-xs font-medium text-blue-600 uppercase">Opening Balance</p>
+            <p class="text-lg font-bold text-blue-900 mt-1">&#8377;{{ cashbook.opening_balance|floatformat:2 }}</p>
+        </div>
+        <div class="bg-green-50 rounded-lg p-4 border border-green-200">
+            <p class="text-xs font-medium text-green-600 uppercase">Total Receipts</p>
+            <p class="text-lg font-bold text-green-900 mt-1">&#8377;{{ cashbook.total_receipts|floatformat:2 }}</p>
+        </div>
+        <div class="bg-red-50 rounded-lg p-4 border border-red-200">
+            <p class="text-xs font-medium text-red-600 uppercase">Total Payments</p>
+            <p class="text-lg font-bold text-red-900 mt-1">&#8377;{{ cashbook.total_payments|floatformat:2 }}</p>
+        </div>
+        <div class="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+            <p class="text-xs font-medium text-yellow-700 uppercase">Closing Balance</p>
+            <p class="text-lg font-bold text-yellow-900 mt-1">&#8377;{{ cashbook.closing_balance|floatformat:2 }}</p>
+        </div>
+    </div>
+
+    <!-- Head-wise Breakdown -->
+    {% if heads %}
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-5 py-3 bg-gray-50 border-b border-gray-200">
+            <h3 class="text-sm font-semibold text-gray-700">Head-wise Summary</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Code</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Account Head</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Debit</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Credit</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for h in heads %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-2.5 text-sm font-mono text-gray-600">{{ h.code }}</td>
+                        <td class="px-4 py-2.5 text-sm text-gray-900">{{ h.name }}</td>
+                        <td class="px-4 py-2.5 text-sm text-right font-medium {% if h.debit %}text-gray-900{% else %}text-gray-300{% endif %}">{{ h.debit|floatformat:2 }}</td>
+                        <td class="px-4 py-2.5 text-sm text-right font-medium {% if h.credit %}text-gray-900{% else %}text-gray-300{% endif %}">{{ h.credit|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="bg-gray-50 border-t-2 border-gray-300">
+                    <tr>
+                        <td colspan="2" class="px-4 py-3 text-sm font-bold text-gray-900">Total</td>
+                        <td class="px-4 py-3 text-sm text-right font-bold text-gray-900">{{ total_debit|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-right font-bold text-gray-900">{{ total_credit|floatformat:2 }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    {% elif report_date %}
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+        <p class="text-gray-400 text-sm">No cashbook record found for {{ report_date }}. Day End may not have been run yet.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

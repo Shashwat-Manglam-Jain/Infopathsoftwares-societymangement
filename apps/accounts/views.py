@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import CustomUserChangeForm, CustomUserCreationForm, UserProfileForm
 from .models import CustomUser
+from .permissions import admin_required, manager_required
 
 
 def login_view(request):
@@ -23,6 +24,8 @@ def login_view(request):
 
 
 def logout_view(request):
+    if request.method != 'POST':
+        return redirect('dashboard:index')
     logout(request)
     messages.success(request, 'You have been logged out.')
     return redirect('accounts:login')
@@ -55,49 +58,46 @@ def change_password_view(request):
     return render(request, 'accounts/change_password.html', {'form': form})
 
 
-@login_required
+@manager_required
 def staff_list(request):
-    if not request.user.is_manager:
-        messages.error(request, 'Permission denied.')
-        return redirect('dashboard:index')
     users = CustomUser.objects.select_related('branch').order_by('username')
     if not request.user.can_access_all_branches:
         users = users.filter(branch=request.current_branch)
     return render(request, 'accounts/staff_list.html', {'users': users})
 
 
-@login_required
+@admin_required
 def staff_create(request):
-    if not request.user.is_manager:
-        messages.error(request, 'Permission denied.')
-        return redirect('dashboard:index')
     if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
+        form = CustomUserCreationForm(
+            request.POST, request.FILES, current_branch=request.current_branch, request_user=request.user
+        )
         if form.is_valid():
             user = form.save()
             messages.success(request, f'Staff user {user.username} created.')
             return redirect('accounts:staff_list')
     else:
-        form = CustomUserCreationForm()
+        form = CustomUserCreationForm(current_branch=request.current_branch, request_user=request.user)
     return render(request, 'accounts/staff_form.html', {'form': form, 'title': 'Add Staff User'})
 
 
-@login_required
+@admin_required
 def staff_edit(request, pk):
-    if not request.user.is_manager:
-        messages.error(request, 'Permission denied.')
-        return redirect('dashboard:index')
     edit_user = get_object_or_404(CustomUser, pk=pk)
     if request.method == 'POST':
-        form = CustomUserChangeForm(request.POST, instance=edit_user)
+        form = CustomUserChangeForm(request.POST, request.FILES, instance=edit_user, request_user=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, f'User {edit_user.username} updated.')
             return redirect('accounts:staff_list')
     else:
-        form = CustomUserChangeForm(instance=edit_user)
-    return render(request, 'accounts/staff_form.html', {
-        'form': form,
-        'title': f'Edit: {edit_user.username}',
-        'edit_user': edit_user,
-    })
+        form = CustomUserChangeForm(instance=edit_user, request_user=request.user)
+    return render(
+        request,
+        'accounts/staff_form.html',
+        {
+            'form': form,
+            'title': f'Edit: {edit_user.username}',
+            'edit_user': edit_user,
+        },
+    )

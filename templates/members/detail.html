@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% load avatar_tags %}
 {% block title %}{{ member.name }} — InfoSociety{% endblock %}
 {% block page_title %}Member Detail{% endblock %}
 
@@ -13,13 +13,7 @@
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 no-print">
         <div class="flex items-center gap-4">
-            {% if member.photo %}
-            <img src="{{ member.photo.url }}" alt="{{ member.name }}" class="h-16 w-16 rounded-full object-cover border-2 border-gray-200">
-            {% else %}
-            <div class="h-16 w-16 rounded-full bg-primary-100 flex items-center justify-center border-2 border-primary-200">
-                <span class="text-primary-700 text-xl font-bold">{{ member.name|make_list|first|upper }}</span>
-            </div>
-            {% endif %}
+            {% avatar member 64 "border-2 border-gray-200" %}
             <div>
                 <h2 class="text-xl font-bold text-gray-900">{{ member.prefix }} {{ member.name }}</h2>
                 {% if member.name_regional %}<p class="text-sm text-gray-600">{{ member.name_regional }}</p>{% endif %}
@@ -42,10 +36,12 @@
             {% endif %}
         </div>
         <div class="flex items-center gap-2">
+            {% if request.user.is_staff_role %}
             <a href="{% url 'members:edit' member.pk %}" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">
                 <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                 Edit
             </a>
+            {% endif %}
             <button onclick="window.print()" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">
                 <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                 Print
@@ -57,27 +53,33 @@
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
             <p class="text-xs text-gray-500 uppercase font-medium">Shares</p>
-            <p class="text-lg font-bold text-gray-900 mt-1">{{ shares.count }}</p>
+            <p class="text-lg font-bold text-gray-900 mt-1">{{ shares|length }}</p>
+            <p class="text-xs text-gray-500 mt-0.5">Rs. {{ total_shares_amount|floatformat:2 }}</p>
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
             <p class="text-xs text-gray-500 uppercase font-medium">Savings</p>
-            <p class="text-lg font-bold text-gray-900 mt-1">{{ savings.count }}</p>
+            <p class="text-lg font-bold text-gray-900 mt-1">{{ savings|length }}</p>
+            <p class="text-xs text-gray-500 mt-0.5">Rs. {{ total_savings_balance|floatformat:2 }}</p>
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
             <p class="text-xs text-gray-500 uppercase font-medium">Fixed Deposits</p>
-            <p class="text-lg font-bold text-gray-900 mt-1">{{ fds.count }}</p>
+            <p class="text-lg font-bold text-gray-900 mt-1">{{ fds|length }}</p>
+            <p class="text-xs text-gray-500 mt-0.5">Rs. {{ total_fd_amount|floatformat:2 }}</p>
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
             <p class="text-xs text-gray-500 uppercase font-medium">Recurring</p>
-            <p class="text-lg font-bold text-gray-900 mt-1">{{ rds.count }}</p>
+            <p class="text-lg font-bold text-gray-900 mt-1">{{ rds|length }}</p>
+            <p class="text-xs text-gray-500 mt-0.5">Rs. {{ total_rd_installment|floatformat:2 }}</p>
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
             <p class="text-xs text-gray-500 uppercase font-medium">Loans</p>
-            <p class="text-lg font-bold text-gray-900 mt-1">{{ loans.count }}</p>
+            <p class="text-lg font-bold text-gray-900 mt-1">{{ loans|length }}</p>
+            <p class="text-xs text-gray-500 mt-0.5">Rs. {{ total_loan_outstanding|floatformat:2 }}</p>
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
             <p class="text-xs text-gray-500 uppercase font-medium">Pigmmy</p>
-            <p class="text-lg font-bold text-gray-900 mt-1">{{ pigmmy.count }}</p>
+            <p class="text-lg font-bold text-gray-900 mt-1">{{ pigmmy|length }}</p>
+            <p class="text-xs text-gray-500 mt-0.5">Rs. {{ total_pigmmy_balance|floatformat:2 }}</p>
         </div>
     </div>
 
@@ -108,6 +110,14 @@
                         <div class="grid grid-cols-3 gap-4 px-5 py-2.5"><dt class="text-sm text-gray-500">Blood Group</dt><dd class="text-sm text-gray-900 col-span-2">{{ member.blood_group|default:"—" }}</dd></div>
                         <div class="grid grid-cols-3 gap-4 px-5 py-2.5"><dt class="text-sm text-gray-500">Category</dt><dd class="text-sm text-gray-900 col-span-2">{{ member.get_category_display|default:"—" }}</dd></div>
                         <div class="grid grid-cols-3 gap-4 px-5 py-2.5"><dt class="text-sm text-gray-500">Join Date</dt><dd class="text-sm text-gray-900 col-span-2">{{ member.join_date|date:"d M Y"|default:"—" }}</dd></div>
+                        <div class="grid grid-cols-3 gap-4 px-5 py-2.5"><dt class="text-sm text-gray-500">Occupation</dt><dd class="text-sm text-gray-900 col-span-2">{{ member.occupation|default:"—" }}</dd></div>
+                        <div class="grid grid-cols-3 gap-4 px-5 py-2.5"><dt class="text-sm text-gray-500">Monthly Income</dt><dd class="text-sm text-gray-900 col-span-2">{% if member.monthly_income %}Rs. {{ member.monthly_income|floatformat:0 }}{% else %}—{% endif %}</dd></div>
+                        <div class="grid grid-cols-3 gap-4 px-5 py-2.5"><dt class="text-sm text-gray-500">Education</dt><dd class="text-sm text-gray-900 col-span-2">{{ member.education|default:"—" }}</dd></div>
+                        <div class="grid grid-cols-3 gap-4 px-5 py-2.5"><dt class="text-sm text-gray-500">KYC Status</dt><dd class="text-sm text-gray-900 col-span-2">{% if member.kyc_verified %}<span class="px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-800">Verified</span>{% if member.kyc_date %} <span class="text-xs text-gray-400">{{ member.kyc_date|date:"d M Y" }}</span>{% endif %}{% else %}<span class="px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-800">Not Verified</span>{% endif %}</dd></div>
+                        {% if member.is_minor %}
+                        <div class="grid grid-cols-3 gap-4 px-5 py-2.5"><dt class="text-sm text-gray-500">Guardian Name</dt><dd class="text-sm text-gray-900 col-span-2">{{ member.guardian_name|default:"—" }}</dd></div>
+                        <div class="grid grid-cols-3 gap-4 px-5 py-2.5"><dt class="text-sm text-gray-500">Guardian Address</dt><dd class="text-sm text-gray-900 col-span-2">{{ member.guardian_address|default:"—" }}</dd></div>
+                        {% endif %}
                     </dl>
                 </div>
                 <div class="space-y-6">
@@ -161,7 +171,7 @@
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
                         <thead><tr class="text-left text-gray-500 border-b"><th class="pb-2 pr-4">Account No</th><th class="pb-2 pr-4">Type</th><th class="pb-2 pr-4 text-right">Balance</th><th class="pb-2">Status</th></tr></thead>
-                        <tbody>{% for sa in savings %}<tr class="border-b border-gray-50"><td class="py-2 pr-4 font-mono text-sm">{{ sa.account_no }}</td><td class="py-2 pr-4">{{ sa.get_account_type_display }}</td><td class="py-2 pr-4 text-right font-medium">{{ sa.current_balance|floatformat:2 }}</td><td class="py-2"><span class="px-2 py-0.5 rounded-full text-xs {% if sa.status == 'active' %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-600{% endif %}">{{ sa.get_status_display }}</span></td></tr>{% endfor %}</tbody>
+                        <tbody>{% for sa in savings %}<tr class="border-b border-gray-50"><td class="py-2 pr-4 font-mono text-sm"><a href="{% url 'savings:detail' sa.pk %}" class="text-primary-600 hover:underline">{{ sa.account_no }}</a></td><td class="py-2 pr-4">{{ sa.get_account_type_display }}</td><td class="py-2 pr-4 text-right font-medium">{{ sa.current_balance|floatformat:2 }}</td><td class="py-2"><span class="px-2 py-0.5 rounded-full text-xs {% if sa.status == 'active' %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-600{% endif %}">{{ sa.get_status_display }}</span></td></tr>{% endfor %}</tbody>
                     </table>
                 </div>
             </div>
@@ -172,7 +182,18 @@
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
                         <thead><tr class="text-left text-gray-500 border-b"><th class="pb-2 pr-4">FD No</th><th class="pb-2 pr-4 text-right">Amount</th><th class="pb-2 pr-4">Rate</th><th class="pb-2">Maturity</th></tr></thead>
-                        <tbody>{% for fd in fds %}<tr class="border-b border-gray-50"><td class="py-2 pr-4 font-mono text-sm">{{ fd.fd_no }}</td><td class="py-2 pr-4 text-right font-medium">{{ fd.amount|floatformat:2 }}</td><td class="py-2 pr-4">{{ fd.interest_rate }}%</td><td class="py-2">{{ fd.maturity_date|date:"d M Y" }}</td></tr>{% endfor %}</tbody>
+                        <tbody>{% for fd in fds %}<tr class="border-b border-gray-50"><td class="py-2 pr-4 font-mono text-sm"><a href="{% url 'deposits:fd_detail' fd.pk %}" class="text-primary-600 hover:underline">{{ fd.fd_no }}</a></td><td class="py-2 pr-4 text-right font-medium">{{ fd.deposit_amount|floatformat:2 }}</td><td class="py-2 pr-4">{{ fd.interest_rate }}%</td><td class="py-2">{{ fd.maturity_date|date:"d M Y" }}</td></tr>{% endfor %}</tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+            {% if rds %}
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+                <h4 class="text-sm font-semibold text-gray-700 mb-3">Recurring Deposits</h4>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm">
+                        <thead><tr class="text-left text-gray-500 border-b"><th class="pb-2 pr-4">RD No</th><th class="pb-2 pr-4 text-right">Monthly Installment</th><th class="pb-2 pr-4">Rate</th><th class="pb-2 pr-4">Maturity</th><th class="pb-2">Status</th></tr></thead>
+                        <tbody>{% for rd in rds %}<tr class="border-b border-gray-50"><td class="py-2 pr-4 font-mono text-sm"><a href="{% url 'deposits:rd_detail' rd.pk %}" class="text-primary-600 hover:underline">{{ rd.rd_no }}</a></td><td class="py-2 pr-4 text-right font-medium">{{ rd.monthly_installment|floatformat:2 }}</td><td class="py-2 pr-4">{{ rd.interest_rate }}%</td><td class="py-2 pr-4">{{ rd.maturity_date|date:"d M Y" }}</td><td class="py-2"><span class="px-2 py-0.5 rounded-full text-xs {% if rd.status == 'active' %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-600{% endif %}">{{ rd.get_status_display }}</span></td></tr>{% endfor %}</tbody>
                     </table>
                 </div>
             </div>
@@ -183,7 +204,7 @@
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
                         <thead><tr class="text-left text-gray-500 border-b"><th class="pb-2 pr-4">Loan No</th><th class="pb-2 pr-4">Product</th><th class="pb-2 pr-4 text-right">Outstanding</th><th class="pb-2">Status</th></tr></thead>
-                        <tbody>{% for la in loans %}<tr class="border-b border-gray-50"><td class="py-2 pr-4 font-mono text-sm">{{ la.loan_no }}</td><td class="py-2 pr-4">{{ la.loan_product.name }}</td><td class="py-2 pr-4 text-right font-medium">{{ la.outstanding_principal|floatformat:2 }}</td><td class="py-2"><span class="px-2 py-0.5 rounded-full text-xs {% if la.status == 'disbursed' %}bg-blue-100 text-blue-800{% elif la.status == 'closed' %}bg-gray-100 text-gray-600{% else %}bg-yellow-100 text-yellow-800{% endif %}">{{ la.get_status_display }}</span></td></tr>{% endfor %}</tbody>
+                        <tbody>{% for la in loans %}<tr class="border-b border-gray-50"><td class="py-2 pr-4 font-mono text-sm"><a href="{% url 'loans:detail' la.pk %}" class="text-primary-600 hover:underline">{{ la.loan_no }}</a></td><td class="py-2 pr-4">{{ la.loan_product.name }}</td><td class="py-2 pr-4 text-right font-medium">{{ la.outstanding_principal|floatformat:2 }}</td><td class="py-2"><span class="px-2 py-0.5 rounded-full text-xs {% if la.status == 'disbursed' %}bg-blue-100 text-blue-800{% elif la.status == 'closed' %}bg-gray-100 text-gray-600{% else %}bg-yellow-100 text-yellow-800{% endif %}">{{ la.get_status_display }}</span></td></tr>{% endfor %}</tbody>
                     </table>
                 </div>
             </div>
@@ -194,12 +215,34 @@
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
                         <thead><tr class="text-left text-gray-500 border-b"><th class="pb-2 pr-4">Certificate No</th><th class="pb-2 pr-4 text-right">Shares</th><th class="pb-2 pr-4 text-right">Amount</th><th class="pb-2">Issue Date</th></tr></thead>
-                        <tbody>{% for sh in shares %}<tr class="border-b border-gray-50"><td class="py-2 pr-4 font-mono text-sm">{{ sh.certificate_no }}</td><td class="py-2 pr-4 text-right">{{ sh.no_of_shares }}</td><td class="py-2 pr-4 text-right font-medium">{{ sh.total_amount|floatformat:2 }}</td><td class="py-2">{{ sh.issue_date|date:"d M Y" }}</td></tr>{% endfor %}</tbody>
+                        <tbody>{% for sh in shares %}<tr class="border-b border-gray-50"><td class="py-2 pr-4 font-mono text-sm"><a href="{% url 'shares:detail' sh.pk %}" class="text-primary-600 hover:underline">{{ sh.certificate_no }}</a></td><td class="py-2 pr-4 text-right">{{ sh.share_count }}</td><td class="py-2 pr-4 text-right font-medium">{{ sh.total_amount|floatformat:2 }}</td><td class="py-2">{{ sh.purchase_date|date:"d M Y" }}</td></tr>{% endfor %}</tbody>
                     </table>
                 </div>
             </div>
             {% endif %}
-            {% if not savings and not fds and not loans and not shares %}
+            {% if pigmmy %}
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+                <h4 class="text-sm font-semibold text-gray-700 mb-3">Pigmmy Accounts</h4>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm">
+                        <thead><tr class="text-left text-gray-500 border-b"><th class="pb-2 pr-4">Account No</th><th class="pb-2 pr-4">Folio</th><th class="pb-2 pr-4 text-right">Installment</th><th class="pb-2 pr-4 text-right">Balance</th><th class="pb-2">Status</th></tr></thead>
+                        <tbody>{% for pa in pigmmy %}<tr class="border-b border-gray-50"><td class="py-2 pr-4 font-mono text-sm"><a href="{% url 'agents:pigmmy_detail' pa.pk %}" class="text-primary-600 hover:underline">{{ pa.account_no }}</a></td><td class="py-2 pr-4">{{ pa.folio_number|default:"—" }}</td><td class="py-2 pr-4 text-right font-medium">{{ pa.installment_amount|floatformat:2 }}</td><td class="py-2 pr-4 text-right font-medium">{{ pa.current_balance|floatformat:2 }}</td><td class="py-2"><span class="px-2 py-0.5 rounded-full text-xs {% if pa.status == 'active' %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-600{% endif %}">{{ pa.get_status_display }}</span></td></tr>{% endfor %}</tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+            {% if guaranteed_loans %}
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+                <h4 class="text-sm font-semibold text-gray-700 mb-3">Loans Guaranteed</h4>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm">
+                        <thead><tr class="text-left text-gray-500 border-b"><th class="pb-2 pr-4">Loan No</th><th class="pb-2 pr-4">Borrower</th><th class="pb-2 pr-4 text-right">Guarantee Amount</th><th class="pb-2">Loan Status</th></tr></thead>
+                        <tbody>{% for g in guaranteed_loans %}<tr class="border-b border-gray-50"><td class="py-2 pr-4 font-mono text-sm"><a href="{% url 'loans:detail' g.loan.pk %}" class="text-primary-600 hover:underline">{{ g.loan.loan_no }}</a></td><td class="py-2 pr-4">{{ g.loan.member.name }}</td><td class="py-2 pr-4 text-right font-medium">{{ g.guarantee_amount|floatformat:2 }}</td><td class="py-2"><span class="px-2 py-0.5 rounded-full text-xs {% if g.loan.status == 'disbursed' %}bg-blue-100 text-blue-800{% elif g.loan.status == 'closed' %}bg-gray-100 text-gray-600{% else %}bg-yellow-100 text-yellow-800{% endif %}">{{ g.loan.get_status_display }}</span></td></tr>{% endfor %}</tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+            {% if not savings and not fds and not rds and not loans and not shares and not pigmmy and not guaranteed_loans %}
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
                 <p class="text-gray-400 text-sm">No accounts found for this member.</p>
             </div>

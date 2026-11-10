@@ -285,10 +285,17 @@ class VoucherNumberTests(BaseTestCase):
     def setUp(self):
         super().setUp()
         self.cash = ChartOfAccounts.objects.create(
-            code='1001', name='Cash', account_group='asset', is_system=True, branch=self.head_office,
+            code='1001',
+            name='Cash',
+            account_group='asset',
+            is_system=True,
+            branch=self.head_office,
         )
         self.savings = ChartOfAccounts.objects.create(
-            code='2001', name='Savings', account_group='liability', is_system=True,
+            code='2001',
+            name='Savings',
+            account_group='liability',
+            is_system=True,
         )
 
     def test_voucher_number_auto_generation(self):
@@ -299,8 +306,11 @@ class VoucherNumberTests(BaseTestCase):
 
         # Create an actual entry so the sequence advances
         create_journal_entry(
-            entry_date=date.today(), voucher_type='receipt', branch=self.head_office,
-            narration='test', user=self.admin_user,
+            entry_date=date.today(),
+            voucher_type='receipt',
+            branch=self.head_office,
+            narration='test',
+            user=self.admin_user,
             lines=[
                 {'account_code': '1001', 'debit': Decimal('100'), 'credit': Decimal('0')},
                 {'account_code': '2001', 'debit': Decimal('0'), 'credit': Decimal('100')},

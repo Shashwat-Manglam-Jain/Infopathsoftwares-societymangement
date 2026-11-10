@@ -167,3 +167,62 @@ class SocietySignupForm(forms.Form):
         if password and confirm and password != confirm:
             raise forms.ValidationError('Passwords do not match.')
         return cleaned_data
+
+
+_tw = 'w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500'
+_tw_select = _tw
+_tw_date = _tw
+_tw_textarea = _tw
+
+
+class SocietyEditForm(forms.ModelForm):
+    class Meta:
+        from .models import Society
+
+        model = Society
+        fields = [
+            'name',
+            'name_regional',
+            'society_type',
+            'registration_no',
+            'registration_date',
+            'registration_authority',
+            'society_category',
+            'address',
+            'city',
+            'state',
+            'pincode',
+            'phone',
+            'fax',
+            'email',
+            'pan_no',
+            'tan_no',
+            'gst_no',
+            'authorized_capital',
+            'paid_up_capital',
+            'share_nominal_value',
+            'logo',
+        ]
+        widgets = {
+            'name': forms.TextInput(attrs={'class': _tw}),
+            'name_regional': forms.TextInput(attrs={'class': _tw, 'placeholder': 'Name in regional language'}),
+            'society_type': forms.Select(attrs={'class': _tw_select}),
+            'registration_no': forms.TextInput(attrs={'class': _tw}),
+            'registration_date': forms.DateInput(attrs={'class': _tw_date, 'type': 'date'}),
+            'registration_authority': forms.TextInput(attrs={'class': _tw}),
+            'society_category': forms.TextInput(attrs={'class': _tw}),
+            'address': forms.Textarea(attrs={'class': _tw_textarea, 'rows': 3}),
+            'city': forms.TextInput(attrs={'class': _tw}),
+            'state': forms.TextInput(attrs={'class': _tw}),
+            'pincode': forms.TextInput(attrs={'class': _tw, 'maxlength': '10'}),
+            'phone': forms.TextInput(attrs={'class': _tw}),
+            'fax': forms.TextInput(attrs={'class': _tw}),
+            'email': forms.EmailInput(attrs={'class': _tw}),
+            'pan_no': forms.TextInput(attrs={'class': _tw, 'maxlength': '10'}),
+            'tan_no': forms.TextInput(attrs={'class': _tw, 'maxlength': '10'}),
+            'gst_no': forms.TextInput(attrs={'class': _tw, 'maxlength': '15'}),
+            'authorized_capital': forms.NumberInput(attrs={'class': _tw}),
+            'paid_up_capital': forms.NumberInput(attrs={'class': _tw}),
+            'share_nominal_value': forms.NumberInput(attrs={'class': _tw}),
+            'logo': forms.ClearableFileInput(attrs={'class': _tw}),
+        }

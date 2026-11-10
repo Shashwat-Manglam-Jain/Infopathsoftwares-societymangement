@@ -17,9 +17,7 @@ class StandardSetup(models.Model):
     nominal_member_fees = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     max_guarantees_per_person = models.IntegerField(default=2)
     taran_loan_code = models.CharField(max_length=10, blank=True)
-    slip_printing_message = models.CharField(
-        max_length=300, blank=True, default='Software By - INFOPATH SOLUTIONS'
-    )
+    slip_printing_message = models.CharField(max_length=300, blank=True, default='Software By - INFOPATH SOLUTIONS')
 
     class Meta:
         verbose_name = 'Standard Setup'

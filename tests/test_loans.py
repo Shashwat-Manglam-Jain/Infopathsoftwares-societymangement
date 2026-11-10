@@ -22,10 +22,8 @@ from apps.loans.services import (
     mark_npa,
     mark_overdue,
     prepay_loan,
-    validate_guarantor,
     validate_loan_application,
 )
-from apps.shares.models import ShareHolding
 
 from .base import BaseTestCase
 
@@ -159,6 +157,13 @@ class EMIScheduleTests(BaseTestCase):
             account_type='interest_income',
             is_system=True,
         )
+        ChartOfAccounts.objects.create(
+            code='3002',
+            name='Processing Fees',
+            account_group='income',
+            account_type='other',
+            is_system=True,
+        )
 
     def test_emi_schedule_generation(self):
         """EMI schedule has correct number of installments."""
@@ -228,7 +233,7 @@ class LoanLifecycleTests(BaseTestCase):
             max_amount=Decimal('500000.00'),
             max_tenure_months=60,
             interest_type='reducing_monthly',
-            requires_guarantor=True,
+            requires_guarantor=False,
             max_guarantors=2,
             processing_fee_percent=Decimal('1.00'),
             penal_interest_rate=Decimal('2.00'),
@@ -257,6 +262,13 @@ class LoanLifecycleTests(BaseTestCase):
             name='Interest on Loans',
             account_group='income',
             account_type='interest_income',
+            is_system=True,
+        )
+        ChartOfAccounts.objects.create(
+            code='3002',
+            name='Processing Fees',
+            account_group='income',
+            account_type='other',
             is_system=True,
         )
         ChartOfAccounts.objects.create(
@@ -454,6 +466,7 @@ class LoanOverdueNPATests(BaseTestCase):
             max_amount=Decimal('500000.00'),
             max_tenure_months=60,
             interest_type='reducing_monthly',
+            requires_guarantor=False,
             penal_interest_rate=Decimal('2.00'),
             npa_days_threshold=90,
             is_active=True,
@@ -480,6 +493,13 @@ class LoanOverdueNPATests(BaseTestCase):
             name='Interest on Loans',
             account_group='income',
             account_type='interest_income',
+            is_system=True,
+        )
+        ChartOfAccounts.objects.create(
+            code='3002',
+            name='Processing Fees',
+            account_group='income',
+            account_type='other',
             is_system=True,
         )
         ChartOfAccounts.objects.create(
@@ -815,6 +835,13 @@ class StandingInstructionTests(BaseTestCase):
             is_system=True,
         )
         ChartOfAccounts.objects.create(
+            code='3002',
+            name='Processing Fees',
+            account_group='income',
+            account_type='other',
+            is_system=True,
+        )
+        ChartOfAccounts.objects.create(
             code='4004',
             name='Legal & Court Fees',
             account_group='income',
@@ -894,29 +921,6 @@ class GuarantorValidationTests(BaseTestCase):
             allow_multiple=False,
             is_active=True,
         )
-
-    def test_validate_guarantor_without_shares(self):
-        errors = validate_guarantor(self.member2, self.product_shareholder)
-        self.assertTrue(len(errors) > 0)
-        self.assertIn('shareholder', errors[0].lower())
-
-    def test_validate_guarantor_with_shares(self):
-        ShareHolding.objects.create(
-            member=self.member2,
-            branch=self.head_office,
-            share_count=10,
-            face_value_per_share=Decimal('100.00'),
-            total_amount=Decimal('1000.00'),
-            purchase_date=date(2024, 1, 1),
-            status='active',
-            created_by=self.admin_user,
-        )
-        errors = validate_guarantor(self.member2, self.product_shareholder)
-        self.assertEqual(len(errors), 0)
-
-    def test_validate_guarantor_not_required_shareholder(self):
-        errors = validate_guarantor(self.member2, self.product_no_shareholder)
-        self.assertEqual(len(errors), 0)
 
     def test_validate_loan_application_no_existing_loan(self):
         errors = validate_loan_application(

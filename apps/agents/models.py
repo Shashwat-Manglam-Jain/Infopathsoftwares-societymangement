@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 
 
@@ -74,7 +75,15 @@ class PigmmyAccount(models.Model):
         ('monthly', 'Monthly'),
     ]
 
+    CLIENT_TYPE_CHOICES = [
+        ('D', 'Daily'),
+        ('M', 'Monthly'),
+        ('L', 'Loan'),
+    ]
+
     account_no = models.CharField(max_length=20, unique=True)
+    ledger_number = models.PositiveBigIntegerField(null=True, blank=True)
+    folio_number = models.CharField(max_length=10, blank=True)
     member = models.ForeignKey(
         'members.Member',
         on_delete=models.PROTECT,
@@ -90,6 +99,21 @@ class PigmmyAccount(models.Model):
         blank=True,
         help_text='Savings account for maturity credit',
     )
+    security_deposit_account = models.ForeignKey(
+        'savings.SavingsAccount',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='pigmmy_sd_accounts',
+        help_text='Security deposit account',
+    )
+    loan_account_number = models.CharField(max_length=20, blank=True)
+    client_type = models.CharField(
+        max_length=1,
+        choices=CLIENT_TYPE_CHOICES,
+        default='D',
+        help_text='Type: D=Daily, M=Monthly, L=Loan',
+    )
     deposit_type = models.CharField(
         max_length=10,
         choices=DEPOSIT_TYPE_CHOICES,
@@ -97,8 +121,10 @@ class PigmmyAccount(models.Model):
     )
     installment_amount = models.DecimalField(max_digits=15, decimal_places=2)
     deposit_period_months = models.IntegerField(help_text='Total deposit period in months')
+    deposit_units = models.CharField(max_length=10, blank=True, help_text='Period unit: days/months/years')
     interest_rate = models.DecimalField(max_digits=5, decimal_places=2)
     opening_date = models.DateField()
+    expiry_date = models.DateField(null=True, blank=True, help_text='Expected expiry/maturity date')
     maturity_date = models.DateField()
     maturity_amount = models.DecimalField(
         max_digits=15,
@@ -119,6 +145,9 @@ class PigmmyAccount(models.Model):
     paid_installments = models.IntegerField(default=0)
     missed_installments = models.IntegerField(default=0)
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='active')
+    meeting_no = models.CharField(max_length=20, blank=True, help_text='Board Meeting Number')
+    meeting_date = models.DateField(null=True, blank=True, help_text='Board Meeting Date')
+    sign = models.IntegerField(default=0, help_text='1=debit nature, -1=credit nature, 0=default')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -128,6 +157,18 @@ class PigmmyAccount(models.Model):
 
     def __str__(self):
         return f'{self.account_no} - {self.member.name}'
+
+    def clean(self):
+        if self.client_type == 'D' and self.status == 'active':
+            qs = PigmmyAccount.objects.filter(
+                member=self.member,
+                client_type='D',
+                status='active',
+            )
+            if self.pk:
+                qs = qs.exclude(pk=self.pk)
+            if qs.exists():
+                raise ValidationError('Member already has an active daily pigmmy account.')
 
 
 class PigmmyTransaction(models.Model):

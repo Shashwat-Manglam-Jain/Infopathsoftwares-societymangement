@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('agents', '0001_initial'),
         ('savings', '0002_savingsaccount_accrued_interest_and_more'),
@@ -20,7 +19,14 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='agent',
             name='security_deposit_account',
-            field=models.ForeignKey(blank=True, help_text='Agent security deposit account', null=True, on_delete=django.db.models.deletion.PROTECT, related_name='agent_security', to='savings.savingsaccount'),
+            field=models.ForeignKey(
+                blank=True,
+                help_text='Agent security deposit account',
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name='agent_security',
+                to='savings.savingsaccount',
+            ),
         ),
         migrations.AddField(
             model_name='agent',

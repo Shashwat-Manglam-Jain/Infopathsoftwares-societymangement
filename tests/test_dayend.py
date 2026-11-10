@@ -120,6 +120,7 @@ class DayEndProcessingTests(BaseTestCase):
             max_tenure_months=60,
             interest_type='reducing_monthly',
             npa_days_threshold=90,
+            requires_guarantor=False,
             is_active=True,
         )
         loan = LoanAccount.objects.create(
@@ -154,6 +155,7 @@ class DayEndProcessingTests(BaseTestCase):
             max_tenure_months=60,
             interest_type='reducing_monthly',
             npa_days_threshold=90,
+            requires_guarantor=False,
             is_active=True,
         )
         loan = LoanAccount.objects.create(
@@ -197,6 +199,7 @@ class DayEndProcessingTests(BaseTestCase):
             max_tenure_months=60,
             interest_type='reducing_monthly',
             npa_days_threshold=90,
+            requires_guarantor=False,
             is_active=True,
         )
         loan = LoanAccount.objects.create(

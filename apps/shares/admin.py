@@ -5,7 +5,7 @@ from .models import ShareConfig, ShareHolding, ShareTransaction
 
 @admin.register(ShareConfig)
 class ShareConfigAdmin(admin.ModelAdmin):
-    list_display = ['face_value_per_share', 'max_shares_per_member', 'dividend_rate', 'is_active']
+    list_display = ['name', 'face_value_per_share', 'max_shares_per_member', 'is_active']
 
 
 @admin.register(ShareHolding)

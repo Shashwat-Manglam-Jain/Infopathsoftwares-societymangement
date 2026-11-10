@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Savings Account {{ account.account_no }} — InfoSociety{% endblock %}
+{% block page_title %}Account Details{% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto">
@@ -9,6 +10,12 @@
             <p class="text-sm text-gray-500">{{ account.member.name }} — {{ account.get_account_type_display }}</p>
         </div>
         <div class="flex gap-3">
+            {% if request.user.is_manager and account.status != 'closed' %}
+            <a href="{% url 'savings:edit' account.pk %}" class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">
+                <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                Edit
+            </a>
+            {% endif %}
             <a href="{% url 'savings:statement' pk=account.pk %}" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200">Statement</a>
             <a href="{% url 'savings:passbook' account_id=account.pk %}" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200">Passbook</a>
             <a href="{% url 'savings:list' %}" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm">&larr; Back</a>
@@ -35,15 +42,27 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h3 class="text-sm font-semibold text-gray-500 uppercase mb-3">Account Details</h3>
             <dl class="space-y-2 text-sm">
-                <div class="flex justify-between"><dt class="text-gray-500">Member</dt><dd class="font-medium">{{ account.member.name }}</dd></div>
-                <div class="flex justify-between"><dt class="text-gray-500">Member No</dt><dd class="font-medium">{{ account.member.member_no }}</dd></div>
+                <div class="flex justify-between"><dt class="text-gray-500">Account Type</dt><dd class="font-medium">{{ account.get_account_type_display }}</dd></div>
                 <div class="flex justify-between"><dt class="text-gray-500">Branch</dt><dd class="font-medium">{{ account.branch.branch_name }}</dd></div>
-                <div class="flex justify-between"><dt class="text-gray-500">Opened</dt><dd class="font-medium">{{ account.opening_date }}</dd></div>
+                <div class="flex justify-between"><dt class="text-gray-500">Opened</dt><dd class="font-medium">{{ account.opening_date|date:"d M Y" }}</dd></div>
                 <div class="flex justify-between"><dt class="text-gray-500">Status</dt><dd><span class="px-2 py-0.5 rounded-full text-xs font-medium {% if account.status == 'active' %}bg-green-100 text-green-700{% elif account.status == 'frozen' %}bg-blue-100 text-blue-700{% elif account.status == 'dormant' %}bg-yellow-100 text-yellow-700{% else %}bg-red-100 text-red-700{% endif %}">{{ account.get_status_display }}</span></dd></div>
                 <div class="flex justify-between"><dt class="text-gray-500">Min Balance</dt><dd class="font-medium">&#8377;{{ account.minimum_balance|floatformat:2 }}</dd></div>
             </dl>
+            <div class="mt-4 pt-3 border-t border-gray-200">
+                <h4 class="text-xs font-semibold text-gray-500 uppercase mb-2">Member Information</h4>
+                <dl class="space-y-2 text-sm">
+                    <div class="flex justify-between"><dt class="text-gray-500">Name</dt><dd class="font-medium"><a href="{% url 'members:detail' account.member.pk %}" class="text-primary-600 hover:underline">{{ account.member.name }}</a></dd></div>
+                    <div class="flex justify-between"><dt class="text-gray-500">Member No</dt><dd class="font-medium">{{ account.member.member_no }}</dd></div>
+                    {% if account.member.phone %}<div class="flex justify-between"><dt class="text-gray-500">Phone</dt><dd class="font-medium">{{ account.member.phone }}</dd></div>{% endif %}
+                    {% if account.member.email %}<div class="flex justify-between"><dt class="text-gray-500">Email</dt><dd class="font-medium">{{ account.member.email }}</dd></div>{% endif %}
+                    {% if account.member.join_date %}<div class="flex justify-between"><dt class="text-gray-500">Joined</dt><dd class="font-medium">{{ account.member.join_date|date:"d M Y" }}</dd></div>{% endif %}
+                    {% if account.member.aadhar_no %}<div class="flex justify-between"><dt class="text-gray-500">Aadhar</dt><dd class="font-medium">XXXX-XXXX-{{ account.member.aadhar_no|slice:"-4" }}</dd></div>{% endif %}
+                    {% if account.member.pan_no %}<div class="flex justify-between"><dt class="text-gray-500">PAN</dt><dd class="font-medium">{{ account.member.pan_no }}</dd></div>{% endif %}
+                    <div class="flex justify-between"><dt class="text-gray-500">KYC</dt><dd>{% if account.member.is_kyc_verified %}<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Verified</span>{% else %}<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Pending</span>{% endif %}</dd></div>
+                </dl>
+            </div>
             <!-- Change Status -->
-            {% if request.user.is_staff %}
+            {% if request.user.is_manager %}
             <div class="mt-4 pt-3 border-t border-gray-200">
                 <form method="post" action="{% url 'savings:change_status' pk=account.pk %}" class="flex items-center gap-2" onsubmit="return confirm('Change account status?');">
                     {% csrf_token %}
@@ -61,6 +80,7 @@
         </div>
 
         {% if account.status == 'active' %}
+        {% if request.user.is_cashier %}
         <!-- Deposit Form -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h3 class="text-sm font-semibold text-gray-500 uppercase mb-3">Quick Deposit</h3>
@@ -90,9 +110,11 @@
             </form>
         </div>
         {% endif %}
+        {% endif %}
     </div>
 
     {% if account.status == 'active' %}
+    {% if request.user.is_cashier %}
     <!-- Withdrawal Form -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
         <h3 class="text-sm font-semibold text-gray-500 uppercase mb-3">Withdrawal</h3>
@@ -118,6 +140,7 @@
             <button type="submit" class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 font-medium">Withdraw</button>
         </form>
     </div>
+    {% endif %}
     {% endif %}
 
     <!-- Recent Transactions -->

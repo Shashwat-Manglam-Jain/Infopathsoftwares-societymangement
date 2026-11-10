@@ -1,10 +1,11 @@
-from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
+
+from apps.accounts.permissions import auditor_or_above
 
 from .models import AuditTrail
 
 
-@login_required
+@auditor_or_above
 def audit_log(request):
-    logs = AuditTrail.objects.select_related('user')[:100]
+    logs = AuditTrail.objects.select_related('user', 'branch')[:100]
     return render(request, 'audit/log.html', {'logs': logs})

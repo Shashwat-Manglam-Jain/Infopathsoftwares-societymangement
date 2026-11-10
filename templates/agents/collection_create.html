@@ -1,12 +1,17 @@
 {% extends "base.html" %}
 
-{% block title %}New Collection — InfoSociety{% endblock %}
+{% block title %}Record Collection — InfoSociety{% endblock %}
+{% block page_title %}Record Collection{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto space-y-6">
-    <div>
-        <h2 class="text-xl font-bold text-gray-900">Record Daily Collection</h2>
-        <p class="text-sm text-gray-500 mt-1">Enter collection amounts for each client of the selected agent.</p>
+<div class="max-w-5xl mx-auto space-y-6" x-data="collectionApp()">
+
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-xl font-bold text-gray-900">Pigmmy Daily Collection</h2>
+            <p class="text-sm text-gray-500 mt-1">Select agent, enter declared collection, then record per-client amounts.</p>
+        </div>
+        <a href="{% url 'agents:collection_list' %}" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">Back to Collections</a>
     </div>
 
     {% if messages %}
@@ -17,12 +22,13 @@
     </div>
     {% endif %}
 
-    <form method="post" class="space-y-6" x-data="collectionForm()">
+    <form method="post" @submit="onSubmit($event)">
         {% csrf_token %}
 
-        <!-- Agent Selection -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Step 1: Agent + Date + Declared Amount -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
+            <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Step 1: Agent & Collection Info</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Agent <span class="text-red-500">*</span></label>
                     {{ form.agent }}
@@ -31,72 +37,239 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Collection Date <span class="text-red-500">*</span></label>
                     {{ form.collection_date }}
                 </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Agent Declared Amount <span class="text-red-500">*</span></label>
+                    {{ form.agent_collection_amount }}
+                </div>
             </div>
-            {% if not client_accounts %}
-            <p class="mt-4 text-sm text-gray-500">Select an agent to load their client accounts. <a href="?" class="text-primary-600 hover:underline">Refresh</a> after selecting.</p>
-            {% endif %}
         </div>
 
-        {% if client_accounts %}
-        <!-- Client Amounts -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div class="px-5 py-4 border-b border-gray-200">
-                <h3 class="text-sm font-semibold text-gray-700">Client Accounts ({{ client_accounts|length }})</h3>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Account</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Member</th>
-                            <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Installment</th>
-                            <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Balance</th>
-                            <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase w-40">Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                        {% for acct in client_accounts %}
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-3 text-sm font-mono text-gray-900">{{ acct.account_no }}</td>
-                            <td class="px-4 py-3 text-sm text-gray-900">{{ acct.member.name }}</td>
-                            <td class="px-4 py-3 text-sm text-right text-gray-600">{{ acct.installment_amount|floatformat:2 }}</td>
-                            <td class="px-4 py-3 text-sm text-right text-gray-600">{{ acct.current_balance|floatformat:2 }}</td>
-                            <td class="px-4 py-3">
-                                <input type="number" name="amount_{{ acct.id }}" step="0.01" min="0" value="{{ acct.installment_amount|floatformat:2 }}"
-                                       class="block w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm text-right focus:ring-primary-500 focus:border-primary-500"
-                                       @input="updateTotal()">
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                    <tfoot>
-                        <tr class="border-t-2 border-gray-200 bg-gray-50">
-                            <td colspan="4" class="px-4 py-3 text-right text-sm font-semibold text-gray-700">Total Collection</td>
-                            <td class="px-4 py-3 text-right text-base font-bold text-gray-900" x-text="'₹ ' + total.toFixed(2)"></td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-            <div class="p-5 border-t flex justify-end gap-3">
-                <a href="{% url 'agents:collection_list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
-                <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">Save Collection</button>
+        <!-- Loading -->
+        <div x-show="loading" class="mt-4 flex items-center justify-center py-8">
+            <svg class="animate-spin h-6 w-6 text-primary-600" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            <span class="ml-2 text-sm text-gray-500">Loading client accounts...</span>
+        </div>
+
+        <!-- Step 2: Client Amounts (loaded via AJAX) -->
+        <div x-show="clients.length > 0" x-cloak class="mt-6 space-y-4">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <h3 class="text-sm font-semibold text-gray-700">
+                        Step 2: Client Accounts (<span x-text="clients.length"></span>)
+                    </h3>
+                    <div class="flex items-center gap-2">
+                        <button type="button" @click="fillAllDefault()"
+                                class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-primary-700 bg-primary-50 rounded-lg hover:bg-primary-100 border border-primary-200">
+                            Fill Default Amounts
+                        </button>
+                        <button type="button" @click="clearAll()"
+                                class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 rounded-lg hover:bg-gray-100 border border-gray-200">
+                            Clear All
+                        </button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase w-8">#</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Account</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Member</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Type</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Installment</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Balance</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Progress</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase w-36">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <template x-for="(c, idx) in clients" :key="c.id">
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-2.5 text-sm text-gray-400" x-text="idx + 1"></td>
+                                    <td class="px-4 py-2.5 text-sm font-mono text-gray-900" x-text="c.account_no"></td>
+                                    <td class="px-4 py-2.5 text-sm text-gray-900" x-text="c.member_name"></td>
+                                    <td class="px-4 py-2.5 text-sm text-gray-500" x-text="c.deposit_type"></td>
+                                    <td class="px-4 py-2.5 text-sm text-right text-gray-600" x-text="fmt(c.installment_amount)"></td>
+                                    <td class="px-4 py-2.5 text-sm text-right text-gray-600" x-text="fmt(c.current_balance)"></td>
+                                    <td class="px-4 py-2.5 text-sm text-right text-gray-500" x-text="c.paid_installments + '/' + c.total_installments"></td>
+                                    <td class="px-4 py-2.5">
+                                        <input type="number" :name="'amount_' + c.id" step="0.01" min="0"
+                                               x-model.number="c.amount"
+                                               @input="recalc()"
+                                               class="block w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm text-right focus:ring-primary-500 focus:border-primary-500">
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Totals & Match -->
+                <div class="border-t-2 border-gray-200 bg-gray-50 px-5 py-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div class="flex items-center gap-6 text-sm">
+                            <div>
+                                <span class="text-gray-500">Client Total:</span>
+                                <span class="ml-1 font-bold text-gray-900" x-text="'₹ ' + clientTotal.toFixed(2)"></span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500">Declared:</span>
+                                <span class="ml-1 font-bold text-gray-900" x-text="'₹ ' + declaredAmount.toFixed(2)"></span>
+                            </div>
+                            <div x-show="declaredAmount > 0">
+                                <span class="text-gray-500">Difference:</span>
+                                <span class="ml-1 font-bold"
+                                      :class="Math.abs(clientTotal - declaredAmount) < 0.01 ? 'text-green-700' : 'text-red-700'"
+                                      x-text="'₹ ' + (clientTotal - declaredAmount).toFixed(2)"></span>
+                            </div>
+                        </div>
+                        <div x-show="declaredAmount > 0 && Math.abs(clientTotal - declaredAmount) < 0.01"
+                             class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                            <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"/></svg>
+                            Amounts Matched
+                        </div>
+                        <div x-show="declaredAmount > 0 && Math.abs(clientTotal - declaredAmount) >= 0.01"
+                             class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+                            <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            Mismatch — Please Verify
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="p-5 border-t flex items-center justify-between">
+                    <span class="text-xs text-gray-400" x-show="clientsWithAmount > 0" x-text="clientsWithAmount + ' client(s) with amount'"></span>
+                    <div class="flex gap-3 ml-auto">
+                        <a href="{% url 'agents:collection_list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
+                        <button type="submit"
+                                :disabled="clientsWithAmount === 0"
+                                :class="clientsWithAmount === 0 ? 'bg-gray-300 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700'"
+                                class="px-6 py-2 text-white text-sm font-medium rounded-lg shadow-sm">
+                            Save Collection
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
-        {% endif %}
+
+        <!-- No agent selected -->
+        <div x-show="!loading && clients.length === 0 && !agentId" class="mt-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+                <svg class="mx-auto h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <p class="mt-3 text-sm text-gray-500">Select an agent above to load their client accounts.</p>
+            </div>
+        </div>
+
+        <!-- Agent has no clients -->
+        <div x-show="!loading && clients.length === 0 && agentId && loaded" x-cloak class="mt-6">
+            <div class="bg-yellow-50 rounded-xl border border-yellow-200 p-6 text-center">
+                <p class="text-sm text-yellow-800 font-medium">This agent has no active client accounts.</p>
+                <p class="text-xs text-yellow-600 mt-1">Create pigmmy accounts for clients before recording a collection.</p>
+            </div>
+        </div>
     </form>
 </div>
 
 <script>
-function collectionForm() {
+function collectionApp() {
     return {
-        total: 0,
-        init() { this.updateTotal(); },
-        updateTotal() {
-            let sum = 0;
-            document.querySelectorAll('input[name^="amount_"]').forEach(el => {
-                sum += parseFloat(el.value) || 0;
+        clients: [],
+        clientTotal: 0,
+        declaredAmount: 0,
+        clientsWithAmount: 0,
+        loading: false,
+        agentId: null,
+        loaded: false,
+
+        init() {
+            const agentSelect = document.getElementById('id_agent');
+            const declaredInput = document.querySelector('[name="agent_collection_amount"]');
+
+            if (agentSelect) {
+                const onChange = () => {
+                    const val = agentSelect.value;
+                    if (val) {
+                        this.agentId = val;
+                        this.fetchClients(val);
+                    } else {
+                        this.agentId = null;
+                        this.clients = [];
+                        this.loaded = false;
+                        this.recalc();
+                    }
+                };
+                agentSelect.addEventListener('change', onChange);
+                // For searchable select which dispatches custom event
+                agentSelect.addEventListener('searchable-change', onChange);
+                if (agentSelect.value) {
+                    this.agentId = agentSelect.value;
+                    this.fetchClients(agentSelect.value);
+                }
+            }
+            if (declaredInput) {
+                declaredInput.addEventListener('input', () => {
+                    this.declaredAmount = parseFloat(declaredInput.value) || 0;
+                });
+            }
+        },
+
+        async fetchClients(agentId) {
+            this.loading = true;
+            this.clients = [];
+            this.loaded = false;
+            try {
+                const resp = await fetch(`/agents/api/agent-clients/${agentId}/`);
+                const data = await resp.json();
+                this.clients = data.clients.map(c => ({
+                    ...c,
+                    amount: parseFloat(c.installment_amount) || 0,
+                }));
+                this.loaded = true;
+                this.recalc();
+            } catch (e) {
+                console.error('Failed to load clients', e);
+            }
+            this.loading = false;
+        },
+
+        recalc() {
+            let sum = 0, count = 0;
+            this.clients.forEach(c => {
+                const a = parseFloat(c.amount) || 0;
+                if (a > 0) { sum += a; count++; }
             });
-            this.total = sum;
+            this.clientTotal = sum;
+            this.clientsWithAmount = count;
+        },
+
+        fillAllDefault() {
+            this.clients.forEach(c => { c.amount = parseFloat(c.installment_amount) || 0; });
+            this.recalc();
+        },
+
+        clearAll() {
+            this.clients.forEach(c => { c.amount = 0; });
+            this.recalc();
+        },
+
+        fmt(val) {
+            return '₹ ' + parseFloat(val).toFixed(2);
+        },
+
+        onSubmit(e) {
+            if (this.clientsWithAmount === 0) {
+                e.preventDefault();
+                alert('Enter at least one client amount.');
+                return;
+            }
+            if (this.declaredAmount > 0 && Math.abs(this.clientTotal - this.declaredAmount) >= 0.01) {
+                if (!confirm('Client total (₹' + this.clientTotal.toFixed(2) + ') does not match agent declared amount (₹' + this.declaredAmount.toFixed(2) + '). Save anyway?')) {
+                    e.preventDefault();
+                }
+            }
         }
     };
 }

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Society Details — InfoSociety{% endblock %}
+{% block page_title %}Society Details{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-xl font-bold text-gray-900">Society Details</h2>
+            <p class="text-sm text-gray-500 mt-1">Your cooperative society information and registration details.</p>
+        </div>
+        {% if request.user.is_admin %}
+        <a href="{% url 'society_edit' %}" class="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">Edit Details</a>
+        {% endif %}
+    </div>
+
+    <!-- Society Header -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="flex items-start gap-6">
+            {% if society.logo %}
+            <img src="{{ society.logo.url }}" alt="{{ society.name }}" class="h-20 w-20 rounded-lg object-contain border border-gray-200 bg-white p-1">
+            {% else %}
+            <div class="h-20 w-20 rounded-lg bg-primary-100 flex items-center justify-center flex-shrink-0">
+                <svg class="h-10 w-10 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+            </div>
+            {% endif %}
+            <div>
+                <h3 class="text-lg font-bold text-gray-900">{{ society.name }}</h3>
+                {% if society.name_regional %}<p class="text-sm text-gray-500">{{ society.name_regional }}</p>{% endif %}
+                <span class="inline-block mt-1 px-2 py-0.5 text-xs font-medium rounded-full bg-primary-100 text-primary-700">{{ society.get_society_type_display }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registration Info -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Registration Information</h4>
+        <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+            <div>
+                <dt class="text-xs font-medium text-gray-500">Registration No</dt>
+                <dd class="text-sm text-gray-900">{{ society.registration_no|default:"—" }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-gray-500">Registration Date</dt>
+                <dd class="text-sm text-gray-900">{% if society.registration_date %}{{ society.registration_date|date:"d M Y" }}{% else %}—{% endif %}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-gray-500">Registration Authority</dt>
+                <dd class="text-sm text-gray-900">{{ society.registration_authority|default:"—" }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-gray-500">Society Category</dt>
+                <dd class="text-sm text-gray-900">{{ society.society_category|default:"—" }}</dd>
+            </div>
+        </dl>
+    </div>
+
+    <!-- Contact Info -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Contact &amp; Address</h4>
+        <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+            <div class="md:col-span-2">
+                <dt class="text-xs font-medium text-gray-500">Address</dt>
+                <dd class="text-sm text-gray-900">{{ society.address|default:"—" }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-gray-500">City</dt>
+                <dd class="text-sm text-gray-900">{{ society.city|default:"—" }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-gray-500">State</dt>
+                <dd class="text-sm text-gray-900">{{ society.state|default:"—" }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-gray-500">Pincode</dt>
+                <dd class="text-sm text-gray-900">{{ society.pincode|default:"—" }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-gray-500">Phone</dt>
+                <dd class="text-sm text-gray-900">{{ society.phone|default:"—" }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-gray-500">Fax</dt>
+                <dd class="text-sm text-gray-900">{{ society.fax|default:"—" }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-gray-500">Email</dt>
+                <dd class="text-sm text-gray-900">{{ society.email|default:"—" }}</dd>
+            </div>
+        </dl>
+    </div>
+
+    <!-- Financial Info -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Financial &amp; Tax Details</h4>
+        <dl class="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
+            <div>
+                <dt class="text-xs font-medium text-gray-500">PAN No</dt>
+                <dd class="text-sm text-gray-900">{{ society.pan_no|default:"—" }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-gray-500">TAN No</dt>
+                <dd class="text-sm text-gray-900">{{ society.tan_no|default:"—" }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-gray-500">GST No</dt>
+                <dd class="text-sm text-gray-900">{{ society.gst_no|default:"—" }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-gray-500">Authorized Capital</dt>
+                <dd class="text-sm text-gray-900">{% if society.authorized_capital %}Rs. {{ society.authorized_capital|floatformat:2 }}{% else %}—{% endif %}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-gray-500">Paid-up Capital</dt>
+                <dd class="text-sm text-gray-900">{% if society.paid_up_capital %}Rs. {{ society.paid_up_capital|floatformat:2 }}{% else %}—{% endif %}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-gray-500">Share Nominal Value</dt>
+                <dd class="text-sm text-gray-900">{% if society.share_nominal_value %}Rs. {{ society.share_nominal_value|floatformat:2 }}{% else %}—{% endif %}</dd>
+            </div>
+        </dl>
+    </div>
+</div>
+{% endblock %}
