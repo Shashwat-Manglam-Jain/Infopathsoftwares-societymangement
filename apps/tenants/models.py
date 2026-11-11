@@ -83,15 +83,16 @@ class Subscription(models.Model):
         default='trial',
     )
 
+    def __str__(self):
+        return f'{self.society.name} - {self.plan.name} ({self.status})'
+
     @property
     def is_expired(self):
         from datetime import date
 
         if self.status == 'cancelled':
             return True
-        if self.end_date and self.end_date < date.today():
-            return True
-        return False
+        return bool(self.end_date and self.end_date < date.today())
 
     @property
     def days_remaining(self):
@@ -100,6 +101,3 @@ class Subscription(models.Model):
         if not self.end_date:
             return None
         return max(0, (self.end_date - date.today()).days)
-
-    def __str__(self):
-        return f'{self.society.name} - {self.plan.name} ({self.status})'

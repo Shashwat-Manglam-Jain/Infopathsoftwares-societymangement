@@ -93,6 +93,7 @@ def approve_loan(loan, approved_amount, approved_by):
     product = loan.loan_product
     if product.requires_guarantor:
         from apps.loans.models import LoanGuarantor
+
         count = LoanGuarantor.objects.filter(loan=loan).count()
         if count < product.min_guarantors:
             raise ValueError(
@@ -102,11 +103,11 @@ def approve_loan(loan, approved_amount, approved_by):
 
     if product.requires_collateral:
         from apps.loans.models import LoanCollateral
+
         collateral_count = LoanCollateral.objects.filter(loan=loan).count()
         if collateral_count == 0:
             raise ValueError(
-                'Cannot approve: this loan product requires collateral. '
-                'Add at least one collateral before approving.'
+                'Cannot approve: this loan product requires collateral. Add at least one collateral before approving.'
             )
 
     loan.status = 'approved'
@@ -141,6 +142,7 @@ def disburse_loan(loan, branch, user):
     product = loan.loan_product
     if product.requires_guarantor:
         from apps.loans.models import LoanGuarantor
+
         count = LoanGuarantor.objects.filter(loan=loan).count()
         if count < product.min_guarantors:
             raise ValueError(
@@ -409,7 +411,6 @@ def get_active_guarantee_count(member):
         loan__status__in=['disbursed', 'npa'],
         loan__outstanding_principal__gt=Decimal('0'),
     ).count()
-
 
 
 def validate_loan_application(member, loan_product, amount):

@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('deposits', '0005_add_rd_product'),
     ]
@@ -19,6 +18,8 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='fixeddeposit',
             name='fd_product',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='deposits.fdproduct'),
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='deposits.fdproduct'
+            ),
         ),
     ]

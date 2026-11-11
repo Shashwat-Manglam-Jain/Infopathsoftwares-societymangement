@@ -18,7 +18,7 @@ AVATAR_COLORS = [
 
 
 def _get_color(name: str) -> tuple:
-    h = int(hashlib.md5(name.encode()).hexdigest(), 16)
+    h = int(hashlib.md5(name.encode(), usedforsecurity=False).hexdigest(), 16)
     return AVATAR_COLORS[h % len(AVATAR_COLORS)]
 
 

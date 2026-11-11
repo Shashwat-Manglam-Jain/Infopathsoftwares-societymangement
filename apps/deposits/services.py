@@ -57,9 +57,7 @@ def create_fd(
         penalty = Decimal(str(product.premature_penalty_percent))
     else:
         # New path: look up rate from InterestMaster
-        head = ChartOfAccounts.objects.filter(
-            related_table_name='fixed', is_active=True
-        ).first()
+        head = ChartOfAccounts.objects.filter(related_table_name='fixed', is_active=True).first()
         if not head:
             raise ValueError('No GL head configured for Fixed Deposits')
 

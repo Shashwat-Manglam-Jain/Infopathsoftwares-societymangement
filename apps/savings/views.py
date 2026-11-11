@@ -66,11 +66,13 @@ def savings_create(request):
             related = type_map.get(account.account_type, '')
             if related:
                 head = ChartOfAccounts.objects.filter(
-                    related_table_name=related, is_active=True,
+                    related_table_name=related,
+                    is_active=True,
                 ).first()
                 if head:
                     slab = InterestMaster.objects.filter(
-                        account_head=head, is_active=True,
+                        account_head=head,
+                        is_active=True,
                     ).first()
                     if slab:
                         account.interest_rate = slab.interest_rate
@@ -114,11 +116,13 @@ def savings_edit(request, pk):
             related = type_map.get(acct.account_type, '')
             if related:
                 head = ChartOfAccounts.objects.filter(
-                    related_table_name=related, is_active=True,
+                    related_table_name=related,
+                    is_active=True,
                 ).first()
                 if head:
                     slab = InterestMaster.objects.filter(
-                        account_head=head, is_active=True,
+                        account_head=head,
+                        is_active=True,
                     ).first()
                     if slab:
                         acct.interest_rate = slab.interest_rate

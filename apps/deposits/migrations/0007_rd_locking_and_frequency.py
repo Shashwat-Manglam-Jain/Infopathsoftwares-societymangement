@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('deposits', '0006_fixeddeposit_premature_penalty_percent_and_more'),
     ]
@@ -13,7 +12,9 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='recurringdeposit',
             name='interest_posting_frequency',
-            field=models.CharField(choices=[('semi_annual', 'Semi-Annual (6 months)')], default='semi_annual', max_length=15),
+            field=models.CharField(
+                choices=[('semi_annual', 'Semi-Annual (6 months)')], default='semi_annual', max_length=15
+            ),
         ),
         migrations.AddField(
             model_name='recurringdeposit',

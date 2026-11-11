@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('loans', '0005_loanaccount_folio_number_loanaccount_ledger_number_and_more'),
     ]
@@ -13,11 +12,18 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='loanproduct',
             name='allow_multiple',
-            field=models.BooleanField(default=False, help_text='Mortgage loans allow multiple active loans. Regular/Emergency: only one active at a time.'),
+            field=models.BooleanField(
+                default=False,
+                help_text='Mortgage loans allow multiple active loans. Regular/Emergency: only one active at a time.',
+            ),
         ),
         migrations.AlterField(
             model_name='loanproduct',
             name='loan_category',
-            field=models.CharField(choices=[('regular', 'Regular Loan'), ('emergency', 'Emergency Loan'), ('mortgage', 'Mortgage Loan')], default='regular', max_length=15),
+            field=models.CharField(
+                choices=[('regular', 'Regular Loan'), ('emergency', 'Emergency Loan'), ('mortgage', 'Mortgage Loan')],
+                default='regular',
+                max_length=15,
+            ),
         ),
     ]

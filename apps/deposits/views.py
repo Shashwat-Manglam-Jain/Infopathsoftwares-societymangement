@@ -4,8 +4,8 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 
-from apps.accounts.permissions import auditor_or_above, cashier_required, manager_required
 from apps.accounting.models import ChartOfAccounts, InterestMaster
+from apps.accounts.permissions import auditor_or_above, cashier_required, manager_required
 
 from .models import FixedDeposit, RDInstallment, RecurringDeposit
 
@@ -20,13 +20,17 @@ def fd_list(request):
         fds = fds.filter(status=status)
     paginator = Paginator(fds, 25)
     page_obj = paginator.get_page(request.GET.get('page'))
-    return render(request, 'deposits/fd_list.html', {
-        'fds': page_obj,
-        'current_status': status,
-        'page_obj': page_obj,
-        'is_paginated': page_obj.has_other_pages(),
-        'paginator': paginator,
-    })
+    return render(
+        request,
+        'deposits/fd_list.html',
+        {
+            'fds': page_obj,
+            'current_status': status,
+            'page_obj': page_obj,
+            'is_paginated': page_obj.has_other_pages(),
+            'paginator': paginator,
+        },
+    )
 
 
 @cashier_required
@@ -47,12 +51,14 @@ def fd_create(request):
     slabs = []
     if fd_head:
         for s in InterestMaster.objects.filter(account_head=fd_head, is_active=True).order_by('min_period'):
-            slabs.append({
-                'min_days': s.min_period,
-                'max_days': s.max_period,
-                'rate': float(s.interest_rate),
-                'senior_extra': float(s.senior_citizen_extra),
-            })
+            slabs.append(
+                {
+                    'min_days': s.min_period,
+                    'max_days': s.max_period,
+                    'rate': float(s.interest_rate),
+                    'senior_extra': float(s.senior_citizen_extra),
+                }
+            )
     slabs_json = json.dumps(slabs)
 
     if request.method == 'POST':
@@ -144,13 +150,17 @@ def rd_list(request):
         rds = rds.filter(status=status)
     paginator = Paginator(rds, 25)
     page_obj = paginator.get_page(request.GET.get('page'))
-    return render(request, 'deposits/rd_list.html', {
-        'rds': page_obj,
-        'current_status': status,
-        'page_obj': page_obj,
-        'is_paginated': page_obj.has_other_pages(),
-        'paginator': paginator,
-    })
+    return render(
+        request,
+        'deposits/rd_list.html',
+        {
+            'rds': page_obj,
+            'current_status': status,
+            'page_obj': page_obj,
+            'is_paginated': page_obj.has_other_pages(),
+            'paginator': paginator,
+        },
+    )
 
 
 @cashier_required
@@ -172,11 +182,13 @@ def rd_create(request):
     slabs = []
     if rd_head:
         for s in InterestMaster.objects.filter(account_head=rd_head, is_active=True).order_by('min_period'):
-            slabs.append({
-                'min_months': s.min_period,
-                'max_months': s.max_period,
-                'rate': float(s.interest_rate),
-            })
+            slabs.append(
+                {
+                    'min_months': s.min_period,
+                    'max_months': s.max_period,
+                    'rate': float(s.interest_rate),
+                }
+            )
     slabs_json = json.dumps(slabs)
 
     if request.method == 'POST':
@@ -247,5 +259,3 @@ def rd_collect(request, pk):
         except (ValueError, Exception) as e:
             messages.error(request, str(e))
     return redirect('deposits:rd_detail', pk=pk)
-
-

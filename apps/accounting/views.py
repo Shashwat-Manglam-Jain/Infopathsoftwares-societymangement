@@ -296,9 +296,14 @@ def cashbook_entry(request):
     branch_filter = {}
     if not request.user.can_access_all_branches and request.current_branch:
         branch_filter['branch'] = request.current_branch
-    prev_cb = CashbookMaster.objects.filter(
-        txn_date__lt=cb_date, **branch_filter,
-    ).order_by('-txn_date').first()
+    prev_cb = (
+        CashbookMaster.objects.filter(
+            txn_date__lt=cb_date,
+            **branch_filter,
+        )
+        .order_by('-txn_date')
+        .first()
+    )
     opening_cash = prev_cb.closing_balance if prev_cb else Decimal('0')
     closing_cash = opening_cash + receipt_cash - payment_cash
 

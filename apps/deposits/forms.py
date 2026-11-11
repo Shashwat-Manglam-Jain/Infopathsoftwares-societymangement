@@ -48,10 +48,14 @@ class RDCreateForm(forms.Form):
     interest_rate = forms.DecimalField(
         max_digits=5,
         decimal_places=2,
-        widget=forms.NumberInput(attrs={
-            'class': 'w-full rounded-lg border-gray-300 px-3 py-2 bg-gray-50 cursor-not-allowed',
-            'step': '0.01', 'readonly': True, 'tabindex': '-1',
-        }),
+        widget=forms.NumberInput(
+            attrs={
+                'class': 'w-full rounded-lg border-gray-300 px-3 py-2 bg-gray-50 cursor-not-allowed',
+                'step': '0.01',
+                'readonly': True,
+                'tabindex': '-1',
+            }
+        ),
     )
     linked_savings_account = forms.IntegerField(required=False, widget=forms.Select(attrs={'class': tw}))
 
@@ -67,5 +71,3 @@ class RDCreateForm(forms.Form):
 
             return SavingsAccount.objects.get(pk=val)
         return None
-
-

@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('accounts', '0005_migrate_super_admin_to_admin'),
     ]
@@ -13,6 +12,18 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='customuser',
             name='role',
-            field=models.CharField(choices=[('admin', 'Admin'), ('branch_manager', 'Branch Manager'), ('cashier', 'Cashier'), ('accountant', 'Accountant'), ('auditor', 'Auditor'), ('director', 'Director'), ('member', 'Member')], default='cashier', max_length=20),
+            field=models.CharField(
+                choices=[
+                    ('admin', 'Admin'),
+                    ('branch_manager', 'Branch Manager'),
+                    ('cashier', 'Cashier'),
+                    ('accountant', 'Accountant'),
+                    ('auditor', 'Auditor'),
+                    ('director', 'Director'),
+                    ('member', 'Member'),
+                ],
+                default='cashier',
+                max_length=20,
+            ),
         ),
     ]

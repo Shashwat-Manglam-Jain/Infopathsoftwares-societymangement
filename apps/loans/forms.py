@@ -187,4 +187,3 @@ class LoanCollateralForm(forms.ModelForm):
             'document': forms.ClearableFileInput(attrs={'class': tw}),
             'status': forms.Select(attrs={'class': tw}),
         }
-

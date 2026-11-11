@@ -33,10 +33,14 @@ def public_login(request):
                 host = f'{host}:{port}'
             return redirect(f'{scheme}://{host}/accounts/login/')
         error = 'Please select a valid society.'
-    return render(request, 'tenants/public_login.html', {
-        'domains': domains,
-        'error': error,
-    })
+    return render(
+        request,
+        'tenants/public_login.html',
+        {
+            'domains': domains,
+            'error': error,
+        },
+    )
 
 
 class SocietySignupView(View):

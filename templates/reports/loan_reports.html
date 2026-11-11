@@ -212,7 +212,7 @@
                     {% for item in items %}
                     <tr class="hover:bg-gray-50">
                         {% if report_type == 'guarantor_report' %}
-                        <td class="px-4 py-3 text-sm font-mono text-gray-900">{{ item.member_number }}</td>
+                        <td class="px-4 py-3 text-sm font-mono text-gray-900">{{ item.member_no }}</td>
                         <td class="px-4 py-3 text-sm text-gray-700">{{ item.member_name }}</td>
                         <td class="px-4 py-3 text-sm text-right text-gray-700">{{ item.guarantee_count }}</td>
                         <td class="px-4 py-3 text-sm text-right font-medium text-gray-900">{{ item.total_exposure|floatformat:2 }}</td>

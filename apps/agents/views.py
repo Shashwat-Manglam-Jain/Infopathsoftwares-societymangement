@@ -23,13 +23,17 @@ def agent_list(request):
         agents = agents.filter(branch=request.current_branch)
     paginator = Paginator(agents, 25)
     page_obj = paginator.get_page(request.GET.get('page'))
-    return render(request, 'agents/agent_list.html', {
-        'agents': page_obj,
-        'active_tab': 'agents',
-        'page_obj': page_obj,
-        'is_paginated': page_obj.has_other_pages(),
-        'paginator': paginator,
-    })
+    return render(
+        request,
+        'agents/agent_list.html',
+        {
+            'agents': page_obj,
+            'active_tab': 'agents',
+            'page_obj': page_obj,
+            'is_paginated': page_obj.has_other_pages(),
+            'paginator': paginator,
+        },
+    )
 
 
 @manager_required
@@ -95,14 +99,16 @@ def pigmmy_account_list(request):
     paginator = Paginator(accounts, 25)
     page_obj = paginator.get_page(request.GET.get('page'))
     return render(
-        request, 'agents/pigmmy_list.html', {
+        request,
+        'agents/pigmmy_list.html',
+        {
             'accounts': page_obj,
             'agents': agents,
             'active_tab': 'accounts',
             'page_obj': page_obj,
             'is_paginated': page_obj.has_other_pages(),
             'paginator': paginator,
-        }
+        },
     )
 
 
@@ -117,14 +123,25 @@ def pigmmy_create(request):
     head = ChartOfAccounts.objects.filter(related_table_name='client', is_active=True).first()
     slabs = []
     if head:
-        slabs = list(InterestMaster.objects.filter(
-            account_head=head, is_active=True, period_unit='months',
-        ).order_by('min_period').values('min_period', 'max_period', 'interest_rate'))
-    slabs_json = json.dumps([{
-        'min_months': s['min_period'],
-        'max_months': s['max_period'],
-        'rate': float(s['interest_rate']),
-    } for s in slabs])
+        slabs = list(
+            InterestMaster.objects.filter(
+                account_head=head,
+                is_active=True,
+                period_unit='months',
+            )
+            .order_by('min_period')
+            .values('min_period', 'max_period', 'interest_rate')
+        )
+    slabs_json = json.dumps(
+        [
+            {
+                'min_months': s['min_period'],
+                'max_months': s['max_period'],
+                'rate': float(s['interest_rate']),
+            }
+            for s in slabs
+        ]
+    )
 
     if request.method == 'POST':
         form = PigmmyAccountForm(request.POST, branch=branch)
@@ -135,8 +152,11 @@ def pigmmy_create(request):
             months = form.cleaned_data['deposit_period_months']
             if head:
                 slab = InterestMaster.objects.filter(
-                    account_head=head, is_active=True, period_unit='months',
-                    min_period__lte=months, max_period__gte=months,
+                    account_head=head,
+                    is_active=True,
+                    period_unit='months',
+                    min_period__lte=months,
+                    max_period__gte=months,
                 ).first()
                 if slab:
                     interest_rate = slab.interest_rate
@@ -171,11 +191,15 @@ def pigmmy_create(request):
             selected_agent = Agent.objects.select_related('member').get(pk=int(request.GET['agent']))
         except (Agent.DoesNotExist, ValueError, TypeError):
             pass
-    return render(request, 'agents/pigmmy_create.html', {
-        'form': form,
-        'selected_agent': selected_agent,
-        'slabs_json': slabs_json,
-    })
+    return render(
+        request,
+        'agents/pigmmy_create.html',
+        {
+            'form': form,
+            'selected_agent': selected_agent,
+            'slabs_json': slabs_json,
+        },
+    )
 
 
 @auditor_or_above
@@ -203,13 +227,17 @@ def collection_list(request):
     collections = collections.order_by('-collection_date')
     paginator = Paginator(collections, 25)
     page_obj = paginator.get_page(request.GET.get('page'))
-    return render(request, 'agents/collection_list.html', {
-        'collections': page_obj,
-        'active_tab': 'collections',
-        'page_obj': page_obj,
-        'is_paginated': page_obj.has_other_pages(),
-        'paginator': paginator,
-    })
+    return render(
+        request,
+        'agents/collection_list.html',
+        {
+            'collections': page_obj,
+            'active_tab': 'collections',
+            'page_obj': page_obj,
+            'is_paginated': page_obj.has_other_pages(),
+            'paginator': paginator,
+        },
+    )
 
 
 @cashier_required

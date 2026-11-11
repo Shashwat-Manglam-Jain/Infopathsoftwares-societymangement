@@ -31,10 +31,13 @@ def create_pigmmy_account(
 
     # Soft override: use InterestMaster slab rate if available
     from apps.accounting.models import ChartOfAccounts, InterestMaster
+
     head = ChartOfAccounts.objects.filter(related_table_name='client', is_active=True).first()
     if head:
         slab = InterestMaster.objects.filter(
-            account_head=head, is_active=True, period_unit='months',
+            account_head=head,
+            is_active=True,
+            period_unit='months',
             min_period__lte=deposit_period_months,
             max_period__gte=deposit_period_months,
         ).first()

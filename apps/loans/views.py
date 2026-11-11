@@ -74,8 +74,9 @@ def loan_detail(request, pk):
         messages.error(request, 'You do not have access to this loan.')
         return redirect('loans:list')
 
-    from .models import LoanGuarantor
     from apps.shares.models import ShareHolding
+
+    from .models import LoanGuarantor
 
     guarantors = loan.guarantors.select_related('guarantor_member__branch').all()
     for g in guarantors:
@@ -96,19 +97,17 @@ def loan_detail(request, pk):
 
     product = loan.loan_product
     guarantor_count = guarantors.count()
-    guarantor_ok = (
-        not product.requires_guarantor
-        or guarantor_count >= product.min_guarantors
-    )
-    collateral_ok = (not loan.loan_product.requires_collateral or
-                     loan.collaterals.exists())
+    guarantor_ok = not product.requires_guarantor or guarantor_count >= product.min_guarantors
+    collateral_ok = not loan.loan_product.requires_collateral or loan.collaterals.exists()
 
     has_interest_slab = False
     if loan.gl_head:
         from apps.accounting.models import InterestMaster
+
         has_interest_slab = InterestMaster.objects.filter(account_head=loan.gl_head, is_active=True).exists()
 
     from .models import StandingInstruction
+
     standing_instructions = StandingInstruction.objects.filter(loan=loan).order_by('-charge_date')
 
     return render(
@@ -463,9 +462,15 @@ def guarantor_add(request, loan_pk):
         form = GuarantorForm()
         form._loan = loan
 
-    return render(request, 'loans/guarantor_form.html', {
-        'form': form, 'loan': loan, 'title': 'Add Guarantor',
-    })
+    return render(
+        request,
+        'loans/guarantor_form.html',
+        {
+            'form': form,
+            'loan': loan,
+            'title': 'Add Guarantor',
+        },
+    )
 
 
 @manager_required
@@ -498,9 +503,15 @@ def guarantor_edit(request, pk):
         form = GuarantorForm(instance=guarantor)
         form._loan = loan
 
-    return render(request, 'loans/guarantor_form.html', {
-        'form': form, 'loan': loan, 'title': f'Edit Guarantor: {guarantor.guarantor_member.name}',
-    })
+    return render(
+        request,
+        'loans/guarantor_form.html',
+        {
+            'form': form,
+            'loan': loan,
+            'title': f'Edit Guarantor: {guarantor.guarantor_member.name}',
+        },
+    )
 
 
 @manager_required
@@ -528,8 +539,7 @@ def guarantor_delete(request, pk):
         if remaining < product.min_guarantors:
             messages.error(
                 request,
-                f'Cannot remove guarantor. Active loans require at least '
-                f'{product.min_guarantors} guarantor(s).',
+                f'Cannot remove guarantor. Active loans require at least {product.min_guarantors} guarantor(s).',
             )
             return redirect('loans:detail', pk=loan.pk)
 
@@ -583,9 +593,15 @@ def collateral_add(request, loan_pk):
     else:
         form = LoanCollateralForm()
 
-    return render(request, 'loans/collateral_form.html', {
-        'form': form, 'loan': loan, 'title': 'Add Collateral',
-    })
+    return render(
+        request,
+        'loans/collateral_form.html',
+        {
+            'form': form,
+            'loan': loan,
+            'title': 'Add Collateral',
+        },
+    )
 
 
 @manager_required
@@ -606,9 +622,15 @@ def collateral_edit(request, pk):
     else:
         form = LoanCollateralForm(instance=collateral)
 
-    return render(request, 'loans/collateral_form.html', {
-        'form': form, 'loan': loan, 'title': f'Edit Collateral: {collateral.get_collateral_type_display()}',
-    })
+    return render(
+        request,
+        'loans/collateral_form.html',
+        {
+            'form': form,
+            'loan': loan,
+            'title': f'Edit Collateral: {collateral.get_collateral_type_display()}',
+        },
+    )
 
 
 @manager_required
@@ -651,15 +673,17 @@ def loan_ledger(request, pk):
 
     if loan.disbursed_date and loan.disbursed_amount:
         running_balance = loan.disbursed_amount
-        entries.append({
-            'date': loan.disbursed_date,
-            'type': 'Disbursement',
-            'debit': loan.disbursed_amount,
-            'credit': Decimal('0'),
-            'balance': running_balance,
-            'narration': f'Loan disbursed — {loan.loan_product.name}',
-            'receipt': '',
-        })
+        entries.append(
+            {
+                'date': loan.disbursed_date,
+                'type': 'Disbursement',
+                'debit': loan.disbursed_amount,
+                'credit': Decimal('0'),
+                'balance': running_balance,
+                'narration': f'Loan disbursed — {loan.loan_product.name}',
+                'receipt': '',
+            }
+        )
 
     repayments = LoanRepayment.objects.filter(loan=loan).order_by('payment_date', 'pk')
     charges = StandingInstruction.objects.filter(loan=loan).order_by('charge_date', 'pk')
@@ -679,35 +703,43 @@ def loan_ledger(request, pk):
         if pick_charge:
             c = charge_list[ci]
             running_balance += c.amount
-            entries.append({
-                'date': c.charge_date,
-                'type': c.get_charge_type_display(),
-                'debit': c.amount,
-                'credit': Decimal('0'),
-                'balance': running_balance,
-                'narration': c.narration or c.get_charge_type_display(),
-                'receipt': '',
-            })
+            entries.append(
+                {
+                    'date': c.charge_date,
+                    'type': c.get_charge_type_display(),
+                    'debit': c.amount,
+                    'credit': Decimal('0'),
+                    'balance': running_balance,
+                    'narration': c.narration or c.get_charge_type_display(),
+                    'receipt': '',
+                }
+            )
             ci += 1
         else:
             r = repayment_list[ri]
             running_balance -= r.amount
-            entries.append({
-                'date': r.payment_date,
-                'type': 'Repayment',
-                'debit': Decimal('0'),
-                'credit': r.amount,
-                'balance': running_balance,
-                'narration': f'Principal: {r.principal_adjusted}, Interest: {r.interest_adjusted}',
-                'receipt': r.receipt_no,
-            })
+            entries.append(
+                {
+                    'date': r.payment_date,
+                    'type': 'Repayment',
+                    'debit': Decimal('0'),
+                    'credit': r.amount,
+                    'balance': running_balance,
+                    'narration': f'Principal: {r.principal_adjusted}, Interest: {r.interest_adjusted}',
+                    'receipt': r.receipt_no,
+                }
+            )
             ri += 1
 
-    return render(request, 'loans/ledger.html', {
-        'loan': loan,
-        'entries': entries,
-        'running_balance': running_balance,
-    })
+    return render(
+        request,
+        'loans/ledger.html',
+        {
+            'loan': loan,
+            'entries': entries,
+            'running_balance': running_balance,
+        },
+    )
 
 
 @manager_required

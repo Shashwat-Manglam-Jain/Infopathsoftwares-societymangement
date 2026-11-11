@@ -934,10 +934,14 @@ class GuarantorValidationTests(BaseTestCase):
 
     def test_validate_loan_application_no_existing_loan(self):
         ShareHolding.objects.create(
-            member=self.member1, branch=self.head_office,
-            share_count=10, face_value_per_share=100,
-            total_amount=1000, purchase_date=date(2024, 1, 1),
-            status='active', created_by=self.admin_user,
+            member=self.member1,
+            branch=self.head_office,
+            share_count=10,
+            face_value_per_share=100,
+            total_amount=1000,
+            purchase_date=date(2024, 1, 1),
+            status='active',
+            created_by=self.admin_user,
         )
         errors = validate_loan_application(
             self.member1,
@@ -948,10 +952,14 @@ class GuarantorValidationTests(BaseTestCase):
 
     def test_validate_loan_application_duplicate_regular(self):
         ShareHolding.objects.create(
-            member=self.member1, branch=self.head_office,
-            share_count=10, face_value_per_share=100,
-            total_amount=1000, purchase_date=date(2024, 1, 1),
-            status='active', created_by=self.admin_user,
+            member=self.member1,
+            branch=self.head_office,
+            share_count=10,
+            face_value_per_share=100,
+            total_amount=1000,
+            purchase_date=date(2024, 1, 1),
+            status='active',
+            created_by=self.admin_user,
         )
         LoanAccount.objects.create(
             member=self.member1,

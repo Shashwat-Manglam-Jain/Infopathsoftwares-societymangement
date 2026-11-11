@@ -202,9 +202,7 @@ def surrender_shares(member, count, user):
             loan__status__in=['disbursed', 'npa'],
             loan__outstanding_principal__gt=Decimal('0'),
         ).exists():
-            raise ValueError(
-                'Cannot surrender all shares: member is an active guarantor on one or more loans.'
-            )
+            raise ValueError('Cannot surrender all shares: member is an active guarantor on one or more loans.')
 
         if LoanAccount.objects.filter(
             member=member,

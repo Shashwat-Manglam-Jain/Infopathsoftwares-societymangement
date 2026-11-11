@@ -78,6 +78,15 @@ class SavingsAccount(models.Model):
     def __str__(self):
         return f'{self.account_no} - {self.member.name}'
 
+    def save(self, *args, **kwargs):
+        if not self.account_no:
+            from apps.core.account_utils import generate_account_number
+
+            type_codes = {'savings': '001', 'current': '002', 'security': '003'}
+            code = type_codes.get(self.account_type, '001')
+            self.account_no = generate_account_number(self.branch, code)
+        super().save(*args, **kwargs)
+
     def clean(self):
         if self.account_type == 'savings' and self.status == 'active':
             qs = SavingsAccount.objects.filter(
@@ -89,15 +98,6 @@ class SavingsAccount(models.Model):
                 qs = qs.exclude(pk=self.pk)
             if qs.exists():
                 raise ValidationError('Member already has an active savings account.')
-
-    def save(self, *args, **kwargs):
-        if not self.account_no:
-            from apps.core.account_utils import generate_account_number
-
-            type_codes = {'savings': '001', 'current': '002', 'security': '003'}
-            code = type_codes.get(self.account_type, '001')
-            self.account_no = generate_account_number(self.branch, code)
-        super().save(*args, **kwargs)
 
 
 class AccountTransaction(models.Model):

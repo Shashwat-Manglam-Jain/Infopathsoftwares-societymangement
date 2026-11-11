@@ -2,11 +2,8 @@ from django import forms
 
 from apps.savings.models import SavingsAccount
 
-_tw = (
-    "w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-    " focus:border-primary-500 focus:ring-primary-500"
-)
-_tw_s = "searchable " + _tw
+_tw = 'w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500'
+_tw_s = 'searchable ' + _tw
 
 
 class SavingsAccountForm(forms.ModelForm):
@@ -17,7 +14,14 @@ class SavingsAccountForm(forms.ModelForm):
             'member': forms.Select(attrs={'class': _tw_s}),
             'branch': forms.Select(attrs={'class': _tw}),
             'account_type': forms.Select(attrs={'class': _tw}),
-            'interest_rate': forms.NumberInput(attrs={'class': _tw + ' bg-gray-50 cursor-not-allowed', 'step': '0.01', 'readonly': True, 'tabindex': '-1'}),
+            'interest_rate': forms.NumberInput(
+                attrs={
+                    'class': _tw + ' bg-gray-50 cursor-not-allowed',
+                    'step': '0.01',
+                    'readonly': True,
+                    'tabindex': '-1',
+                }
+            ),
             'minimum_balance': forms.NumberInput(attrs={'class': _tw, 'step': '0.01'}),
             'interest_posting_frequency': forms.Select(attrs={'class': _tw}),
         }
@@ -44,8 +48,7 @@ class SavingsAccountForm(forms.ModelForm):
                 qs = qs.exclude(pk=self.instance.pk)
             if qs.exists():
                 raise forms.ValidationError(
-                    'Member already has an active savings account.'
-                    ' Only one per member is allowed.'
+                    'Member already has an active savings account. Only one per member is allowed.'
                 )
         return cleaned_data
 
@@ -55,7 +58,14 @@ class SavingsAccountEditForm(forms.ModelForm):
         model = SavingsAccount
         fields = ['interest_rate', 'minimum_balance', 'interest_posting_frequency']
         widgets = {
-            'interest_rate': forms.NumberInput(attrs={'class': _tw + ' bg-gray-50 cursor-not-allowed', 'step': '0.01', 'readonly': True, 'tabindex': '-1'}),
+            'interest_rate': forms.NumberInput(
+                attrs={
+                    'class': _tw + ' bg-gray-50 cursor-not-allowed',
+                    'step': '0.01',
+                    'readonly': True,
+                    'tabindex': '-1',
+                }
+            ),
             'minimum_balance': forms.NumberInput(attrs={'class': _tw, 'step': '0.01'}),
             'interest_posting_frequency': forms.Select(attrs={'class': _tw}),
         }
@@ -111,9 +121,5 @@ class WithdrawalForm(forms.Form):
 
 class StatementFilterForm(forms.Form):
     account_id = forms.IntegerField(widget=forms.HiddenInput())
-    from_date = forms.DateField(
-        widget=forms.DateInput(attrs={'class': _tw, 'type': 'date'})
-    )
-    to_date = forms.DateField(
-        widget=forms.DateInput(attrs={'class': _tw, 'type': 'date'})
-    )
+    from_date = forms.DateField(widget=forms.DateInput(attrs={'class': _tw, 'type': 'date'}))
+    to_date = forms.DateField(widget=forms.DateInput(attrs={'class': _tw, 'type': 'date'}))

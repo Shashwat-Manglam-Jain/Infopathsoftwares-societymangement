@@ -83,12 +83,14 @@ class PigmmyAccountForm(forms.Form):
     interest_rate = forms.DecimalField(
         max_digits=5,
         decimal_places=2,
-        widget=forms.NumberInput(attrs={
-            'class': tw + ' bg-gray-50 cursor-not-allowed',
-            'step': '0.01',
-            'readonly': True,
-            'tabindex': '-1',
-        }),
+        widget=forms.NumberInput(
+            attrs={
+                'class': tw + ' bg-gray-50 cursor-not-allowed',
+                'step': '0.01',
+                'readonly': True,
+                'tabindex': '-1',
+            }
+        ),
     )
 
     def __init__(self, *args, **kwargs):

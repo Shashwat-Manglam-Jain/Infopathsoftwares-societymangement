@@ -29,7 +29,7 @@
                 <select name="member" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
                     <option value="">— Select Member —</option>
                     {% for m in members %}
-                    <option value="{{ m.pk }}" {% if selected_member == m.pk|stringformat:"d" %}selected{% endif %}>{{ m.member_number }} — {{ m.name }}</option>
+                    <option value="{{ m.pk }}" {% if selected_member == m.pk|stringformat:"d" %}selected{% endif %}>{{ m.member_no }} — {{ m.name }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -77,7 +77,7 @@
 
         <div class="mb-6">
             <p class="text-sm"><strong>Member:</strong> {{ member.name }}</p>
-            <p class="text-sm"><strong>Member No.:</strong> {{ member.member_number }}</p>
+            <p class="text-sm"><strong>Member No.:</strong> {{ member.member_no }}</p>
             <p class="text-sm"><strong>Address:</strong> {{ member.address|default:"—" }}</p>
         </div>
 
@@ -174,9 +174,9 @@
                     {% for t in dividend_txns %}
                     <tr class="hover:bg-gray-50">
                         <td class="px-4 py-3">{{ t.member.name }}</td>
-                        <td class="px-4 py-3 font-mono">{{ t.member.member_number }}</td>
+                        <td class="px-4 py-3 font-mono">{{ t.member.member_no }}</td>
                         <td class="px-4 py-3">{{ t.txn_date|date:"d M Y" }}</td>
-                        <td class="px-4 py-3 text-right">{{ t.share_count }}</td>
+                        <td class="px-4 py-3 text-right">{{ t.shares_count }}</td>
                         <td class="px-4 py-3 text-right font-medium text-green-700">₹{{ t.amount|floatformat:2 }}</td>
                     </tr>
                     {% endfor %}

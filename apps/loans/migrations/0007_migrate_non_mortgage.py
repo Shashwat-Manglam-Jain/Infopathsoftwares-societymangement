@@ -9,7 +9,6 @@ def migrate_non_mortgage_to_regular(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('loans', '0006_update_loan_categories'),
     ]

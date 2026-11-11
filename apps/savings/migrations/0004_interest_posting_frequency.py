@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('savings', '0003_savingsaccount_folio_number_savingsaccount_gl_head_and_more'),
     ]
@@ -13,6 +12,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='savingsaccount',
             name='interest_posting_frequency',
-            field=models.CharField(choices=[('monthly', 'Monthly'), ('yearly', 'Yearly')], default='yearly', max_length=10),
+            field=models.CharField(
+                choices=[('monthly', 'Monthly'), ('yearly', 'Yearly')], default='yearly', max_length=10
+            ),
         ),
     ]

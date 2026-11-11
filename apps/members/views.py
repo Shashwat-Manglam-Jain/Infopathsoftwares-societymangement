@@ -43,12 +43,16 @@ def member_list(request):
 
     paginator = Paginator(members, 25)
     page_obj = paginator.get_page(request.GET.get('page'))
-    return render(request, 'members/list.html', {
-        'members': page_obj,
-        'page_obj': page_obj,
-        'is_paginated': page_obj.has_other_pages(),
-        'paginator': paginator,
-    })
+    return render(
+        request,
+        'members/list.html',
+        {
+            'members': page_obj,
+            'page_obj': page_obj,
+            'is_paginated': page_obj.has_other_pages(),
+            'paginator': paginator,
+        },
+    )
 
 
 GENDER_MAP = {
@@ -361,6 +365,7 @@ class SampleImportTemplateView(ManagerRequiredMixin, View):
 def member_detail(request, pk):
     member = get_object_or_404(Member, pk=pk)
     from decimal import Decimal
+
     from apps.agents.models import PigmmyAccount
     from apps.deposits.models import FixedDeposit, RecurringDeposit
     from apps.loans.models import LoanAccount, LoanGuarantor
@@ -382,16 +387,16 @@ def member_detail(request, pk):
         'fds': fds_list,
         'rds': rds_list,
         'pigmmy': pigmmy_list,
-        'guaranteed_loans': LoanGuarantor.objects.filter(
-            guarantor_member=member
-        ).select_related('loan', 'loan__member', 'loan__loan_product'),
+        'guaranteed_loans': LoanGuarantor.objects.filter(guarantor_member=member).select_related(
+            'loan', 'loan__member', 'loan__loan_product'
+        ),
         'nominees': member.nominees.all(),
         'documents': member.documents.all(),
         'total_shares_amount': sum((s.total_amount for s in shares_list), Decimal('0.00')),
         'total_savings_balance': sum((s.current_balance for s in savings_list), Decimal('0.00')),
         'total_fd_amount': sum((f.deposit_amount for f in fds_list), Decimal('0.00')),
         'total_rd_installment': sum((r.monthly_installment for r in rds_list), Decimal('0.00')),
-        'total_loan_outstanding': sum((l.outstanding_principal for l in loans_list), Decimal('0.00')),
+        'total_loan_outstanding': sum((loan.outstanding_principal for loan in loans_list), Decimal('0.00')),
         'total_pigmmy_balance': sum((p.current_balance for p in pigmmy_list), Decimal('0.00')),
     }
     return render(request, 'members/detail.html', context)

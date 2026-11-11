@@ -151,12 +151,12 @@ class JournalEntry(models.Model):
         verbose_name_plural = 'journal entries'
         ordering = ['-entry_date', '-created_at']
 
+    def __str__(self):
+        return f'{self.voucher_no} - {self.entry_date}'
+
     @property
     def total_amount(self):
         return self.lines.aggregate(t=models.Sum('debit_amount'))['t'] or 0
-
-    def __str__(self):
-        return f'{self.voucher_no} - {self.entry_date}'
 
 
 class JournalLine(models.Model):
