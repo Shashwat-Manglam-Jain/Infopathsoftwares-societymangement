@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 640" fill="none">
   <!-- Phone body -->
   <rect x="8" y="8" width="304" height="624" rx="40" fill="#1a1a2e" stroke="#2d2d44" stroke-width="3"/>
@@ -34,11 +35,11 @@
   <text x="64" y="384" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#64748b">Deposit</text>
   <rect x="112" y="326" width="80" height="72" rx="12" fill="white" stroke="#e2e8f0" stroke-width="1"/>
   <circle cx="152" cy="350" r="14" fill="#f0fdf4"/>
-  <text x="152" y="355" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#16a34a">📋</text>
+  <text x="152" y="355" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#16a34a">L</text>
   <text x="152" y="384" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#64748b">Loan</text>
   <rect x="200" y="326" width="80" height="72" rx="12" fill="white" stroke="#e2e8f0" stroke-width="1"/>
   <circle cx="240" cy="350" r="14" fill="#fef3c7"/>
-  <text x="240" y="355" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#d97706">📊</text>
+  <text x="240" y="355" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#d97706">R</text>
   <text x="240" y="384" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#64748b">Reports</text>
   <!-- Recent transactions -->
   <text x="30" y="426" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">Recent Transactions</text>
