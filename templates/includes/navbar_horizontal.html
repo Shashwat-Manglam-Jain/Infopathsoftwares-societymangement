@@ -22,7 +22,8 @@
                 <a href="{% url 'accounts:staff_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Staff &amp; Users</a>
                 {% endif %}
                 <a href="{% url 'members:list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Members</a>
-                <a href="{% url 'accounting:heads' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Account Heads</a>
+                <a href="{% url 'accounting:heads' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Head Master</a>
+                <a href="{% url 'accounting:interest_master' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Interest Master</a>
             </div>
         </div>
     </div>
@@ -49,8 +50,7 @@
                             <a href="{% url 'savings:list' %}?type=security" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Security Deposits</a>
                             <a href="{% url 'deposits:fd_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Fixed Deposits</a>
                             <a href="{% url 'deposits:rd_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Recurring Deposits</a>
-                            <a href="{% url 'accounting:interest_master' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Interest Slabs</a>
-                        </div>
+                                                    </div>
                     </div>
                 </div>
                 <!-- Loans -->

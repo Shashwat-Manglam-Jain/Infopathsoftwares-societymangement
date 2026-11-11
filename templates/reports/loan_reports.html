@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}Loan Reports — InfoSociety{% endblock %}
+{% block page_title %}Loan Reports{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+            <h2 class="text-xl font-bold text-gray-900">Loan Reports</h2>
+            <p class="text-sm text-gray-500 mt-1">Loan classification, recovery, and defaulter reports</p>
+        </div>
+        <a href="{% url 'reports:index' %}" class="text-sm text-primary-600 hover:underline">← All Reports</a>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <form method="get" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Report Type</label>
+                <select name="type" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
+                    <option value="">— Select —</option>
+                    <option value="defaulter_list" {% if report_type == 'defaulter_list' %}selected{% endif %}>Defaulter List</option>
+                    <option value="recovery_statement" {% if report_type == 'recovery_statement' %}selected{% endif %}>Recovery Statement</option>
+                    <option value="demand_list" {% if report_type == 'demand_list' %}selected{% endif %}>Demand List</option>
+                    <option value="disbursement_register" {% if report_type == 'disbursement_register' %}selected{% endif %}>Disbursement Register</option>
+                    <option value="sanction_amount_wise" {% if report_type == 'sanction_amount_wise' %}selected{% endif %}>Sanction Amount-wise</option>
+                    <option value="sanction_date_wise" {% if report_type == 'sanction_date_wise' %}selected{% endif %}>Sanction Date-wise</option>
+                    <option value="interest_receivable" {% if report_type == 'interest_receivable' %}selected{% endif %}>Interest Receivable</option>
+                    <option value="guarantor_report" {% if report_type == 'guarantor_report' %}selected{% endif %}>Guarantor Report</option>
+                    <option value="loan_against_deposit" {% if report_type == 'loan_against_deposit' %}selected{% endif %}>Loan Against Deposit</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+                <input type="date" name="from_date" value="{{ from_date }}"
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+                <input type="date" name="to_date" value="{{ to_date }}"
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
+            </div>
+            <div class="flex items-end">
+                <button type="submit" class="w-full px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">
+                    Generate
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% if report_type %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+
+        {% if report_type == 'defaulter_list' %}
+        <!-- Defaulter List -->
+        <div class="px-5 py-4 border-b border-gray-200 bg-red-50 flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-red-800">Defaulter List</h3>
+            <span class="text-sm text-red-600 font-medium">{{ total_defaulters }} defaulter{{ total_defaulters|pluralize }}</span>
+        </div>
+        {% for group_label, group_items in defaulter_groups.items %}
+        {% if group_items %}
+        <div class="px-5 py-3 bg-gray-50 border-b border-gray-200">
+            <h4 class="text-sm font-semibold text-gray-700">{{ group_label }} ({{ group_items|length }})</h4>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600 uppercase">Loan No.</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600 uppercase">Member</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600 uppercase">Product</th>
+                        <th class="px-4 py-2 text-right text-xs font-semibold text-gray-600 uppercase">Disbursed</th>
+                        <th class="px-4 py-2 text-right text-xs font-semibold text-gray-600 uppercase">Outstanding</th>
+                        <th class="px-4 py-2 text-right text-xs font-semibold text-gray-600 uppercase">Overdue Amt</th>
+                        <th class="px-4 py-2 text-right text-xs font-semibold text-gray-600 uppercase">Days</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for item in group_items %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-2 text-sm font-mono text-gray-900">{{ item.loan_no }}</td>
+                        <td class="px-4 py-2 text-sm text-gray-700">{{ item.member }}</td>
+                        <td class="px-4 py-2 text-sm text-gray-600">{{ item.product }}</td>
+                        <td class="px-4 py-2 text-sm text-right text-gray-700">{{ item.disbursed_amount|floatformat:2 }}</td>
+                        <td class="px-4 py-2 text-sm text-right font-medium text-gray-900">{{ item.outstanding|floatformat:2 }}</td>
+                        <td class="px-4 py-2 text-sm text-right text-red-600 font-medium">{{ item.overdue_amount|floatformat:2 }}</td>
+                        <td class="px-4 py-2 text-sm text-right text-red-600 font-bold">{{ item.overdue_days }}</td>
+                        <td class="px-4 py-2 text-sm">
+                            <span class="inline-flex px-2 py-0.5 rounded text-xs font-medium {% if item.status == 'NPA' %}bg-red-100 text-red-700{% else %}bg-yellow-100 text-yellow-700{% endif %}">{{ item.status }}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+        {% endfor %}
+        {% if not total_defaulters %}
+        <div class="px-5 py-8 text-center text-sm text-gray-400">No defaulters found.</div>
+        {% endif %}
+
+        {% elif report_type == 'sanction_amount_wise' %}
+        <!-- Sanction Amount-wise -->
+        <div class="px-5 py-4 border-b border-gray-200">
+            <h3 class="text-base font-semibold text-gray-900">Sanction Amount-wise Classification</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Amount Range</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Count</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Total Amount</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for g in groups %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ g.label }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-700">{{ g.count }}</td>
+                        <td class="px-4 py-3 text-sm text-right font-medium text-gray-900">{{ g.total|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% elif items %}
+        <!-- Item-level Reports -->
+        <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+            <h3 class="text-base font-semibold text-gray-900">
+                {% if report_type == 'sanction_date_wise' %}Sanction Date-wise
+                {% elif report_type == 'disbursement_register' %}Disbursement Register
+                {% elif report_type == 'demand_list' %}Loan Demand List
+                {% elif report_type == 'recovery_statement' %}Recovery Statement
+                {% elif report_type == 'interest_receivable' %}Interest Receivable
+                {% elif report_type == 'guarantor_report' %}Guarantor Exposure Report
+                {% elif report_type == 'loan_against_deposit' %}Loans Against Deposit
+                {% endif %}
+            </h3>
+            <span class="text-sm text-gray-500">{{ items|length }} record{{ items|length|pluralize }}</span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        {% if report_type == 'guarantor_report' %}
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Member No.</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Member Name</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Guarantees</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Total Exposure</th>
+                        {% elif report_type == 'demand_list' %}
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Loan No.</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Member</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Inst #</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Due Date</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Principal</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Interest</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Total EMI</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
+                        {% elif report_type == 'recovery_statement' %}
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Loan No.</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Member</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Date</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Amount</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Principal</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Interest</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Penalty</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Mode</th>
+                        {% elif report_type == 'interest_receivable' %}
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Loan No.</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Member</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Product</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Principal</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Interest Due</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Rate %</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Overdue Days</th>
+                        {% elif report_type == 'loan_against_deposit' %}
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Loan No.</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Member</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Product</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Loan Amt</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Outstanding</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Deposit A/c</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Deposit Value</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
+                        {% elif report_type == 'disbursement_register' %}
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Loan No.</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Member</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Product</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Date</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Amount</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Rate %</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Tenure</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Guarantors</th>
+                        {% else %}
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Loan No.</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Member</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Product</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Date</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Amount</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Rate %</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Tenure</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for item in items %}
+                    <tr class="hover:bg-gray-50">
+                        {% if report_type == 'guarantor_report' %}
+                        <td class="px-4 py-3 text-sm font-mono text-gray-900">{{ item.member_number }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">{{ item.member_name }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-700">{{ item.guarantee_count }}</td>
+                        <td class="px-4 py-3 text-sm text-right font-medium text-gray-900">{{ item.total_exposure|floatformat:2 }}</td>
+                        {% elif report_type == 'demand_list' %}
+                        <td class="px-4 py-3 text-sm font-mono text-gray-900">{{ item.loan_no }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">{{ item.member }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-700">#{{ item.installment_no }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">{{ item.due_date|date:"d M Y" }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-700">{{ item.principal|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-700">{{ item.interest|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-right font-medium text-gray-900">{{ item.total_emi|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm">
+                            <span class="inline-flex px-2 py-0.5 rounded text-xs font-medium {% if item.status == 'Overdue' %}bg-red-100 text-red-700{% else %}bg-yellow-100 text-yellow-700{% endif %}">{{ item.status }}</span>
+                        </td>
+                        {% elif report_type == 'recovery_statement' %}
+                        <td class="px-4 py-3 text-sm font-mono text-gray-900">{{ item.loan_no }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">{{ item.member }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">{{ item.payment_date|date:"d M Y" }}</td>
+                        <td class="px-4 py-3 text-sm text-right font-medium text-gray-900">{{ item.amount|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-700">{{ item.principal|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-700">{{ item.interest|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-700">{{ item.penalty|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">{{ item.mode }}</td>
+                        {% elif report_type == 'interest_receivable' %}
+                        <td class="px-4 py-3 text-sm font-mono text-gray-900">{{ item.loan_no }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">{{ item.member }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">{{ item.product }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-700">{{ item.outstanding_principal|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-right font-medium text-red-600">{{ item.outstanding_interest|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-700">{{ item.interest_rate }}%</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-700">{{ item.overdue_days }}</td>
+                        {% elif report_type == 'loan_against_deposit' %}
+                        <td class="px-4 py-3 text-sm font-mono text-gray-900">{{ item.loan_no }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">{{ item.member }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">{{ item.product }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-700">{{ item.loan_amount|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-right font-medium text-gray-900">{{ item.outstanding|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm font-mono text-gray-600">{{ item.mortgage_account_no|default:"—" }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-700">{{ item.mortgage_value|floatformat:2|default:"—" }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">{{ item.status }}</td>
+                        {% elif report_type == 'disbursement_register' %}
+                        <td class="px-4 py-3 text-sm font-mono text-gray-900">{{ item.loan_no }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">{{ item.member }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">{{ item.product }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">{{ item.disbursed_date|date:"d M Y" }}</td>
+                        <td class="px-4 py-3 text-sm text-right font-medium text-gray-900">{{ item.disbursed_amount|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-700">{{ item.interest_rate }}%</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-700">{{ item.tenure }} mo</td>
+                        <td class="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">{{ item.guarantors|default:"—" }}</td>
+                        {% else %}
+                        <td class="px-4 py-3 text-sm font-mono text-gray-900">{{ item.loan_no }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">{{ item.member }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">{{ item.product }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">{{ item.approved_date|date:"d M Y" }}</td>
+                        <td class="px-4 py-3 text-sm text-right font-medium text-gray-900">{{ item.approved_amount|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-700">{{ item.interest_rate }}%</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-700">{{ item.tenure }} mo</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">{{ item.status }}</td>
+                        {% endif %}
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="8" class="px-4 py-8 text-center text-sm text-gray-400">No records found.</td></tr>
+                    {% endfor %}
+                </tbody>
+                {% if totals %}
+                <tfoot class="bg-gray-50 font-semibold">
+                    <tr>
+                        {% if report_type == 'demand_list' %}
+                        <td colspan="4" class="px-4 py-3 text-sm text-gray-700">Total</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-900">{{ totals.principal|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-900">{{ totals.interest|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-900">{{ totals.emi|floatformat:2 }}</td>
+                        <td></td>
+                        {% elif report_type == 'recovery_statement' %}
+                        <td colspan="3" class="px-4 py-3 text-sm text-gray-700">Total</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-900">{{ totals.amount|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-900">{{ totals.principal|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-900">{{ totals.interest|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-900">{{ totals.penalty|floatformat:2 }}</td>
+                        <td></td>
+                        {% endif %}
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+        </div>
+
+        {% elif report_type == 'interest_receivable' or report_type == 'guarantor_report' or report_type == 'loan_against_deposit' %}
+        {% if total_interest %}
+        <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+            <h3 class="text-base font-semibold text-gray-900">Interest Receivable</h3>
+            <span class="text-sm font-medium text-red-600">Total: ₹{{ total_interest|floatformat:2 }}</span>
+        </div>
+        {% endif %}
+        <div class="px-5 py-8 text-center text-sm text-gray-400">No records found for the selected criteria.</div>
+
+        {% elif not groups %}
+        <div class="px-5 py-8 text-center text-sm text-gray-400">
+            {% if report_type in 'recovery_statement,demand_list,disbursement_register,sanction_date_wise' %}
+            Please select a date range and click Generate.
+            {% else %}
+            No records found for the selected criteria.
+            {% endif %}
+        </div>
+        {% endif %}
+
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

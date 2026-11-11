@@ -50,6 +50,15 @@ class SavingsAccount(models.Model):
         related_name='introduced_savings',
         help_text='Existing member who introduced this account',
     )
+    INTEREST_POSTING_FREQUENCY_CHOICES = [
+        ('monthly', 'Monthly'),
+        ('yearly', 'Yearly'),
+    ]
+    interest_posting_frequency = models.CharField(
+        max_length=10,
+        choices=INTEREST_POSTING_FREQUENCY_CHOICES,
+        default='yearly',
+    )
     sign = models.IntegerField(default=0, help_text='1=debit nature, -1=credit nature, 0=default')
     meeting_no = models.CharField(max_length=20, blank=True, help_text='Board Meeting Number')
     meeting_date = models.DateField(null=True, blank=True, help_text='Board Meeting Date')

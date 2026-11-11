@@ -417,11 +417,16 @@ def validate_loan_application(member, loan_product, amount):
     errors = []
     amount = Decimal(str(amount))
 
+    from apps.shares.models import ShareHolding
+
+    if not ShareHolding.objects.filter(member=member, status='active', share_count__gt=0).exists():
+        errors.append('Member must have active shares to apply for a loan.')
+
     if not loan_product.allow_multiple:
         active_loans = (
             LoanAccount.objects.filter(
                 member=member,
-                loan_product__loan_category='non_mortgage',
+                loan_product__loan_category__in=['regular', 'emergency'],
                 status__in=['applied', 'approved', 'disbursed'],
             )
             .filter(
@@ -495,3 +500,47 @@ def add_standing_instruction(loan, charge_type, amount, branch, narration, creat
         )
 
     return si
+
+
+def reverse_repayment(repayment, user):
+    from apps.accounting.models import JournalEntry
+    from apps.accounting.services import reverse_journal_entry
+
+    loan = repayment.loan
+
+    with transaction.atomic():
+        loan.outstanding_principal += repayment.principal_adjusted
+        loan.outstanding_interest += repayment.interest_adjusted
+        loan.overdue_amount += repayment.penalty_adjusted
+        loan.bal_repayment = loan.outstanding_principal
+        loan.bal_interest = loan.outstanding_interest
+        loan.bal_penal = loan.overdue_amount
+
+        if loan.status == 'closed':
+            loan.status = 'disbursed'
+            loan.closure_date = None
+            loan.closure_type = ''
+        loan.save()
+
+        if repayment.emi_schedule:
+            emi = repayment.emi_schedule
+            emi.paid_amount -= repayment.amount
+            if emi.paid_amount <= 0:
+                emi.paid_amount = Decimal('0')
+                emi.status = 'pending'
+                emi.paid_date = None
+            else:
+                emi.status = 'partially_paid'
+            emi.save()
+
+        original_journal = JournalEntry.objects.filter(
+            reference_type='emi_collection',
+            reference_id=repayment.pk,
+            is_reversed=False,
+        ).first()
+        if original_journal:
+            reverse_journal_entry(original_journal, user)
+
+        repayment.delete()
+
+        return True

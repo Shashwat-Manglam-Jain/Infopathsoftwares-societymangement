@@ -22,6 +22,7 @@ class DayEndProcessingTests(BaseTestCase):
 
     def setUp(self):
         super().setUp()
+        WorkingDay.objects.all().delete()
         self._setup_coa()
         self._setup_financial_year()
 
@@ -339,6 +340,7 @@ class WorkingDayTests(BaseTestCase):
 
     def setUp(self):
         super().setUp()
+        WorkingDay.objects.all().delete()
         self._setup_coa()
         self._setup_financial_year()
 
@@ -395,6 +397,7 @@ class DayEndServicesTests(BaseTestCase):
 
     def setUp(self):
         super().setUp()
+        WorkingDay.objects.all().delete()
         self._setup_coa()
         FinancialYear.objects.create(
             fy_code='2024-25',
@@ -532,6 +535,7 @@ class MonthEndServicesTests(BaseTestCase):
 
     def setUp(self):
         super().setUp()
+        WorkingDay.objects.all().delete()
         ChartOfAccounts.objects.create(
             code='1001',
             name='Cash',
@@ -604,6 +608,7 @@ class YearEndServicesTests(BaseTestCase):
 
     def setUp(self):
         super().setUp()
+        WorkingDay.objects.all().delete()
         self.income_account = ChartOfAccounts.objects.create(
             code='3101',
             name='Interest Income',

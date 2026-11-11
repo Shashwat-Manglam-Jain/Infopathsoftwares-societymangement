@@ -11,7 +11,8 @@ class LoanProduct(models.Model):
         ('compound', 'Compound'),
     ]
     LOAN_CATEGORY_CHOICES = [
-        ('non_mortgage', 'Non-Mortgage Loan'),
+        ('regular', 'Regular Loan'),
+        ('emergency', 'Emergency Loan'),
         ('mortgage', 'Mortgage Loan'),
     ]
     MORTGAGE_TYPE_CHOICES = [
@@ -29,11 +30,11 @@ class LoanProduct(models.Model):
     max_amount = models.DecimalField(max_digits=15, decimal_places=2)
     max_tenure_months = models.IntegerField()
     interest_type = models.CharField(max_length=20, choices=INTEREST_TYPE_CHOICES, default='reducing_monthly')
-    loan_category = models.CharField(max_length=15, choices=LOAN_CATEGORY_CHOICES, default='non_mortgage')
+    loan_category = models.CharField(max_length=15, choices=LOAN_CATEGORY_CHOICES, default='regular')
     mortgage_type = models.CharField(max_length=20, choices=MORTGAGE_TYPE_CHOICES, default='none')
     allow_multiple = models.BooleanField(
         default=False,
-        help_text='Mortgage loans allow multiple active loans. Non-mortgage: only one active at a time.',
+        help_text='Mortgage loans allow multiple active loans. Regular/Emergency: only one active at a time.',
     )
     requires_guarantor = models.BooleanField(default=True)
     min_guarantors = models.IntegerField(default=1)

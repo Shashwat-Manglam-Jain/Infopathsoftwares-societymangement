@@ -4,6 +4,7 @@ from django.test import RequestFactory, TestCase
 
 from apps.accounts.models import CustomUser
 from apps.branches.models import Branch
+from apps.dayend.models import WorkingDay
 from apps.members.models import Member
 
 
@@ -69,6 +70,20 @@ class BaseTestCase(TestCase):
             password='testpass123',
             role='accountant',
             branch=self.head_office,
+        )
+
+        # Working Days (keep day open for transaction tests)
+        self.working_day_ho = WorkingDay.objects.create(
+            branch=self.head_office,
+            current_date=date.today(),
+            is_day_open=True,
+            opened_by=self.admin_user,
+        )
+        self.working_day_br = WorkingDay.objects.create(
+            branch=self.branch_a,
+            current_date=date.today(),
+            is_day_open=True,
+            opened_by=self.admin_user,
         )
 
         # Members

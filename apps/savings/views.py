@@ -12,6 +12,7 @@ from apps.accounts.permissions import (
     AuditorOrAboveMixin,
     auditor_or_above,
     cashier_required,
+    day_open_required,
     manager_required,
 )
 from apps.core.account_utils import amount_to_words as _amount_to_words
@@ -156,6 +157,7 @@ def savings_detail(request, pk):
 
 
 @cashier_required
+@day_open_required
 def savings_deposit(request, pk):
     account = get_object_or_404(SavingsAccount, pk=pk)
     if not request.user.can_access_all_branches and account.branch != request.current_branch:
@@ -187,6 +189,7 @@ def savings_deposit(request, pk):
 
 
 @cashier_required
+@day_open_required
 def savings_withdraw(request, pk):
     account = get_object_or_404(SavingsAccount, pk=pk)
     if not request.user.can_access_all_branches and account.branch != request.current_branch:
@@ -357,3 +360,20 @@ def account_type_rate_api(request):
                 rate = float(slab.interest_rate)
 
     return JsonResponse({'rate': rate, 'account_type': account_type})
+
+
+@manager_required
+@day_open_required
+def savings_reverse_txn(request, pk, txn_id):
+    account = get_object_or_404(SavingsAccount, pk=pk)
+    txn = get_object_or_404(AccountTransaction, pk=txn_id, account=account)
+
+    if request.method == 'POST':
+        try:
+            services.reverse_transaction(txn, request.user)
+            messages.success(request, f'Transaction {txn.voucher_no or txn_id} reversed successfully.')
+        except ValueError as e:
+            messages.error(request, str(e))
+        return redirect('savings:detail', pk=pk)
+
+    return render(request, 'savings/reverse_txn.html', {'account': account, 'txn': txn})

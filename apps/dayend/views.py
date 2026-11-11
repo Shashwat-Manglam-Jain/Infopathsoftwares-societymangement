@@ -28,6 +28,14 @@ def dayend_index(request):
     working_day = WorkingDay.objects.filter(branch=branch).first()
     logs = DayEndLog.objects.filter(branch=branch)[:30]
     month_logs = MonthEndLog.objects.filter(branch=branch)[:12]
+
+    from apps.accounting.models import CashbookMaster
+
+    opening_cash = None
+    last_cb = CashbookMaster.objects.filter(branch=branch).order_by('-txn_date').first()
+    if last_cb:
+        opening_cash = last_cb.closing_balance
+
     return render(
         request,
         'dayend/day_end.html',
@@ -35,6 +43,8 @@ def dayend_index(request):
             'working_day': working_day,
             'logs': logs,
             'month_logs': month_logs,
+            'opening_cash': opening_cash,
+            'today': date.today(),
         },
     )
 

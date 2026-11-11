@@ -16,4 +16,5 @@ urlpatterns = [
     path('receipt/<int:txn_id>/', views.DepositReceiptView.as_view(), name='receipt'),
     path('passbook/<int:account_id>/', views.PassbookPrintView.as_view(), name='passbook'),
     path('api/account-type-rate/', views.account_type_rate_api, name='account_type_rate_api'),
+    path('<int:pk>/reverse/<int:txn_id>/', views.savings_reverse_txn, name='reverse_txn'),
 ]

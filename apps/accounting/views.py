@@ -12,6 +12,7 @@ from apps.accounts.permissions import (
     admin_required,
     auditor_or_above,
     cashier_required,
+    day_open_required,
     manager_required,
 )
 
@@ -31,6 +32,7 @@ def voucher_list(request):
 
 
 @cashier_required
+@day_open_required
 def receipt_transaction(request):
     if request.current_branch is None:
         messages.warning(request, 'Please select a specific branch before creating transactions.')
@@ -50,6 +52,7 @@ def receipt_transaction(request):
 
 
 @cashier_required
+@day_open_required
 def payment_transaction(request):
     if request.current_branch is None:
         messages.warning(request, 'Please select a specific branch before creating transactions.')
@@ -132,6 +135,8 @@ def _process_transaction(request, txn_type, heads):
 
     entry_date_str = request.POST.get('entry_date', '')
     narration = request.POST.get('narration', '')
+    raw_mode = request.POST.get('payment_mode', 'cash')
+    payment_mode = 'cash' if raw_mode == 'cash' else 'transfer'
     total_forms = int(request.POST.get('lines-TOTAL_FORMS', 0))
 
     try:
@@ -211,6 +216,7 @@ def _process_transaction(request, txn_type, heads):
                 narration=narration,
                 lines=lines,
                 user=request.user,
+                payment_mode=payment_mode,
             )
             for lh in line_heads:
                 if lh['account_number'] and lh['head'].related_table_name in CUSTOMER_ACCOUNT_TYPES:
@@ -266,12 +272,35 @@ def cashbook_entry(request):
         today_entries = today_entries.filter(branch=request.current_branch)
     today_entries = today_entries.order_by('voucher_type', '-created_at')
 
-    receipt_total = today_entries.filter(voucher_type='receipt').aggregate(
+    from .models import CashbookMaster
+
+    receipts = today_entries.filter(voucher_type='receipt')
+    payments = today_entries.filter(voucher_type='payment')
+
+    receipt_cash = receipts.filter(payment_mode='cash').aggregate(
         total=Sum('lines__credit_amount'),
     )['total'] or Decimal('0')
-    payment_total = today_entries.filter(voucher_type='payment').aggregate(
+    receipt_transfer = receipts.filter(payment_mode='transfer').aggregate(
+        total=Sum('lines__credit_amount'),
+    )['total'] or Decimal('0')
+    receipt_total = receipt_cash + receipt_transfer
+
+    payment_cash = payments.filter(payment_mode='cash').aggregate(
         total=Sum('lines__debit_amount'),
     )['total'] or Decimal('0')
+    payment_transfer = payments.filter(payment_mode='transfer').aggregate(
+        total=Sum('lines__debit_amount'),
+    )['total'] or Decimal('0')
+    payment_total = payment_cash + payment_transfer
+
+    branch_filter = {}
+    if not request.user.can_access_all_branches and request.current_branch:
+        branch_filter['branch'] = request.current_branch
+    prev_cb = CashbookMaster.objects.filter(
+        txn_date__lt=cb_date, **branch_filter,
+    ).order_by('-txn_date').first()
+    opening_cash = prev_cb.closing_balance if prev_cb else Decimal('0')
+    closing_cash = opening_cash + receipt_cash - payment_cash
 
     return render(
         request,
@@ -281,6 +310,12 @@ def cashbook_entry(request):
             'today_entries': today_entries,
             'total_receipts': receipt_total,
             'total_payments': payment_total,
+            'receipt_cash': receipt_cash,
+            'receipt_transfer': receipt_transfer,
+            'payment_cash': payment_cash,
+            'payment_transfer': payment_transfer,
+            'opening_cash': opening_cash,
+            'closing_cash': closing_cash,
             'cash_in_hand': receipt_total - payment_total,
             'cb_date': cb_date,
             'today': date.today(),
@@ -289,6 +324,7 @@ def cashbook_entry(request):
 
 
 @accountant_required
+@day_open_required
 def voucher_create(request):
     if request.current_branch is None:
         messages.warning(request, 'Please select a specific branch before creating vouchers.')

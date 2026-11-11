@@ -19,6 +19,26 @@ def landing_page(request):
     return render(request, 'landing.html', {'plans': plans})
 
 
+def public_login(request):
+    domains = Domain.objects.filter(is_primary=True).order_by('domain')
+    error = ''
+    if request.method == 'POST':
+        domain_id = request.POST.get('domain', '')
+        domain_obj = Domain.objects.filter(pk=domain_id, is_primary=True).first()
+        if domain_obj:
+            scheme = 'https' if request.is_secure() else 'http'
+            port = request.META.get('SERVER_PORT', '80')
+            host = domain_obj.domain
+            if port not in ('80', '443'):
+                host = f'{host}:{port}'
+            return redirect(f'{scheme}://{host}/accounts/login/')
+        error = 'Please select a valid society.'
+    return render(request, 'tenants/public_login.html', {
+        'domains': domains,
+        'error': error,
+    })
+
+
 class SocietySignupView(View):
     def get(self, request):
         form = SocietySignupForm()

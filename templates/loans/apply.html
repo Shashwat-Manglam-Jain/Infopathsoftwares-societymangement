@@ -51,7 +51,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Applied Amount *</label>
                     {{ form.applied_amount }}
                     <template x-if="maxAmount">
-                        <p class="text-xs text-gray-500 mt-1">Max: ₹<span x-text="maxAmount"></span></p>
+                        <p class="text-xs text-gray-500 mt-1">Max: &#8377;<span x-text="maxAmount"></span></p>
                     </template>
                     {% if form.applied_amount.errors %}<p class="text-red-600 text-xs mt-1">{{ form.applied_amount.errors.0 }}</p>{% endif %}
                 </div>
@@ -81,30 +81,41 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
                 {{ form.remarks }}
             </div>
+
+            <!-- Collateral info banner -->
+            <template x-if="requiresCollateral">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-2">
+                    <p class="text-sm text-blue-800 font-medium">This loan product requires collateral.</p>
+                    <p class="text-xs text-blue-600 mt-1">You will be redirected to add collateral after submitting the application.</p>
+                </div>
+            </template>
         </div>
 
         <!-- Guarantors -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
             <div class="flex items-center justify-between border-b pb-2">
                 <h3 class="text-lg font-semibold text-gray-800">Guarantors</h3>
-                <template x-if="requiresGuarantor">
-                    <span class="text-xs font-medium px-2 py-1 rounded-full bg-red-100 text-red-700">
-                        Min <span x-text="minGuarantors"></span> required
-                    </span>
-                </template>
+                <div class="flex items-center gap-2">
+                    <template x-if="requiresGuarantor">
+                        <span class="text-xs font-medium px-2 py-1 rounded-full bg-red-100 text-red-700">
+                            Min <span x-text="minGuarantors"></span> required
+                        </span>
+                    </template>
+                </div>
             </div>
             <p class="text-sm text-gray-500">Guarantors must be active shareholders of the society. A member cannot guarantee their own loan.</p>
 
             {{ guarantor_formset.management_form }}
-            <div class="space-y-4">
+            <div id="guarantor-forms" class="space-y-4">
                 {% for gform in guarantor_formset %}
-                <div class="border border-gray-200 rounded-lg p-4 bg-gray-50 overflow-visible">
+                <div class="guarantor-row border border-gray-200 rounded-lg p-4 bg-gray-50 overflow-visible" data-index="{{ forloop.counter0 }}">
                     <div class="flex items-center justify-between mb-3">
                         <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Guarantor {{ forloop.counter }}</span>
-                        <label class="inline-flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer">
-                            {{ gform.DELETE }}
-                            <span>Remove</span>
-                        </label>
+                        <button type="button" class="remove-guarantor inline-flex items-center gap-1 text-xs text-red-600 hover:text-red-800 font-medium" onclick="removeGuarantor(this)">
+                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            Remove
+                        </button>
+                        <div style="display:none">{{ gform.DELETE }}</div>
                     </div>
                     {{ gform.id }}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -125,6 +136,11 @@
             {% if guarantor_formset.non_form_errors %}
             <p class="text-red-600 text-sm">{{ guarantor_formset.non_form_errors.0 }}</p>
             {% endif %}
+
+            <button type="button" onclick="addGuarantor()" class="inline-flex items-center gap-1.5 px-4 py-2 border border-dashed border-gray-400 rounded-lg text-sm text-gray-600 hover:border-primary-500 hover:text-primary-600 transition">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                Add Guarantor
+            </button>
         </div>
 
         <div class="flex justify-end gap-3">
@@ -147,6 +163,7 @@ function loanForm() {
         maxAmount: null,
         maxTenure: null,
         requiresGuarantor: false,
+        requiresCollateral: false,
         minGuarantors: 0,
         maxGuarantors: 0,
         init() { this.updateRates(); },
@@ -156,6 +173,7 @@ function loanForm() {
             this.maxAmount = null;
             this.maxTenure = null;
             this.requiresGuarantor = false;
+            this.requiresCollateral = false;
             this.minGuarantors = 0;
             this.maxGuarantors = 0;
             if (!this.selectedProduct) return;
@@ -166,10 +184,91 @@ function loanForm() {
             this.maxAmount = product.max_amount;
             this.maxTenure = product.max_tenure_months;
             this.requiresGuarantor = product.requires_guarantor;
+            this.requiresCollateral = product.requires_collateral;
             this.minGuarantors = product.min_guarantors;
             this.maxGuarantors = product.max_guarantors;
         }
     };
+}
+
+function addGuarantor() {
+    const container = document.getElementById('guarantor-forms');
+    const totalInput = document.getElementById('id_guarantors-TOTAL_FORMS');
+    const idx = parseInt(totalInput.value);
+
+    const firstRow = container.querySelector('.guarantor-row');
+    if (!firstRow) return;
+
+    const newRow = firstRow.cloneNode(true);
+    newRow.setAttribute('data-index', idx);
+
+    // Update form index label
+    const label = newRow.querySelector('.text-xs.font-semibold');
+    if (label) label.textContent = 'Guarantor ' + (idx + 1);
+
+    // Update all input/select names and ids
+    newRow.querySelectorAll('input, select, textarea').forEach(el => {
+        if (el.name) el.name = el.name.replace(/-\d+-/, '-' + idx + '-');
+        if (el.id) el.id = el.id.replace(/-\d+-/, '-' + idx + '-');
+        if (el.type === 'hidden' && el.name.endsWith('-id')) {
+            el.value = '';
+        } else if (el.type === 'checkbox') {
+            el.checked = false;
+        } else if (el.tagName === 'SELECT') {
+            el.selectedIndex = 0;
+        } else {
+            el.value = '';
+        }
+    });
+
+    // Clear error messages
+    newRow.querySelectorAll('.text-red-600').forEach(el => el.remove());
+
+    container.appendChild(newRow);
+    totalInput.value = idx + 1;
+}
+
+function removeGuarantor(btn) {
+    const row = btn.closest('.guarantor-row');
+    const container = document.getElementById('guarantor-forms');
+    const totalInput = document.getElementById('id_guarantors-TOTAL_FORMS');
+
+    // If this row has an existing id (edit mode), mark for deletion instead of removing
+    const idInput = row.querySelector('input[name$="-id"]');
+    if (idInput && idInput.value) {
+        const deleteCheckbox = row.querySelector('input[name$="-DELETE"]');
+        if (deleteCheckbox) deleteCheckbox.checked = true;
+        row.style.display = 'none';
+        return;
+    }
+
+    // For new (unsaved) rows, just remove the DOM element
+    // But only if there's more than one row visible
+    const visibleRows = container.querySelectorAll('.guarantor-row:not([style*="display: none"])');
+    if (visibleRows.length <= 1) {
+        // Clear the fields instead of removing the last row
+        row.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+        row.querySelectorAll('input:not([type=hidden])').forEach(el => el.value = '');
+        return;
+    }
+
+    row.remove();
+
+    // Re-index remaining visible forms
+    const allRows = container.querySelectorAll('.guarantor-row');
+    let visibleIdx = 0;
+    allRows.forEach((r, formIdx) => {
+        r.setAttribute('data-index', formIdx);
+        r.querySelectorAll('input, select, textarea').forEach(el => {
+            if (el.name) el.name = el.name.replace(/-\d+-/, '-' + formIdx + '-');
+            if (el.id) el.id = el.id.replace(/-\d+-/, '-' + formIdx + '-');
+        });
+        if (r.style.display !== 'none') {
+            const label = r.querySelector('.text-xs.font-semibold');
+            if (label) label.textContent = 'Guarantor ' + (++visibleIdx);
+        }
+    });
+    totalInput.value = allRows.length;
 }
 </script>
 {% endblock %}

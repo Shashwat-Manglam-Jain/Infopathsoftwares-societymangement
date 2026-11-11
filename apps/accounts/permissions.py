@@ -1,8 +1,10 @@
 from functools import wraps
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
+from django.shortcuts import redirect
 
 
 def role_required(*roles):
@@ -149,6 +151,28 @@ class AuditorOrAboveMixin(LoginRequiredMixin):
         if request.user.is_member_only:
             raise PermissionDenied('Access denied.')
         return super().dispatch(request, *args, **kwargs)
+
+
+def day_open_required(view_func):
+    """Block transaction creation (POST) when the working day is closed."""
+
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if request.method == 'POST':
+            from apps.dayend.models import WorkingDay
+
+            branch = getattr(request, 'current_branch', None)
+            if branch:
+                wd = WorkingDay.objects.filter(branch=branch).order_by('-current_date').first()
+                if not wd or not wd.is_day_open:
+                    messages.error(
+                        request,
+                        'Day is closed. Open the working day before making transactions.',
+                    )
+                    return redirect(request.path)
+        return view_func(request, *args, **kwargs)
+
+    return wrapper
 
 
 def branch_required(view_func):

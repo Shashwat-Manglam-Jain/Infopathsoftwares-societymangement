@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import inlineformset_factory
 
-from apps.loans.models import LoanAccount, LoanGuarantor, LoanProduct
+from apps.loans.models import LoanAccount, LoanCollateral, LoanGuarantor, LoanProduct
 
 tw = 'w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500'
 
@@ -174,4 +174,17 @@ GuarantorFormSet = inlineformset_factory(
     extra=2,
     can_delete=True,
 )
+
+
+class LoanCollateralForm(forms.ModelForm):
+    class Meta:
+        model = LoanCollateral
+        fields = ['collateral_type', 'description', 'estimated_value', 'document', 'status']
+        widgets = {
+            'collateral_type': forms.Select(attrs={'class': tw}),
+            'description': forms.Textarea(attrs={'class': tw, 'rows': 3}),
+            'estimated_value': forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
+            'document': forms.ClearableFileInput(attrs={'class': tw}),
+            'status': forms.Select(attrs={'class': tw}),
+        }
 

@@ -62,7 +62,13 @@
            class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
                   {% if 'heads' in request.path and request.resolver_match.app_name == 'accounting' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
             <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
-            Account Heads
+            Head Master
+        </a>
+        <a href="{% url 'accounting:interest_master' %}"
+           class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg
+                  {% if 'interest-master' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+            Interest Master
         </a>
     </div>
 
@@ -106,11 +112,6 @@
                class="group flex items-center px-3 py-1.5 text-sm rounded-lg
                       {% if request.resolver_match.app_name == 'deposits' and 'rd' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
                 Recurring Deposits
-            </a>
-            <a href="{% url 'accounting:interest_master' %}"
-               class="group flex items-center px-3 py-1.5 text-sm rounded-lg
-                      {% if 'interest-master' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
-                Interest Slabs
             </a>
         </div>
 

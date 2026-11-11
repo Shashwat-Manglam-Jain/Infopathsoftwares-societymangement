@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Cancel Repayment — InfoSociety{% endblock %}
+{% block page_title %}Cancel Repayment{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto space-y-6">
+
+    <div>
+        <h2 class="text-xl font-bold text-gray-900">Cancel Loan Repayment</h2>
+        <p class="text-sm text-gray-500 mt-1">This will reverse the repayment and restore the loan balance.</p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
+        <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+            <dt class="text-gray-500">Loan No.</dt>
+            <dd class="font-mono font-medium text-gray-900">{{ loan.loan_no }}</dd>
+
+            <dt class="text-gray-500">Member</dt>
+            <dd class="font-medium text-gray-900">{{ loan.member.name }}</dd>
+
+            <dt class="text-gray-500">Receipt No.</dt>
+            <dd class="font-mono text-gray-900">{{ repayment.receipt_no }}</dd>
+
+            <dt class="text-gray-500">Date</dt>
+            <dd class="font-medium text-gray-900">{{ repayment.payment_date|date:"d M Y" }}</dd>
+
+            <dt class="text-gray-500">Total Amount</dt>
+            <dd class="font-bold text-gray-900 text-lg">₹{{ repayment.amount|floatformat:2 }}</dd>
+
+            <dt class="text-gray-500">Principal</dt>
+            <dd class="text-gray-900">₹{{ repayment.principal_adjusted|floatformat:2 }}</dd>
+
+            <dt class="text-gray-500">Interest</dt>
+            <dd class="text-gray-900">₹{{ repayment.interest_adjusted|floatformat:2 }}</dd>
+
+            <dt class="text-gray-500">Penalty</dt>
+            <dd class="text-gray-900">₹{{ repayment.penalty_adjusted|floatformat:2 }}</dd>
+        </dl>
+
+        <form method="post" class="pt-4 border-t border-gray-200">
+            {% csrf_token %}
+            <div class="flex gap-3">
+                <button type="submit" class="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 shadow-sm"
+                        onclick="return confirm('Cancel this repayment? The loan balance will be restored.')">
+                    Cancel Repayment
+                </button>
+                <a href="{% url 'loans:detail' loan.pk %}" class="flex-1 px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 text-center">
+                    Go Back
+                </a>
+            </div>
+        </form>
+    </div>
+
+</div>
+{% endblock %}

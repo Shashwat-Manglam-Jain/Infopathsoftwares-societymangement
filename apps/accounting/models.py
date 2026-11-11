@@ -137,6 +137,11 @@ class JournalEntry(models.Model):
         blank=True,
         related_name='journal_entries_approved',
     )
+    PAYMENT_MODE_CHOICES = [
+        ('cash', 'Cash'),
+        ('transfer', 'Transfer'),
+    ]
+    payment_mode = models.CharField(max_length=10, choices=PAYMENT_MODE_CHOICES, default='cash')
     is_posted = models.BooleanField(default=True)
     is_reversed = models.BooleanField(default=False)
     reversal_of = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
@@ -212,6 +217,10 @@ class CashbookMaster(models.Model):
     opening_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     total_receipts = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     total_payments = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    receipt_cash = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    receipt_transfer = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    payment_cash = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    payment_transfer = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     closing_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     is_closed = models.BooleanField(default=False)
     closed_by = models.ForeignKey(

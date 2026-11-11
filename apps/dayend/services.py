@@ -419,6 +419,26 @@ def _auto_cashbook_posting(branch, processing_date, user):
             filter=Q(journal_entry__voucher_type='payment'),
             default=Decimal('0'),
         ),
+        receipt_cash=Sum(
+            'debit_amount',
+            filter=Q(journal_entry__voucher_type='receipt', journal_entry__payment_mode='cash'),
+            default=Decimal('0'),
+        ),
+        receipt_transfer=Sum(
+            'debit_amount',
+            filter=Q(journal_entry__voucher_type='receipt', journal_entry__payment_mode='transfer'),
+            default=Decimal('0'),
+        ),
+        payment_cash=Sum(
+            'credit_amount',
+            filter=Q(journal_entry__voucher_type='payment', journal_entry__payment_mode='cash'),
+            default=Decimal('0'),
+        ),
+        payment_transfer=Sum(
+            'credit_amount',
+            filter=Q(journal_entry__voucher_type='payment', journal_entry__payment_mode='transfer'),
+            default=Decimal('0'),
+        ),
     )
     receipt_total = agg['receipt_total'] or Decimal('0')
     payment_total = agg['payment_total'] or Decimal('0')
@@ -441,6 +461,10 @@ def _auto_cashbook_posting(branch, processing_date, user):
             'opening_balance': opening,
             'total_receipts': receipt_total,
             'total_payments': payment_total,
+            'receipt_cash': agg['receipt_cash'] or Decimal('0'),
+            'receipt_transfer': agg['receipt_transfer'] or Decimal('0'),
+            'payment_cash': agg['payment_cash'] or Decimal('0'),
+            'payment_transfer': agg['payment_transfer'] or Decimal('0'),
             'closing_balance': opening + receipt_total - payment_total,
             'is_closed': True,
             'closed_by': user,

@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 640" fill="none">
+  <!-- Phone body -->
+  <rect x="8" y="8" width="304" height="624" rx="40" fill="#1a1a2e" stroke="#2d2d44" stroke-width="3"/>
+  <rect x="16" y="50" width="288" height="540" rx="4" fill="#f8fafc"/>
+  <!-- Notch -->
+  <rect x="110" y="16" width="100" height="24" rx="12" fill="#0f0f1a"/>
+  <!-- Status bar -->
+  <rect x="16" y="50" width="288" height="36" rx="4" fill="#4f46e5"/>
+  <text x="30" y="73" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="white">InfoSociety</text>
+  <circle cx="270" cy="68" r="6" fill="rgba(255,255,255,0.3)"/>
+  <circle cx="252" cy="68" r="6" fill="rgba(255,255,255,0.3)"/>
+  <!-- Welcome text -->
+  <text x="30" y="108" font-family="Arial, sans-serif" font-size="12" fill="#64748b">Welcome back,</text>
+  <text x="30" y="126" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#1e293b">Katol Nagri Society</text>
+  <!-- Stats row -->
+  <rect x="24" y="140" width="130" height="70" rx="12" fill="#eef2ff"/>
+  <text x="36" y="163" font-family="Arial, sans-serif" font-size="10" fill="#6366f1">Total Members</text>
+  <text x="36" y="192" font-family="Arial, sans-serif" font-size="22" font-weight="bold" fill="#4f46e5">1,247</text>
+  <rect x="166" y="140" width="130" height="70" rx="12" fill="#f0fdf4"/>
+  <text x="178" y="163" font-family="Arial, sans-serif" font-size="10" fill="#16a34a">Deposits Today</text>
+  <text x="178" y="192" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#16a34a">₹4.2L</text>
+  <!-- Second stats row -->
+  <rect x="24" y="220" width="130" height="70" rx="12" fill="#fef3c7"/>
+  <text x="36" y="243" font-family="Arial, sans-serif" font-size="10" fill="#d97706">Active Loans</text>
+  <text x="36" y="272" font-family="Arial, sans-serif" font-size="22" font-weight="bold" fill="#d97706">342</text>
+  <rect x="166" y="220" width="130" height="70" rx="12" fill="#fce7f3"/>
+  <text x="178" y="243" font-family="Arial, sans-serif" font-size="10" fill="#db2777">EMI Collected</text>
+  <text x="178" y="272" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#db2777">₹8.1L</text>
+  <!-- Quick actions -->
+  <text x="30" y="316" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">Quick Actions</text>
+  <rect x="24" y="326" width="80" height="72" rx="12" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <circle cx="64" cy="350" r="14" fill="#eef2ff"/>
+  <text x="64" y="355" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#4f46e5">₹</text>
+  <text x="64" y="384" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#64748b">Deposit</text>
+  <rect x="112" y="326" width="80" height="72" rx="12" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <circle cx="152" cy="350" r="14" fill="#f0fdf4"/>
+  <text x="152" y="355" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#16a34a">📋</text>
+  <text x="152" y="384" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#64748b">Loan</text>
+  <rect x="200" y="326" width="80" height="72" rx="12" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <circle cx="240" cy="350" r="14" fill="#fef3c7"/>
+  <text x="240" y="355" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#d97706">📊</text>
+  <text x="240" y="384" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#64748b">Reports</text>
+  <!-- Recent transactions -->
+  <text x="30" y="426" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#1e293b">Recent Transactions</text>
+  <rect x="24" y="436" width="272" height="44" rx="8" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="36" y="454" font-family="Arial, sans-serif" font-size="10" fill="#1e293b">Ramesh Patil - SB Deposit</text>
+  <text x="36" y="470" font-family="Arial, sans-serif" font-size="9" fill="#94a3b8">Today, 10:30 AM</text>
+  <text x="270" y="458" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="end" fill="#16a34a">+₹5,000</text>
+  <rect x="24" y="486" width="272" height="44" rx="8" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="36" y="504" font-family="Arial, sans-serif" font-size="10" fill="#1e293b">Suresh Deshmukh - EMI</text>
+  <text x="36" y="520" font-family="Arial, sans-serif" font-size="9" fill="#94a3b8">Today, 09:15 AM</text>
+  <text x="270" y="508" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="end" fill="#4f46e5">₹3,200</text>
+  <rect x="24" y="536" width="272" height="44" rx="8" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="36" y="554" font-family="Arial, sans-serif" font-size="10" fill="#1e293b">Priya Sharma - FD Opening</text>
+  <text x="36" y="570" font-family="Arial, sans-serif" font-size="9" fill="#94a3b8">Yesterday, 04:45 PM</text>
+  <text x="270" y="558" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="end" fill="#16a34a">+₹50,000</text>
+  <!-- Home indicator -->
+  <rect x="120" y="604" width="80" height="5" rx="3" fill="#64748b"/>
+</svg>

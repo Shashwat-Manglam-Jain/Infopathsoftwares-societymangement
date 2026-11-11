@@ -6,7 +6,8 @@ from apps.accounting.models import ChartOfAccounts, JournalEntry, JournalLine
 
 
 def create_journal_entry(
-    entry_date, voucher_type, branch, narration, lines, user, reference_type='manual', reference_id=None
+    entry_date, voucher_type, branch, narration, lines, user, reference_type='manual', reference_id=None,
+    payment_mode='cash',
 ):
     total_debit = sum(Decimal(str(line.get('debit', 0))) for line in lines)
     total_credit = sum(Decimal(str(line.get('credit', 0))) for line in lines)
@@ -30,6 +31,7 @@ def create_journal_entry(
             narration=narration,
             reference_type=reference_type,
             reference_id=reference_id,
+            payment_mode=payment_mode,
             created_by=user,
         )
 

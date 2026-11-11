@@ -5,19 +5,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>InfoSociety — Banking Software for Cooperative Societies | InfopathSolutions</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    brand: '#4f46e5',
+                    ink: '#1e293b',
+                    surface: '#f8fafc',
+                    lime: '#84cc16',
+                },
+                boxShadow: {
+                    card: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)',
+                    lift: '0 8px 30px rgba(0,0,0,0.1), 0 2px 8px rgba(0,0,0,0.06)',
+                },
+            }
+        }
+    }
+    </script>
     <style>
+        /* ── Gradient backgrounds ── */
         .gradient-bg { background: linear-gradient(135deg, #1e3a5f 0%, #3730a3 50%, #4f46e5 100%); }
         .hero-bg {
             background: linear-gradient(135deg, rgba(30,58,95,0.75) 0%, rgba(55,48,163,0.7) 50%, rgba(79,70,229,0.65) 100%),
-                        url('/static/img/hero-bg.avif') center/cover no-repeat;
+                        url('/static/img/penthouse_suite.webp') center/cover no-repeat;
         }
+        .text-gradient-brand {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* ── Hover cards ── */
         .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
         .card-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.12); }
+
+        /* ── Carousel progress bar ── */
+        @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+        /* ── Fade-in for carousel text ── */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeInUp 0.6s ease-out both; }
     </style>
 </head>
 <body class="bg-white text-gray-800 antialiased">
 
-<!-- Navbar -->
+<!-- ════════════════════════════════════════════════════════════════
+     NAVBAR — Fixed top navigation with logo, links, CTA
+     ════════════════════════════════════════════════════════════════ -->
 <nav class="fixed top-0 w-full bg-white/95 backdrop-blur shadow-sm z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
@@ -26,6 +64,7 @@
             </a>
             <div class="hidden md:flex items-center space-x-8">
                 <a href="#features" class="text-gray-600 hover:text-indigo-600 font-medium">Features</a>
+                <a href="#solutions" class="text-gray-600 hover:text-indigo-600 font-medium">Solutions</a>
                 <a href="#pricing" class="text-gray-600 hover:text-indigo-600 font-medium">Pricing</a>
                 <a href="#faq" class="text-gray-600 hover:text-indigo-600 font-medium">FAQ</a>
                 <a href="/accounts/login/" class="text-gray-600 hover:text-indigo-600 font-medium">Login</a>
@@ -38,6 +77,7 @@
     </div>
     <div id="mobile-menu" class="hidden md:hidden border-t bg-white px-4 pb-4">
         <a href="#features" class="block py-2 text-gray-600">Features</a>
+        <a href="#solutions" class="block py-2 text-gray-600">Solutions</a>
         <a href="#pricing" class="block py-2 text-gray-600">Pricing</a>
         <a href="#faq" class="block py-2 text-gray-600">FAQ</a>
         <a href="/accounts/login/" class="block py-2 text-gray-600">Login</a>
@@ -45,7 +85,9 @@
     </div>
 </nav>
 
-<!-- Hero -->
+<!-- ════════════════════════════════════════════════════════════════
+     HERO — Main banner with headline, subtitle, CTAs
+     ════════════════════════════════════════════════════════════════ -->
 <section class="hero-bg pt-28 pb-20 md:pt-36 md:pb-28">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight">
@@ -66,29 +108,112 @@
     </div>
 </section>
 
-<!-- Problem -->
-<section class="py-16 md:py-24 bg-gray-50">
+<!-- ════════════════════════════════════════════════════════════════
+     WHY INFOSOCIETY — Phone mockup + 3 key selling points
+     Inspired by ADDA.io layout: phone on left, benefit cards right
+     ════════════════════════════════════════════════════════════════ -->
+<section class="relative overflow-hidden bg-surface py-12 md:py-[70px] lg:py-20">
+    <!-- Decorative blurred blobs for depth -->
+    <div class="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        <div class="absolute -left-24 top-1/4 h-80 w-80 rounded-full bg-indigo-500/20 blur-[90px] md:h-[28rem] md:w-[28rem]"></div>
+        <div class="absolute -right-10 top-8 h-72 w-72 rounded-full bg-lime/20 blur-[80px] md:h-96 md:w-96"></div>
+        <div class="absolute bottom-6 left-1/3 h-72 w-72 rounded-full bg-violet-500/15 blur-[80px] md:h-96 md:w-96"></div>
+    </div>
+
+    <div class="relative z-10 mx-auto w-full max-w-7xl px-6 lg:px-10">
+        <div class="flex flex-col items-center gap-12 lg:flex-row lg:items-center lg:justify-center lg:gap-20">
+
+            <!-- Phone mockup with dashboard preview -->
+            <div class="relative flex shrink-0 justify-center">
+                <div class="absolute -inset-6 rounded-full bg-indigo-500/5 blur-3xl"></div>
+                <img src="/static/img/phone_mockup.svg"
+                     alt="InfoSociety dashboard on mobile — society banking at your fingertips"
+                     class="relative z-10 w-full max-w-[260px] drop-shadow-2xl transition-transform duration-700 hover:scale-[1.02] md:max-w-[300px] lg:max-w-[340px]"
+                     loading="lazy" decoding="async">
+            </div>
+
+            <!-- Benefit cards — why choose InfoSociety -->
+            <div class="flex w-full max-w-[540px] flex-col">
+                <div class="mb-8 md:mb-10">
+                    <h2 class="flex flex-wrap items-center gap-x-3 gap-y-2 text-[32px] font-extrabold tracking-tight text-ink md:text-[42px]">
+                        <span>Why</span>
+                        <span class="text-gradient-brand">InfoSociety</span>
+                    </h2>
+                </div>
+
+                <div class="space-y-5 md:space-y-6">
+                    <!-- Benefit 1: Trusted since 2007 -->
+                    <div class="group relative block overflow-hidden rounded-3xl border border-slate-100 bg-white/80 p-6 shadow-card backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-slate-200 hover:bg-white hover:shadow-lift md:p-8">
+                        <span class="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-emerald-400 to-teal-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></span>
+                        <div class="flex items-center gap-5 md:gap-6">
+                            <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl text-emerald-600 bg-emerald-50">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 01-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 011-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 011.52 0C14.51 3.81 17 5 19 5a1 1 0 011 1z"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 12 2 2 4-4"/></svg>
+                            </span>
+                            <div class="min-w-0 flex-1">
+                                <div class="text-base font-extrabold leading-snug text-ink md:text-xl">Trusted Track Record Since 2007</div>
+                                <div class="mt-1 text-sm font-medium text-gray-500 md:text-base">Powering cooperative societies across Maharashtra</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Benefit 2: RCS audit ready -->
+                    <div class="group relative block overflow-hidden rounded-3xl border border-slate-100 bg-white/80 p-6 shadow-card backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-slate-200 hover:bg-white hover:shadow-lift md:p-8">
+                        <span class="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-sky-400 to-cyan-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></span>
+                        <div class="flex items-center gap-5 md:gap-6">
+                            <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl text-sky-600 bg-sky-50">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </span>
+                            <div class="min-w-0 flex-1">
+                                <div class="text-base font-extrabold leading-snug text-ink md:text-xl">100% RCS Audit Ready</div>
+                                <div class="mt-1 text-sm font-medium text-gray-500 md:text-base">16+ statutory reports generated in one click</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Benefit 3: Zero installation cloud platform -->
+                    <div class="group relative block overflow-hidden rounded-3xl border border-slate-100 bg-white/80 p-6 shadow-card backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-slate-200 hover:bg-white hover:shadow-lift md:p-8">
+                        <span class="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-violet-400 to-purple-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></span>
+                        <div class="flex items-center gap-5 md:gap-6">
+                            <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl text-violet-600 bg-violet-50">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+                            </span>
+                            <div class="min-w-0 flex-1">
+                                <div class="text-base font-extrabold leading-snug text-ink md:text-xl">Zero Installation, 100% Cloud</div>
+                                <div class="mt-1 text-sm font-medium text-gray-500 md:text-base">Access from any device, anywhere, anytime</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════
+     PROBLEM — Pain points that InfoSociety solves
+     ════════════════════════════════════════════════════════════════ -->
+<section class="py-16 md:py-24 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
             <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">Still using registers and Tally?</h2>
             <p class="mt-4 text-lg text-gray-600">Your society deserves better.</p>
         </div>
         <div class="grid md:grid-cols-3 gap-8">
-            <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-100">
+            <div class="bg-gray-50 rounded-xl p-8 shadow-sm border border-gray-100">
                 <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
                     <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900">Manual Errors in Interest</h3>
                 <p class="mt-2 text-gray-600">Manual interest calculation leads to errors, disputes, and member distrust. Automate it with daily precision.</p>
             </div>
-            <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-100">
+            <div class="bg-gray-50 rounded-xl p-8 shadow-sm border border-gray-100">
                 <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
                     <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900">No Real-time Visibility</h3>
                 <p class="mt-2 text-gray-600">Members can't check their balance. Staff wastes time answering passbook queries. Give everyone instant access.</p>
             </div>
-            <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-100">
+            <div class="bg-gray-50 rounded-xl p-8 shadow-sm border border-gray-100">
                 <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
                     <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
@@ -99,8 +224,98 @@
     </div>
 </section>
 
-<!-- Features -->
-<section id="features" class="py-16 md:py-24">
+<!-- ════════════════════════════════════════════════════════════════
+     SOLUTIONS — Product cards for different types of societies
+     Each card uses a background image with dark overlay, showing
+     the society type this software is built for
+     ════════════════════════════════════════════════════════════════ -->
+<section id="solutions" class="bg-surface py-12 md:py-20">
+    <div class="mx-auto max-w-7xl px-6">
+        <div class="mx-auto text-center max-w-3xl">
+            <h2 class="text-3xl font-extrabold leading-[1.1] tracking-tight md:text-5xl text-ink">Solutions for Every Type of Society</h2>
+            <p class="mt-4 text-lg text-gray-600">Tailored banking software. Smarter societies.</p>
+        </div>
+
+        <!-- Product cards grid — each card represents a society type -->
+        <div class="mt-12 flex flex-wrap justify-center gap-6 [&>*]:w-full [&>*]:sm:w-[calc(50%-12px)] [&>*]:lg:w-[calc(33.333%-16px)]">
+
+            <!-- Card 1: Credit Cooperative Society -->
+            <a href="/signup/" class="group relative flex aspect-[4/5] cursor-pointer flex-col overflow-hidden rounded-[2rem] p-6 shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lift">
+                <img src="/static/img/apartments_flats.webp" alt="Credit Cooperative Society" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" decoding="async">
+                <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/85"></div>
+                <div class="relative mt-auto">
+                    <h3 class="text-2xl font-extrabold leading-tight tracking-tight text-white md:text-[28px]">Credit Cooperative Society</h3>
+                    <p class="mt-3 text-base leading-relaxed text-white/90">Complete banking with savings, loans, FD/RD, shares, pigmy collection, and RCS-compliant reports.</p>
+                    <span class="mt-5 inline-block border-b-2 border-white pb-0.5 text-sm font-bold text-white">Start free trial</span>
+                </div>
+                <span class="absolute bottom-5 right-5 flex h-10 w-10 items-center justify-center rounded-full bg-lime text-ink transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-12">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 -rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-7-7 7 7-7 7"/></svg>
+                </span>
+            </a>
+
+            <!-- Card 2: Employee Cooperative Society -->
+            <a href="/signup/" class="group relative flex aspect-[4/5] cursor-pointer flex-col overflow-hidden rounded-[2rem] p-6 shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lift">
+                <img src="/static/img/condo_building.webp" alt="Employee Cooperative Society" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" decoding="async">
+                <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/85"></div>
+                <div class="relative mt-auto">
+                    <h3 class="text-2xl font-extrabold leading-tight tracking-tight text-white md:text-[28px]">Employee Cooperative Society</h3>
+                    <p class="mt-3 text-base leading-relaxed text-white/90">Salary deduction integration, provident fund loans, and automated EMI recovery for PSU and corporate staff.</p>
+                    <span class="mt-5 inline-block border-b-2 border-white pb-0.5 text-sm font-bold text-white">Start free trial</span>
+                </div>
+                <span class="absolute bottom-5 right-5 flex h-10 w-10 items-center justify-center rounded-full bg-lime text-ink transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-12">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 -rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-7-7 7 7-7 7"/></svg>
+                </span>
+            </a>
+
+            <!-- Card 3: Nidhi Company -->
+            <a href="/signup/" class="group relative flex aspect-[4/5] cursor-pointer flex-col overflow-hidden rounded-[2rem] p-6 shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lift">
+                <img src="/static/img/penthouse_suite.webp" alt="Nidhi Company" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" decoding="async">
+                <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/85"></div>
+                <div class="relative mt-auto">
+                    <h3 class="text-2xl font-extrabold leading-tight tracking-tight text-white md:text-[28px]">Nidhi Company</h3>
+                    <p class="mt-3 text-base leading-relaxed text-white/90">Mutual benefit company management with deposit acceptance, loan disbursement, and MCA compliance built in.</p>
+                    <span class="mt-5 inline-block border-b-2 border-white pb-0.5 text-sm font-bold text-white">Start free trial</span>
+                </div>
+                <span class="absolute bottom-5 right-5 flex h-10 w-10 items-center justify-center rounded-full bg-lime text-ink transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-12">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 -rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-7-7 7 7-7 7"/></svg>
+                </span>
+            </a>
+
+            <!-- Card 4: Thrift & Savings Society -->
+            <a href="/signup/" class="group relative flex aspect-[4/5] cursor-pointer flex-col overflow-hidden rounded-[2rem] p-6 shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lift">
+                <img src="/static/img/types-of-house-in-india.webp" alt="Thrift Society" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" decoding="async">
+                <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/85"></div>
+                <div class="relative mt-auto">
+                    <h3 class="text-2xl font-extrabold leading-tight tracking-tight text-white md:text-[28px]">Thrift & Savings Society</h3>
+                    <p class="mt-3 text-base leading-relaxed text-white/90">Daily deposit (pigmy) collection, agent management, recurring savings, and dividend distribution.</p>
+                    <span class="mt-5 inline-block border-b-2 border-white pb-0.5 text-sm font-bold text-white">Start free trial</span>
+                </div>
+                <span class="absolute bottom-5 right-5 flex h-10 w-10 items-center justify-center rounded-full bg-lime text-ink transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-12">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 -rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-7-7 7 7-7 7"/></svg>
+                </span>
+            </a>
+
+            <!-- Card 5: Multi-State Cooperative Society -->
+            <a href="/signup/" class="group relative flex aspect-[4/5] cursor-pointer flex-col overflow-hidden rounded-[2rem] p-6 shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lift">
+                <img src="/static/img/apartments_flats.webp" alt="Multi-State Cooperative" loading="lazy" class="absolute inset-0 h-full w-full object-cover object-bottom transition-transform duration-700 group-hover:scale-110" decoding="async">
+                <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/85"></div>
+                <div class="relative mt-auto">
+                    <h3 class="text-2xl font-extrabold leading-tight tracking-tight text-white md:text-[28px]">Multi-State Cooperative</h3>
+                    <p class="mt-3 text-base leading-relaxed text-white/90">Multi-branch operations across states with centralized reporting, head-office accounting, and branch-level controls.</p>
+                    <span class="mt-5 inline-block border-b-2 border-white pb-0.5 text-sm font-bold text-white">Start free trial</span>
+                </div>
+                <span class="absolute bottom-5 right-5 flex h-10 w-10 items-center justify-center rounded-full bg-lime text-ink transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-12">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 -rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-7-7 7 7-7 7"/></svg>
+                </span>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════
+     FEATURES — Core banking modules overview
+     ════════════════════════════════════════════════════════════════ -->
+<section id="features" class="py-16 md:py-24 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
             <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">Everything Your Society Needs</h2>
@@ -153,7 +368,74 @@
     </div>
 </section>
 
-<!-- How It Works -->
+<!-- ════════════════════════════════════════════════════════════════
+     TRUSTED SOCIETIES CAROUSEL — Auto-rotating showcase of
+     different society types with Ken Burns zoom effect on images
+     and a thumbnail filmstrip at the bottom for navigation
+     ════════════════════════════════════════════════════════════════ -->
+<section class="bg-white py-12 md:py-20">
+    <div class="mx-auto max-w-7xl px-6">
+        <div class="mx-auto max-w-3xl text-center">
+            <span class="mb-3 inline-block text-xs font-extrabold uppercase tracking-[0.2em] text-indigo-600">Trusted Across India</span>
+            <h3 class="text-3xl font-extrabold leading-[1.1] tracking-tight text-ink md:text-5xl">
+                Trusted by Cooperative Societies across <span class="text-gradient-brand">all Segments in India</span>
+            </h3>
+            <p class="mt-4 text-base text-gray-600 md:text-lg">
+                From MSEB employees to Nagri credit societies — when India's cooperative institutions pick a platform, they pick InfoSociety.
+            </p>
+        </div>
+
+        <!-- Carousel container -->
+        <div id="carousel" class="relative mx-auto mt-12 h-[500px] md:h-[640px] w-full max-w-7xl overflow-hidden rounded-[32px] bg-ink shadow-lift">
+
+            <!-- Slide images — each slide has a background image -->
+            <div class="carousel-slide absolute inset-0 transition-opacity duration-1000 ease-out opacity-100">
+                <img src="/static/img/apartments_flats.webp" alt="Katol Nagri Credit Society" class="absolute inset-0 h-full w-full object-cover transition-transform duration-[6000ms] ease-out scale-110">
+            </div>
+            <div class="carousel-slide absolute inset-0 transition-opacity duration-1000 ease-out opacity-0">
+                <img src="/static/img/condo_building.webp" alt="MSEB Employee Society" class="absolute inset-0 h-full w-full object-cover transition-transform duration-[6000ms] ease-out scale-100">
+            </div>
+            <div class="carousel-slide absolute inset-0 transition-opacity duration-1000 ease-out opacity-0">
+                <img src="/static/img/penthouse_suite.webp" alt="Santaji Yuwak Society" class="absolute inset-0 h-full w-full object-cover transition-transform duration-[6000ms] ease-out scale-100">
+            </div>
+            <div class="carousel-slide absolute inset-0 transition-opacity duration-1000 ease-out opacity-0">
+                <img src="/static/img/types-of-house-in-india.webp" alt="Nagar Parishad Employee Society" class="absolute inset-0 h-full w-full object-cover transition-transform duration-[6000ms] ease-out scale-100">
+            </div>
+
+            <!-- Dark gradient overlays for text readability -->
+            <div class="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-black/30"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20"></div>
+
+            <!-- Slide content — text area with counter, badge, title, subtitle -->
+            <div class="relative z-10 flex h-full flex-col justify-between p-8 md:p-12">
+
+                <!-- Slide counter (01 / 04) -->
+                <div class="flex items-center gap-3 text-white/80">
+                    <span class="h-px w-10 bg-lime"></span>
+                    <span id="carousel-counter" class="text-[11px] font-extrabold uppercase tracking-[0.22em]">01 / 04</span>
+                </div>
+
+                <!-- Slide text content -->
+                <div id="carousel-text" class="max-w-xl">
+                    <div class="animate-fade-in">
+                        <span id="carousel-badge" class="inline-block rounded-full bg-lime/95 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.16em] text-ink shadow-md">CREDIT COOPERATIVE SOCIETY</span>
+                    </div>
+                    <h4 id="carousel-title" class="mt-5 animate-fade-in text-3xl font-extrabold leading-[1.05] text-white md:text-5xl lg:text-6xl">Katol Nagri Credit Society</h4>
+                    <p id="carousel-location" class="mt-3 animate-fade-in text-sm font-semibold uppercase tracking-[0.22em] text-white/80">— Katol, Maharashtra</p>
+                    <p id="carousel-desc" class="mt-5 max-w-md animate-fade-in text-base text-white/85 md:text-lg">Multi-branch credit society with 1,200+ members managing savings, loans, and pigmy collection on InfoSociety.</p>
+                </div>
+
+                <!-- Thumbnail filmstrip for navigation -->
+                <div class="carousel-thumbs -mx-1 flex items-end gap-2 overflow-x-auto pb-1 md:gap-3" style="scrollbar-width:none">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════
+     HOW IT WORKS — 3-step onboarding process
+     ════════════════════════════════════════════════════════════════ -->
 <section id="how-it-works" class="py-16 md:py-24 bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
@@ -191,69 +473,71 @@
     </div>
 </section>
 
-<!-- Pricing -->
-<section id="pricing" class="py-16 md:py-24">
+<!-- ════════════════════════════════════════════════════════════════
+     PRICING — Three tier plans: Starter, Professional, Enterprise
+     ════════════════════════════════════════════════════════════════ -->
+<section id="pricing" class="py-16 md:py-24 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
             <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">Simple, Transparent Pricing</h2>
             <p class="mt-4 text-lg text-gray-600">Start free, upgrade as you grow. No hidden charges.</p>
         </div>
-        <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        <div id="pricing-grid" class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto items-center">
             <!-- Starter -->
-            <div class="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
-                <h3 class="text-xl font-bold text-gray-900">Starter</h3>
-                <p class="mt-2 text-gray-500">For small societies</p>
+            <div class="pricing-card rounded-2xl p-8 border border-gray-200 shadow-sm cursor-pointer transition-all duration-500" data-plan="starter" onclick="selectPlan(this)">
+                <h3 class="plan-title text-xl font-bold text-gray-900">Starter</h3>
+                <p class="plan-subtitle mt-2 text-gray-500">For small societies</p>
                 <div class="mt-6">
-                    <span class="text-4xl font-extrabold text-gray-900">&#8377;2,000</span>
-                    <span class="text-gray-500">/month</span>
+                    <span class="plan-price text-4xl font-extrabold text-gray-900">&#8377;2,000</span>
+                    <span class="plan-period text-gray-500">/month</span>
                 </div>
                 <ul class="mt-8 space-y-3">
-                    <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Up to 200 members</li>
-                    <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>2 branches</li>
-                    <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>5 user accounts</li>
-                    <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>All banking features</li>
-                    <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Email support</li>
+                    <li class="flex items-center"><svg class="w-5 h-5 plan-check text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="plan-text">Up to 200 members</span></li>
+                    <li class="flex items-center"><svg class="w-5 h-5 plan-check text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="plan-text">2 branches</span></li>
+                    <li class="flex items-center"><svg class="w-5 h-5 plan-check text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="plan-text">5 user accounts</span></li>
+                    <li class="flex items-center"><svg class="w-5 h-5 plan-check text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="plan-text">All banking features</span></li>
+                    <li class="flex items-center"><svg class="w-5 h-5 plan-check text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="plan-text">Email support</span></li>
                 </ul>
-                <a href="/signup/" class="mt-8 block text-center bg-indigo-50 text-indigo-700 px-6 py-3 rounded-lg font-semibold hover:bg-indigo-100 transition">
+                <a href="/signup/" class="plan-btn mt-8 block text-center bg-indigo-50 text-indigo-700 px-6 py-3 rounded-lg font-semibold hover:bg-indigo-100 transition">
                     Start Free Trial
                 </a>
             </div>
-            <!-- Professional -->
-            <div class="bg-indigo-600 rounded-2xl p-8 shadow-xl relative">
-                <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-yellow-400 text-yellow-900 text-sm font-bold px-4 py-1 rounded-full">Most Popular</div>
-                <h3 class="text-xl font-bold text-white">Professional</h3>
-                <p class="mt-2 text-indigo-200">For growing societies</p>
+            <!-- Professional (selected by default) -->
+            <div class="pricing-card active rounded-2xl p-8 shadow-xl cursor-pointer transition-all duration-500 relative bg-indigo-600 scale-105" data-plan="professional" onclick="selectPlan(this)">
+                <div class="plan-badge absolute -top-4 left-1/2 -translate-x-1/2 bg-yellow-400 text-yellow-900 text-sm font-bold px-4 py-1 rounded-full">Most Popular</div>
+                <h3 class="plan-title text-xl font-bold text-white">Professional</h3>
+                <p class="plan-subtitle mt-2 text-indigo-200">For growing societies</p>
                 <div class="mt-6">
-                    <span class="text-4xl font-extrabold text-white">&#8377;5,000</span>
-                    <span class="text-indigo-200">/month</span>
+                    <span class="plan-price text-4xl font-extrabold text-white">&#8377;5,000</span>
+                    <span class="plan-period text-indigo-200">/month</span>
                 </div>
-                <ul class="mt-8 space-y-3 text-white">
-                    <li class="flex items-center"><svg class="w-5 h-5 text-yellow-300 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Up to 1,000 members</li>
-                    <li class="flex items-center"><svg class="w-5 h-5 text-yellow-300 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>5 branches</li>
-                    <li class="flex items-center"><svg class="w-5 h-5 text-yellow-300 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>15 user accounts</li>
-                    <li class="flex items-center"><svg class="w-5 h-5 text-yellow-300 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>SMS notifications</li>
-                    <li class="flex items-center"><svg class="w-5 h-5 text-yellow-300 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Priority support</li>
+                <ul class="mt-8 space-y-3">
+                    <li class="flex items-center"><svg class="w-5 h-5 plan-check text-yellow-300 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="plan-text text-white">Up to 1,000 members</span></li>
+                    <li class="flex items-center"><svg class="w-5 h-5 plan-check text-yellow-300 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="plan-text text-white">5 branches</span></li>
+                    <li class="flex items-center"><svg class="w-5 h-5 plan-check text-yellow-300 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="plan-text text-white">15 user accounts</span></li>
+                    <li class="flex items-center"><svg class="w-5 h-5 plan-check text-yellow-300 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="plan-text text-white">SMS notifications</span></li>
+                    <li class="flex items-center"><svg class="w-5 h-5 plan-check text-yellow-300 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="plan-text text-white">Priority support</span></li>
                 </ul>
-                <a href="/signup/" class="mt-8 block text-center bg-white text-indigo-700 px-6 py-3 rounded-lg font-bold hover:bg-indigo-50 transition">
+                <a href="/signup/" class="plan-btn mt-8 block text-center bg-white text-indigo-700 px-6 py-3 rounded-lg font-bold hover:bg-indigo-50 transition">
                     Start Free Trial
                 </a>
             </div>
             <!-- Enterprise -->
-            <div class="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
-                <h3 class="text-xl font-bold text-gray-900">Enterprise</h3>
-                <p class="mt-2 text-gray-500">For large societies</p>
+            <div class="pricing-card rounded-2xl p-8 border border-gray-200 shadow-sm cursor-pointer transition-all duration-500" data-plan="enterprise" onclick="selectPlan(this)">
+                <h3 class="plan-title text-xl font-bold text-gray-900">Enterprise</h3>
+                <p class="plan-subtitle mt-2 text-gray-500">For large societies</p>
                 <div class="mt-6">
-                    <span class="text-4xl font-extrabold text-gray-900">&#8377;12,000</span>
-                    <span class="text-gray-500">/month</span>
+                    <span class="plan-price text-4xl font-extrabold text-gray-900">&#8377;12,000</span>
+                    <span class="plan-period text-gray-500">/month</span>
                 </div>
                 <ul class="mt-8 space-y-3">
-                    <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Unlimited members</li>
-                    <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Unlimited branches</li>
-                    <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Unlimited users</li>
-                    <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Dedicated support</li>
-                    <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Custom branding</li>
+                    <li class="flex items-center"><svg class="w-5 h-5 plan-check text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="plan-text">Unlimited members</span></li>
+                    <li class="flex items-center"><svg class="w-5 h-5 plan-check text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="plan-text">Unlimited branches</span></li>
+                    <li class="flex items-center"><svg class="w-5 h-5 plan-check text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="plan-text">Unlimited users</span></li>
+                    <li class="flex items-center"><svg class="w-5 h-5 plan-check text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="plan-text">Dedicated support</span></li>
+                    <li class="flex items-center"><svg class="w-5 h-5 plan-check text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="plan-text">Custom branding</span></li>
                 </ul>
-                <a href="/signup/" class="mt-8 block text-center bg-indigo-50 text-indigo-700 px-6 py-3 rounded-lg font-semibold hover:bg-indigo-100 transition">
+                <a href="/signup/" class="plan-btn mt-8 block text-center bg-indigo-50 text-indigo-700 px-6 py-3 rounded-lg font-semibold hover:bg-indigo-100 transition">
                     Start Free Trial
                 </a>
             </div>
@@ -261,7 +545,9 @@
     </div>
 </section>
 
-<!-- Trust -->
+<!-- ════════════════════════════════════════════════════════════════
+     TRUST / SECURITY — Data safety assurances
+     ════════════════════════════════════════════════════════════════ -->
 <section class="py-16 md:py-24 bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
@@ -301,43 +587,45 @@
     </div>
 </section>
 
-<!-- FAQ -->
-<section id="faq" class="py-16 md:py-24">
+<!-- ════════════════════════════════════════════════════════════════
+     FAQ — Common questions from prospective society clients
+     ════════════════════════════════════════════════════════════════ -->
+<section id="faq" class="py-16 md:py-24 bg-white">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
             <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">Frequently Asked Questions</h2>
         </div>
         <div class="space-y-4">
-            <details class="bg-white rounded-xl border border-gray-200 overflow-hidden group" open>
-                <summary class="p-6 cursor-pointer font-semibold text-gray-900 flex justify-between items-center hover:bg-gray-50">
+            <details class="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden group" open>
+                <summary class="p-6 cursor-pointer font-semibold text-gray-900 flex justify-between items-center hover:bg-gray-100">
                     Is my society's data safe?
                     <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </summary>
                 <p class="px-6 pb-6 text-gray-600">Absolutely. Your data is stored on AWS servers in Mumbai (India), encrypted with 256-bit SSL, and backed up every 6 hours. Each society has its own isolated database — no other society can see your data. We maintain a complete audit trail of every action.</p>
             </details>
-            <details class="bg-white rounded-xl border border-gray-200 overflow-hidden group">
-                <summary class="p-6 cursor-pointer font-semibold text-gray-900 flex justify-between items-center hover:bg-gray-50">
+            <details class="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden group">
+                <summary class="p-6 cursor-pointer font-semibold text-gray-900 flex justify-between items-center hover:bg-gray-100">
                     Can I import existing member data from Excel?
                     <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </summary>
                 <p class="px-6 pb-6 text-gray-600">Yes. You can import your member data from Excel/CSV files. We provide a template with the required columns. Upload your file and members are added instantly. You can also export all data to Excel anytime.</p>
             </details>
-            <details class="bg-white rounded-xl border border-gray-200 overflow-hidden group">
-                <summary class="p-6 cursor-pointer font-semibold text-gray-900 flex justify-between items-center hover:bg-gray-50">
+            <details class="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden group">
+                <summary class="p-6 cursor-pointer font-semibold text-gray-900 flex justify-between items-center hover:bg-gray-100">
                     Do I need to install anything?
                     <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </summary>
                 <p class="px-6 pb-6 text-gray-600">No installation needed. InfoSociety is fully cloud-based. Just open your browser, log in, and start working. Works on any computer, tablet, or phone. Updates are automatic — you always have the latest version.</p>
             </details>
-            <details class="bg-white rounded-xl border border-gray-200 overflow-hidden group">
-                <summary class="p-6 cursor-pointer font-semibold text-gray-900 flex justify-between items-center hover:bg-gray-50">
+            <details class="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden group">
+                <summary class="p-6 cursor-pointer font-semibold text-gray-900 flex justify-between items-center hover:bg-gray-100">
                     What happens after the free trial?
                     <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </summary>
                 <p class="px-6 pb-6 text-gray-600">After 90 days, choose a plan that fits your society. Your data stays as-is — nothing is lost. If you decide not to continue, you can export all your data before your account is deactivated.</p>
             </details>
-            <details class="bg-white rounded-xl border border-gray-200 overflow-hidden group">
-                <summary class="p-6 cursor-pointer font-semibold text-gray-900 flex justify-between items-center hover:bg-gray-50">
+            <details class="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden group">
+                <summary class="p-6 cursor-pointer font-semibold text-gray-900 flex justify-between items-center hover:bg-gray-100">
                     Can I export my data?
                     <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </summary>
@@ -347,7 +635,9 @@
     </div>
 </section>
 
-<!-- CTA -->
+<!-- ════════════════════════════════════════════════════════════════
+     CTA — Final call to action banner
+     ════════════════════════════════════════════════════════════════ -->
 <section class="gradient-bg py-16 md:py-20">
     <div class="max-w-4xl mx-auto px-4 text-center">
         <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white">Ready to Modernize Your Society?</h2>
@@ -359,44 +649,222 @@
     </div>
 </section>
 
-<!-- Footer -->
-<footer class="bg-gray-900 text-gray-400 py-12">
+<!-- ════════════════════════════════════════════════════════════════
+     FOOTER — Company info, links, contact details
+     ════════════════════════════════════════════════════════════════ -->
+<footer class="bg-indigo-950 text-indigo-200 py-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid md:grid-cols-3 gap-8">
+        <div class="grid md:grid-cols-4 gap-8">
             <div>
                 <div class="flex items-center space-x-2 mb-4">
                     <img src="/static/img/logo.png" alt="InfoSociety" class="h-8">
                 </div>
-                <p class="text-sm">Cloud banking software for cooperative societies, nidhi companies, and thrift societies across India. A product by InfopathSolutions.</p>
+                <p class="text-sm text-indigo-300">Cloud banking software for cooperative societies, nidhi companies, and thrift societies across India. A product by InfopathSolutions.</p>
             </div>
             <div>
                 <h4 class="font-semibold text-white mb-4">Quick Links</h4>
                 <ul class="space-y-2 text-sm">
-                    <li><a href="#features" class="hover:text-indigo-400 transition">Features</a></li>
-                    <li><a href="#pricing" class="hover:text-indigo-400 transition">Pricing</a></li>
-                    <li><a href="#faq" class="hover:text-indigo-400 transition">FAQ</a></li>
-                    <li><a href="/accounts/login/" class="hover:text-indigo-400 transition">Login</a></li>
+                    <li><a href="#features" class="hover:text-white transition">Features</a></li>
+                    <li><a href="#solutions" class="hover:text-white transition">Solutions</a></li>
+                    <li><a href="#pricing" class="hover:text-white transition">Pricing</a></li>
+                    <li><a href="#faq" class="hover:text-white transition">FAQ</a></li>
+                    <li><a href="/accounts/login/" class="hover:text-white transition">Login</a></li>
                 </ul>
             </div>
             <div>
                 <h4 class="font-semibold text-white mb-4">Contact</h4>
-                <ul class="space-y-2 text-sm">
-                    <li>support@infopathsolutions.com</li>
-                    <li>+91 98765 43210</li>
-                    <li>Mon-Sat, 9 AM - 7 PM IST</li>
+                <ul class="space-y-3 text-sm">
+                    <li class="flex items-start gap-2">
+                        <svg class="w-4 h-4 mt-0.5 shrink-0 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                        infopathsolutionskatol@gmail.com
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <svg class="w-4 h-4 mt-0.5 shrink-0 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                        +91 98221 07368
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <svg class="w-4 h-4 mt-0.5 shrink-0 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        Mon-Sat, 9 AM - 7 PM IST
+                    </li>
                 </ul>
             </div>
+            <div>
+                <h4 class="font-semibold text-white mb-4">Address</h4>
+                <div class="flex items-start gap-2 text-sm">
+                    <svg class="w-4 h-4 mt-0.5 shrink-0 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <p>Plot No. 40, Ramdev Baba Layout,<br>Katol, Dist. Nagpur — 441302<br>Maharashtra, India</p>
+                </div>
+            </div>
         </div>
-        <div class="mt-8 pt-8 border-t border-gray-800 text-sm text-center">
+        <div class="mt-8 pt-8 border-t border-indigo-800/50 text-sm text-center text-indigo-400">
             &copy; 2026 InfoSociety by InfopathSolutions. All rights reserved. — To innovate your business process
         </div>
     </div>
 </footer>
 
+<!-- ════════════════════════════════════════════════════════════════
+     JAVASCRIPT — Mobile menu toggle + Carousel auto-rotation
+     ════════════════════════════════════════════════════════════════ -->
 <script>
+/* ── Mobile menu toggle ── */
 document.getElementById('mobile-menu-btn').addEventListener('click', function() {
     document.getElementById('mobile-menu').classList.toggle('hidden');
 });
+
+/* ── Pricing plan selector ──
+   Clicking a plan card highlights it (indigo bg, scaled up)
+   and resets the others to white/default. */
+function selectPlan(el) {
+    var cards = document.querySelectorAll('.pricing-card');
+    cards.forEach(function(card) {
+        card.classList.remove('active', 'bg-indigo-600', 'shadow-xl', 'scale-105');
+        card.classList.add('bg-white', 'border', 'border-gray-200', 'shadow-sm');
+        card.querySelector('.plan-title').className = 'plan-title text-xl font-bold text-gray-900';
+        card.querySelector('.plan-subtitle').className = 'plan-subtitle mt-2 text-gray-500';
+        card.querySelector('.plan-price').className = 'plan-price text-4xl font-extrabold text-gray-900';
+        card.querySelector('.plan-period').className = 'plan-period text-gray-500';
+        card.querySelectorAll('.plan-check').forEach(function(c) { c.classList.remove('text-yellow-300'); c.classList.add('text-green-500'); });
+        card.querySelectorAll('.plan-text').forEach(function(t) { t.classList.remove('text-white'); });
+        var btn = card.querySelector('.plan-btn');
+        btn.className = 'plan-btn mt-8 block text-center bg-indigo-50 text-indigo-700 px-6 py-3 rounded-lg font-semibold hover:bg-indigo-100 transition';
+        var badge = card.querySelector('.plan-badge');
+        if (badge) badge.classList.add('hidden');
+    });
+
+    el.classList.remove('bg-white', 'border', 'border-gray-200', 'shadow-sm');
+    el.classList.add('active', 'bg-indigo-600', 'shadow-xl', 'scale-105');
+    el.querySelector('.plan-title').className = 'plan-title text-xl font-bold text-white';
+    el.querySelector('.plan-subtitle').className = 'plan-subtitle mt-2 text-indigo-200';
+    el.querySelector('.plan-price').className = 'plan-price text-4xl font-extrabold text-white';
+    el.querySelector('.plan-period').className = 'plan-period text-indigo-200';
+    el.querySelectorAll('.plan-check').forEach(function(c) { c.classList.remove('text-green-500'); c.classList.add('text-yellow-300'); });
+    el.querySelectorAll('.plan-text').forEach(function(t) { t.classList.add('text-white'); });
+    var btn = el.querySelector('.plan-btn');
+    btn.className = 'plan-btn mt-8 block text-center bg-white text-indigo-700 px-6 py-3 rounded-lg font-bold hover:bg-indigo-50 transition';
+    var badge = el.querySelector('.plan-badge');
+    if (badge) badge.classList.remove('hidden');
+}
+
+/* ── Trusted Societies Carousel ──
+   Auto-rotates every 5 seconds with crossfade transitions.
+   Each slide has: image, badge, title, location, description.
+   Thumbnail filmstrip at the bottom highlights the active slide
+   with a progress bar animation. */
+(function() {
+    var INTERVAL = 5000; // 5 seconds per slide
+    var slides = document.querySelectorAll('.carousel-slide');
+    if (!slides.length) return;
+
+    /* Slide data — each entry represents one society/client */
+    var data = [
+        {
+            badge: 'CREDIT COOPERATIVE SOCIETY',
+            title: 'Katol Nagri Credit Society',
+            location: '— Katol, Maharashtra',
+            desc: 'Multi-branch credit society with 1,200+ members managing savings, loans, and pigmy collection on InfoSociety.',
+            img: '/static/img/apartments_flats.webp'
+        },
+        {
+            badge: 'EMPLOYEE COOPERATIVE SOCIETY',
+            title: 'MSEB Employee Society',
+            location: '— Khaperkheda, Maharashtra',
+            desc: 'Maharashtra State Power Generation employees trust InfoSociety for provident loans and salary-deducted EMI recovery.',
+            img: '/static/img/condo_building.webp'
+        },
+        {
+            badge: 'YOUTH CREDIT SOCIETY',
+            title: 'Santaji Yuwak Credit Society',
+            location: '— Katol & Sawargaon',
+            desc: 'Young professionals\' cooperative running multi-branch operations with automated day-end processing and interest posting.',
+            img: '/static/img/penthouse_suite.webp'
+        },
+        {
+            badge: 'MUNICIPAL EMPLOYEE SOCIETY',
+            title: 'Nagar Parishad Employee Society',
+            location: '— Katol, Maharashtra',
+            desc: 'Government employee cooperative managing FD/RD schemes, share capital, and annual dividend distribution seamlessly.',
+            img: '/static/img/types-of-house-in-india.webp'
+        }
+    ];
+
+    var current = 0;
+    var counter = document.getElementById('carousel-counter');
+    var badge   = document.getElementById('carousel-badge');
+    var title   = document.getElementById('carousel-title');
+    var loc     = document.getElementById('carousel-location');
+    var desc    = document.getElementById('carousel-desc');
+    var thumbContainer = document.querySelector('.carousel-thumbs');
+
+    /* Build thumbnail filmstrip from slide data */
+    data.forEach(function(d, i) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.setAttribute('aria-label', d.title);
+        btn.className = 'group relative shrink-0 overflow-hidden rounded-2xl ring-1 ring-white/15 transition-all duration-700 ease-[cubic-bezier(0.7,0,0.2,1)] cursor-pointer '
+            + (i === 0
+                ? 'h-44 w-36 ring-2 ring-lime md:h-52 md:w-44'
+                : 'h-32 w-24 opacity-80 hover:opacity-100 md:h-40 md:w-28');
+
+        btn.innerHTML =
+            '<img src="' + d.img + '" alt="' + d.title + '" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ' + (i === 0 ? 'scale-110' : 'scale-100 group-hover:scale-105') + '">'
+            + '<div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent"></div>'
+            + '<div class="absolute inset-x-0 bottom-0 p-2"><p class="line-clamp-2 text-left text-[10px] font-extrabold uppercase tracking-[0.12em] text-white">' + d.title + '</p></div>'
+            + (i === 0 ? '<div class="thumb-progress absolute inset-x-0 bottom-0 h-[3px] origin-left bg-lime" style="animation: ' + INTERVAL + 'ms linear 0s 1 normal none running grow;"></div>' : '');
+
+        btn.addEventListener('click', function() { goTo(i); });
+        thumbContainer.appendChild(btn);
+    });
+
+    var thumbs = thumbContainer.querySelectorAll('button');
+
+    /* Transition to a specific slide index */
+    function goTo(idx) {
+        if (idx === current) return;
+
+        /* Fade out current slide, fade in new slide */
+        slides[current].classList.replace('opacity-100', 'opacity-0');
+        slides[current].querySelector('img').classList.replace('scale-110', 'scale-100');
+
+        slides[idx].classList.replace('opacity-0', 'opacity-100');
+        slides[idx].querySelector('img').classList.replace('scale-100', 'scale-110');
+
+        /* Update text content */
+        var padded = String(idx + 1).padStart(2, '0');
+        counter.textContent = padded + ' / ' + String(data.length).padStart(2, '0');
+        badge.textContent = data[idx].badge;
+        title.textContent = data[idx].title;
+        loc.textContent   = data[idx].location;
+        desc.textContent  = data[idx].desc;
+
+        /* Update thumbnail filmstrip — active thumb is larger with progress bar */
+        thumbs.forEach(function(t, i) {
+            var progressEl = t.querySelector('.thumb-progress');
+            if (progressEl) progressEl.remove();
+
+            if (i === idx) {
+                t.className = 'group relative shrink-0 overflow-hidden rounded-2xl ring-1 ring-white/15 transition-all duration-700 ease-[cubic-bezier(0.7,0,0.2,1)] cursor-pointer h-44 w-36 ring-2 ring-lime md:h-52 md:w-44';
+                t.querySelector('img').classList.replace('scale-100', 'scale-110');
+                t.querySelector('img').classList.remove('group-hover:scale-105');
+                var bar = document.createElement('div');
+                bar.className = 'thumb-progress absolute inset-x-0 bottom-0 h-[3px] origin-left bg-lime';
+                bar.style.animation = INTERVAL + 'ms linear 0s 1 normal none running grow';
+                t.appendChild(bar);
+            } else {
+                t.className = 'group relative shrink-0 overflow-hidden rounded-2xl ring-1 ring-white/15 transition-all duration-700 ease-[cubic-bezier(0.7,0,0.2,1)] cursor-pointer h-32 w-24 opacity-80 hover:opacity-100 md:h-40 md:w-28';
+                var img = t.querySelector('img');
+                img.classList.replace('scale-110', 'scale-100');
+                if (!img.classList.contains('group-hover:scale-105')) img.classList.add('group-hover:scale-105');
+            }
+        });
+
+        current = idx;
+    }
+
+    /* Auto-advance timer — loops back to first slide after last */
+    setInterval(function() {
+        goTo((current + 1) % data.length);
+    }, INTERVAL);
+})();
 </script>
 </body>
 </html>

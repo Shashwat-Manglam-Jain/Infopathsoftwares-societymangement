@@ -38,8 +38,8 @@ class RDProduct(models.Model):
     name = models.CharField(max_length=100)
     min_installment = models.DecimalField(max_digits=15, decimal_places=2, default=100)
     max_installment = models.DecimalField(max_digits=15, decimal_places=2, default=100000)
-    min_tenure_months = models.IntegerField(default=6)
-    max_tenure_months = models.IntegerField(default=120)
+    min_tenure_months = models.IntegerField(default=12)
+    max_tenure_months = models.IntegerField(default=60)
     interest_rates = models.JSONField(default=list, help_text='[{min_months, max_months, rate, senior_rate}]')
     default_penalty_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     max_defaults_allowed = models.IntegerField(default=3)
@@ -167,6 +167,15 @@ class RecurringDeposit(models.Model):
         blank=True,
         related_name='introduced_rds',
         help_text='Existing member who introduced this account',
+    )
+    locking_period_months = models.IntegerField(default=0, help_text='Lock-in period in months (0=no lock)')
+    INTEREST_POSTING_FREQUENCY_CHOICES = [
+        ('semi_annual', 'Semi-Annual (6 months)'),
+    ]
+    interest_posting_frequency = models.CharField(
+        max_length=15,
+        choices=INTEREST_POSTING_FREQUENCY_CHOICES,
+        default='semi_annual',
     )
     sign = models.IntegerField(default=0, help_text='1=debit nature, -1=credit nature, 0=default')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)

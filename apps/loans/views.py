@@ -11,6 +11,7 @@ from apps.accounts.permissions import (
     admin_required,
     auditor_or_above,
     cashier_required,
+    day_open_required,
     manager_required,
 )
 from apps.core.account_utils import amount_to_words as _amount_to_words
@@ -22,9 +23,10 @@ from .forms import (
     GuarantorFormSet,
     LoanApplicationForm,
     LoanApprovalForm,
+    LoanCollateralForm,
     LoanProductForm,
 )
-from .models import EMISchedule, LoanAccount, LoanGuarantor, LoanProduct, LoanRepayment
+from .models import EMISchedule, LoanAccount, LoanCollateral, LoanGuarantor, LoanProduct, LoanRepayment
 from .services import (
     approve_loan,
     collect_emi,
@@ -131,6 +133,7 @@ def loan_detail(request, pk):
 
 
 @cashier_required
+@day_open_required
 def loan_apply(request):
     import json as _json
 
@@ -149,6 +152,7 @@ def loan_apply(request):
                 'max_amount': str(p.max_amount),
                 'max_tenure_months': p.max_tenure_months,
                 'requires_guarantor': p.requires_guarantor,
+                'requires_collateral': p.requires_collateral,
                 'min_guarantors': p.min_guarantors,
                 'max_guarantors': p.max_guarantors,
             }
@@ -215,6 +219,9 @@ def loan_apply(request):
                                 raise ValueError(' '.join(errors))
 
                     messages.success(request, f'Loan application {loan.loan_no} submitted.')
+                    if product.requires_collateral:
+                        messages.info(request, 'This loan product requires collateral. Please add collateral now.')
+                        return redirect('loans:collateral_add', loan_pk=loan.pk)
                     return redirect('loans:detail', pk=loan.pk)
                 except Exception as e:
                     messages.error(request, str(e))
@@ -270,6 +277,7 @@ def loan_approve(request, pk):
 
 
 @manager_required
+@day_open_required
 def loan_disburse(request, pk):
     loan = get_object_or_404(LoanAccount, pk=pk)
     if request.current_branch is None:
@@ -288,6 +296,7 @@ def loan_disburse(request, pk):
 
 
 @cashier_required
+@day_open_required
 def loan_collect(request, pk):
     loan = get_object_or_404(LoanAccount, pk=pk)
     if request.current_branch is None:
@@ -366,6 +375,7 @@ def loan_charge_list(request):
 
 
 @cashier_required
+@day_open_required
 def loan_charge_create(request):
     from decimal import Decimal, InvalidOperation
 
@@ -549,3 +559,172 @@ class EMIReceiptView(AuditorOrAboveMixin, View):
                 'amount_words': _amount_to_words(repayment.amount),
             },
         )
+
+
+@manager_required
+def collateral_add(request, loan_pk):
+    loan = get_object_or_404(LoanAccount, pk=loan_pk)
+    branch = getattr(request, 'current_branch', None)
+    if branch and not request.user.can_access_all_branches and loan.branch != branch:
+        messages.error(request, 'Access denied.')
+        return redirect('loans:list')
+    if loan.status in ('closed', 'rejected', 'written_off'):
+        messages.error(request, 'Cannot add collateral to this loan.')
+        return redirect('loans:detail', pk=loan.pk)
+
+    if request.method == 'POST':
+        form = LoanCollateralForm(request.POST, request.FILES)
+        if form.is_valid():
+            collateral = form.save(commit=False)
+            collateral.loan = loan
+            collateral.save()
+            messages.success(request, f'{collateral.get_collateral_type_display()} collateral added.')
+            return redirect('loans:detail', pk=loan.pk)
+    else:
+        form = LoanCollateralForm()
+
+    return render(request, 'loans/collateral_form.html', {
+        'form': form, 'loan': loan, 'title': 'Add Collateral',
+    })
+
+
+@manager_required
+def collateral_edit(request, pk):
+    collateral = get_object_or_404(LoanCollateral.objects.select_related('loan'), pk=pk)
+    loan = collateral.loan
+    branch = getattr(request, 'current_branch', None)
+    if branch and not request.user.can_access_all_branches and loan.branch != branch:
+        messages.error(request, 'Access denied.')
+        return redirect('loans:list')
+
+    if request.method == 'POST':
+        form = LoanCollateralForm(request.POST, request.FILES, instance=collateral)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Collateral updated.')
+            return redirect('loans:detail', pk=loan.pk)
+    else:
+        form = LoanCollateralForm(instance=collateral)
+
+    return render(request, 'loans/collateral_form.html', {
+        'form': form, 'loan': loan, 'title': f'Edit Collateral: {collateral.get_collateral_type_display()}',
+    })
+
+
+@manager_required
+def collateral_delete(request, pk):
+    collateral = get_object_or_404(LoanCollateral.objects.select_related('loan'), pk=pk)
+    loan = collateral.loan
+    branch = getattr(request, 'current_branch', None)
+    if branch and not request.user.can_access_all_branches and loan.branch != branch:
+        messages.error(request, 'Access denied.')
+        return redirect('loans:list')
+    if loan.status in ('closed', 'rejected', 'written_off'):
+        messages.error(request, 'Cannot modify collateral on this loan.')
+        return redirect('loans:detail', pk=loan.pk)
+
+    if request.method != 'POST':
+        return redirect('loans:detail', pk=loan.pk)
+
+    desc = collateral.get_collateral_type_display()
+    collateral.delete()
+    messages.success(request, f'{desc} collateral removed.')
+    return redirect('loans:detail', pk=loan.pk)
+
+
+@auditor_or_above
+def loan_ledger(request, pk):
+    from decimal import Decimal
+
+    from .models import StandingInstruction
+
+    loan = get_object_or_404(
+        LoanAccount.objects.select_related('member', 'loan_product', 'branch'),
+        pk=pk,
+    )
+    if not request.user.can_access_all_branches and loan.branch != request.current_branch:
+        messages.error(request, 'You do not have access to this loan.')
+        return redirect('loans:list')
+
+    entries = []
+    running_balance = Decimal('0')
+
+    if loan.disbursed_date and loan.disbursed_amount:
+        running_balance = loan.disbursed_amount
+        entries.append({
+            'date': loan.disbursed_date,
+            'type': 'Disbursement',
+            'debit': loan.disbursed_amount,
+            'credit': Decimal('0'),
+            'balance': running_balance,
+            'narration': f'Loan disbursed — {loan.loan_product.name}',
+            'receipt': '',
+        })
+
+    repayments = LoanRepayment.objects.filter(loan=loan).order_by('payment_date', 'pk')
+    charges = StandingInstruction.objects.filter(loan=loan).order_by('charge_date', 'pk')
+
+    repayment_list = list(repayments)
+    charge_list = list(charges)
+
+    ri, ci = 0, 0
+    while ri < len(repayment_list) or ci < len(charge_list):
+        pick_charge = False
+        if ri >= len(repayment_list):
+            pick_charge = True
+        elif ci < len(charge_list):
+            if charge_list[ci].charge_date < repayment_list[ri].payment_date:
+                pick_charge = True
+
+        if pick_charge:
+            c = charge_list[ci]
+            running_balance += c.amount
+            entries.append({
+                'date': c.charge_date,
+                'type': c.get_charge_type_display(),
+                'debit': c.amount,
+                'credit': Decimal('0'),
+                'balance': running_balance,
+                'narration': c.narration or c.get_charge_type_display(),
+                'receipt': '',
+            })
+            ci += 1
+        else:
+            r = repayment_list[ri]
+            running_balance -= r.amount
+            entries.append({
+                'date': r.payment_date,
+                'type': 'Repayment',
+                'debit': Decimal('0'),
+                'credit': r.amount,
+                'balance': running_balance,
+                'narration': f'Principal: {r.principal_adjusted}, Interest: {r.interest_adjusted}',
+                'receipt': r.receipt_no,
+            })
+            ri += 1
+
+    return render(request, 'loans/ledger.html', {
+        'loan': loan,
+        'entries': entries,
+        'running_balance': running_balance,
+    })
+
+
+@manager_required
+@day_open_required
+def loan_reverse_repayment(request, pk, repayment_id):
+    from .models import LoanRepayment
+    from .services import reverse_repayment
+
+    loan = get_object_or_404(LoanAccount, pk=pk)
+    repayment = get_object_or_404(LoanRepayment, pk=repayment_id, loan=loan)
+
+    if request.method == 'POST':
+        try:
+            reverse_repayment(repayment, request.user)
+            messages.success(request, f'Repayment {repayment.receipt_no} cancelled successfully.')
+        except ValueError as e:
+            messages.error(request, str(e))
+        return redirect('loans:detail', pk=pk)
+
+    return render(request, 'loans/reverse_repayment.html', {'loan': loan, 'repayment': repayment})

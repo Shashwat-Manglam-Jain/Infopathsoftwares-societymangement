@@ -24,6 +24,7 @@ from apps.loans.services import (
     prepay_loan,
     validate_loan_application,
 )
+from apps.shares.models import ShareHolding
 
 from .base import BaseTestCase
 
@@ -673,14 +674,14 @@ class LoanProductCategoryTests(BaseTestCase):
         self.assertEqual(product.mortgage_type, 'gold')
         self.assertTrue(product.allow_multiple)
 
-    def test_create_non_mortgage_product(self):
+    def test_create_regular_product(self):
         product = LoanProduct.objects.create(
             name='Personal Loan',
             interest_rate=Decimal('12.00'),
             max_amount=Decimal('500000.00'),
             max_tenure_months=60,
             interest_type='reducing_monthly',
-            loan_category='non_mortgage',
+            loan_category='regular',
             mortgage_type='none',
             allow_multiple=False,
             requires_guarantor=True,
@@ -688,7 +689,7 @@ class LoanProductCategoryTests(BaseTestCase):
             requires_director_recommendation=True,
             is_active=True,
         )
-        self.assertEqual(product.loan_category, 'non_mortgage')
+        self.assertEqual(product.loan_category, 'regular')
         self.assertEqual(product.mortgage_type, 'none')
         self.assertFalse(product.allow_multiple)
         self.assertTrue(product.guarantor_must_be_shareholder)
@@ -922,7 +923,22 @@ class GuarantorValidationTests(BaseTestCase):
             is_active=True,
         )
 
+    def test_validate_loan_application_no_shares(self):
+        errors = validate_loan_application(
+            self.member1,
+            self.product_shareholder,
+            Decimal('100000.00'),
+        )
+        self.assertTrue(len(errors) > 0)
+        self.assertIn('shares', errors[0].lower())
+
     def test_validate_loan_application_no_existing_loan(self):
+        ShareHolding.objects.create(
+            member=self.member1, branch=self.head_office,
+            share_count=10, face_value_per_share=100,
+            total_amount=1000, purchase_date=date(2024, 1, 1),
+            status='active', created_by=self.admin_user,
+        )
         errors = validate_loan_application(
             self.member1,
             self.product_shareholder,
@@ -930,7 +946,13 @@ class GuarantorValidationTests(BaseTestCase):
         )
         self.assertEqual(len(errors), 0)
 
-    def test_validate_loan_application_duplicate_non_mortgage(self):
+    def test_validate_loan_application_duplicate_regular(self):
+        ShareHolding.objects.create(
+            member=self.member1, branch=self.head_office,
+            share_count=10, face_value_per_share=100,
+            total_amount=1000, purchase_date=date(2024, 1, 1),
+            status='active', created_by=self.admin_user,
+        )
         LoanAccount.objects.create(
             member=self.member1,
             branch=self.head_office,

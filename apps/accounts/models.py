@@ -9,6 +9,7 @@ class CustomUser(AbstractUser):
         ('cashier', 'Cashier'),
         ('accountant', 'Accountant'),
         ('auditor', 'Auditor'),
+        ('director', 'Director'),
         ('member', 'Member'),
     ]
 
@@ -60,6 +61,10 @@ class CustomUser(AbstractUser):
     def is_auditor_or_above(self):
         """Everyone except member — can view all data."""
         return self.role != 'member'
+
+    @property
+    def is_director_role(self):
+        return self.role == 'director'
 
     @property
     def is_member_only(self):

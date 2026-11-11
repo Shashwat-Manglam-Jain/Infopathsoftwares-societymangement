@@ -44,7 +44,7 @@
 <body>
     <div class="no-print">
         <button class="print-btn" onclick="window.print()">Print Passbook</button>
-        <button class="close-btn" onclick="window.close()">Close</button>
+        <button class="close-btn" onclick="history.length > 1 ? history.back() : (window.close() || (location.href='/'))">Close</button>
         <p style="margin-top:6px; font-size:12px; color:#666; font-family:sans-serif;">
             Showing {{ transactions|length }} transaction{{ transactions|length|pluralize }}
             {% if from_date %} from {{ from_date|date:"d-M-Y" }}{% endif %}

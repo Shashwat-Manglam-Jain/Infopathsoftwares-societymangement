@@ -12,13 +12,14 @@ _tw_s = "searchable " + _tw
 class SavingsAccountForm(forms.ModelForm):
     class Meta:
         model = SavingsAccount
-        fields = ['member', 'branch', 'account_type', 'interest_rate', 'minimum_balance']
+        fields = ['member', 'branch', 'account_type', 'interest_rate', 'minimum_balance', 'interest_posting_frequency']
         widgets = {
             'member': forms.Select(attrs={'class': _tw_s}),
             'branch': forms.Select(attrs={'class': _tw}),
             'account_type': forms.Select(attrs={'class': _tw}),
             'interest_rate': forms.NumberInput(attrs={'class': _tw + ' bg-gray-50 cursor-not-allowed', 'step': '0.01', 'readonly': True, 'tabindex': '-1'}),
             'minimum_balance': forms.NumberInput(attrs={'class': _tw, 'step': '0.01'}),
+            'interest_posting_frequency': forms.Select(attrs={'class': _tw}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -52,10 +53,11 @@ class SavingsAccountForm(forms.ModelForm):
 class SavingsAccountEditForm(forms.ModelForm):
     class Meta:
         model = SavingsAccount
-        fields = ['interest_rate', 'minimum_balance']
+        fields = ['interest_rate', 'minimum_balance', 'interest_posting_frequency']
         widgets = {
             'interest_rate': forms.NumberInput(attrs={'class': _tw + ' bg-gray-50 cursor-not-allowed', 'step': '0.01', 'readonly': True, 'tabindex': '-1'}),
             'minimum_balance': forms.NumberInput(attrs={'class': _tw, 'step': '0.01'}),
+            'interest_posting_frequency': forms.Select(attrs={'class': _tw}),
         }
 
 
