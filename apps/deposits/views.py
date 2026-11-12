@@ -29,7 +29,6 @@ def fd_list(request):
             'page_obj': page_obj,
             'is_paginated': page_obj.has_other_pages(),
             'paginator': paginator,
-            'active_tab': 'fd',
         },
     )
 
@@ -163,7 +162,6 @@ def rd_list(request):
             'page_obj': page_obj,
             'is_paginated': page_obj.has_other_pages(),
             'paginator': paginator,
-            'active_tab': 'rd',
         },
     )
 

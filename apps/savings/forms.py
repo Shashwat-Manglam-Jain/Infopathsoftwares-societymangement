@@ -29,6 +29,7 @@ class SavingsAccountForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.current_branch = kwargs.pop('current_branch', None)
         super().__init__(*args, **kwargs)
+        self.fields['branch'].empty_label = None
         if self.current_branch:
             self.fields['branch'].initial = self.current_branch
             self.fields['branch'].widget = forms.HiddenInput()

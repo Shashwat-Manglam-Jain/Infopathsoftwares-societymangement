@@ -7,16 +7,14 @@
 {% block content %}
 <div class="max-w-full">
 
-    {% if form.errors %}
+    {% if form.non_field_errors %}
     <div class="rounded-xl bg-red-50 border border-red-200 p-4 mb-5">
         <h3 class="text-sm font-medium text-red-800 flex items-center gap-2">
             <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
             {% trans "Please correct the errors below" %}
         </h3>
         <ul class="mt-1 text-sm text-red-700 list-disc list-inside">
-            {% for field, errors in form.errors.items %}
-                {% for error in errors %}<li>{{ field|title }}: {{ error }}</li>{% endfor %}
-            {% endfor %}
+            {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
         </ul>
     </div>
     {% endif %}
@@ -38,19 +36,22 @@
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-1">Username <span class="text-red-500">*</span></label>
                     <input type="text" name="username" value="{{ form.username.value|default:'' }}" required
-                           class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                           class="block w-full rounded border {% if form.username.errors %}border-red-400{% else %}border-gray-300{% endif %} px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                    {% if form.username.errors %}<p class="mt-1 text-xs text-red-600">{{ form.username.errors.0 }}</p>{% endif %}
                 </div>
                 <div></div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-1">Password <span class="text-red-500">*</span></label>
                     <input type="password" name="password1" required
-                           class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
-                    <p class="text-xs text-gray-400 mt-0.5">Min 8 chars, not entirely numeric.</p>
+                           class="block w-full rounded border {% if form.password1.errors %}border-red-400{% else %}border-gray-300{% endif %} px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                    {% if form.password1.errors %}<p class="mt-1 text-xs text-red-600">{{ form.password1.errors.0 }}</p>{% endif %}
+                    <p class="text-xs text-gray-400 mt-0.5">Min 8 characters. Cannot be entirely numeric or a common password.</p>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-1">Confirm Password <span class="text-red-500">*</span></label>
                     <input type="password" name="password2" required
-                           class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                           class="block w-full rounded border {% if form.password2.errors %}border-red-400{% else %}border-gray-300{% endif %} px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                    {% if form.password2.errors %}<p class="mt-1 text-xs text-red-600">{{ form.password2.errors.0 }}</p>{% endif %}
                 </div>
             </div>
             {% endif %}
@@ -104,11 +105,13 @@
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-1">Role <span class="text-red-500">*</span></label>
                     {{ form.role }}
+                    {% if form.role.errors %}<p class="mt-1 text-xs text-red-600">{{ form.role.errors.0 }}</p>{% endif %}
                     <p class="text-xs text-gray-400 mt-0.5">{% trans "Director" %} &amp; Auditor: read-only. Clerk assists Cashier.</p>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Branch" %}</label>
                     {{ form.branch }}
+                    {% if form.branch.errors %}<p class="mt-1 text-xs text-red-600">{{ form.branch.errors.0 }}</p>{% endif %}
                 </div>
                 <div class="flex items-center gap-4">
                     <label class="flex items-center gap-1.5 cursor-pointer">

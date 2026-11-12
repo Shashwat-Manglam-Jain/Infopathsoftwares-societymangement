@@ -5,11 +5,14 @@
 {% block page_title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl">
+<div class="max-w-full">
 
     {% if form.errors %}
-    <div class="rounded-lg bg-red-50 border border-red-200 p-3 mb-4">
-        <h3 class="text-sm font-medium text-red-800">{% trans "Please correct the errors below" %}</h3>
+    <div class="rounded-xl bg-red-50 border border-red-200 p-4 mb-5">
+        <h3 class="text-sm font-medium text-red-800 flex items-center gap-2">
+            <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+            {% trans "Please correct the errors below" %}
+        </h3>
         <ul class="mt-1 text-sm text-red-700 list-disc list-inside">
             {% for field, errors in form.errors.items %}
                 {% for error in errors %}<li>{{ field|title }}: {{ error }}</li>{% endfor %}
@@ -21,58 +24,93 @@
     <form method="post">
         {% csrf_token %}
 
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+
+            <!-- Basic Info -->
+            <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-xl">
+                <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Product Details
+                </h3>
+            </div>
+            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">Product Name <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Product Name <span class="text-red-500">*</span></label>
                     <input type="text" name="name" value="{{ form.name.value|default:'' }}" required class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Interest Rate" %} (%) <span class="text-red-500">*</span></label>
-                    <input type="number" name="interest_rate" value="{{ form.interest_rate.value|default:'' }}" step="0.01" required class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">Penal Interest Rate (%)</label>
-                    <input type="number" name="penal_interest_rate" value="{{ form.penal_interest_rate.value|default:'0' }}" step="0.01" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">Max Loan Amount</label>
-                    <input type="number" name="max_amount" value="{{ form.max_amount.value|default:'' }}" step="0.01" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">Max Tenure (Months)</label>
-                    <input type="number" name="max_tenure_months" value="{{ form.max_tenure_months.value|default:'' }}" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">Interest Type</label>
-                    {{ form.interest_type }}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">Loan Category <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Loan Category <span class="text-red-500">*</span></label>
                     {{ form.loan_category }}
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">Mortgage Type <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Mortgage Type <span class="text-red-500">*</span></label>
                     {{ form.mortgage_type }}
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">Processing Fee (%)</label>
-                    <input type="number" name="processing_fee_percent" value="{{ form.processing_fee_percent.value|default:'0' }}" step="0.01" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Max Loan Amount</label>
+                    <input type="number" name="max_amount" value="{{ form.max_amount.value|default:'' }}" step="0.01" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">NPA Threshold (Days)</label>
-                    <input type="number" name="npa_days_threshold" value="{{ form.npa_days_threshold.value|default:'90' }}" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Max Tenure (Months)</label>
+                    <input type="number" name="max_tenure_months" value="{{ form.max_tenure_months.value|default:'' }}" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">Max Loan-to-Deposit Ratio (%)</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Max Loan-to-Deposit Ratio (%)</label>
                     <input type="number" name="max_loan_to_deposit_ratio" value="{{ form.max_loan_to_deposit_ratio.value|default:'' }}" step="0.01" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500" placeholder="e.g. 90">
                 </div>
             </div>
 
-            <hr class="border-gray-200">
+            <!-- Interest & Fees -->
+            <div class="px-5 py-3 border-b border-t border-gray-200 bg-gray-50/50">
+                <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Interest &amp; Fees
+                </h3>
+            </div>
+            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+                {% if interest_slabs %}
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Pick from Interest Master</label>
+                    <select id="slab-picker" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                        <option value="">— Select a slab —</option>
+                        {% for slab in interest_slabs %}
+                        <option value="{{ slab.interest_rate }}" data-penal="{{ slab.penal_rate }}">{{ slab.account_head.name }} · {{ slab.min_period }}-{{ slab.max_period }} {{ slab.get_period_unit_display }} · {{ slab.interest_rate }}%</option>
+                        {% endfor %}
+                    </select>
+                    <p class="text-xs text-gray-400 mt-0.5">Auto-fills rate &amp; penal rate below</p>
+                </div>
+                {% endif %}
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Interest Rate" %} (%) <span class="text-red-500">*</span></label>
+                    <input type="number" id="interest-rate" name="interest_rate" value="{{ form.interest_rate.value|default:'' }}" step="0.01" required class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Interest Type</label>
+                    {{ form.interest_type }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Penal Interest Rate (%)</label>
+                    <input type="number" id="penal-rate" name="penal_interest_rate" value="{{ form.penal_interest_rate.value|default:'0' }}" step="0.01" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Processing Fee (%)</label>
+                    <input type="number" name="processing_fee_percent" value="{{ form.processing_fee_percent.value|default:'0' }}" step="0.01" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">NPA Threshold (Days)</label>
+                    <input type="number" name="npa_days_threshold" value="{{ form.npa_days_threshold.value|default:'90' }}" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                </div>
+            </div>
 
+            <!-- Rules & Requirements -->
+            <div class="px-5 py-3 border-b border-t border-gray-200 bg-gray-50/50">
+                <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    Rules &amp; Requirements
+                </h3>
+            </div>
             <div class="px-5 py-4">
-                <div class="flex flex-wrap gap-4 mb-3">
+                <div class="flex flex-wrap gap-x-6 gap-y-3 mb-4">
                     <label class="flex items-center gap-1.5 cursor-pointer">
                         <input type="checkbox" name="requires_guarantor" {% if form.requires_guarantor.value %}checked{% endif %} class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
                         <span class="text-sm text-gray-700">Requires Guarantor</span>
@@ -98,23 +136,42 @@
                         <span class="text-sm text-gray-700">{% trans "Active" %}</span>
                     </label>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-3">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-0.5">Min {% trans "Guarantors" %} <span class="text-red-500">*</span></label>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Min {% trans "Guarantors" %} <span class="text-red-500">*</span></label>
                         <input type="number" name="min_guarantors" value="{{ form.min_guarantors.value|default:'1' }}" min="0" required class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-0.5">Max {% trans "Guarantors" %}</label>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Max {% trans "Guarantors" %}</label>
                         <input type="number" name="max_guarantors" value="{{ form.max_guarantors.value|default:'2' }}" min="0" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                     </div>
                 </div>
             </div>
 
-            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-end gap-3">
-                <a href="{% url 'loans:product_list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
-                <button type="submit" class="px-5 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">Save Product</button>
+            <!-- Action Buttons -->
+            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex items-center justify-end gap-3">
+                <a href="{% url 'loans:product_list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
+                <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm">Save Product</button>
             </div>
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var picker = document.getElementById('slab-picker');
+    if (!picker) return;
+    var rateInput = document.getElementById('interest-rate');
+    var penalInput = document.getElementById('penal-rate');
+    picker.addEventListener('change', function() {
+        var opt = picker.options[picker.selectedIndex];
+        if (opt.value) {
+            rateInput.value = opt.value;
+            penalInput.value = opt.dataset.penal || '0';
+        }
+    });
+});
+</script>
 {% endblock %}

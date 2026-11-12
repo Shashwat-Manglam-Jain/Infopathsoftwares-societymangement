@@ -60,7 +60,6 @@ def loan_list(request):
             'page_obj': page_obj,
             'is_paginated': page_obj.has_other_pages(),
             'paginator': paginator,
-            'active_tab': 'loans',
         },
     )
 
@@ -324,7 +323,6 @@ def loan_collect(request, pk):
 @auditor_or_above
 def loan_product_list(request):
     products = LoanProduct.objects.all().order_by('name')
-    return render(request, 'loans/product_list.html', {'products': products, 'active_tab': 'products'})
 
 
 @admin_required
@@ -337,7 +335,9 @@ def loan_product_create(request):
             return redirect('loans:product_list')
     else:
         form = LoanProductForm()
-    return render(request, 'loans/product_form.html', {'form': form, 'title': 'Create Loan Product'})
+    from apps.accounting.models import InterestMaster
+    slabs = InterestMaster.objects.filter(is_active=True).select_related('account_head').order_by('account_head__name', 'min_period')
+    return render(request, 'loans/product_form.html', {'form': form, 'title': 'Create Loan Product', 'interest_slabs': slabs})
 
 
 @admin_required
@@ -351,7 +351,9 @@ def loan_product_edit(request, pk):
             return redirect('loans:product_list')
     else:
         form = LoanProductForm(instance=product)
-    return render(request, 'loans/product_form.html', {'form': form, 'title': f'Edit: {product.name}'})
+    from apps.accounting.models import InterestMaster
+    slabs = InterestMaster.objects.filter(is_active=True).select_related('account_head').order_by('account_head__name', 'min_period')
+    return render(request, 'loans/product_form.html', {'form': form, 'title': f'Edit: {product.name}', 'interest_slabs': slabs})
 
 
 @auditor_or_above
@@ -370,7 +372,6 @@ def loan_charge_list(request):
         'loans/loan_charge_list.html',
         {
             'instructions': instructions[:100],
-            'active_tab': 'charges',
         },
     )
 

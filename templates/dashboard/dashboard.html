@@ -255,13 +255,26 @@
             </div>
             <div>
                 <span class="text-gray-500">Plan:</span>
-                <span class="font-semibold text-gray-900 ml-1">{{ subscription.get_plan_display }}</span>
+                <span class="font-semibold text-gray-900 ml-1">{{ subscription.plan.name }}</span>
                 <span class="text-gray-300 mx-2">|</span>
                 <span class="text-gray-500">Expires:</span>
-                <span class="font-semibold text-gray-900 ml-1">{{ subscription.expiry_date|date:"d M Y" }}</span>
+                <span class="font-semibold text-gray-900 ml-1">{{ subscription.end_date|date:"d M Y" }}</span>
             </div>
         </div>
         <a href="/subscription/recharge/" class="text-xs text-primary-600 hover:text-primary-700 font-bold bg-primary-50 px-3 py-1.5 rounded-lg hover:bg-primary-100 transition-colors">{% trans "Renew" %}</a>
+    </div>
+    {% else %}
+    <div class="bg-amber-50 rounded-xl shadow-sm border border-amber-200 p-4 flex items-center justify-between">
+        <div class="flex items-center gap-3 text-sm">
+            <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                <svg class="h-4 w-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
+            <div>
+                <span class="font-semibold text-amber-800">{% trans "No active subscription" %}</span>
+                <span class="text-amber-600 ml-2">{% trans "Your access may be limited. Please renew your plan." %}</span>
+            </div>
+        </div>
+        <a href="/subscription/recharge/" class="text-xs text-white font-bold bg-amber-600 px-4 py-1.5 rounded-lg hover:bg-amber-700 transition-colors whitespace-nowrap">{% trans "Recharge Now" %}</a>
     </div>
     {% endif %}
 

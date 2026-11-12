@@ -29,7 +29,6 @@ def voucher_list(request):
     if not request.user.can_access_all_branches:
         entries = entries.filter(branch=request.current_branch)
     entries = entries.order_by('-entry_date', '-created_at')[:50]
-    return render(request, 'accounting/vouchers.html', {'entries': entries, 'active_tab': 'vouchers'})
 
 
 @cashier_required
@@ -369,7 +368,6 @@ def cashbook_entry(request):
         writer.writerow(['Closing Cash', closing_cash])
         return response
 
-    context['active_tab'] = 'cashbook'
     return render(request, 'accounting/cashbook.html', context)
 
 
@@ -451,7 +449,6 @@ def chart_of_accounts_list(request):
         groups.setdefault(group, [])
         groups[group].extend(build_tree([head]))
 
-    return render(request, 'accounting/heads_list.html', {'groups': groups, 'total': heads.count(), 'active_tab': 'heads'})
 
 
 @admin_required
@@ -518,7 +515,6 @@ def general_ledger(request):
         except ChartOfAccounts.DoesNotExist:
             messages.error(request, 'Account head not found.')
 
-    context['active_tab'] = 'ledger'
     return render(request, 'accounting/general_ledger.html', context)
 
 
@@ -567,7 +563,6 @@ def day_book(request):
             'book_date': book_date,
             'entries': entries,
             'today': date.today(),
-            'active_tab': 'daybook',
         },
     )
 
@@ -581,7 +576,6 @@ def interest_master_list(request):
         if key not in grouped:
             grouped[key] = {'head': slab.account_head, 'slabs': []}
         grouped[key]['slabs'].append(slab)
-    return render(request, 'accounting/interest_master_list.html', {'groups': grouped.values(), 'total': slabs.count(), 'active_tab': 'interest'})
 
 
 @admin_required

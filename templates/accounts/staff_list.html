@@ -19,20 +19,28 @@
         </a>
     </div>
 
-    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 class="text-sm font-semibold text-blue-800 mb-2">Role Guide</h3>
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-1 text-xs text-blue-700">
-            <div><span class="font-semibold">Admin</span> &mdash; Society-level administrator, manages all branches</div>
-            <div><span class="font-semibold">Branch Manager</span> &mdash; Branch head, approves loans, oversees operations</div>
-            <div><span class="font-semibold">Accountant</span> &mdash; Bookkeeping, vouchers, day-end, GL operations</div>
-            <div><span class="font-semibold">Cashier</span> &mdash; Counter staff, cash deposits/withdrawals/EMI collection</div>
-            <div><span class="font-semibold">Clerk</span> &mdash; Data entry, assisting cashier with daily transactions</div>
-            <div><span class="font-semibold">Auditor</span> &mdash; Read-only access for audit &amp; inspection</div>
-            <div><span class="font-semibold">{% trans "Director" %}</span> &mdash; Board member, read-only access to reports &amp; dashboards</div>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden" x-data="{ showGuide: false }">
+        <button @click="showGuide = !showGuide" class="w-full px-4 py-2.5 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
+            <span class="text-xs font-medium text-gray-500 flex items-center gap-1.5">
+                <svg class="h-3.5 w-3.5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Role Guide
+            </span>
+            <svg class="h-3.5 w-3.5 text-gray-400 transition-transform duration-200" :class="showGuide ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+        <div x-show="showGuide" x-collapse x-cloak class="px-4 pb-3 border-t border-gray-100">
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-1 text-xs text-gray-600 pt-2.5">
+                <div><span class="font-semibold text-gray-700">Admin</span> &mdash; Society-level administrator</div>
+                <div><span class="font-semibold text-gray-700">Branch Manager</span> &mdash; Approves loans, oversees branch</div>
+                <div><span class="font-semibold text-gray-700">Accountant</span> &mdash; Vouchers, day-end, GL</div>
+                <div><span class="font-semibold text-gray-700">Cashier</span> &mdash; Deposits/withdrawals/EMI</div>
+                <div><span class="font-semibold text-gray-700">Clerk</span> &mdash; Data entry, assists cashier</div>
+                <div><span class="font-semibold text-gray-700">Auditor</span> &mdash; Read-only audit access</div>
+                <div><span class="font-semibold text-gray-700">{% trans "Director" %}</span> &mdash; Board member, read-only</div>
+            </div>
         </div>
     </div>
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">

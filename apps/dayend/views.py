@@ -370,10 +370,6 @@ class InterestCalculateView(AccountantRequiredMixin, View):
         if not request.user.can_access_all_branches:
             accounts = accounts.filter(branch=branch)
 
-        account_type = request.GET.get('account_type', 'all')
-        if account_type != 'all':
-            accounts = accounts.filter(account_type=account_type)
-
         summary = accounts.aggregate(
             total_balance=Sum('current_balance', default=Decimal('0')),
             total_accrued=Sum('accrued_interest', default=Decimal('0')),
@@ -387,7 +383,6 @@ class InterestCalculateView(AccountantRequiredMixin, View):
                 'accounts': accounts[:100],
                 'summary': summary,
                 'calc_date': date.today(),
-                'account_type': account_type,
             },
         )
 
@@ -410,8 +405,6 @@ class InterestCalculateView(AccountantRequiredMixin, View):
         else:
             calc_date = date.today()
 
-        account_type = request.POST.get('account_type', 'all')
-
         accounts = SavingsAccount.objects.filter(
             status='active',
             current_balance__gt=0,
@@ -420,9 +413,6 @@ class InterestCalculateView(AccountantRequiredMixin, View):
 
         if not request.user.can_access_all_branches:
             accounts = accounts.filter(branch=branch)
-
-        if account_type != 'all':
-            accounts = accounts.filter(account_type=account_type)
 
         calculated_count = 0
         total_interest = Decimal('0')
@@ -459,8 +449,6 @@ class InterestCalculateView(AccountantRequiredMixin, View):
         ).select_related('member', 'branch')
         if not request.user.can_access_all_branches:
             accounts_refreshed = accounts_refreshed.filter(branch=branch)
-        if account_type != 'all':
-            accounts_refreshed = accounts_refreshed.filter(account_type=account_type)
 
         summary = accounts_refreshed.aggregate(
             total_balance=Sum('current_balance', default=Decimal('0')),
@@ -475,7 +463,6 @@ class InterestCalculateView(AccountantRequiredMixin, View):
                 'accounts': accounts_refreshed[:100],
                 'summary': summary,
                 'calc_date': calc_date,
-                'account_type': account_type,
                 'results': results,
                 'calculated_count': calculated_count,
                 'total_interest': total_interest,

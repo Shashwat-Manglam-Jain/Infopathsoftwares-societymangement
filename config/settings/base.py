@@ -4,7 +4,6 @@ from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy as _
-
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -185,7 +184,15 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STORAGES = {
     'default': {
-        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+        'BACKEND': 'apps.core.storage.TenantMediaStorage',
+        'OPTIONS': {
+            'bucket_name': os.environ.get('AWS_STORAGE_BUCKET_NAME', ''),
+            'region_name': os.environ.get('AWS_S3_REGION_NAME', 'ap-south-1'),
+            'file_overwrite': False,
+            'default_acl': 'private',
+            'querystring_auth': True,
+            'querystring_expire': 3600,
+        },
     },
     'staticfiles': {
         'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',

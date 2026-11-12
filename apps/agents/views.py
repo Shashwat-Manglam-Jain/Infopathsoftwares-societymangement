@@ -28,7 +28,6 @@ def agent_list(request):
         'agents/agent_list.html',
         {
             'agents': page_obj,
-            'active_tab': 'agents',
             'page_obj': page_obj,
             'is_paginated': page_obj.has_other_pages(),
             'paginator': paginator,
@@ -104,7 +103,6 @@ def pigmmy_account_list(request):
         {
             'accounts': page_obj,
             'agents': agents,
-            'active_tab': 'accounts',
             'page_obj': page_obj,
             'is_paginated': page_obj.has_other_pages(),
             'paginator': paginator,
@@ -233,7 +231,6 @@ def collection_list(request):
         'agents/collection_list.html',
         {
             'collections': page_obj,
-            'active_tab': 'collections',
             'page_obj': page_obj,
             'is_paginated': page_obj.has_other_pages(),
             'paginator': paginator,
@@ -346,7 +343,6 @@ def collection_posting_list(request):
         {
             'pending': collections,
             'posted': posted,
-            'active_tab': 'posting',
         },
     )
 
