@@ -129,6 +129,7 @@ def share_purchase(request):
             status='active',
         )
 
+    return render(request, 'shares/purchase.html', {'form': form})
 
 
 @manager_required
@@ -158,6 +159,7 @@ def share_transfer(request):
         form.fields['from_member'].queryset = branch_members
         form.fields['to_member'].queryset = branch_members
 
+    return render(request, 'shares/transfer.html', {'form': form})
 
 
 @manager_required
@@ -187,6 +189,7 @@ def share_surrender(request):
             status='active',
         )
 
+    return render(request, 'shares/surrender.html', {'form': form})
 
 
 @auditor_or_above
@@ -239,6 +242,7 @@ def share_config_list(request):
     from .models import ShareConfig
 
     configs = ShareConfig.objects.all()
+    return render(request, 'shares/config_list.html', {'configs': configs})
 
 
 @admin_required

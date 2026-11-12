@@ -280,10 +280,17 @@ def personal_ledger(request):
             rows = []
             for acct in accounts:
                 for r in acct.get('rows', []):
-                    rows.append([
-                        acct['type'], acct['account_no'], r['date'],
-                        r['description'], r['debit'], r['credit'], r['balance'],
-                    ])
+                    rows.append(
+                        [
+                            acct['type'],
+                            acct['account_no'],
+                            r['date'],
+                            r['description'],
+                            r['debit'],
+                            r['credit'],
+                            r['balance'],
+                        ]
+                    )
             return _csv_response(
                 f'personal_ledger_{member.member_no}_{date.today()}.csv',
                 ['Account Type', 'Account No', 'Date', 'Description', 'Debit', 'Credit', 'Balance'],
@@ -307,12 +314,18 @@ def trial_balance(request):
         if request.GET.get('format') == 'csv' and result:
             rows = []
             for item in result.get('accounts', []):
-                rows.append([
-                    item['code'], item['name'],
-                    item['opening_debit'], item['opening_credit'],
-                    item['period_debit'], item['period_credit'],
-                    item['closing_debit'], item['closing_credit'],
-                ])
+                rows.append(
+                    [
+                        item['code'],
+                        item['name'],
+                        item['opening_debit'],
+                        item['opening_credit'],
+                        item['period_debit'],
+                        item['period_credit'],
+                        item['closing_debit'],
+                        item['closing_credit'],
+                    ]
+                )
             return _csv_response(
                 f'trial_balance_{from_date}_to_{to_date}.csv',
                 ['Code', 'Account', 'Opening Dr', 'Opening Cr', 'Period Dr', 'Period Cr', 'Closing Dr', 'Closing Cr'],
@@ -616,7 +629,13 @@ def balance_reports(request):
     if request.GET.get('format') == 'csv':
         if accounts is not None:
             rows = [
-                [a.account_no, a.member.name, a.get_account_type_display(), a.current_balance, getattr(a, 'last_txn', '')]
+                [
+                    a.account_no,
+                    a.member.name,
+                    a.get_account_type_display(),
+                    a.current_balance,
+                    getattr(a, 'last_txn', ''),
+                ]
                 for a in accounts
             ]
             return _csv_response(
@@ -887,16 +906,20 @@ def pigmmy_reports(request):
                 rows,
             )
         if report_type == 'date_daybook' and context.get('transactions') is not None:
-            rows = [[t.account.agent.agent_code, t.account.account_no, t.account.member.name, t.amount]
-                    for t in context['transactions']]
+            rows = [
+                [t.account.agent.agent_code, t.account.account_no, t.account.member.name, t.amount]
+                for t in context['transactions']
+            ]
             return _csv_response(
                 f'pigmmy_daybook_{context.get("report_date", date.today())}.csv',
                 ['Agent', 'Account No', 'Member', 'Amount'],
                 rows,
             )
         if report_type == 'commission' and context.get('commissions') is not None:
-            rows = [[c.agent.member.name, c.agent.agent_code, c.month, c.commission_amount, c.tds_amount, c.net_amount]
-                    for c in context['commissions']]
+            rows = [
+                [c.agent.member.name, c.agent.agent_code, c.month, c.commission_amount, c.tds_amount, c.net_amount]
+                for c in context['commissions']
+            ]
             return _csv_response(
                 f'pigmmy_commission_{date.today()}.csv',
                 ['Agent', 'Code', 'Month', 'Commission', 'TDS', 'Net'],
@@ -1231,9 +1254,17 @@ def deposit_reports(request):
         if 'items' in context:
             items = context['items']
             if items and 'account_no' in items[0]:
-                rows = [[i.get('account_no', i.get('rd_no', '')), i.get('member', ''), i.get('amount', ''),
-                         i.get('maturity_date', i.get('due_date', '')), i.get('interest_rate', ''),
-                         i.get('status', '')] for i in items]
+                rows = [
+                    [
+                        i.get('account_no', i.get('rd_no', '')),
+                        i.get('member', ''),
+                        i.get('amount', ''),
+                        i.get('maturity_date', i.get('due_date', '')),
+                        i.get('interest_rate', ''),
+                        i.get('status', ''),
+                    ]
+                    for i in items
+                ]
                 return _csv_response(
                     f'deposit_{report_type}_{date.today()}.csv',
                     ['Account No', 'Member', 'Amount', 'Date', 'Rate%', 'Status'],
@@ -1562,8 +1593,16 @@ def loan_reports(request):
             rows = []
             for group_name, group_items in context['defaulter_groups'].items():
                 for item in group_items:
-                    rows.append([group_name, item['loan_no'], item['member'], item['outstanding'],
-                                 item['overdue_amount'], item['overdue_days']])
+                    rows.append(
+                        [
+                            group_name,
+                            item['loan_no'],
+                            item['member'],
+                            item['outstanding'],
+                            item['overdue_amount'],
+                            item['overdue_days'],
+                        ]
+                    )
             return _csv_response(
                 f'loan_defaulters_{date.today()}.csv',
                 ['Category', 'Loan No', 'Member', 'Outstanding', 'Overdue Amt', 'Overdue Days'],

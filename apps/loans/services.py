@@ -144,9 +144,7 @@ def disburse_loan(loan, branch, user):
 
     product = loan.loan_product
     if loan.approved_amount > product.max_amount:
-        raise ValueError(
-            f'Approved amount ₹{loan.approved_amount} exceeds product limit ₹{product.max_amount}'
-        )
+        raise ValueError(f'Approved amount ₹{loan.approved_amount} exceeds product limit ₹{product.max_amount}')
     if product.requires_guarantor:
         from apps.loans.models import LoanGuarantor
 

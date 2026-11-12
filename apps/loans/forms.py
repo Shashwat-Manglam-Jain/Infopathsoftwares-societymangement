@@ -103,7 +103,10 @@ class LoanApprovalForm(forms.Form):
         choices=[('approve', 'Approve'), ('reject', 'Reject')], widget=forms.Select(attrs={'class': tw})
     )
     approved_amount = forms.DecimalField(
-        max_digits=15, decimal_places=2, min_value=Decimal('1'), required=False,
+        max_digits=15,
+        decimal_places=2,
+        min_value=Decimal('1'),
+        required=False,
         widget=forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
     )
     remarks = forms.CharField(required=False, widget=forms.Textarea(attrs={'class': tw, 'rows': 2}))

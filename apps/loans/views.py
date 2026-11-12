@@ -323,6 +323,7 @@ def loan_collect(request, pk):
 @auditor_or_above
 def loan_product_list(request):
     products = LoanProduct.objects.all().order_by('name')
+    return render(request, 'loans/product_list.html', {'products': products})
 
 
 @admin_required
@@ -336,8 +337,15 @@ def loan_product_create(request):
     else:
         form = LoanProductForm()
     from apps.accounting.models import InterestMaster
-    slabs = InterestMaster.objects.filter(is_active=True).select_related('account_head').order_by('account_head__name', 'min_period')
-    return render(request, 'loans/product_form.html', {'form': form, 'title': 'Create Loan Product', 'interest_slabs': slabs})
+
+    slabs = (
+        InterestMaster.objects.filter(is_active=True)
+        .select_related('account_head')
+        .order_by('account_head__name', 'min_period')
+    )
+    return render(
+        request, 'loans/product_form.html', {'form': form, 'title': 'Create Loan Product', 'interest_slabs': slabs}
+    )
 
 
 @admin_required
@@ -352,8 +360,15 @@ def loan_product_edit(request, pk):
     else:
         form = LoanProductForm(instance=product)
     from apps.accounting.models import InterestMaster
-    slabs = InterestMaster.objects.filter(is_active=True).select_related('account_head').order_by('account_head__name', 'min_period')
-    return render(request, 'loans/product_form.html', {'form': form, 'title': f'Edit: {product.name}', 'interest_slabs': slabs})
+
+    slabs = (
+        InterestMaster.objects.filter(is_active=True)
+        .select_related('account_head')
+        .order_by('account_head__name', 'min_period')
+    )
+    return render(
+        request, 'loans/product_form.html', {'form': form, 'title': f'Edit: {product.name}', 'interest_slabs': slabs}
+    )
 
 
 @auditor_or_above

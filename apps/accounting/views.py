@@ -29,6 +29,7 @@ def voucher_list(request):
     if not request.user.can_access_all_branches:
         entries = entries.filter(branch=request.current_branch)
     entries = entries.order_by('-entry_date', '-created_at')[:50]
+    return render(request, 'accounting/vouchers.html', {'entries': entries})
 
 
 @cashier_required
@@ -358,8 +359,16 @@ def cashbook_entry(request):
         writer.writerow(['Voucher No', 'Type', 'Date', 'Narration', 'Mode', 'Amount'])
         for entry in today_entries:
             total = sum(line.debit_amount for line in entry.lines.all())
-            writer.writerow([entry.voucher_no, entry.get_voucher_type_display(), entry.entry_date,
-                             entry.narration, entry.get_payment_mode_display(), total])
+            writer.writerow(
+                [
+                    entry.voucher_no,
+                    entry.get_voucher_type_display(),
+                    entry.entry_date,
+                    entry.narration,
+                    entry.get_payment_mode_display(),
+                    total,
+                ]
+            )
         writer.writerow([])
         writer.writerow(['Summary', 'Cash', 'Transfer', 'Total'])
         writer.writerow(['Receipts', receipt_cash, receipt_transfer, receipt_total])
@@ -448,7 +457,7 @@ def chart_of_accounts_list(request):
         group = head.get_account_group_display()
         groups.setdefault(group, [])
         groups[group].extend(build_tree([head]))
-
+    return render(request, 'accounting/heads_list.html', {'groups': groups, 'total': heads.count()})
 
 
 @admin_required
@@ -504,12 +513,15 @@ def general_ledger(request):
 
             if request.GET.get('format') == 'csv' and result:
                 response = HttpResponse(content_type='text/csv')
-                response['Content-Disposition'] = f'attachment; filename="ledger_{account_code}_{from_date}_to_{to_date}.csv"'
+                response['Content-Disposition'] = (
+                    f'attachment; filename="ledger_{account_code}_{from_date}_to_{to_date}.csv"'
+                )
                 writer = csv.writer(response)
                 writer.writerow(['Date', 'Voucher', 'Narration', 'Debit', 'Credit', 'Balance'])
                 for txn in result.get('entries', []):
-                    writer.writerow([txn['date'], txn['voucher_no'], txn['narration'],
-                                     txn['debit'], txn['credit'], txn['balance']])
+                    writer.writerow(
+                        [txn['date'], txn['voucher_no'], txn['narration'], txn['debit'], txn['credit'], txn['balance']]
+                    )
                 return response
 
         except ChartOfAccounts.DoesNotExist:
@@ -548,12 +560,17 @@ def day_book(request):
         writer.writerow(['Voucher No', 'Type', 'Narration', 'Account', 'Debit', 'Credit', 'Created By'])
         for entry in entries:
             for line in entry.lines.all():
-                writer.writerow([
-                    entry.voucher_no, entry.get_voucher_type_display(),
-                    entry.narration, line.gl_account.name,
-                    line.debit_amount, line.credit_amount,
-                    entry.created_by.get_full_name() if entry.created_by else '',
-                ])
+                writer.writerow(
+                    [
+                        entry.voucher_no,
+                        entry.get_voucher_type_display(),
+                        entry.narration,
+                        line.gl_account.name,
+                        line.debit_amount,
+                        line.credit_amount,
+                        entry.created_by.get_full_name() if entry.created_by else '',
+                    ]
+                )
         return response
 
     return render(
@@ -576,6 +593,7 @@ def interest_master_list(request):
         if key not in grouped:
             grouped[key] = {'head': slab.account_head, 'slabs': []}
         grouped[key]['slabs'].append(slab)
+    return render(request, 'accounting/interest_master_list.html', {'groups': grouped.values(), 'total': slabs.count()})
 
 
 @admin_required

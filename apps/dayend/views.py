@@ -41,9 +41,14 @@ def dayend_index(request):
     else:
         next_working_date = date.today()
 
-    last_completed = DayEndLog.objects.filter(
-        branch=branch, status='completed',
-    ).order_by('-processing_date').first()
+    last_completed = (
+        DayEndLog.objects.filter(
+            branch=branch,
+            status='completed',
+        )
+        .order_by('-processing_date')
+        .first()
+    )
     last_completed_date = last_completed.processing_date if last_completed else None
 
     return render(
@@ -119,9 +124,14 @@ class RollbackDayEndView(ManagerRequiredMixin, View):
             messages.error(request, 'Please select a branch.')
             return redirect('dayend:index')
 
-        last_completed = DayEndLog.objects.filter(
-            branch=branch, status='completed',
-        ).order_by('-processing_date').first()
+        last_completed = (
+            DayEndLog.objects.filter(
+                branch=branch,
+                status='completed',
+            )
+            .order_by('-processing_date')
+            .first()
+        )
         if not last_completed:
             messages.error(request, 'No completed day end to rollback.')
             return redirect('dayend:index')
