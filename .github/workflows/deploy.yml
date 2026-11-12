@@ -21,10 +21,11 @@ jobs:
             cd /opt/society_software
             git pull origin main
             source venv/bin/activate
+            export $(cat .env | xargs)
             pip install -r requirements.txt
             python manage.py migrate_schemas --shared
             python manage.py migrate_schemas --tenant
-            python manage.py collectstatic --noinput
+            python manage.py collectstatic --clear --noinput
             sudo systemctl restart gunicorn
             sudo systemctl restart celery
             sudo systemctl restart celerybeat
