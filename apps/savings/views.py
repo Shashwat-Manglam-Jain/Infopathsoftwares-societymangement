@@ -203,10 +203,17 @@ def savings_withdraw(request, pk):
     if request.method == 'POST':
         form = WithdrawalForm(request.POST)
         if form.is_valid():
+            amount = form.cleaned_data['amount']
+            if amount > account.current_balance:
+                messages.error(
+                    request,
+                    f'Insufficient balance. Available: ₹{account.current_balance}, Requested: ₹{amount}',
+                )
+                return redirect('savings:detail', pk=pk)
             try:
                 txn = services.withdraw(
                     account=account,
-                    amount=form.cleaned_data['amount'],
+                    amount=amount,
                     branch=account.branch,
                     user=request.user,
                     payment_mode=form.cleaned_data['payment_mode'],
@@ -371,6 +378,13 @@ def account_type_rate_api(request):
 def savings_reverse_txn(request, pk, txn_id):
     account = get_object_or_404(SavingsAccount, pk=pk)
     txn = get_object_or_404(AccountTransaction, pk=txn_id, account=account)
+
+    from apps.accounts.permissions import is_date_locked
+
+    branch = getattr(request, 'current_branch', None) or txn.branch
+    if is_date_locked(branch, txn.txn_date):
+        messages.error(request, 'Day-end has been completed for this date. Transaction cannot be reversed.')
+        return redirect('savings:detail', pk=pk)
 
     if request.method == 'POST':
         try:

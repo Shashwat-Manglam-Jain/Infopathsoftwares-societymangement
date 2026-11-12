@@ -33,7 +33,7 @@ STATE_CHOICES = [
 ]
 
 INPUT_CLASS = (
-    'w-full px-4 py-3 border border-gray-300 rounded-lg '
+    'w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm '
     'focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 '
     'transition text-gray-900'
 )

@@ -1,10 +1,14 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Loan Products — InfoSociety{% endblock %}
-{% block page_title %}Loan Interest Rates{% endblock %}
+{% block title %}{% trans "Loans Module" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Loans Module" %}{% endblock %}
 
 {% block content %}
 <div class="space-y-4">
+
+    {% include "loans/_tabs.html" %}
+
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
             <h2 class="text-xl font-bold text-gray-900">Loan Products / Interest Rates</h2>
@@ -21,14 +25,14 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Name</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Interest Rate</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Penal Rate</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Type</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Category</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">Max Amount</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">Max Tenure</th>
-                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Status</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Name" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Interest Rate" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Penal Rate" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">{% trans "Type" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">{% trans "Category" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">{% trans "Max Amount" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">{% trans "Max Tenure" %}</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">{% trans "Status" %}</th>
                         <th class="px-4 py-3"></th>
                     </tr>
                 </thead>
@@ -43,7 +47,7 @@
                         <td class="px-4 py-3 text-sm text-right text-gray-900 hidden lg:table-cell">&#8377;{{ p.max_amount|floatformat:0 }}</td>
                         <td class="px-4 py-3 text-sm text-right text-gray-900 hidden lg:table-cell">{{ p.max_tenure_months }} mo</td>
                         <td class="px-4 py-3 text-sm text-center">
-                            {% if p.is_active %}<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Active</span>{% else %}<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">Inactive</span>{% endif %}
+                            {% if p.is_active %}<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">{% trans "Active" %}</span>{% else %}<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">{% trans "Inactive" %}</span>{% endif %}
                         </td>
                         <td class="px-4 py-3 text-sm text-right">
                             <a href="{% url 'loans:product_edit' pk=p.pk %}" class="text-primary-600 hover:text-primary-800 font-medium">Edit</a>

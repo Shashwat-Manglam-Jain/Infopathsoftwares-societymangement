@@ -1,20 +1,19 @@
 {% extends "base.html" %}
-{% block title %}Add Loan Charge{% endblock %}
-{% block page_title %}Add Loan Charge{% endblock %}
-{% block content %}
-<div class="space-y-6">
-    <div class="flex items-center justify-between">
-        <h1 class="text-2xl font-semibold text-gray-900">Add Loan Charge</h1>
-        <a href="{% url 'loans:loan_charge_list' %}" class="text-sm text-primary-600 hover:text-primary-800 font-medium">&larr; Back to List</a>
-    </div>
+{% load i18n %}
+{% block title %}{% trans "Add Loan Charge" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Add Loan Charge" %}{% endblock %}
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <form method="post" class="space-y-5">
-            {% csrf_token %}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Loan Account</label>
-                    <select name="loan" required class="searchable w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+{% block content %}
+<div class="max-w-6xl">
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">Loan Account <span class="text-red-500">*</span></label>
+                    <select name="loan" required class="searchable w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                         <option value="">-- Select Loan --</option>
                         {% for loan in loans %}
                         <option value="{{ loan.pk }}">{{ loan.loan_no }} — {{ loan.member.name }} (₹{{ loan.outstanding_principal|floatformat:2 }})</option>
@@ -22,31 +21,31 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Charge Type</label>
-                    <select name="charge_type" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">Charge Type <span class="text-red-500">*</span></label>
+                    <select name="charge_type" required class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                         {% for val, label in charge_types %}
                         <option value="{{ val }}">{{ label }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Amount (₹)</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">Amount (₹) <span class="text-red-500">*</span></label>
                     <input type="number" name="amount" step="0.01" min="0.01" required
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                           class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Narration</label>
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Narration" %} <span class="text-red-500">*</span></label>
                     <input type="text" name="narration" maxlength="300" required
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                           class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                 </div>
             </div>
-            <div class="pt-2">
-                <button type="submit" class="bg-primary-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-700 transition"
-                        onclick="return confirm('Add this charge to the loan? This will increase the outstanding principal.')">
-                    Add Loan Charge
-                </button>
+
+            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-end gap-3">
+                <a href="{% url 'loans:loan_charge_list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
+                <button type="submit" class="px-5 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700"
+                        onclick="return confirm('Add this charge? This will increase the outstanding principal.')">Add Charge</button>
             </div>
-        </form>
-    </div>
+        </div>
+    </form>
 </div>
 {% endblock %}

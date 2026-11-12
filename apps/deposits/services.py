@@ -252,6 +252,8 @@ def create_rd(
 
 
 def collect_rd_installment(rd, amount, branch, user):
+    if rd.status != 'active':
+        raise ValueError('RD is not active')
     amount = Decimal(str(amount))
     installment = (
         RDInstallment.objects.filter(

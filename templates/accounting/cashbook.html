@@ -1,160 +1,142 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Cashbook — InfoSociety{% endblock %}
-{% block page_title %}Cashbook{% endblock %}
+{% block title %}{% trans "Cashbook" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Accounting Module" %}{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
+<div>
+    {% include "accounting/_tabs.html" %}
 
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-            <h2 class="text-xl font-bold text-gray-900">Cashbook</h2>
-            <p class="text-sm text-gray-500 mt-1">Cash transactions for {{ cb_date|date:"d M Y" }}</p>
-        </div>
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <p class="text-sm text-gray-500">Cash transactions for {{ cb_date|date:"d M Y" }}</p>
         <div class="flex items-center gap-2">
             <form method="get" class="flex items-center gap-2">
                 <input type="date" name="date" value="{{ cb_date|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}"
-                       class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
-                <button type="submit" class="px-3 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200">Go</button>
+                       class="rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
+                <button type="submit" class="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm font-medium rounded hover:bg-gray-200">Go</button>
+                {% include "includes/export_csv.html" %}
             </form>
-            <a href="{% url 'accounting:receipt' %}" class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 shadow-sm">
-                <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                Receipt
-            </a>
-            <a href="{% url 'accounting:payment' %}" class="inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 shadow-sm">
-                <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
-                Payment
-            </a>
+            <a href="{% url 'accounting:receipt' %}" class="px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700">Receipt</a>
+            <a href="{% url 'accounting:payment' %}" class="px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded hover:bg-red-700">Payment</a>
         </div>
     </div>
 
-    <!-- Summary Cards -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-4">
         <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 divide-x divide-gray-200">
-            <!-- Opening Cash -->
-            <div class="p-4 bg-gray-50">
-                <p class="text-xs font-semibold text-gray-500 uppercase">Opening Cash</p>
-                <p class="text-lg font-bold text-gray-800 mt-1">{{ opening_cash|floatformat:2|default:"0.00" }}</p>
+            <div class="px-3 py-2.5 bg-gray-50">
+                <p class="text-xs font-semibold text-gray-500 uppercase">Opening</p>
+                <p class="text-sm font-bold text-gray-800 mt-0.5">{{ opening_cash|floatformat:2|default:"0.00" }}</p>
             </div>
-            <!-- Credit Cash -->
-            <div class="p-4">
-                <p class="text-xs font-semibold text-green-600 uppercase">Credit Cash</p>
-                <p class="text-lg font-bold text-green-700 mt-1">{{ receipt_cash|floatformat:2|default:"0.00" }}</p>
+            <div class="px-3 py-2.5">
+                <p class="text-xs font-semibold text-green-600 uppercase">Cr Cash</p>
+                <p class="text-sm font-bold text-green-700 mt-0.5">{{ receipt_cash|floatformat:2|default:"0.00" }}</p>
             </div>
-            <!-- Credit Transfer -->
-            <div class="p-4">
-                <p class="text-xs font-semibold text-green-600 uppercase">Credit Transfer</p>
-                <p class="text-lg font-bold text-green-700 mt-1">{{ receipt_transfer|floatformat:2|default:"0.00" }}</p>
+            <div class="px-3 py-2.5">
+                <p class="text-xs font-semibold text-green-600 uppercase">Cr Transfer</p>
+                <p class="text-sm font-bold text-green-700 mt-0.5">{{ receipt_transfer|floatformat:2|default:"0.00" }}</p>
             </div>
-            <!-- Credit Total -->
-            <div class="p-4 bg-green-50">
-                <p class="text-xs font-semibold text-green-700 uppercase">Credit Total</p>
-                <p class="text-lg font-bold text-green-800 mt-1">{{ total_receipts|floatformat:2|default:"0.00" }}</p>
+            <div class="px-3 py-2.5 bg-green-50">
+                <p class="text-xs font-semibold text-green-700 uppercase">Cr Total</p>
+                <p class="text-sm font-bold text-green-800 mt-0.5">{{ total_receipts|floatformat:2|default:"0.00" }}</p>
             </div>
-            <!-- Debit Cash -->
-            <div class="p-4">
-                <p class="text-xs font-semibold text-red-600 uppercase">Debit Cash</p>
-                <p class="text-lg font-bold text-red-700 mt-1">{{ payment_cash|floatformat:2|default:"0.00" }}</p>
+            <div class="px-3 py-2.5">
+                <p class="text-xs font-semibold text-red-600 uppercase">Dr Cash</p>
+                <p class="text-sm font-bold text-red-700 mt-0.5">{{ payment_cash|floatformat:2|default:"0.00" }}</p>
             </div>
-            <!-- Debit Transfer -->
-            <div class="p-4">
-                <p class="text-xs font-semibold text-red-600 uppercase">Debit Transfer</p>
-                <p class="text-lg font-bold text-red-700 mt-1">{{ payment_transfer|floatformat:2|default:"0.00" }}</p>
+            <div class="px-3 py-2.5">
+                <p class="text-xs font-semibold text-red-600 uppercase">Dr Transfer</p>
+                <p class="text-sm font-bold text-red-700 mt-0.5">{{ payment_transfer|floatformat:2|default:"0.00" }}</p>
             </div>
-            <!-- Debit Total -->
-            <div class="p-4 bg-red-50">
-                <p class="text-xs font-semibold text-red-700 uppercase">Debit Total</p>
-                <p class="text-lg font-bold text-red-800 mt-1">{{ total_payments|floatformat:2|default:"0.00" }}</p>
+            <div class="px-3 py-2.5 bg-red-50">
+                <p class="text-xs font-semibold text-red-700 uppercase">Dr Total</p>
+                <p class="text-sm font-bold text-red-800 mt-0.5">{{ total_payments|floatformat:2|default:"0.00" }}</p>
             </div>
-            <!-- Closing Cash -->
-            <div class="p-4 bg-blue-50">
-                <p class="text-xs font-semibold text-blue-700 uppercase">Closing Cash</p>
-                <p class="text-lg font-bold text-blue-800 mt-1">{{ closing_cash|floatformat:2|default:"0.00" }}</p>
+            <div class="px-3 py-2.5 bg-blue-50">
+                <p class="text-xs font-semibold text-blue-700 uppercase">Closing</p>
+                <p class="text-sm font-bold text-blue-800 mt-0.5">{{ closing_cash|floatformat:2|default:"0.00" }}</p>
             </div>
         </div>
     </div>
 
-    <!-- Receipts Section -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div class="px-5 py-4 border-b border-gray-200 bg-green-50 flex items-center justify-between">
-            <h3 class="text-sm font-semibold text-green-800">Receipts (Money In)</h3>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-4">
+        <div class="px-5 py-3 border-b border-gray-200 bg-green-50 flex items-center justify-between">
+            <h3 class="text-xs font-semibold text-green-800 uppercase">Receipts (Money In)</h3>
             <span class="text-xs text-green-600 font-medium">{{ total_receipts|floatformat:2|default:"0.00" }}</span>
         </div>
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Voucher</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">GL Head</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Narration</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Amount</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">By</th>
+            <table class="min-w-full text-sm">
+                <thead>
+                    <tr class="text-left text-xs font-semibold text-gray-500 uppercase bg-gray-50">
+                        <th class="px-4 py-2">{% trans "Voucher" %}</th>
+                        <th class="px-4 py-2">{% trans "GL Head" %}</th>
+                        <th class="px-4 py-2 hidden md:table-cell">{% trans "Narration" %}</th>
+                        <th class="px-4 py-2 text-right">{% trans "Amount" %}</th>
+                        <th class="px-4 py-2 hidden lg:table-cell">{% trans "By" %}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     {% for entry in today_entries %}
                     {% if entry.voucher_type == 'receipt' %}
                     <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-3 text-sm font-mono text-gray-900">{{ entry.voucher_no }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-700">
+                        <td class="px-4 py-2 font-mono text-gray-900">{{ entry.voucher_no }}</td>
+                        <td class="px-4 py-2 text-gray-700">
                             {% for line in entry.lines.all %}
                                 {% if line.credit_amount > 0 %}
                                 <div>{{ line.gl_account.code }} — {{ line.gl_account.name }}</div>
                                 {% endif %}
                             {% endfor %}
                         </td>
-                        <td class="px-4 py-3 text-sm text-gray-600 hidden md:table-cell max-w-xs truncate">{{ entry.narration|default:"—" }}</td>
-                        <td class="px-4 py-3 text-sm text-right font-medium text-green-700">{{ entry.total_amount|floatformat:2 }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-500 hidden lg:table-cell">{{ entry.created_by.get_short_name }}</td>
+                        <td class="px-4 py-2 text-gray-600 hidden md:table-cell max-w-xs truncate">{{ entry.narration|default:"—" }}</td>
+                        <td class="px-4 py-2 text-right font-medium text-green-700">{{ entry.total_amount|floatformat:2 }}</td>
+                        <td class="px-4 py-2 text-gray-500 hidden lg:table-cell">{{ entry.created_by.get_short_name }}</td>
                     </tr>
                     {% endif %}
                     {% endfor %}
                     {% if not total_receipts %}
-                    <tr><td colspan="5" class="px-4 py-6 text-center text-sm text-gray-400">No receipts.</td></tr>
+                    <tr><td colspan="5" class="px-4 py-4 text-center text-gray-400">No receipts.</td></tr>
                     {% endif %}
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- Payments Section -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div class="px-5 py-4 border-b border-gray-200 bg-red-50 flex items-center justify-between">
-            <h3 class="text-sm font-semibold text-red-800">Payments (Money Out)</h3>
+        <div class="px-5 py-3 border-b border-gray-200 bg-red-50 flex items-center justify-between">
+            <h3 class="text-xs font-semibold text-red-800 uppercase">Payments (Money Out)</h3>
             <span class="text-xs text-red-600 font-medium">{{ total_payments|floatformat:2|default:"0.00" }}</span>
         </div>
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Voucher</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">GL Head</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Narration</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Amount</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">By</th>
+            <table class="min-w-full text-sm">
+                <thead>
+                    <tr class="text-left text-xs font-semibold text-gray-500 uppercase bg-gray-50">
+                        <th class="px-4 py-2">{% trans "Voucher" %}</th>
+                        <th class="px-4 py-2">{% trans "GL Head" %}</th>
+                        <th class="px-4 py-2 hidden md:table-cell">{% trans "Narration" %}</th>
+                        <th class="px-4 py-2 text-right">{% trans "Amount" %}</th>
+                        <th class="px-4 py-2 hidden lg:table-cell">{% trans "By" %}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     {% for entry in today_entries %}
                     {% if entry.voucher_type == 'payment' %}
                     <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-3 text-sm font-mono text-gray-900">{{ entry.voucher_no }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-700">
+                        <td class="px-4 py-2 font-mono text-gray-900">{{ entry.voucher_no }}</td>
+                        <td class="px-4 py-2 text-gray-700">
                             {% for line in entry.lines.all %}
                                 {% if line.debit_amount > 0 %}
                                 <div>{{ line.gl_account.code }} — {{ line.gl_account.name }}</div>
                                 {% endif %}
                             {% endfor %}
                         </td>
-                        <td class="px-4 py-3 text-sm text-gray-600 hidden md:table-cell max-w-xs truncate">{{ entry.narration|default:"—" }}</td>
-                        <td class="px-4 py-3 text-sm text-right font-medium text-red-700">{{ entry.total_amount|floatformat:2 }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-500 hidden lg:table-cell">{{ entry.created_by.get_short_name }}</td>
+                        <td class="px-4 py-2 text-gray-600 hidden md:table-cell max-w-xs truncate">{{ entry.narration|default:"—" }}</td>
+                        <td class="px-4 py-2 text-right font-medium text-red-700">{{ entry.total_amount|floatformat:2 }}</td>
+                        <td class="px-4 py-2 text-gray-500 hidden lg:table-cell">{{ entry.created_by.get_short_name }}</td>
                     </tr>
                     {% endif %}
                     {% endfor %}
                     {% if not total_payments %}
-                    <tr><td colspan="5" class="px-4 py-6 text-center text-sm text-gray-400">No payments.</td></tr>
+                    <tr><td colspan="5" class="px-4 py-4 text-center text-gray-400">No payments.</td></tr>
                     {% endif %}
                 </tbody>
             </table>

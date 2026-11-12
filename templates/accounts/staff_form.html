@@ -1,147 +1,139 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block title %}{{ title }} — InfoSociety{% endblock %}
 {% block page_title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto space-y-6">
-    <div>
-        <h2 class="text-xl font-bold text-gray-900">{{ title }}</h2>
-        <p class="text-sm text-gray-500 mt-1">{% if edit_user %}Update staff user details.{% else %}Create a new staff user with login credentials.{% endif %}</p>
-    </div>
+<div class="max-w-full">
 
     {% if form.errors %}
-    <div class="rounded-lg bg-red-50 border border-red-200 p-4">
-        <div class="flex">
-            <svg class="h-5 w-5 text-red-400 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <div class="ml-3">
-                <h3 class="text-sm font-medium text-red-800">Please correct the errors below</h3>
-                <ul class="mt-1 text-sm text-red-700 list-disc list-inside">
-                    {% for field, errors in form.errors.items %}
-                        {% for error in errors %}<li>{{ field|title }}: {{ error }}</li>{% endfor %}
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
+    <div class="rounded-xl bg-red-50 border border-red-200 p-4 mb-5">
+        <h3 class="text-sm font-medium text-red-800 flex items-center gap-2">
+            <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+            {% trans "Please correct the errors below" %}
+        </h3>
+        <ul class="mt-1 text-sm text-red-700 list-disc list-inside">
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}<li>{{ field|title }}: {{ error }}</li>{% endfor %}
+            {% endfor %}
+        </ul>
     </div>
     {% endif %}
 
-    <form method="post" enctype="multipart/form-data" class="space-y-6">
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
 
-        {% if not edit_user %}
-        <!-- Login Credentials -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 class="text-base font-semibold text-gray-900 mb-4 flex items-center">
-                <svg class="h-5 w-5 mr-2 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
-                Login Credentials
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+
+            {% if not edit_user %}
+            <!-- Login Credentials -->
+            <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-xl">
+                <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                    Login Credentials
+                </h3>
+            </div>
+            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Username <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Username <span class="text-red-500">*</span></label>
                     <input type="text" name="username" value="{{ form.username.value|default:'' }}" required
-                           class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500">
+                           class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                 </div>
                 <div></div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Password <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Password <span class="text-red-500">*</span></label>
                     <input type="password" name="password1" required
-                           class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500">
-                    <p class="text-xs text-gray-500 mt-1">Min 8 characters, not entirely numeric.</p>
+                           class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                    <p class="text-xs text-gray-400 mt-0.5">Min 8 chars, not entirely numeric.</p>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Confirm Password <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Confirm Password <span class="text-red-500">*</span></label>
                     <input type="password" name="password2" required
-                           class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500">
+                           class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                 </div>
             </div>
-        </div>
-        {% endif %}
+            {% endif %}
 
-        <!-- Personal Details -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 class="text-base font-semibold text-gray-900 mb-4 flex items-center">
-                <svg class="h-5 w-5 mr-2 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                Personal Details
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- {% trans "Personal" %} Details -->
+            <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 {% if not edit_user %}border-t{% else %}rounded-t-xl{% endif %}">
+                <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    {% trans "Personal" %} Details
+                </h3>
+            </div>
+            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                 {% if edit_user %}
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Username</label>
                     <input type="text" value="{{ edit_user.username }}" disabled
-                           class="block w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500">
+                           class="block w-full rounded border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-sm text-gray-500">
                 </div>
                 <div></div>
                 {% endif %}
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">First Name</label>
                     <input type="text" name="first_name" value="{{ form.first_name.value|default:'' }}"
-                           class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500">
+                           class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Last Name</label>
                     <input type="text" name="last_name" value="{{ form.last_name.value|default:'' }}"
-                           class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500">
+                           class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Email" %}</label>
                     <input type="email" name="email" value="{{ form.email.value|default:'' }}"
-                           class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500">
+                           class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Phone" %}</label>
                     <input type="tel" name="phone" value="{{ form.phone.value|default:'' }}"
-                           class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500">
+                           class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                 </div>
             </div>
-        </div>
 
-        <!-- Role & Access -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 class="text-base font-semibold text-gray-900 mb-4 flex items-center">
-                <svg class="h-5 w-5 mr-2 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                Role & Access
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Role & Access -->
+            <div class="px-5 py-3 border-b border-t border-gray-200 bg-gray-50/50">
+                <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    Role &amp; Access
+                </h3>
+            </div>
+            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Role <span class="text-red-500">*</span></label>
-                    <select name="role" required class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500">
-                        <option value="cashier" {% if form.role.value == 'cashier' %}selected{% endif %}>Cashier</option>
-                        <option value="accountant" {% if form.role.value == 'accountant' %}selected{% endif %}>Accountant</option>
-                        <option value="branch_manager" {% if form.role.value == 'branch_manager' %}selected{% endif %}>Branch Manager</option>
-                        <option value="auditor" {% if form.role.value == 'auditor' %}selected{% endif %}>Auditor</option>
-                    </select>
-                    <p class="text-xs text-gray-500 mt-1">Branch Manager can manage other staff.</p>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Role <span class="text-red-500">*</span></label>
+                    {{ form.role }}
+                    <p class="text-xs text-gray-400 mt-0.5">{% trans "Director" %} &amp; Auditor: read-only. Clerk assists Cashier.</p>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Branch</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Branch" %}</label>
                     {{ form.branch }}
                 </div>
-                <div class="flex items-center gap-3">
-                    <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                <div class="flex items-center gap-4">
+                    <label class="flex items-center gap-1.5 cursor-pointer">
                         <input type="checkbox" name="can_access_all_branches" {% if form.can_access_all_branches.value %}checked{% endif %}
                                class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
-                        <span class="text-sm text-gray-700">Can Access All Branches</span>
+                        <span class="text-sm text-gray-700">Access All Branches</span>
                     </label>
-                </div>
-                {% if edit_user %}
-                <div class="flex items-center gap-3">
-                    <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                    {% if edit_user %}
+                    <label class="flex items-center gap-1.5 cursor-pointer">
                         <input type="checkbox" name="is_active" {% if form.is_active.value %}checked{% endif %}
                                class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
-                        <span class="text-sm text-gray-700">Active</span>
+                        <span class="text-sm text-gray-700">{% trans "Active" %}</span>
                     </label>
+                    {% endif %}
                 </div>
-                {% endif %}
             </div>
-        </div>
 
-        <!-- Actions -->
-        <div class="flex items-center justify-end gap-3 pt-2">
-            <a href="{% url 'accounts:staff_list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
-            <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">
-                {% if edit_user %}Save Changes{% else %}Create User{% endif %}
-            </button>
+            <!-- Action Buttons -->
+            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex items-center justify-end gap-3">
+                <a href="{% url 'accounts:staff_list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
+                <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm">
+                    {% if edit_user %}Save{% else %}Create User{% endif %}
+                </button>
+            </div>
+
         </div>
     </form>
 </div>

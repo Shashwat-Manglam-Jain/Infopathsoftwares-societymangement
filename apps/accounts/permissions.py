@@ -153,6 +153,45 @@ class AuditorOrAboveMixin(LoginRequiredMixin):
         return super().dispatch(request, *args, **kwargs)
 
 
+def is_date_locked(branch, txn_date):
+    """Return True if the day-end cashbook has been posted for this branch+date."""
+    from apps.dayend.models import DayEndLog
+
+    return DayEndLog.objects.filter(
+        branch=branch,
+        processing_date=txn_date,
+        status='completed',
+    ).exists()
+
+
+def day_end_lock_required(view_func):
+    """Block edits/cancellations on transactions whose date has a completed day-end."""
+
+    @wraps(view_func)
+    @login_required
+    def wrapper(request, *args, **kwargs):
+        if request.method == 'POST':
+            branch = getattr(request, 'current_branch', None)
+            if branch:
+                entry_date_str = request.POST.get('entry_date', '')
+                if entry_date_str:
+                    from datetime import date as dt_date
+
+                    try:
+                        txn_date = dt_date.fromisoformat(entry_date_str)
+                    except (ValueError, TypeError):
+                        txn_date = None
+                    if txn_date and is_date_locked(branch, txn_date):
+                        messages.error(
+                            request,
+                            'Day-end has been completed for this date. No changes allowed.',
+                        )
+                        return redirect(request.path)
+        return view_func(request, *args, **kwargs)
+
+    return wrapper
+
+
 def day_open_required(view_func):
     """Block transaction creation (POST) when the working day is closed."""
 

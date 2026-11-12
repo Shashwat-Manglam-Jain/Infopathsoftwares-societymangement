@@ -86,6 +86,7 @@ def generate_emi_schedule(loan):
     return schedule
 
 
+@transaction.atomic
 def approve_loan(loan, approved_amount, approved_by):
     if loan.status != 'applied':
         raise ValueError('Loan is not in applied status')
@@ -138,8 +139,14 @@ def reject_loan(loan, remarks, user):
 def disburse_loan(loan, branch, user):
     if loan.status != 'approved':
         raise ValueError('Loan is not in approved status')
+    if loan.approved_amount <= Decimal('0'):
+        raise ValueError('Approved amount must be greater than zero')
 
     product = loan.loan_product
+    if loan.approved_amount > product.max_amount:
+        raise ValueError(
+            f'Approved amount ₹{loan.approved_amount} exceeds product limit ₹{product.max_amount}'
+        )
     if product.requires_guarantor:
         from apps.loans.models import LoanGuarantor
 
@@ -207,6 +214,12 @@ def collect_emi(loan, amount, branch, user, payment_mode='cash'):
         raise ValueError('Loan is not in disbursed status')
     if amount <= 0:
         raise ValueError('Amount must be positive')
+    total_outstanding = loan.outstanding_principal + loan.outstanding_interest + loan.overdue_amount
+    if amount > total_outstanding and total_outstanding > 0:
+        raise ValueError(
+            f'Payment ₹{amount} exceeds total outstanding ₹{total_outstanding}. '
+            f'Maximum collectible: ₹{total_outstanding}'
+        )
 
     with transaction.atomic():
         txn_date = get_transaction_date(branch)

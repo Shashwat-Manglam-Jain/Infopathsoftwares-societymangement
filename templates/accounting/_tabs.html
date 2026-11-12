@@ -1,0 +1,11 @@
+{% load i18n %}
+<div class="border-b border-gray-200 mb-4">
+    <nav class="flex space-x-6 -mb-px overflow-x-auto">
+        <a href="{% url 'accounting:heads' %}" class="px-1 pb-3 text-sm font-medium border-b-2 whitespace-nowrap {% if active_tab == 'heads' %}border-primary-600 text-primary-600{% else %}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %}">{% trans "Heads" %}</a>
+        <a href="{% url 'accounting:vouchers' %}" class="px-1 pb-3 text-sm font-medium border-b-2 whitespace-nowrap {% if active_tab == 'vouchers' %}border-primary-600 text-primary-600{% else %}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %}">{% trans "Vouchers" %}</a>
+        <a href="{% url 'accounting:cashbook' %}" class="px-1 pb-3 text-sm font-medium border-b-2 whitespace-nowrap {% if active_tab == 'cashbook' %}border-primary-600 text-primary-600{% else %}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %}">{% trans "Cashbook" %}</a>
+        <a href="{% url 'accounting:day_book' %}" class="px-1 pb-3 text-sm font-medium border-b-2 whitespace-nowrap {% if active_tab == 'daybook' %}border-primary-600 text-primary-600{% else %}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %}">{% trans "Day Book" %}</a>
+        <a href="{% url 'accounting:general_ledger' %}" class="px-1 pb-3 text-sm font-medium border-b-2 whitespace-nowrap {% if active_tab == 'ledger' %}border-primary-600 text-primary-600{% else %}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %}">{% trans "General Ledger" %}</a>
+        <a href="{% url 'accounting:interest_master' %}" class="px-1 pb-3 text-sm font-medium border-b-2 whitespace-nowrap {% if active_tab == 'interest' %}border-primary-600 text-primary-600{% else %}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %}">{% trans "Interest Slab" %}</a>
+    </nav>
+</div>

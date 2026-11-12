@@ -1,3 +1,4 @@
+{% load i18n static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,13 +11,13 @@
     <div class="max-w-md w-full mx-4">
         <div class="text-center mb-8">
             <a href="/" class="inline-block">
-                <img src="/static/img/logo.png" alt="InfoSociety" class="h-12 mx-auto">
+                <img src="{% static 'img/logo.png' %}" alt="InfoSociety" class="h-12 mx-auto">
             </a>
-            <h1 class="mt-4 text-2xl font-bold text-gray-900">Login to Your Society</h1>
-            <p class="mt-2 text-sm text-gray-600">Select your society to continue to the login page</p>
+            <h1 class="mt-4 text-2xl font-bold text-gray-900">{% trans "Login to Your Society" %}</h1>
+            <p class="mt-2 text-sm text-gray-600">{% trans "Select your society to continue to the login page" %}</p>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
             {% if error %}
             <div class="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3">
                 <p class="text-sm text-red-700">{{ error }}</p>
@@ -26,33 +27,33 @@
             <form method="post" class="space-y-5">
                 {% csrf_token %}
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Your Society</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Select Your Society" %}</label>
                     <select name="domain" required class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        <option value="">-- Choose Society --</option>
+                        <option value="">-- {% trans "Choose Society" %} --</option>
                         {% for d in domains %}
                         <option value="{{ d.pk }}">{{ d.tenant.name }} ({{ d.domain }})</option>
                         {% endfor %}
                     </select>
                 </div>
                 <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition">
-                    Continue to Login
+                    {% trans "Continue to Login" %}
                 </button>
             </form>
 
             {% if not domains %}
             <div class="mt-4 text-center">
-                <p class="text-sm text-gray-500">No societies registered yet.</p>
-                <a href="/signup/" class="mt-2 inline-block text-sm text-indigo-600 hover:underline font-medium">Register Your Society</a>
+                <p class="text-sm text-gray-500">{% trans "No societies registered yet." %}</p>
+                <a href="/signup/" class="mt-2 inline-block text-sm text-indigo-600 hover:underline font-medium">{% trans "Register Your Society" %}</a>
             </div>
             {% endif %}
         </div>
 
         <div class="mt-6 text-center">
             <p class="text-sm text-gray-500">
-                Don't have an account?
-                <a href="/signup/" class="text-indigo-600 hover:underline font-medium">Start Free Trial</a>
+                {% trans "Don't have an account?" %}
+                <a href="/signup/" class="text-indigo-600 hover:underline font-medium">{% trans "Start Free Trial" %}</a>
             </p>
-            <a href="/" class="mt-2 inline-block text-sm text-gray-500 hover:text-gray-700">&larr; Back to Home</a>
+            <a href="/" class="mt-2 inline-block text-sm text-gray-500 hover:text-gray-700">&larr; {% trans "Back to Home" %}</a>
         </div>
     </div>
 </body>

@@ -20,7 +20,7 @@ def landing_page(request):
 
 
 def public_login(request):
-    domains = Domain.objects.filter(is_primary=True).order_by('domain')
+    domains = Domain.objects.filter(is_primary=True).exclude(tenant__schema_name='public').order_by('domain')
     error = ''
     if request.method == 'POST':
         domain_id = request.POST.get('domain', '')

@@ -7,6 +7,7 @@ class CustomUser(AbstractUser):
         ('admin', 'Admin'),
         ('branch_manager', 'Branch Manager'),
         ('cashier', 'Cashier'),
+        ('clerk', 'Clerk'),
         ('accountant', 'Accountant'),
         ('auditor', 'Auditor'),
         ('director', 'Director'),
@@ -45,7 +46,7 @@ class CustomUser(AbstractUser):
     @property
     def is_cashier(self):
         """Cashier or above — can do counter transactions."""
-        return self.role in ('admin', 'branch_manager', 'cashier')
+        return self.role in ('admin', 'branch_manager', 'cashier', 'clerk')
 
     @property
     def is_accountant(self):
@@ -54,8 +55,8 @@ class CustomUser(AbstractUser):
 
     @property
     def is_staff_role(self):
-        """Any operational staff — cashier, accountant, manager, admin. NOT auditor/member."""
-        return self.role in ('admin', 'branch_manager', 'cashier', 'accountant')
+        """Any operational staff — cashier, clerk, accountant, manager, admin. NOT auditor/director/member."""
+        return self.role in ('admin', 'branch_manager', 'cashier', 'clerk', 'accountant')
 
     @property
     def is_auditor_or_above(self):

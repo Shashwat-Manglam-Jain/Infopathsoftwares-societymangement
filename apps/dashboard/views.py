@@ -2,6 +2,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Sum
 from django.views.generic import TemplateView
 
@@ -74,11 +75,18 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         context['today'] = today
 
+        from apps.dayend.models import WorkingDay
+
+        working_day = None
+        if branch:
+            working_day = WorkingDay.objects.filter(branch=branch).first()
+        context['working_day'] = working_day
+
         tenant = getattr(self.request, 'tenant', None)
         if tenant:
             try:
                 context['subscription'] = tenant.subscription
-            except Exception:
+            except ObjectDoesNotExist:
                 context['subscription'] = None
         else:
             context['subscription'] = None

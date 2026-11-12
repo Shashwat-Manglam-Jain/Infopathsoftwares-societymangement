@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Notification Templates" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Notification Templates" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-full">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Name" %}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Event" %}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Active" %}</th>
+                    <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Action" %}</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for tpl in templates %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ tpl.name }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-600">{{ tpl.get_event_display|default:tpl.event }}</td>
+                    <td class="px-4 py-3 text-sm">
+                        {% if tpl.is_active %}<span class="text-green-600 font-medium">{% trans "Yes" %}</span>{% else %}<span class="text-gray-400">{% trans "No" %}</span>{% endif %}
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                        <a href="{% url 'notifications:template_edit' tpl.pk %}" class="text-xs text-primary-600 hover:text-primary-700 font-medium">{% trans "Edit" %}</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="px-4 py-8 text-center text-sm text-gray-400">{% trans "No templates configured." %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

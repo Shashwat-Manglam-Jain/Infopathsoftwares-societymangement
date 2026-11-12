@@ -1,65 +1,79 @@
 {% extends "base.html" %}
+{% load i18n %}
 {% block title %}FD {{ fd.fd_no }} — InfoSociety{% endblock %}
-{% block page_title %}Fixed Deposit Details{% endblock %}
+{% block page_title %}{% trans "Fixed Deposit Details" %}{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto">
-    <div class="flex items-center justify-between mb-6">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">{{ fd.fd_no }}</h1>
-            <p class="text-sm text-gray-500"><a href="{% url 'members:detail' fd.member.pk %}" class="text-primary-600 hover:underline">{{ fd.member.name }}</a> — Fixed Deposit</p>
-        </div>
-        <a href="{% url 'deposits:fd_list' %}" class="text-gray-500 hover:text-gray-700 text-sm">&larr; Back</a>
-    </div>
+<div class="max-w-6xl">
 
-    <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <p class="text-xs text-gray-500 uppercase">Deposit Amount</p>
-            <p class="text-2xl font-bold text-gray-900 mt-1">&#8377;{{ fd.deposit_amount|floatformat:2 }}</p>
+    <!-- Summary -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+        <div class="px-5 py-4 grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-3">
+            <div>
+                <span class="text-xs text-gray-500">FD No</span>
+                <p class="text-sm font-semibold font-mono text-gray-900">{{ fd.fd_no }}</p>
+            </div>
+            <div>
+                <span class="text-xs text-gray-500">{% trans "Member" %}</span>
+                <p class="text-sm font-medium"><a href="{% url 'members:detail' fd.member.pk %}" class="text-primary-600 hover:underline">{{ fd.member.name }}</a></p>
+            </div>
+            <div>
+                <span class="text-xs text-gray-500">{% trans "Status" %}</span>
+                <p class="mt-0.5"><span class="px-2 py-0.5 rounded-full text-xs font-medium {% if fd.status == 'active' %}bg-green-100 text-green-700{% elif fd.status == 'matured' %}bg-blue-100 text-blue-700{% else %}bg-gray-100 text-gray-700{% endif %}">{{ fd.get_status_display }}</span></p>
+            </div>
+            <div>
+                <span class="text-xs text-gray-500">{% trans "Branch" %}</span>
+                <p class="text-sm font-medium text-gray-900">{{ fd.branch.branch_name }}</p>
+            </div>
         </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <p class="text-xs text-gray-500 uppercase">Interest Rate</p>
-            <p class="text-2xl font-bold text-primary-600 mt-1">{{ fd.interest_rate }}%</p>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <p class="text-xs text-gray-500 uppercase">Maturity Amount</p>
-            <p class="text-2xl font-bold text-green-600 mt-1">&#8377;{{ fd.maturity_amount|floatformat:2 }}</p>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <p class="text-xs text-gray-500 uppercase">Status</p>
-            <p class="mt-1"><span class="px-3 py-1 rounded-full text-sm font-medium {% if fd.status == 'active' %}bg-green-100 text-green-700{% elif fd.status == 'matured' %}bg-blue-100 text-blue-700{% else %}bg-gray-100 text-gray-700{% endif %}">{{ fd.get_status_display }}</span></p>
-        </div>
-    </div>
 
-    <!-- Details -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-        <h3 class="text-sm font-semibold text-gray-500 uppercase mb-4">Deposit Details</h3>
-        <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 text-sm">
-            <div class="flex justify-between"><dt class="text-gray-500">Member</dt><dd class="font-medium"><a href="{% url 'members:detail' fd.member.pk %}" class="text-primary-600 hover:underline">{{ fd.member.name }}</a> ({{ fd.member.member_no }})</dd></div>
-            <div class="flex justify-between"><dt class="text-gray-500">Branch</dt><dd class="font-medium">{{ fd.branch.branch_name }}</dd></div>
-            <div class="flex justify-between"><dt class="text-gray-500">Opening Date</dt><dd class="font-medium">{{ fd.start_date|date:"d M Y" }}</dd></div>
-            <div class="flex justify-between"><dt class="text-gray-500">Maturity Date</dt><dd class="font-medium">{{ fd.maturity_date|date:"d M Y" }}</dd></div>
-            <div class="flex justify-between"><dt class="text-gray-500">Tenure</dt><dd class="font-medium">{{ fd.tenure_days }} days</dd></div>
-            <div class="flex justify-between"><dt class="text-gray-500">Auto Renew</dt><dd class="font-medium">{% if fd.is_auto_renew %}Yes{% else %}No{% endif %}</dd></div>
-            {% if fd.fd_product %}<div class="flex justify-between"><dt class="text-gray-500">Product</dt><dd class="font-medium">{{ fd.fd_product.name }}</dd></div>{% endif %}
-            {% if fd.linked_savings_account %}<div class="flex justify-between"><dt class="text-gray-500">Linked Savings</dt><dd class="font-medium">{{ fd.linked_savings_account.account_no }}</dd></div>{% endif %}
-        </dl>
-    </div>
+        <hr class="border-gray-200">
 
-    {% if fd.status == 'active' %}
-    {% if request.user.is_manager %}
-    <div class="flex gap-4">
-        <form method="post" action="{% url 'deposits:fd_premature_close' pk=fd.pk %}" onsubmit="return confirm('Are you sure you want to prematurely close this FD?');">
-            {% csrf_token %}
-            <button type="submit" class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 font-medium">Premature Close</button>
-        </form>
-        <form method="post" action="{% url 'deposits:fd_renew' pk=fd.pk %}">
-            {% csrf_token %}
-            <button type="submit" class="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 font-medium">Renew FD</button>
-        </form>
+        <div class="px-5 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="text-center">
+                <span class="text-xs text-gray-500">{% trans "Deposit Amount" %}</span>
+                <p class="text-lg font-bold text-gray-900">&#8377;{{ fd.deposit_amount|floatformat:2 }}</p>
+            </div>
+            <div class="text-center">
+                <span class="text-xs text-gray-500">{% trans "Interest Rate" %}</span>
+                <p class="text-lg font-bold text-primary-600">{{ fd.interest_rate }}%</p>
+            </div>
+            <div class="text-center">
+                <span class="text-xs text-gray-500">{% trans "Maturity Amount" %}</span>
+                <p class="text-lg font-bold text-green-600">&#8377;{{ fd.maturity_amount|floatformat:2 }}</p>
+            </div>
+        </div>
+
+        <hr class="border-gray-200">
+
+        <div class="px-5 py-4">
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
+                <div class="flex justify-between"><dt class="text-gray-500">{% trans "Opening Date" %}</dt><dd class="font-medium">{{ fd.start_date|date:"d M Y" }}</dd></div>
+                <div class="flex justify-between"><dt class="text-gray-500">{% trans "Maturity Date" %}</dt><dd class="font-medium">{{ fd.maturity_date|date:"d M Y" }}</dd></div>
+                <div class="flex justify-between"><dt class="text-gray-500">{% trans "Tenure" %}</dt><dd class="font-medium">{{ fd.tenure_days }} days</dd></div>
+                <div class="flex justify-between"><dt class="text-gray-500">Auto Renew</dt><dd class="font-medium">{% if fd.is_auto_renew %}Yes{% else %}No{% endif %}</dd></div>
+                {% if fd.fd_product %}<div class="flex justify-between"><dt class="text-gray-500">Product</dt><dd class="font-medium">{{ fd.fd_product.name }}</dd></div>{% endif %}
+                {% if fd.linked_savings_account %}<div class="flex justify-between"><dt class="text-gray-500">Linked Savings</dt><dd class="font-medium">{{ fd.linked_savings_account.account_no }}</dd></div>{% endif %}
+            </dl>
+        </div>
+
+        {% if fd.status == 'active' and request.user.is_manager %}
+        <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-end gap-3">
+            <a href="{% url 'deposits:fd_list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">&larr; Back</a>
+            <form method="post" action="{% url 'deposits:fd_renew' pk=fd.pk %}" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">Renew FD</button>
+            </form>
+            <form method="post" action="{% url 'deposits:fd_premature_close' pk=fd.pk %}" class="inline" onsubmit="return confirm('Are you sure you want to prematurely close this FD?');">
+                {% csrf_token %}
+                <button type="submit" class="px-4 py-1.5 bg-red-600 text-white text-sm font-medium rounded hover:bg-red-700">Premature Close</button>
+            </form>
+        </div>
+        {% else %}
+        <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-end">
+            <a href="{% url 'deposits:fd_list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">&larr; Back</a>
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
-    {% endif %}
 </div>
 {% endblock %}

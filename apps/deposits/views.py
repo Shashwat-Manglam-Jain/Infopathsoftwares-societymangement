@@ -5,7 +5,7 @@ from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 
 from apps.accounting.models import ChartOfAccounts, InterestMaster
-from apps.accounts.permissions import auditor_or_above, cashier_required, manager_required
+from apps.accounts.permissions import auditor_or_above, cashier_required, day_open_required, manager_required
 
 from .models import FixedDeposit, RDInstallment, RecurringDeposit
 
@@ -29,11 +29,13 @@ def fd_list(request):
             'page_obj': page_obj,
             'is_paginated': page_obj.has_other_pages(),
             'paginator': paginator,
+            'active_tab': 'fd',
         },
     )
 
 
 @cashier_required
+@day_open_required
 def fd_create(request):
     from apps.deposits.forms import FDCreateForm
     from apps.deposits.services import create_fd
@@ -104,6 +106,7 @@ def fd_detail(request, pk):
 
 
 @manager_required
+@day_open_required
 def fd_premature_close(request, pk):
     if not request.current_branch:
         messages.warning(request, 'Please select a branch first.')
@@ -121,6 +124,7 @@ def fd_premature_close(request, pk):
 
 
 @manager_required
+@day_open_required
 def fd_renew(request, pk):
     if not request.current_branch:
         messages.warning(request, 'Please select a branch first.')
@@ -159,11 +163,13 @@ def rd_list(request):
             'page_obj': page_obj,
             'is_paginated': page_obj.has_other_pages(),
             'paginator': paginator,
+            'active_tab': 'rd',
         },
     )
 
 
 @cashier_required
+@day_open_required
 def rd_create(request):
     from apps.deposits.forms import RDCreateForm
     from apps.deposits.services import create_rd
@@ -244,6 +250,7 @@ def rd_detail(request, pk):
 
 
 @cashier_required
+@day_open_required
 def rd_collect(request, pk):
     from apps.deposits.services import collect_rd_installment
 

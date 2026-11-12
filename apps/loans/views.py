@@ -60,6 +60,7 @@ def loan_list(request):
             'page_obj': page_obj,
             'is_paginated': page_obj.has_other_pages(),
             'paginator': paginator,
+            'active_tab': 'loans',
         },
     )
 
@@ -323,7 +324,7 @@ def loan_collect(request, pk):
 @auditor_or_above
 def loan_product_list(request):
     products = LoanProduct.objects.all().order_by('name')
-    return render(request, 'loans/product_list.html', {'products': products})
+    return render(request, 'loans/product_list.html', {'products': products, 'active_tab': 'products'})
 
 
 @admin_required
@@ -369,6 +370,7 @@ def loan_charge_list(request):
         'loans/loan_charge_list.html',
         {
             'instructions': instructions[:100],
+            'active_tab': 'charges',
         },
     )
 
@@ -750,6 +752,13 @@ def loan_reverse_repayment(request, pk, repayment_id):
 
     loan = get_object_or_404(LoanAccount, pk=pk)
     repayment = get_object_or_404(LoanRepayment, pk=repayment_id, loan=loan)
+
+    from apps.accounts.permissions import is_date_locked
+
+    branch = getattr(request, 'current_branch', None) or repayment.branch
+    if is_date_locked(branch, repayment.payment_date):
+        messages.error(request, 'Day-end has been completed for this date. Repayment cannot be reversed.')
+        return redirect('loans:detail', pk=pk)
 
     if request.method == 'POST':
         try:

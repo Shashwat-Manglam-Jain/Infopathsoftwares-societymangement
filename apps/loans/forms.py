@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django import forms
 from django.forms import inlineformset_factory
 
@@ -51,8 +53,8 @@ class LoanApplicationForm(forms.ModelForm):
         widgets = {
             'member': forms.Select(attrs={'class': 'searchable ' + tw}),
             'loan_product': forms.Select(attrs={'class': tw}),
-            'applied_amount': forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
-            'tenure_months': forms.NumberInput(attrs={'class': tw}),
+            'applied_amount': forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '1'}),
+            'tenure_months': forms.NumberInput(attrs={'class': tw, 'min': '1'}),
             'director_recommendation': forms.Select(attrs={'class': 'searchable ' + tw}),
             'remarks': forms.Textarea(attrs={'class': tw, 'rows': 3}),
         }
@@ -80,6 +82,12 @@ class LoanApplicationForm(forms.ModelForm):
         )
         self.fields['director_recommendation'].required = False
 
+    def clean_applied_amount(self):
+        amount = self.cleaned_data.get('applied_amount')
+        if amount is not None and amount < 1:
+            raise forms.ValidationError('Amount must be at least 1.')
+        return amount
+
     def clean_director_recommendation(self):
         director = self.cleaned_data.get('director_recommendation')
         loan_product = self.cleaned_data.get('loan_product')
@@ -95,7 +103,8 @@ class LoanApprovalForm(forms.Form):
         choices=[('approve', 'Approve'), ('reject', 'Reject')], widget=forms.Select(attrs={'class': tw})
     )
     approved_amount = forms.DecimalField(
-        max_digits=15, decimal_places=2, required=False, widget=forms.NumberInput(attrs={'class': tw, 'step': '0.01'})
+        max_digits=15, decimal_places=2, min_value=Decimal('1'), required=False,
+        widget=forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
     )
     remarks = forms.CharField(required=False, widget=forms.Textarea(attrs={'class': tw, 'rows': 2}))
 
@@ -117,7 +126,7 @@ class GuarantorForm(forms.ModelForm):
         fields = ['guarantor_member', 'guarantee_amount', 'guarantor_share_account']
         widgets = {
             'guarantor_member': forms.Select(attrs={'class': 'searchable ' + tw}),
-            'guarantee_amount': forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
+            'guarantee_amount': forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '0.01'}),
             'guarantor_share_account': forms.TextInput(attrs={'class': tw, 'readonly': 'readonly'}),
         }
 
@@ -183,7 +192,7 @@ class LoanCollateralForm(forms.ModelForm):
         widgets = {
             'collateral_type': forms.Select(attrs={'class': tw}),
             'description': forms.Textarea(attrs={'class': tw, 'rows': 3}),
-            'estimated_value': forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
+            'estimated_value': forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '0.01'}),
             'document': forms.ClearableFileInput(attrs={'class': tw}),
             'status': forms.Select(attrs={'class': tw}),
         }

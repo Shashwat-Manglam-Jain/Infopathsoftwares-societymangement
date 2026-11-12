@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import redirect
 
 
@@ -25,7 +26,7 @@ class SubscriptionMiddleware:
                 else:
                     request.subscription_expired = False
                     request.subscription = sub
-            except Exception:
+            except ObjectDoesNotExist:
                 request.subscription_expired = False
                 request.subscription = None
 

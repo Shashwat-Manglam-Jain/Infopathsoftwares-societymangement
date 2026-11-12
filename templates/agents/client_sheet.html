@@ -1,3 +1,4 @@
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -37,33 +38,33 @@
 </head>
 <body>
     <div class="no-print">
-        <button onclick="window.print()">Print Collection Sheet</button>
-        <button class="secondary" onclick="window.close()">Close</button>
+        <button onclick="window.print()">{% trans "Print Collection Sheet" %}</button>
+        <button class="secondary" onclick="window.close()">{% trans "Close" %}</button>
         <button class="secondary" onclick="history.back()">Back</button>
     </div>
 
     <div class="header">
-        <h1>Daily Collection Sheet</h1>
+        <h1>{% trans "Daily Collection Sheet" %}</h1>
         <p>{{ agent.branch.branch_name }}</p>
     </div>
 
     <div class="info-row">
-        <div>Agent: <span>{{ agent.agent_code }} — {{ agent.member.name }}</span></div>
-        <div>Area: <span>{{ agent.area|default:"—" }}</span></div>
-        <div>Date: <span>{{ today|date:"d-M-Y" }}</span></div>
+        <div>{% trans "Agent" %}: <span>{{ agent.agent_code }} — {{ agent.member.name }}</span></div>
+        <div>{% trans "Area" %}: <span>{{ agent.area|default:"—" }}</span></div>
+        <div>{% trans "Date" %}: <span>{{ today|date:"d-M-Y" }}</span></div>
     </div>
 
     <table>
         <thead>
             <tr>
                 <th style="width:30px;">#</th>
-                <th>Account No</th>
-                <th>Member Name</th>
-                <th>Type</th>
-                <th class="text-right">Installment</th>
-                <th class="text-right">Balance</th>
-                <th class="text-center">Paid/Total</th>
-                <th class="text-center collect-col">Collected</th>
+                <th>{% trans "Account No" %}</th>
+                <th>{% trans "Member Name" %}</th>
+                <th>{% trans "Type" %}</th>
+                <th class="text-right">{% trans "Installment" %}</th>
+                <th class="text-right">{% trans "Balance" %}</th>
+                <th class="text-center">{% trans "Paid/Total" %}</th>
+                <th class="text-center collect-col">{% trans "Collected" %}</th>
             </tr>
         </thead>
         <tbody>
@@ -90,13 +91,13 @@
 
     <div class="signature-area">
         <div>
-            <div class="line">Agent Signature</div>
+            <div class="line">{% trans "Agent Signature" %}</div>
         </div>
         <div>
-            <div class="line">Cashier Signature</div>
+            <div class="line">{% trans "Cashier Signature" %}</div>
         </div>
         <div>
-            <div class="line">Manager Signature</div>
+            <div class="line">{% trans "Manager Signature" %}</div>
         </div>
     </div>
 </body>

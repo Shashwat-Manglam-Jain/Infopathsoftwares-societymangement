@@ -1,87 +1,72 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block title %}Edit Account {{ account.account_no }} — InfoSociety{% endblock %}
-{% block page_title %}Edit Account{% endblock %}
+{% block page_title %}{% trans "Edit Account" %}{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto space-y-6">
-
-    <div class="flex items-center justify-between">
-        <div>
-            <h2 class="text-xl font-bold text-gray-900">Edit Account</h2>
-            <p class="text-sm text-gray-500 mt-1">Modify account settings for {{ account.account_no }}</p>
-        </div>
-        <a href="{% url 'savings:detail' account.pk %}" class="text-sm text-primary-600 hover:text-primary-800">&larr; Back to Account</a>
-    </div>
+<div class="max-w-6xl">
 
     {% if form.errors %}
-    <div class="rounded-lg bg-red-50 border border-red-200 p-4">
-        <div class="flex">
-            <svg class="h-5 w-5 text-red-400 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <div class="ml-3">
-                <h3 class="text-sm font-medium text-red-800">Please correct the errors below</h3>
-                <ul class="mt-1 text-sm text-red-700 list-disc list-inside">
-                    {% for field, errors in form.errors.items %}
-                        {% for error in errors %}<li>{{ field|title }}: {{ error }}</li>{% endfor %}
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
+    <div class="rounded-lg bg-red-50 border border-red-200 p-3 mb-4">
+        <h3 class="text-sm font-medium text-red-800">{% trans "Please correct the errors below" %}</h3>
+        <ul class="mt-1 text-sm text-red-700 list-disc list-inside">
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}<li>{{ field|title }}: {{ error }}</li>{% endfor %}
+            {% endfor %}
+        </ul>
     </div>
     {% endif %}
 
-    <!-- Account Info (read-only) -->
-    <div class="bg-gray-50 rounded-xl border border-gray-200 p-6">
-        <h3 class="text-base font-semibold text-gray-900 mb-3">Account Information</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+    <div class="bg-gray-50 rounded-lg border border-gray-200 px-5 py-4 mb-4">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2">
             <div>
-                <span class="text-gray-500">Account No</span>
-                <p class="font-medium text-gray-900">{{ account.account_no }}</p>
+                <span class="text-xs text-gray-500">{% trans "Account No" %}</span>
+                <p class="text-sm font-medium text-gray-900">{{ account.account_no }}</p>
             </div>
             <div>
-                <span class="text-gray-500">Member</span>
-                <p class="font-medium text-gray-900">{{ account.member }}</p>
+                <span class="text-xs text-gray-500">{% trans "Member" %}</span>
+                <p class="text-sm font-medium text-gray-900">{{ account.member }}</p>
             </div>
             <div>
-                <span class="text-gray-500">Account Type</span>
-                <p class="font-medium text-gray-900">{{ account.get_account_type_display }}</p>
+                <span class="text-xs text-gray-500">{% trans "Account Type" %}</span>
+                <p class="text-sm font-medium text-gray-900">{{ account.get_account_type_display }}</p>
             </div>
             <div>
-                <span class="text-gray-500">Branch</span>
-                <p class="font-medium text-gray-900">{{ account.branch }}</p>
+                <span class="text-xs text-gray-500">{% trans "Branch" %}</span>
+                <p class="text-sm font-medium text-gray-900">{{ account.branch }}</p>
             </div>
             <div>
-                <span class="text-gray-500">Status</span>
-                <p class="font-medium text-gray-900">{{ account.get_status_display }}</p>
+                <span class="text-xs text-gray-500">{% trans "Status" %}</span>
+                <p class="text-sm font-medium text-gray-900">{{ account.get_status_display }}</p>
             </div>
             <div>
-                <span class="text-gray-500">Opening Date</span>
-                <p class="font-medium text-gray-900">{{ account.opening_date }}</p>
+                <span class="text-xs text-gray-500">{% trans "Opening Date" %}</span>
+                <p class="text-sm font-medium text-gray-900">{{ account.opening_date }}</p>
             </div>
         </div>
     </div>
 
-    <form method="post" class="space-y-6">
+    <form method="post">
         {% csrf_token %}
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 class="text-base font-semibold text-gray-900 mb-4">Editable Settings</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Interest Rate (%)</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Interest Rate" %} (%)</label>
                     {{ form.interest_rate }}
-                    <p id="rate-hint" class="text-xs text-gray-400 mt-1">Auto-managed from Interest Master slab</p>
+                    <p class="text-xs text-gray-400 mt-0.5">Auto-managed from Interest Master slab</p>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Minimum Balance</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">Minimum Balance</label>
                     {{ form.minimum_balance }}
                 </div>
             </div>
-        </div>
 
-        <div class="flex items-center justify-end gap-3">
-            <a href="{% url 'savings:detail' account.pk %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
-            <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">Save Changes</button>
+            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-end gap-3">
+                <a href="{% url 'savings:detail' account.pk %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
+                <button type="submit" class="px-5 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">Save Changes</button>
+            </div>
         </div>
     </form>
 </div>

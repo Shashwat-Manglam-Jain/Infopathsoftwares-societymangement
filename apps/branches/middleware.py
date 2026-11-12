@@ -21,14 +21,11 @@ class BranchMiddleware:
                     pass
 
             if request.current_branch is None and branches.exists():
-                if request.user.can_access_all_branches:
-                    pass
-                elif request.user.branch_id:
+                if request.user.branch_id:
                     request.current_branch = request.user.branch
-                    request.session['current_branch_id'] = request.current_branch.id
                 else:
-                    request.current_branch = branches.first()
-                    request.session['current_branch_id'] = request.current_branch.id
+                    request.current_branch = branches.filter(is_head_office=True).first() or branches.first()
+                request.session['current_branch_id'] = request.current_branch.id
 
         response = self.get_response(request)
         return response

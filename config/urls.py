@@ -9,6 +9,7 @@ from apps.core.views import avatar_view, error_403, error_404, error_500
 from apps.tenants.views import society_detail, society_edit, subscription_expired_view, subscription_recharge_view
 
 urlpatterns = [
+    path('i18n/', include('django.conf.urls.i18n')),
     path('avatar/<str:name>/<int:size>/', avatar_view, name='avatar'),
     path('login', RedirectView.as_view(url='/accounts/login/', permanent=True)),
     path('subscription/expired/', subscription_expired_view, name='subscription_expired'),

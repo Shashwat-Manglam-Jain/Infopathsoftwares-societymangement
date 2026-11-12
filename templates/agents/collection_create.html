@@ -1,44 +1,33 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Record Collection — InfoSociety{% endblock %}
-{% block page_title %}Record Collection{% endblock %}
+{% block title %}{% trans "Record Collection" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Record Collection" %}{% endblock %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto space-y-6" x-data="collectionApp()">
-
-    <div class="flex items-center justify-between">
-        <div>
-            <h2 class="text-xl font-bold text-gray-900">Pigmmy Daily Collection</h2>
-            <p class="text-sm text-gray-500 mt-1">Select agent, enter declared collection, then record per-client amounts.</p>
-        </div>
-        <a href="{% url 'agents:collection_list' %}" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">Back to Collections</a>
-    </div>
+<div class="max-w-5xl" x-data="collectionApp()">
 
     {% if messages %}
-    <div class="space-y-2">
-        {% for message in messages %}
-        <div class="rounded-lg p-4 text-sm {% if message.tags == 'error' %}bg-red-50 text-red-800 border border-red-200{% elif message.tags == 'warning' %}bg-yellow-50 text-yellow-800 border border-yellow-200{% else %}bg-green-50 text-green-800 border border-green-200{% endif %}">{{ message }}</div>
-        {% endfor %}
-    </div>
+    {% for message in messages %}
+    <div class="rounded-lg p-3 mb-4 text-sm {% if message.tags == 'error' %}bg-red-50 text-red-800 border border-red-200{% elif message.tags == 'warning' %}bg-yellow-50 text-yellow-800 border border-yellow-200{% else %}bg-green-50 text-green-800 border border-green-200{% endif %}">{{ message }}</div>
+    {% endfor %}
     {% endif %}
 
     <form method="post" @submit="onSubmit($event)">
         {% csrf_token %}
 
-        <!-- Step 1: Agent + Date + Declared Amount -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
-            <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Step 1: Agent & Collection Info</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-3">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Agent <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Agent" %} <span class="text-red-500">*</span></label>
                     {{ form.agent }}
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Collection Date <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Collection Date" %} <span class="text-red-500">*</span></label>
                     {{ form.collection_date }}
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Agent Declared Amount <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Agent Declared Amount" %} <span class="text-red-500">*</span></label>
                     {{ form.agent_collection_amount }}
                 </div>
             </div>
@@ -50,15 +39,15 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
             </svg>
-            <span class="ml-2 text-sm text-gray-500">Loading client accounts...</span>
+            <span class="ml-2 text-sm text-gray-500">{% trans "Loading client accounts..." %}</span>
         </div>
 
         <!-- Step 2: Client Amounts (loaded via AJAX) -->
         <div x-show="clients.length > 0" x-cloak class="mt-6 space-y-4">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                 <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
                     <h3 class="text-sm font-semibold text-gray-700">
-                        Step 2: Client Accounts (<span x-text="clients.length"></span>)
+                        Client Accounts (<span x-text="clients.length"></span>)
                     </h3>
                     <div class="flex items-center gap-2">
                         <button type="button" @click="fillAllDefault()"
@@ -143,7 +132,7 @@
                 <div class="p-5 border-t flex items-center justify-between">
                     <span class="text-xs text-gray-400" x-show="clientsWithAmount > 0" x-text="clientsWithAmount + ' client(s) with amount'"></span>
                     <div class="flex gap-3 ml-auto">
-                        <a href="{% url 'agents:collection_list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
+                        <a href="{% url 'agents:collection_list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
                         <button type="submit"
                                 :disabled="clientsWithAmount === 0"
                                 :class="clientsWithAmount === 0 ? 'bg-gray-300 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700'"
@@ -157,16 +146,16 @@
 
         <!-- No agent selected -->
         <div x-show="!loading && clients.length === 0 && !agentId" class="mt-6">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
                 <svg class="mx-auto h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                <p class="mt-3 text-sm text-gray-500">Select an agent above to load their client accounts.</p>
+                <p class="mt-3 text-sm text-gray-500">{% trans "Select an agent above to load their client accounts." %}</p>
             </div>
         </div>
 
         <!-- Agent has no clients -->
         <div x-show="!loading && clients.length === 0 && agentId && loaded" x-cloak class="mt-6">
-            <div class="bg-yellow-50 rounded-xl border border-yellow-200 p-6 text-center">
-                <p class="text-sm text-yellow-800 font-medium">This agent has no active client accounts.</p>
+            <div class="bg-yellow-50 rounded-lg border border-yellow-200 p-6 text-center">
+                <p class="text-sm text-yellow-800 font-medium">{% trans "This agent has no active client accounts." %}</p>
                 <p class="text-xs text-yellow-600 mt-1">Create pigmmy accounts for clients before recording a collection.</p>
             </div>
         </div>

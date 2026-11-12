@@ -1,6 +1,6 @@
 import json
 from datetime import date
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from django.contrib import messages
 from django.core.paginator import Paginator
@@ -9,7 +9,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from apps.accounting.models import ChartOfAccounts, InterestMaster
-from apps.accounts.permissions import auditor_or_above, cashier_required, manager_required
+from apps.accounts.permissions import auditor_or_above, cashier_required, day_open_required, manager_required
 from apps.savings.models import SavingsAccount
 
 from .forms import AgentForm, CollectionForm, PigmmyAccountForm
@@ -113,6 +113,7 @@ def pigmmy_account_list(request):
 
 
 @cashier_required
+@day_open_required
 def pigmmy_create(request):
     branch = request.current_branch
     if branch is None:
@@ -241,6 +242,7 @@ def collection_list(request):
 
 
 @cashier_required
+@day_open_required
 def collection_create(request):
     branch = request.current_branch
     if branch is None:
@@ -259,7 +261,7 @@ def collection_create(request):
                 amt = request.POST.get(f'amount_{acct.id}', '0')
                 try:
                     amt = Decimal(amt)
-                except Exception:
+                except (ValueError, InvalidOperation):
                     amt = Decimal('0')
                 if amt > 0:
                     client_payments.append({'account_id': acct.id, 'amount': amt})
@@ -350,6 +352,7 @@ def collection_posting_list(request):
 
 
 @manager_required
+@day_open_required
 def collection_post(request, pk):
     collection = get_object_or_404(AgentCollection, pk=pk)
     if request.method == 'POST':

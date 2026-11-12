@@ -61,13 +61,3 @@ def switch_branch(request, branch_id):
     request.session['current_branch_id'] = branch.id
     messages.success(request, f'Switched to {branch.branch_name}.')
     return redirect('dashboard:index')
-
-
-@login_required
-def switch_all_branches(request):
-    if not request.user.can_access_all_branches:
-        messages.error(request, 'You do not have access to all branches.')
-        return redirect('dashboard:index')
-    request.session['current_branch_id'] = 'all'
-    messages.success(request, 'Showing all branches.')
-    return redirect('dashboard:index')

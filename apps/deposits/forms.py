@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django import forms
 
 tw = 'w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500'
@@ -6,9 +8,10 @@ tw = 'w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-pr
 class FDCreateForm(forms.Form):
     member = forms.IntegerField(widget=forms.HiddenInput())
     amount = forms.DecimalField(
-        max_digits=15, decimal_places=2, widget=forms.NumberInput(attrs={'class': tw, 'step': '0.01'})
+        max_digits=15, decimal_places=2, min_value=Decimal('1'),
+        widget=forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
     )
-    tenure_days = forms.IntegerField(widget=forms.NumberInput(attrs={'class': tw}))
+    tenure_days = forms.IntegerField(min_value=1, widget=forms.NumberInput(attrs={'class': tw}))
     compounding = forms.ChoiceField(
         choices=[
             ('quarterly', 'Quarterly'),
@@ -42,9 +45,10 @@ class FDCreateForm(forms.Form):
 class RDCreateForm(forms.Form):
     member = forms.IntegerField(widget=forms.HiddenInput())
     monthly_installment = forms.DecimalField(
-        max_digits=15, decimal_places=2, widget=forms.NumberInput(attrs={'class': tw, 'step': '0.01'})
+        max_digits=15, decimal_places=2, min_value=Decimal('1'),
+        widget=forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
     )
-    tenure_months = forms.IntegerField(widget=forms.NumberInput(attrs={'class': tw}))
+    tenure_months = forms.IntegerField(min_value=1, widget=forms.NumberInput(attrs={'class': tw}))
     interest_rate = forms.DecimalField(
         max_digits=5,
         decimal_places=2,

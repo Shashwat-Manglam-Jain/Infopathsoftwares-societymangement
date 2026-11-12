@@ -133,10 +133,20 @@ def reverse_transaction(txn, user):
 
     with transaction.atomic():
         if txn.txn_type == 'deposit':
+            if txn.account.current_balance - txn.amount < 0:
+                raise ValueError(
+                    f'Cannot reverse: would result in negative balance '
+                    f'(current: ₹{txn.account.current_balance}, reversal: ₹{txn.amount})'
+                )
             txn.account.current_balance -= txn.amount
         elif txn.txn_type == 'withdrawal':
             txn.account.current_balance += txn.amount
         elif txn.txn_type == 'interest_credit':
+            if txn.account.current_balance - txn.amount < 0:
+                raise ValueError(
+                    f'Cannot reverse: would result in negative balance '
+                    f'(current: ₹{txn.account.current_balance}, reversal: ₹{txn.amount})'
+                )
             txn.account.current_balance -= txn.amount
         txn.account.save(update_fields=['current_balance', 'updated_at'])
 

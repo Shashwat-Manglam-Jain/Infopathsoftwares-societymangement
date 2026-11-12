@@ -1,79 +1,76 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Pigmmy Reports — InfoSociety{% endblock %}
-{% block page_title %}Pigmmy Reports{% endblock %}
+{% block title %}{% trans "Pigmmy Reports" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Pigmmy Reports" %}{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
+<div class="space-y-4">
 
-    <div>
-        <h2 class="text-xl font-bold text-gray-900">Pigmmy / Daily Deposit Reports</h2>
-        <p class="text-sm text-gray-500 mt-1">Agent-wise collections, client lists, and commission reports</p>
-    </div>
-
-    <!-- Filter Bar -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+<!-- Filter Bar -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-4">
         <form method="get" class="flex flex-wrap items-end gap-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Report Type</label>
-                <select name="type" onchange="this.form.submit()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
-                    <option value="agent_clients" {% if report_type == 'agent_clients' %}selected{% endif %}>Agent-wise Client List</option>
-                    <option value="date_daybook" {% if report_type == 'date_daybook' %}selected{% endif %}>Date-wise Daybook</option>
-                    <option value="deposit_type" {% if report_type == 'deposit_type' %}selected{% endif %}>By Deposit Type</option>
-                    <option value="matured" {% if report_type == 'matured' %}selected{% endif %}>Matured Accounts</option>
-                    <option value="commission" {% if report_type == 'commission' %}selected{% endif %}>Agent Commission</option>
+                <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Report Type" %}</label>
+                <select name="type" onchange="this.form.submit()" class="border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
+                    <option value="agent_clients" {% if report_type == 'agent_clients' %}selected{% endif %}>{% trans "Agent-wise Client List" %}</option>
+                    <option value="date_daybook" {% if report_type == 'date_daybook' %}selected{% endif %}>{% trans "Date-wise Daybook" %}</option>
+                    <option value="deposit_type" {% if report_type == 'deposit_type' %}selected{% endif %}>{% trans "By Deposit Type" %}</option>
+                    <option value="matured" {% if report_type == 'matured' %}selected{% endif %}>{% trans "Matured Accounts" %}</option>
+                    <option value="commission" {% if report_type == 'commission' %}selected{% endif %}>{% trans "Agent Commission" %}</option>
                 </select>
             </div>
             {% if report_type == 'agent_clients' %}
             <div class="min-w-[180px]">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Agent</label>
-                <select name="agent" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
-                    <option value="">All Agents</option>
+                <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Agent" %}</label>
+                <select name="agent" class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
+                    <option value="">{% trans "All Agents" %}</option>
                     {% for a in agents %}
                     <option value="{{ a.pk }}" {% if selected_agent == a.pk|stringformat:"d" %}selected{% endif %}>{{ a.agent_code }} — {{ a.member.name }}</option>
                     {% endfor %}
                 </select>
             </div>
-            <button type="submit" class="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">View</button>
+            <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "View" %}</button>
             {% endif %}
             {% if report_type == 'date_daybook' %}
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Date" %}</label>
                 <input type="date" name="date" value="{{ report_date }}"
-                       class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
+                       class="border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
             </div>
-            <button type="submit" class="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">View</button>
+            <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "View" %}</button>
             {% endif %}
             {% if report_type == 'commission' %}
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+                <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "From Date" %}</label>
                 <input type="date" name="from_date" value="{{ from_date }}"
-                       class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
+                       class="border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+                <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "To Date" %}</label>
                 <input type="date" name="to_date" value="{{ to_date }}"
-                       class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
+                       class="border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
             </div>
-            <button type="submit" class="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">View</button>
+            <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "View" %}</button>
             {% endif %}
+            {% include "includes/export_csv.html" %}
         </form>
     </div>
 
     <!-- Agent Clients: Summary -->
     {% if report_type == 'agent_clients' and summary %}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-200">
-            <h3 class="text-base font-semibold text-gray-900">Agent Summary</h3>
+            <h3 class="text-base font-semibold text-gray-900">{% trans "Agent Summary" %}</h3>
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Agent Code</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Agent Name</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Clients</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Total Balance</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Agent Code" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Agent Name" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Clients" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Total Balance" %}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -93,21 +90,21 @@
 
     <!-- Agent Clients: Detail List -->
     {% if report_type == 'agent_clients' and accounts %}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
-            <h3 class="text-base font-semibold text-gray-900">Client Accounts</h3>
+            <h3 class="text-base font-semibold text-gray-900">{% trans "Client Accounts" %}</h3>
             <span class="text-sm text-gray-500">{{ accounts|length }} account{{ accounts|length|pluralize }}</span>
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Account No.</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Member</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Agent</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Type</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Installment</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Balance</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Account No." %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Member" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Agent" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Type" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Installment" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Balance" %}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -129,7 +126,7 @@
 
     <!-- Date Daybook -->
     {% if report_type == 'date_daybook' and transactions is not None %}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
             <h3 class="text-base font-semibold text-gray-900">Pigmmy Daybook — {{ report_date }}</h3>
             <span class="text-sm font-medium text-gray-700">Total: {{ total_amount|floatformat:2 }}</span>
@@ -139,10 +136,10 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Agent</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Account No.</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Client</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Amount</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Agent" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Account No." %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Client" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Amount" %}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -158,24 +155,24 @@
             </table>
         </div>
         {% else %}
-        <div class="px-5 py-8 text-center text-sm text-gray-400">No transactions on this date.</div>
+        <div class="px-5 py-8 text-center text-sm text-gray-400">{% trans "No transactions on this date." %}</div>
         {% endif %}
     </div>
     {% endif %}
 
     <!-- Deposit Type Summary -->
     {% if report_type == 'deposit_type' and type_summary %}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-200">
-            <h3 class="text-base font-semibold text-gray-900">Accounts by Deposit Type</h3>
+            <h3 class="text-base font-semibold text-gray-900">{% trans "Accounts by Deposit Type" %}</h3>
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Deposit Type</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Count</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Total Balance</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Deposit Type" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Count" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Total Balance" %}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -194,21 +191,21 @@
 
     <!-- Matured Accounts -->
     {% if report_type == 'matured' and accounts %}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
-            <h3 class="text-base font-semibold text-gray-900">Matured Pigmmy Accounts (still active)</h3>
+            <h3 class="text-base font-semibold text-gray-900">{% trans "Matured Pigmmy Accounts (still active)" %}</h3>
             <span class="text-sm text-gray-500">{{ accounts|length }} account{{ accounts|length|pluralize }}</span>
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Account No.</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Member</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Agent</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Maturity Date</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Balance</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Maturity Amt</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Account No." %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Member" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Agent" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Maturity Date" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Balance" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Maturity Amt" %}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -227,8 +224,8 @@
         </div>
     </div>
     {% elif report_type == 'matured' and accounts is not None %}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
-        <p class="text-gray-400">No matured active accounts found.</p>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+        <p class="text-gray-400">{% trans "No matured active accounts found." %}</p>
     </div>
     {% endif %}
 
@@ -237,31 +234,31 @@
     {% if commissions %}
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <p class="text-xs font-semibold text-gray-500 uppercase">Total Commission</p>
-            <p class="text-2xl font-bold text-gray-800 mt-1">{{ total_commission|floatformat:2 }}</p>
+            <p class="text-xs font-semibold text-gray-500 uppercase">{% trans "Total Commission" %}</p>
+            <p class="text-lg font-bold text-gray-800 mt-1">{{ total_commission|floatformat:2 }}</p>
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <p class="text-xs font-semibold text-gray-500 uppercase">Total TDS</p>
-            <p class="text-2xl font-bold text-red-700 mt-1">{{ total_tds|floatformat:2 }}</p>
+            <p class="text-xs font-semibold text-gray-500 uppercase">{% trans "Total TDS" %}</p>
+            <p class="text-lg font-bold text-red-700 mt-1">{{ total_tds|floatformat:2 }}</p>
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <p class="text-xs font-semibold text-gray-500 uppercase">Net Payable</p>
-            <p class="text-2xl font-bold text-green-700 mt-1">{{ total_net|floatformat:2 }}</p>
+            <p class="text-xs font-semibold text-gray-500 uppercase">{% trans "Net Payable" %}</p>
+            <p class="text-lg font-bold text-green-700 mt-1">{{ total_net|floatformat:2 }}</p>
         </div>
     </div>
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Agent</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Month</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Collection</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Rate %</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Commission</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">TDS</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Net</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Paid</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Agent" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Month" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Collection" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Rate %" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Commission" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "TDS" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Net" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Paid" %}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -276,9 +273,9 @@
                         <td class="px-4 py-3 text-sm text-right font-medium text-green-700">{{ c.net_amount|floatformat:2 }}</td>
                         <td class="px-4 py-3 text-sm">
                             {% if c.paid %}
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Yes</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{% trans "Yes" %}</span>
                             {% else %}
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">No</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{% trans "No" %}</span>
                             {% endif %}
                         </td>
                     </tr>
@@ -288,8 +285,8 @@
         </div>
     </div>
     {% else %}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
-        <p class="text-gray-400">No commission records found for this period.</p>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+        <p class="text-gray-400">{% trans "No commission records found for this period." %}</p>
     </div>
     {% endif %}
     {% endif %}

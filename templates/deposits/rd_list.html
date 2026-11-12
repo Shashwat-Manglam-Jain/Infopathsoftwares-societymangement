@@ -1,10 +1,13 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Recurring Deposits — InfoSociety{% endblock %}
-{% block page_title %}Recurring Deposits{% endblock %}
+{% block title %}{% trans "Recurring Deposits" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Deposits Module" %}{% endblock %}
 
 {% block content %}
 <div class="space-y-4">
+
+    {% include "deposits/_tabs.html" %}
 
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
@@ -22,14 +25,14 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">RD No</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Member</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Installment</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Rate</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Start</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">Maturity</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
-                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Actions</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "RD No" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Member" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Installment" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">{% trans "Rate" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">{% trans "Start" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">{% trans "Maturity" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Status" %}</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">{% trans "Actions" %}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">

@@ -1,127 +1,103 @@
+{% load i18n %}
 <nav class="flex items-center px-4 h-10 space-x-1 overflow-visible">
 
     <!-- Dashboard -->
     <a href="{% url 'dashboard:index' %}"
        class="px-3 py-1.5 text-xs font-semibold rounded transition-colors whitespace-nowrap
               {% if request.resolver_match.app_name == 'dashboard' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
-        Dashboard
+        {% trans "Dashboard" %}
     </a>
 
-    {% if not request.user.is_member_only %}
+    {% if not request.user.is_member_only and not request.user.is_director_role %}
     <!-- Master -->
     <div x-data="{ hover: false }" @mouseenter="hover = true" @mouseleave="hover = false" class="relative">
         <button class="px-3 py-1.5 text-xs font-semibold rounded transition-colors whitespace-nowrap flex items-center gap-1
-                       {% if request.resolver_match.app_name == 'branches' or request.resolver_match.app_name == 'members' or 'staff' in request.path or 'heads' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
-            Master
+                       {% if request.resolver_match.app_name == 'branches' or request.resolver_match.app_name == 'members' or 'staff' in request.path or 'heads' in request.path or 'interest-master' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+            {% trans "Master" %}
             <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </button>
         <div x-show="hover" x-cloak x-transition class="absolute left-0 top-full pt-1 z-50">
             <div class="w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
                 {% if request.user.is_manager %}
-                <a href="{% url 'branches:list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Branches</a>
-                <a href="{% url 'accounts:staff_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Staff &amp; Users</a>
+                <a href="{% url 'branches:list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Branches" %}</a>
+                <a href="{% url 'accounts:staff_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Staff & Users" %}</a>
                 {% endif %}
-                <a href="{% url 'members:list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Members</a>
-                <a href="{% url 'accounting:heads' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Head Master</a>
-                <a href="{% url 'accounting:interest_master' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Interest Master</a>
+                <a href="{% url 'members:list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Members" %}</a>
+                <a href="{% url 'accounting:heads' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Head Master" %}</a>
+                <a href="{% url 'accounting:interest_master' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Interest Master" %}</a>
+                <div class="border-t border-gray-100 my-1"></div>
+                <a href="{% url 'loans:product_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Loan Products" %}</a>
             </div>
         </div>
     </div>
 
-    <!-- Accounts — with nested sub-menus -->
+    <!-- Account Opening — flat dropdown -->
     <div x-data="{ hover: false }" @mouseenter="hover = true" @mouseleave="hover = false" class="relative">
         <button class="px-3 py-1.5 text-xs font-semibold rounded transition-colors whitespace-nowrap flex items-center gap-1
-                       {% if request.resolver_match.app_name == 'shares' and 'config' not in request.path or request.resolver_match.app_name == 'savings' or request.resolver_match.app_name == 'deposits' or request.resolver_match.app_name == 'loans' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
-            Accounts
+                       {% if request.resolver_match.app_name == 'savings' or request.resolver_match.app_name == 'deposits' or request.resolver_match.app_name == 'loans' or request.resolver_match.app_name == 'shares' or request.resolver_match.app_name == 'agents' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+            {% trans "Accounts" %}
             <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </button>
         <div x-show="hover" x-cloak x-transition class="absolute left-0 top-full pt-1 z-50">
-            <div class="w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
-                <!-- Savings -->
-                <div x-data="{ sub: false }" @mouseenter="sub = true" @mouseleave="sub = false" class="relative">
-                    <a class="flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 cursor-pointer">
-                        Savings
-                        <svg class="h-3.5 w-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                    </a>
-                    <div x-show="sub" x-cloak x-transition class="absolute left-full top-0 ml-0.5 z-50">
-                        <div class="w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
-                            <a href="{% url 'savings:list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Savings Accounts</a>
-                            <a href="{% url 'savings:list' %}?type=current" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Current Accounts</a>
-                            <a href="{% url 'savings:list' %}?type=security" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Security Deposits</a>
-                            <a href="{% url 'deposits:fd_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Fixed Deposits</a>
-                            <a href="{% url 'deposits:rd_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Recurring Deposits</a>
-                                                    </div>
-                    </div>
-                </div>
-                <!-- Loans -->
-                <div x-data="{ sub: false }" @mouseenter="sub = true" @mouseleave="sub = false" class="relative">
-                    <a class="flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 cursor-pointer">
-                        Loans
-                        <svg class="h-3.5 w-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                    </a>
-                    <div x-show="sub" x-cloak x-transition class="absolute left-full top-0 ml-0.5 z-50">
-                        <div class="w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
-                            <a href="{% url 'loans:list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Loan Accounts</a>
-                            <a href="{% url 'loans:product_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Loan Products</a>
-                            <a href="{% url 'loans:loan_charge_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Loan Charges</a>
-                        </div>
-                    </div>
-                </div>
-                <!-- Shares -->
-                <div x-data="{ sub: false }" @mouseenter="sub = true" @mouseleave="sub = false" class="relative">
-                    <a class="flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 cursor-pointer">
-                        Shares
-                        <svg class="h-3.5 w-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                    </a>
-                    <div x-show="sub" x-cloak x-transition class="absolute left-full top-0 ml-0.5 z-50">
-                        <div class="w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
-                            <a href="{% url 'shares:list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Share Holdings</a>
-                            {% if request.user.is_admin %}
-                            <a href="{% url 'shares:config_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Share Config</a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Pigmy / Agents -->
-    <div x-data="{ hover: false }" @mouseenter="hover = true" @mouseleave="hover = false" class="relative">
-        <button class="px-3 py-1.5 text-xs font-semibold rounded transition-colors whitespace-nowrap flex items-center gap-1
-                       {% if request.resolver_match.app_name == 'agents' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
-            Pigmy
-            <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-        </button>
-        <div x-show="hover" x-cloak x-transition class="absolute left-0 top-full pt-1 z-50">
-            <div class="w-52 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
-                <a href="{% url 'agents:list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Agents</a>
-                <a href="{% url 'agents:pigmmy_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Pigmy Accounts</a>
-                <a href="{% url 'agents:collection_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Daily Collection</a>
-                <a href="{% url 'agents:collection_posting' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Collection Posting</a>
+            <div class="w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
+                <a href="{% url 'savings:list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Savings Accounts" %}</a>
+                <a href="{% url 'savings:list' %}?type=current" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Current Accounts" %}</a>
+                <a href="{% url 'savings:list' %}?type=security" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Security Deposits" %}</a>
+                <div class="border-t border-gray-100 my-1"></div>
+                <a href="{% url 'deposits:fd_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Fixed Deposits" %}</a>
+                <a href="{% url 'deposits:rd_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Recurring Deposits" %}</a>
+                <div class="border-t border-gray-100 my-1"></div>
+                <a href="{% url 'loans:list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Loan Accounts" %}</a>
+                <div class="border-t border-gray-100 my-1"></div>
+                <a href="{% url 'shares:list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Share Holdings" %}</a>
+                <div class="border-t border-gray-100 my-1"></div>
+                <a href="{% url 'agents:list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Agents" %}</a>
+                <a href="{% url 'agents:pigmmy_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Pigmmy Accounts" %}</a>
             </div>
         </div>
     </div>
     {% endif %}
 
     {% if request.user.is_staff_role %}
-    <!-- Transactions -->
+    <!-- Transaction -->
     <div x-data="{ hover: false }" @mouseenter="hover = true" @mouseleave="hover = false" class="relative">
         <button class="px-3 py-1.5 text-xs font-semibold rounded transition-colors whitespace-nowrap flex items-center gap-1
-                       {% if 'receipt' in request.path or 'payment' in request.path or 'voucher' in request.path or request.resolver_match.url_name == 'cashbook' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
-            Transactions
+                       {% if 'receipt' in request.path and request.resolver_match.app_name == 'accounting' or 'payment' in request.path and request.resolver_match.app_name == 'accounting' or 'collections' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+            {% trans "Transaction" %}
             <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </button>
         <div x-show="hover" x-cloak x-transition class="absolute left-0 top-full pt-1 z-50">
-            <div class="w-52 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
+            <div class="w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
                 {% if request.user.is_cashier %}
-                <a href="{% url 'accounting:receipt' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Receipt</a>
-                <a href="{% url 'accounting:payment' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Payment</a>
+                <a href="{% url 'accounting:receipt' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Receipt" %}</a>
+                <a href="{% url 'accounting:payment' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Payment" %}</a>
                 {% endif %}
-                <a href="{% url 'accounting:cashbook' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Cashbook</a>
                 {% if request.user.is_accountant %}
-                <a href="{% url 'accounting:voucher_create' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">New Voucher</a>
-                <a href="{% url 'accounting:vouchers' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">All Vouchers</a>
+                <a href="{% url 'accounting:voucher_create' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Voucher Entry" %}</a>
+                {% endif %}
+                <div class="border-t border-gray-100 my-1"></div>
+                <a href="{% url 'agents:collection_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Daily Collection" %}</a>
+                <a href="{% url 'agents:collection_posting' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Collection Posting" %}</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ledger -->
+    <div x-data="{ hover: false }" @mouseenter="hover = true" @mouseleave="hover = false" class="relative">
+        <button class="px-3 py-1.5 text-xs font-semibold rounded transition-colors whitespace-nowrap flex items-center gap-1
+                       {% if request.resolver_match.url_name == 'cashbook' or 'general-ledger' in request.path or 'day-book' in request.path or 'voucher' in request.path or 'cashbook-report' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+            {% trans "Ledger" %}
+            <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+        <div x-show="hover" x-cloak x-transition class="absolute left-0 top-full pt-1 z-50">
+            <div class="w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
+                <a href="{% url 'accounting:cashbook' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Cash Book" %}</a>
+                <a href="{% url 'accounting:general_ledger' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "General Ledger" %}</a>
+                <a href="{% url 'accounting:day_book' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Day Book" %}</a>
+                <a href="{% url 'accounting:cashbook_report' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Cashbook Summary" %}</a>
+                {% if request.user.is_accountant %}
+                <div class="border-t border-gray-100 my-1"></div>
+                <a href="{% url 'accounting:vouchers' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "All Vouchers" %}</a>
                 {% endif %}
             </div>
         </div>
@@ -129,74 +105,58 @@
     {% endif %}
 
     {% if not request.user.is_member_only %}
-    <!-- Reports — with nested sub-menus -->
+    <!-- Reports — flat dropdown -->
     <div x-data="{ hover: false }" @mouseenter="hover = true" @mouseleave="hover = false" class="relative">
         <button class="px-3 py-1.5 text-xs font-semibold rounded transition-colors whitespace-nowrap flex items-center gap-1
-                       {% if 'personal-ledger' in request.path or 'general-ledger' in request.path or 'day-book' in request.path or 'cashbook-report' in request.path or 'trial-balance' in request.path or 'profit-loss' in request.path or 'balance-sheet' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
-            Reports
+                       {% if request.resolver_match.app_name == 'reports' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+            {% trans "Reports" %}
             <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </button>
         <div x-show="hover" x-cloak x-transition class="absolute left-0 top-full pt-1 z-50">
-            <div class="w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
-                <!-- Statements -->
-                <div x-data="{ sub: false }" @mouseenter="sub = true" @mouseleave="sub = false" class="relative">
-                    <a class="flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 cursor-pointer">
-                        Statements
-                        <svg class="h-3.5 w-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                    </a>
-                    <div x-show="sub" x-cloak x-transition class="absolute left-full top-0 ml-0.5 z-50">
-                        <div class="w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
-                            <a href="{% url 'reports:personal_ledger' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Personal Ledger</a>
-                            <a href="{% url 'accounting:general_ledger' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">General Ledger</a>
-                            <a href="{% url 'accounting:day_book' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Day Book</a>
-                            <a href="{% url 'accounting:cashbook_report' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Cashbook Summary</a>
-                        </div>
-                    </div>
-                </div>
-                <!-- Financial -->
-                <div x-data="{ sub: false }" @mouseenter="sub = true" @mouseleave="sub = false" class="relative">
-                    <a class="flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 cursor-pointer">
-                        Financial
-                        <svg class="h-3.5 w-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                    </a>
-                    <div x-show="sub" x-cloak x-transition class="absolute left-full top-0 ml-0.5 z-50">
-                        <div class="w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
-                            <a href="{% url 'reports:trial_balance' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Trial Balance</a>
-                            <a href="{% url 'reports:profit_loss' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Profit &amp; Loss</a>
-                            <a href="{% url 'reports:balance_sheet' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Balance Sheet</a>
-                        </div>
-                    </div>
-                </div>
+            <div class="w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
+                <a href="{% url 'reports:personal_ledger' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Account Statement" %}</a>
+                <a href="{% url 'reports:enquiry' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Enquiry" %}</a>
+                <a href="{% url 'reports:deposit_reports' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Deposit Reports" %}</a>
+                <a href="{% url 'reports:loan_reports' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Loan Reports" %}</a>
+                <a href="{% url 'reports:balance_reports' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Current Balance" %}</a>
+                <a href="{% url 'reports:pigmmy_reports' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Pigmmy Reports" %}</a>
                 <div class="border-t border-gray-100 my-1"></div>
-                <a href="{% url 'reports:index' %}" class="block px-4 py-2 text-sm font-medium text-primary-700 hover:bg-primary-50">All Reports</a>
+                <a href="{% url 'reports:trial_balance' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Trial Balance" %}</a>
+                <a href="{% url 'reports:profit_loss' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Profit & Loss" %}</a>
+                <a href="{% url 'reports:balance_sheet' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Balance Sheet" %}</a>
+                <div class="border-t border-gray-100 my-1"></div>
+                <a href="{% url 'reports:notices' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Notice Printing" %}</a>
+                <a href="{% url 'reports:calculator' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Ready Reckoner" %}</a>
+                <div class="border-t border-gray-100 my-1"></div>
+                <a href="{% url 'reports:index' %}" class="block px-4 py-2 text-sm font-medium text-primary-700 hover:bg-primary-50">{% trans "All Reports" %}</a>
             </div>
         </div>
     </div>
     {% endif %}
 
     {% if request.user.is_accountant or request.user.is_manager or request.user.is_admin %}
-    <!-- Day End & Admin -->
+    <!-- Administration -->
     <div x-data="{ hover: false }" @mouseenter="hover = true" @mouseleave="hover = false" class="relative">
         <button class="px-3 py-1.5 text-xs font-semibold rounded transition-colors whitespace-nowrap flex items-center gap-1
                        {% if request.resolver_match.app_name == 'dayend' or request.resolver_match.app_name == 'audit' or request.resolver_match.app_name == 'notifications' or 'opening-balance' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
-            Day End
+            {% trans "Administration" %}
             <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </button>
         <div x-show="hover" x-cloak x-transition class="absolute left-0 top-full pt-1 z-50">
             <div class="w-52 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
-                <a href="{% url 'dayend:index' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Day Operations</a>
-                <a href="{% url 'dayend:interest_calculate' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Interest Calculate</a>
-                <a href="{% url 'dayend:interest_post' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Interest Post</a>
+                <a href="{% url 'dayend:index' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Day Operations" %}</a>
+                <a href="{% url 'dayend:interest_calculate' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Interest Calculate" %}</a>
+                <a href="{% url 'dayend:interest_post' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Interest Post" %}</a>
                 {% if request.user.is_admin %}
                 <div class="border-t border-gray-100 my-1"></div>
-                <a href="{% url 'accounting:opening_balance' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Opening Balance</a>
-                <a href="{% url 'dayend:reupdate_balance' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Repair Balances</a>
-                <a href="{% url 'dayend:reupdate_gl_balance' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Repair GL Balances</a>
+                <a href="{% url 'accounting:opening_balance' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Opening Balance" %}</a>
+                <a href="{% url 'dayend:reupdate_balance' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Reupdate A/c Balance" %}</a>
+                <a href="{% url 'dayend:reupdate_gl_balance' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Reupdate GL Balance" %}</a>
                 {% endif %}
                 <div class="border-t border-gray-100 my-1"></div>
-                <a href="{% url 'audit:log' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Audit Trail</a>
+                <a href="{% url 'audit:log' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Audit Trail" %}</a>
                 {% if request.user.is_manager %}
-                <a href="{% url 'notifications:send_bulk' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">Notifications</a>
+                <a href="{% url 'notifications:send_bulk' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Notifications" %}</a>
                 {% endif %}
             </div>
         </div>
@@ -206,7 +166,7 @@
     <!-- Upgrade / Recharge -->
     <a href="/subscription/recharge/" class="ml-auto px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded transition-colors whitespace-nowrap flex items-center gap-1">
         <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
-        Upgrade
+        {% trans "Upgrade" %}
     </a>
 
 </nav>

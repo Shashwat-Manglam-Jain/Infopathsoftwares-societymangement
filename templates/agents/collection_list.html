@@ -1,59 +1,57 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Daily Collections — InfoSociety{% endblock %}
-{% block page_title %}Pigmmy Module{% endblock %}
+{% block title %}{% trans "Daily Collections" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Pigmmy Module" %}{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
+<div class="max-w-full space-y-4">
 
-    <!-- Tab Navigation -->
     {% include "agents/_tabs.html" %}
 
-    <!-- Header + Actions -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-            <h2 class="text-xl font-bold text-gray-900">Daily Collections</h2>
-            <p class="text-sm text-gray-500 mt-1">Step 3: Agent-wise pigmmy collection records</p>
+            <h2 class="text-lg font-semibold text-gray-900">{% trans "Daily Collections" %}</h2>
+            <p class="text-sm text-gray-500">{% trans "Agent-wise pigmmy collection records" %}</p>
         </div>
         {% if request.user.is_cashier %}
-        <a href="{% url 'agents:collection_create' %}" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">
-            <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        <a href="{% url 'agents:collection_create' %}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             Record Collection
         </a>
         {% endif %}
     </div>
 
-    <!-- Collections Table -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Date</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Agent</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Branch</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Clients</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Collected</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
+            <table class="min-w-full text-sm">
+                <thead>
+                    <tr class="text-left text-xs font-semibold text-gray-500 uppercase bg-gray-50">
+                        <th class="px-4 py-2">{% trans "Date" %}</th>
+                        <th class="px-4 py-2">{% trans "Agent" %}</th>
+                        <th class="px-4 py-2 hidden md:table-cell">{% trans "Branch" %}</th>
+                        <th class="px-4 py-2 text-right">{% trans "Clients" %}</th>
+                        <th class="px-4 py-2 text-right">{% trans "Collected" %}</th>
+                        <th class="px-4 py-2">{% trans "Status" %}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     {% for col in collections %}
                     <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-3 text-sm text-gray-900">{{ col.collection_date|date:"d-M-Y" }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-900">
+                        <td class="px-4 py-2 text-gray-900">{{ col.collection_date|date:"d-M-Y" }}</td>
+                        <td class="px-4 py-2 text-gray-900">
                             <a href="{% url 'agents:detail' pk=col.agent.pk %}" class="text-primary-600 hover:underline">{{ col.agent.agent_code }}</a>
                             <span class="text-gray-500"> — {{ col.agent.member.name }}</span>
                         </td>
-                        <td class="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">{{ col.branch.branch_name }}</td>
-                        <td class="px-4 py-3 text-sm text-right text-gray-900">{{ col.total_clients_collected }}</td>
-                        <td class="px-4 py-3 text-sm text-right font-medium text-gray-900">{{ col.collected_amount|floatformat:2 }}</td>
-                        <td class="px-4 py-3 text-sm">
+                        <td class="px-4 py-2 text-gray-500 hidden md:table-cell">{{ col.branch.branch_name }}</td>
+                        <td class="px-4 py-2 text-right text-gray-900">{{ col.total_clients_collected }}</td>
+                        <td class="px-4 py-2 text-right font-medium text-gray-900">{{ col.collected_amount|floatformat:2 }}</td>
+                        <td class="px-4 py-2">
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if col.status == 'reconciled' %}bg-green-100 text-green-800{% elif col.status == 'submitted' %}bg-blue-100 text-blue-800{% elif col.status == 'discrepancy' %}bg-red-100 text-red-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">{{ col.get_status_display }}</span>
                         </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="6" class="px-4 py-8 text-center text-sm text-gray-400">No collections recorded yet.</td></tr>
+                    <tr><td colspan="6" class="px-4 py-6 text-center text-sm text-gray-400">{% trans "No collections recorded yet." %}</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

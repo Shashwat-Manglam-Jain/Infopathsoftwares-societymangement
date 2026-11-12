@@ -1,49 +1,44 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block title %}{{ title }} — InfoSociety{% endblock %}
 {% block page_title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto space-y-6">
-    <div class="flex items-center justify-between">
-        <div>
-            <h2 class="text-xl font-bold text-gray-900">{{ title }}</h2>
-            <p class="text-sm text-gray-500 mt-1">{% if config %}Update this share configuration.{% else %}Creating a new config will deactivate the current one.{% endif %}</p>
-        </div>
-        <a href="{% url 'shares:config_list' %}" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">Back</a>
-    </div>
+<div class="max-w-6xl">
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <form method="post" class="space-y-4">
-            {% csrf_token %}
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Config Name <span class="text-red-500">*</span></label>
-                <input type="text" name="name" value="{{ config.name|default:'' }}" required placeholder="e.g. FY 2026-27 Config"
-                       class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500">
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-3">
+                <div class="md:col-span-3">
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">Config Name <span class="text-red-500">*</span></label>
+                    <input type="text" name="name" value="{{ config.name|default:'' }}" required placeholder="e.g. FY 2026-27 Config"
+                           class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Face Value per Share (&#8377;) <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Face Value" %} per Share (&#8377;) <span class="text-red-500">*</span></label>
                     <input type="number" name="face_value_per_share" value="{{ config.face_value_per_share|default:'10' }}" step="0.01" min="1" required
-                           class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500">
+                           class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Minimum Shares Required</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">Minimum Shares Required</label>
                     <input type="number" name="min_shares_required" value="{{ config.min_shares_required|default:'1' }}" min="1" required
-                           class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500">
+                           class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Maximum Shares per Member</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">Maximum Shares per Member</label>
                     <input type="number" name="max_shares_per_member" value="{{ config.max_shares_per_member|default:'100' }}" min="1" required
-                           class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500">
+                           class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                 </div>
             </div>
 
-            <div class="flex items-center justify-end gap-3 pt-4 border-t">
-                <a href="{% url 'shares:config_list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
-                <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">Save</button>
+            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-end gap-3">
+                <a href="{% url 'shares:config_list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
+                <button type="submit" class="px-5 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">Save</button>
             </div>
-        </form>
-    </div>
+        </div>
+    </form>
 </div>
 {% endblock %}

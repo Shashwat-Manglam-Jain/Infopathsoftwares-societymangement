@@ -1,97 +1,106 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Account Heads — InfoSociety{% endblock %}
-{% block page_title %}Account Heads{% endblock %}
+{% block title %}{% trans "Account Heads" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Accounting Module" %}{% endblock %}
 
 {% block content %}
 <div class="space-y-4">
+    {% include "accounting/_tabs.html" %}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
             <h2 class="text-xl font-bold text-gray-900">Account Heads (GL Master)</h2>
             <p class="text-sm text-gray-500 mt-1">{{ total }} account head{{ total|pluralize:"s" }}</p>
         </div>
-        <a href="{% url 'accounting:heads_create' %}" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">
-            <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            New Head
-        </a>
-    </div>
-
-    <!-- What is Head Master -->
-    <div class="bg-blue-50 border border-blue-200 rounded-lg p-5" x-data="{ showGuide: false }">
-        <div class="flex items-start gap-3">
-            <svg class="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <div class="flex-1">
-                <p class="text-sm text-blue-900 font-medium">Head Master is the backbone of the society software.</p>
-                <p class="text-sm text-blue-800 mt-1">Each head defines a General Ledger (GL) account and controls how it behaves — whether it appears in Trial Balance, Profit &amp; Loss, or Balance Sheet, whether interest is calculated on it, and which module (Savings, FD, Loan, Pigmmy, etc.) handles accounts under it.</p>
-                <button @click="showGuide = !showGuide" class="mt-2 text-sm text-blue-600 font-medium hover:underline flex items-center gap-1">
-                    <span x-text="showGuide ? 'Hide' : 'Show'">Show</span> Type Reference Guide
-                    <svg class="h-4 w-4 transition-transform" :class="showGuide && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                </button>
-            </div>
-        </div>
-        <div x-show="showGuide" x-cloak class="mt-3 border-t border-blue-200 pt-3">
-            <h4 class="text-xs font-semibold text-blue-700 uppercase mb-2">Related Table Name (Type) Reference</h4>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs">
-                <div class="flex gap-2"><span class="font-semibold text-blue-800 w-28 flex-shrink-0">Saving</span><span class="text-blue-700">Savings / SB accounts</span></div>
-                <div class="flex gap-2"><span class="font-semibold text-blue-800 w-28 flex-shrink-0">Current</span><span class="text-blue-700">Current accounts</span></div>
-                <div class="flex gap-2"><span class="font-semibold text-blue-800 w-28 flex-shrink-0">Fixed</span><span class="text-blue-700">Fixed Deposit accounts</span></div>
-                <div class="flex gap-2"><span class="font-semibold text-blue-800 w-28 flex-shrink-0">Recurring</span><span class="text-blue-700">Recurring Deposit accounts</span></div>
-                <div class="flex gap-2"><span class="font-semibold text-blue-800 w-28 flex-shrink-0">Loan</span><span class="text-blue-700">Loan accounts</span></div>
-                <div class="flex gap-2"><span class="font-semibold text-blue-800 w-28 flex-shrink-0">Shares</span><span class="text-blue-700">Share Capital accounts</span></div>
-                <div class="flex gap-2"><span class="font-semibold text-blue-800 w-28 flex-shrink-0">Security</span><span class="text-blue-700">Security Deposit accounts</span></div>
-                <div class="flex gap-2"><span class="font-semibold text-blue-800 w-28 flex-shrink-0">Agent / Client</span><span class="text-blue-700">Pigmmy Agent / Client accounts</span></div>
-                <div class="flex gap-2"><span class="font-semibold text-blue-800 w-28 flex-shrink-0">Advance</span><span class="text-blue-700">Advance accounts</span></div>
-                <div class="flex gap-2"><span class="font-semibold text-blue-800 w-28 flex-shrink-0">General</span><span class="text-blue-700">General GL (Cash, Bank, etc.)</span></div>
-                <div class="flex gap-2"><span class="font-semibold text-blue-800 w-28 flex-shrink-0">Group</span><span class="text-blue-700">Display-only grouping, no transactions</span></div>
-                <div class="flex gap-2"><span class="font-semibold text-blue-800 w-28 flex-shrink-0">Int Recv / Paid</span><span class="text-blue-700">Interest tracking heads</span></div>
-            </div>
-            <div class="mt-3 border-t border-blue-200 pt-2">
-                <h4 class="text-xs font-semibold text-blue-700 uppercase mb-1">Column Legend</h4>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-1 text-xs text-blue-700">
-                    <div><span class="font-semibold">Int</span> = Interest Given (Y/N) — whether interest is credited to accounts under this head</div>
-                    <div><span class="font-semibold">Txn</span> = Allow Transactions (Y/N) — whether receipt/payment is allowed against this head</div>
-                    <div><span class="font-semibold">Report Position</span> = Where this head appears: Balance Sheet, Profit &amp; Loss, or Trial Balance only</div>
-                    <div><span class="font-semibold">Balance</span> = Current GL balance of this head, updated in real-time</div>
-                </div>
-            </div>
+        <div class="flex gap-2">
+            <button onclick="document.querySelectorAll('[data-tree]').forEach(t => t.__x.$data.expandAll())"
+                    class="px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                Expand All
+            </button>
+            <button onclick="document.querySelectorAll('[data-tree]').forEach(t => t.__x.$data.collapseAll())"
+                    class="px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                Collapse All
+            </button>
+            <a href="{% url 'accounting:heads_create' %}" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">
+                <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                New Head
+            </a>
         </div>
     </div>
 
-    {% for group_name, heads in groups.items %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    {% for group_name, items in groups.items %}
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
+         x-data="{
+             open: { {% for item in items %}{% if item.has_children %}{{ item.head.id }}: true,{% endif %}{% endfor %} },
+             toggle(id) { this.open[id] = !this.open[id] },
+             isVisible(ancestors) {
+                 for (let i = 0; i < ancestors.length; i++) {
+                     if (!this.open[ancestors[i]]) return false;
+                 }
+                 return true;
+             },
+             expandAll() { Object.keys(this.open).forEach(k => this.open[k] = true) },
+             collapseAll() { Object.keys(this.open).forEach(k => this.open[k] = false) }
+         }" data-tree>
         <div class="px-5 py-3 bg-gray-50 border-b border-gray-200">
-            <h3 class="text-sm font-semibold text-gray-700">{{ group_name }} ({{ heads|length }})</h3>
+            <h3 class="text-sm font-semibold text-gray-700">{{ group_name }} ({{ items|length }})</h3>
         </div>
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+            <table class="min-w-full">
+                <thead class="bg-gray-50 border-b border-gray-200">
                     <tr>
-                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600 uppercase">Code</th>
-                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600 uppercase">Name</th>
-                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Type</th>
-                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">Report Position</th>
-                        <th class="px-4 py-2 text-right text-xs font-semibold text-gray-600 uppercase">Balance</th>
-                        <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Int</th>
-                        <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Txn</th>
-                        <th class="px-4 py-2"></th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600 uppercase" style="min-width:320px">{% trans "Code / Name" %}</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">{% trans "Type" %}</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">{% trans "Report" %}</th>
+                        <th class="px-4 py-2 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Balance" %}</th>
+                        <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">{% trans "Int" %}</th>
+                        <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">{% trans "Txn" %}</th>
+                        <th class="px-4 py-2 w-16"></th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
-                    {% for head in heads %}
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-2 text-sm font-mono text-gray-900">{{ head.code }}</td>
-                        <td class="px-4 py-2 text-sm text-gray-900">{{ head.name }}</td>
-                        <td class="px-4 py-2 text-sm text-gray-500 hidden md:table-cell">{{ head.get_related_table_name_display }}</td>
-                        <td class="px-4 py-2 text-sm text-gray-500 hidden lg:table-cell">{{ head.get_report_position_display }}</td>
-                        <td class="px-4 py-2 text-sm text-right font-medium {% if head.current_balance < 0 %}text-red-600{% else %}text-gray-900{% endif %}">{{ head.current_balance|floatformat:2 }}</td>
-                        <td class="px-4 py-2 text-sm text-center hidden md:table-cell">
-                            {% if head.interest_given %}<span class="text-green-600">Y</span>{% else %}<span class="text-gray-300">-</span>{% endif %}
+                <tbody>
+                    {% for item in items %}
+                    <tr class="border-b border-gray-100 hover:bg-blue-50/40 transition-colors
+                               {% if item.depth == 0 %}bg-white{% elif item.depth == 1 %}bg-gray-50/30{% else %}bg-gray-50/50{% endif %}"
+                        {% if item.ancestors %}x-show="isVisible([{{ item.ancestors|join:',' }}])" x-cloak{% endif %}>
+                        <td class="px-4 py-2 text-sm whitespace-nowrap">
+                            <div class="flex items-center" style="padding-left: {{ item.depth }}rem">
+                                {% if item.has_children %}
+                                <button @click="toggle({{ item.head.id }})" class="mr-1.5 p-0.5 rounded hover:bg-gray-200 transition-colors flex-shrink-0">
+                                    <svg class="h-4 w-4 text-gray-500 transition-transform duration-200"
+                                         :class="open[{{ item.head.id }}] ? 'rotate-90' : ''"
+                                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </button>
+                                {% else %}
+                                <span class="mr-1.5 w-5 flex-shrink-0 text-center text-gray-300">
+                                    {% if item.depth > 0 %}&bull;{% endif %}
+                                </span>
+                                {% endif %}
+                                <span class="font-mono text-xs px-1.5 py-0.5 rounded mr-2 flex-shrink-0
+                                    {% if item.depth == 0 %}bg-gray-700 text-white{% else %}bg-gray-100 text-gray-500{% endif %}">{{ item.head.code }}</span>
+                                <span class="{% if item.has_children %}font-semibold text-gray-900{% else %}text-gray-700{% endif %}">{{ item.head.name }}</span>
+                                {% if item.head.head_name_regional %}
+                                <span class="ml-2 text-xs text-gray-400">({{ item.head.head_name_regional }})</span>
+                                {% endif %}
+                            </div>
                         </td>
-                        <td class="px-4 py-2 text-sm text-center hidden md:table-cell">
-                            {% if head.allow_transactions %}<span class="text-green-600">Y</span>{% else %}<span class="text-gray-300">-</span>{% endif %}
+                        <td class="px-4 py-2 text-xs text-gray-500 hidden md:table-cell">
+                            <span class="px-1.5 py-0.5 bg-gray-100 rounded">{{ item.head.get_related_table_name_display }}</span>
                         </td>
-                        <td class="px-4 py-2 text-sm text-right">
-                            <a href="{% url 'accounting:heads_edit' pk=head.pk %}" class="text-primary-600 hover:text-primary-800 font-medium">Edit</a>
+                        <td class="px-4 py-2 text-xs text-gray-500 hidden lg:table-cell">{{ item.head.get_report_position_display }}</td>
+                        <td class="px-4 py-2 text-sm text-right font-medium tabular-nums {% if item.head.current_balance < 0 %}text-red-600{% else %}text-gray-900{% endif %}">
+                            {{ item.head.current_balance|floatformat:2 }}
+                        </td>
+                        <td class="px-4 py-2 text-center hidden md:table-cell">
+                            {% if item.head.interest_given %}<span class="text-green-600 font-bold text-xs">Y</span>{% else %}<span class="text-gray-300">-</span>{% endif %}
+                        </td>
+                        <td class="px-4 py-2 text-center hidden md:table-cell">
+                            {% if item.head.allow_transactions %}<span class="text-green-600 font-bold text-xs">Y</span>{% else %}<span class="text-gray-300">-</span>{% endif %}
+                        </td>
+                        <td class="px-4 py-2 text-right">
+                            <a href="{% url 'accounting:heads_edit' pk=item.head.pk %}" class="text-primary-600 hover:text-primary-800 text-xs font-medium">Edit</a>
                         </td>
                     </tr>
                     {% endfor %}

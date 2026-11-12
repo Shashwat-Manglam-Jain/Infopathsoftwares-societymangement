@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Edit Template" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Edit Notification Template" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl">
+    <form method="post">
+        {% csrf_token %}
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-5 py-4 space-y-4">
+                {% for field in form %}
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{{ field.label }}{% if field.field.required %} <span class="text-red-500">*</span>{% endif %}</label>
+                    {{ field }}
+                    {% if field.errors %}<p class="mt-1 text-xs text-red-600">{{ field.errors.0 }}</p>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
+                <a href="{% url 'notifications:template_list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
+                <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-primary-700">{% trans "Save" %}</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

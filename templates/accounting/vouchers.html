@@ -1,10 +1,12 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Voucher Entry — InfoSociety{% endblock %}
-{% block page_title %}Voucher Entry{% endblock %}
+{% block title %}{% trans "Voucher Entry" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Accounting Module" %}{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
+<div class="space-y-4">
+    {% include "accounting/_tabs.html" %}
 
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -32,19 +34,19 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Voucher No</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Date</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Type</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Narration</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">Branch</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">Created By</th>
-                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Status</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Actions</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Voucher No" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Date" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Type" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">{% trans "Narration" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">{% trans "Branch" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">{% trans "Created By" %}</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">{% trans "Status" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Actions" %}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     {% for entry in entries %}
-                    <tr class="hover:bg-gray-50">
+                    <tr class="hover:bg-gray-50 cursor-pointer transition-colors" onclick="window.location.href='{% url 'accounting:voucher_edit' entry.pk %}'">
                         <td class="px-4 py-3 text-sm font-mono text-gray-900">{{ entry.voucher_no }}</td>
                         <td class="px-4 py-3 text-sm text-gray-600">{{ entry.entry_date|date:"d M Y" }}</td>
                         <td class="px-4 py-3">
@@ -70,19 +72,13 @@
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Draft</span>
                             {% endif %}
                         </td>
-                        <td class="px-4 py-3 text-right">
+                        <td class="px-4 py-3 text-right" onclick="event.stopPropagation()">
                             {% if not entry.is_reversed %}
                             <div class="flex items-center justify-end gap-1">
                                 {% if request.user.is_accountant %}
                                 <a href="{% url 'accounting:voucher_edit' entry.pk %}" class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 rounded hover:bg-blue-100" title="Modify">
                                     <svg class="h-3.5 w-3.5 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                     Edit
-                                </a>
-                                {% endif %}
-                                {% if request.user.is_manager %}
-                                <a href="{% url 'accounting:voucher_cancel' entry.pk %}" class="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 bg-red-50 rounded hover:bg-red-100" title="Cancel / Reverse">
-                                    <svg class="h-3.5 w-3.5 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
-                                    Cancel
                                 </a>
                                 {% endif %}
                             </div>

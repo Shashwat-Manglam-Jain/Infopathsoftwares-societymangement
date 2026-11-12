@@ -1,8 +1,9 @@
 {% extends "base.html" %}
+{% load i18n %}
 {% load avatar_tags %}
 
-{% block title %}Staff Users — InfoSociety{% endblock %}
-{% block page_title %}Staff Users{% endblock %}
+{% block title %}{% trans "Staff Users" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Staff Users" %}{% endblock %}
 
 {% block content %}
 <div class="space-y-4">
@@ -25,8 +26,9 @@
             <div><span class="font-semibold">Branch Manager</span> &mdash; Branch head, approves loans, oversees operations</div>
             <div><span class="font-semibold">Accountant</span> &mdash; Bookkeeping, vouchers, day-end, GL operations</div>
             <div><span class="font-semibold">Cashier</span> &mdash; Counter staff, cash deposits/withdrawals/EMI collection</div>
+            <div><span class="font-semibold">Clerk</span> &mdash; Data entry, assisting cashier with daily transactions</div>
             <div><span class="font-semibold">Auditor</span> &mdash; Read-only access for audit &amp; inspection</div>
-            <div><span class="font-semibold">Member</span> &mdash; Customer self-service, view own accounts</div>
+            <div><span class="font-semibold">{% trans "Director" %}</span> &mdash; Board member, read-only access to reports &amp; dashboards</div>
         </div>
     </div>
 
@@ -35,18 +37,18 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Username</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Name</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Email</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Role</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Branch</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Username" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Name" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">{% trans "Email" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Role" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">{% trans "Branch" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Status" %}</th>
                         <th class="px-4 py-3"></th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     {% for u in users %}
-                    <tr class="hover:bg-gray-50">
+                    <tr class="hover:bg-gray-50 cursor-pointer transition-colors" onclick="window.location.href='{% url 'accounts:staff_edit' pk=u.pk %}'">
                         <td class="px-4 py-3">
                             <div class="flex items-center gap-3">
                                 {% avatar u 32 "" %}
@@ -60,8 +62,10 @@
                                 {% if u.role == 'admin' %}bg-red-100 text-red-700
                                 {% elif u.role == 'branch_manager' %}bg-blue-100 text-blue-700
                                 {% elif u.role == 'cashier' %}bg-green-100 text-green-700
+                                {% elif u.role == 'clerk' %}bg-teal-100 text-teal-700
                                 {% elif u.role == 'accountant' %}bg-purple-100 text-purple-700
                                 {% elif u.role == 'auditor' %}bg-yellow-100 text-yellow-700
+                                {% elif u.role == 'director' %}bg-indigo-100 text-indigo-700
                                 {% else %}bg-gray-100 text-gray-700{% endif %}">{{ u.get_role_display }}</span>
                         </td>
                         <td class="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">
@@ -69,12 +73,12 @@
                         </td>
                         <td class="px-4 py-3">
                             {% if u.is_active %}
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Active</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{% trans "Active" %}</span>
                             {% else %}
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">Inactive</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">{% trans "Inactive" %}</span>
                             {% endif %}
                         </td>
-                        <td class="px-4 py-3 text-sm text-right">
+                        <td class="px-4 py-3 text-sm text-right" onclick="event.stopPropagation()">
                             <a href="{% url 'accounts:staff_edit' pk=u.pk %}" class="text-primary-600 hover:text-primary-800 font-medium">Edit</a>
                         </td>
                     </tr>

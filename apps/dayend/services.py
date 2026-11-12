@@ -55,15 +55,24 @@ def run_day_end(branch, user):
 
     processing_date = wd.current_date
 
-    if DayEndLog.objects.filter(branch=branch, processing_date=processing_date, status='completed').exists():
+    existing = DayEndLog.objects.filter(branch=branch, processing_date=processing_date).first()
+    if existing and existing.status == 'completed':
         raise ValueError(f'Day End already completed for {processing_date}.')
 
-    log = DayEndLog.objects.create(
-        branch=branch,
-        processing_date=processing_date,
-        status='running',
-        run_by=user,
-    )
+    if existing:
+        existing.status = 'running'
+        existing.error_log = ''
+        existing.completed_at = None
+        existing.run_by = user
+        existing.save()
+        log = existing
+    else:
+        log = DayEndLog.objects.create(
+            branch=branch,
+            processing_date=processing_date,
+            status='running',
+            run_by=user,
+        )
 
     try:
         log.savings_interest_accrued_count = _accrue_savings_interest(branch, processing_date)

@@ -1,0 +1,2557 @@
+# Hindi translations for InfoSociety
+# Copyright (C) 2026 InfopathSolutions
+msgid ""
+msgstr ""
+"Language: hi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "#"
+msgstr "#"
+
+msgid "Aadhaar"
+msgstr "आधार"
+
+msgid "Aadhaar No"
+msgstr "आधार नं."
+
+msgid "Account"
+msgstr "खाता"
+
+msgid "Account Balances"
+msgstr "खाता शेष"
+
+msgid "Account Closing Register"
+msgstr "खाता बंद रजिस्टर"
+
+msgid "Account Details"
+msgstr "खाता विवरण"
+
+msgid "Account Head"
+msgstr "खाता शीर्ष"
+
+msgid "Account Heads"
+msgstr "खाता शीर्ष"
+
+msgid "Account No"
+msgstr "खाता नं."
+
+msgid "Account No."
+msgstr "खाता नं."
+
+msgid "Account Opening"
+msgstr "खाता खोलना"
+
+msgid "Account Opening Register"
+msgstr "खाता खोलने का रजिस्टर"
+
+msgid "Account Statement"
+msgstr "खाता विवरण"
+
+msgid "Account Summary"
+msgstr "खाता सारांश"
+
+msgid "Account Type"
+msgstr "खाता प्रकार"
+
+msgid "Accounting Module"
+msgstr "लेखा मॉड्यूल"
+
+msgid "Accounts"
+msgstr "खाते"
+
+msgid "Accounts by Deposit Type"
+msgstr "जमा प्रकार अनुसार खाते"
+
+msgid "Accounts closed in period"
+msgstr "अवधि में बंद खाते"
+
+msgid "Accounts opened in period"
+msgstr "अवधि में खोले गए खाते"
+
+msgid "Accounts with zero balance"
+msgstr "शून्य शेष वाले खाते"
+
+msgid "Accrued"
+msgstr "उपार्जित"
+
+msgid "Accrued Interest"
+msgstr "उपार्जित ब्याज"
+
+msgid "Action"
+msgstr "कार्रवाई"
+
+msgid "Actions"
+msgstr "कार्रवाई"
+
+msgid "Active"
+msgstr "सक्रिय"
+
+msgid "Add"
+msgstr "जोड़ें"
+
+msgid "Add First Member"
+msgstr "पहला सदस्य जोड़ें"
+
+msgid "Add Loan Charge"
+msgstr "ऋण शुल्क जोड़ें"
+
+msgid "Add New"
+msgstr "नया जोड़ें"
+
+msgid "Address"
+msgstr "पता"
+
+msgid "Address & Contact"
+msgstr "पता और संपर्क"
+
+msgid "Address:"
+msgstr "पता:"
+
+msgid "Administration"
+msgstr "प्रशासन"
+
+msgid "After Post"
+msgstr "पोस्ट के बाद"
+
+msgid "Agent"
+msgstr "एजेंट"
+
+msgid "Agent Clients"
+msgstr "एजेंट ग्राहक"
+
+msgid "Agent Code"
+msgstr "एजेंट कोड"
+
+msgid "Agent Commission"
+msgstr "एजेंट कमीशन"
+
+msgid "Agent Commission Calculator"
+msgstr "एजेंट कमीशन गणक"
+
+msgid "Agent Name"
+msgstr "एजेंट नाम"
+
+msgid "Agent Summary"
+msgstr "एजेंट सारांश"
+
+msgid "Agent commission and TDS"
+msgstr "एजेंट कमीशन और TDS"
+
+msgid "Agent-wise Client List"
+msgstr "एजेंट-वार ग्राहक सूची"
+
+msgid "Agent-wise client accounts"
+msgstr "एजेंट-वार ग्राहक खाते"
+
+msgid "Agents"
+msgstr "एजेंट"
+
+msgid "Alerts"
+msgstr "सूचनाएं"
+
+msgid "All"
+msgstr "सभी"
+
+msgid "All Accounts"
+msgstr "सभी खाते"
+
+msgid "All Accounts (Member)"
+msgstr "सभी खाते (सदस्य)"
+
+msgid "All Agents"
+msgstr "सभी एजेंट"
+
+msgid "All Categories"
+msgstr "सभी श्रेणियां"
+
+msgid "All Reports"
+msgstr "सभी रिपोर्ट"
+
+msgid "All Savings"
+msgstr "सभी बचत"
+
+msgid "All Status"
+msgstr "सभी स्थिति"
+
+msgid "All Vouchers"
+msgstr "सभी वाउचर"
+
+msgid "All accounts with last txn date"
+msgstr "अंतिम लेनदेन तिथि सहित सभी खाते"
+
+msgid "All active shareholders"
+msgstr "सभी सक्रिय शेयरधारक"
+
+msgid "All clear — no alerts"
+msgstr "सब ठीक — कोई सूचना नहीं"
+
+msgid "All head balances"
+msgstr "सभी शीर्ष शेष"
+
+msgid "Alt Phone"
+msgstr "वैकल्पिक फोन"
+
+msgid "Amount"
+msgstr "राशि"
+
+msgid "Amount Range"
+msgstr "राशि सीमा"
+
+msgid "Amount-wise"
+msgstr "राशि-वार"
+
+msgid "Amount-wise Classification"
+msgstr "राशि-वार वर्गीकरण"
+
+msgid "Approved"
+msgstr "स्वीकृत"
+
+msgid "As On Date"
+msgstr "दिनांक तक"
+
+msgid "Assets"
+msgstr "संपत्ति"
+
+msgid "Assets & Liabilities"
+msgstr "संपत्ति और देयताएं"
+
+msgid "Audit Trail"
+msgstr "ऑडिट ट्रेल"
+
+msgid "Authorized Signatory"
+msgstr "अधिकृत हस्ताक्षरकर्ता"
+
+msgid "Auto-generated"
+msgstr "स्वत: उत्पन्न"
+
+msgid "Balance"
+msgstr "शेष"
+
+msgid "Balance (₹)"
+msgstr "शेष (₹)"
+
+msgid "Balance Check"
+msgstr "शेष जांच"
+
+msgid "Balance Confirmation"
+msgstr "शेष पुष्टि"
+
+msgid "Balance Confirmation Certificate"
+msgstr "शेष पुष्टि प्रमाणपत्र"
+
+msgid "Balance Range Report"
+msgstr "शेष सीमा रिपोर्ट"
+
+msgid "Balance Range-wise"
+msgstr "शेष सीमा-वार"
+
+msgid "Balance Sheet"
+msgstr "तुलन पत्र"
+
+msgid "Balance Statement"
+msgstr "शेष विवरण"
+
+msgid "Balance Summary by Account Type"
+msgstr "खाता प्रकार अनुसार शेष सारांश"
+
+msgid "Balance by Account Type"
+msgstr "खाता प्रकार अनुसार शेष"
+
+msgid "Balance with Last Txn Date"
+msgstr "अंतिम लेनदेन तिथि सहित शेष"
+
+msgid "Balanced"
+msgstr "संतुलित"
+
+msgid "Basic Information"
+msgstr "मूल जानकारी"
+
+msgid "Begin Working Day"
+msgstr "कार्य दिवस शुरू करें"
+
+msgid "Blood Group"
+msgstr "रक्त समूह"
+
+msgid "Borrower"
+msgstr "उधारकर्ता"
+
+msgid "Both"
+msgstr "दोनों"
+
+msgid "Branch"
+msgstr "शाखा"
+
+msgid "Branches"
+msgstr "शाखाएं"
+
+msgid "By"
+msgstr "द्वारा"
+
+msgid "By Deposit Type"
+msgstr "जमा प्रकार अनुसार"
+
+msgid "Cancel"
+msgstr "रद्द करें"
+
+msgid "Cancel Repayment"
+msgstr "पुनर्भुगतान रद्द करें"
+
+msgid "Cancel Transaction"
+msgstr "लेनदेन रद्द करें"
+
+msgid "Cancel Voucher"
+msgstr "वाउचर रद्द करें"
+
+msgid "Cash Book"
+msgstr "कैशबुक"
+
+msgid "Cash summary"
+msgstr "नकद सारांश"
+
+msgid "Cashbook"
+msgstr "कैशबुक"
+
+msgid "Cashbook Daily Report"
+msgstr "कैशबुक दैनिक रिपोर्ट"
+
+msgid "Cashbook Report"
+msgstr "कैशबुक रिपोर्ट"
+
+msgid "Cashbook Summary"
+msgstr "कैशबुक सारांश"
+
+msgid "Caste"
+msgstr "जाति"
+
+msgid "Category"
+msgstr "श्रेणी"
+
+msgid "Certificate No"
+msgstr "प्रमाणपत्र नं."
+
+msgid "Certificate No."
+msgstr "प्रमाणपत्र नं."
+
+msgid "Change Password"
+msgstr "पासवर्ड बदलें"
+
+msgid "Charge Type"
+msgstr "शुल्क प्रकार"
+
+msgid "Charges"
+msgstr "शुल्क"
+
+msgid "City"
+msgstr "शहर"
+
+msgid "Classification"
+msgstr "वर्गीकरण"
+
+msgid "Click to upload"
+msgstr "अपलोड करने के लिए क्लिक करें"
+
+msgid "Client"
+msgstr "ग्राहक"
+
+msgid "Client Accounts"
+msgstr "ग्राहक खाते"
+
+msgid "Clients"
+msgstr "ग्राहक"
+
+msgid "Closed"
+msgstr "बंद"
+
+msgid "Closing"
+msgstr "समापन"
+
+msgid "Closing Balance"
+msgstr "अंतिम शेष"
+
+msgid "Closing Debit ≠ Closing Credit"
+msgstr "अंतिम नामे ≠ अंतिम जमा"
+
+msgid "Closing Register"
+msgstr "बंद रजिस्टर"
+
+msgid "Closure Date"
+msgstr "बंद तिथि"
+
+msgid "Code"
+msgstr "कोड"
+
+msgid "Code / Name"
+msgstr "कोड / नाम"
+
+msgid "Collateral"
+msgstr "संपार्श्विक"
+
+msgid "Collection"
+msgstr "संग्रह"
+
+msgid "Collection Posting"
+msgstr "संग्रह पोस्टिंग"
+
+msgid "Collections"
+msgstr "संग्रह"
+
+msgid "Column"
+msgstr "कॉलम"
+
+msgid "Column Reference"
+msgstr "कॉलम संदर्भ"
+
+msgid "Commission"
+msgstr "कमीशन"
+
+msgid "Commission Rate (%)"
+msgstr "कमीशन दर (%)"
+
+msgid "Compounding"
+msgstr "चक्रवृद्धि"
+
+msgid "Confirm"
+msgstr "पुष्टि करें"
+
+msgid "Contact"
+msgstr "संपर्क"
+
+msgid "Count"
+msgstr "गणना"
+
+msgid "Cr"
+msgstr "जमा"
+
+msgid "Cr."
+msgstr "जमा"
+
+msgid "Create"
+msgstr "बनाएं"
+
+msgid "Created By"
+msgstr "द्वारा बनाया"
+
+msgid "Credit"
+msgstr "जमा"
+
+msgid "Current A/c"
+msgstr "चालू खाता"
+
+msgid "Current Accounts"
+msgstr "चालू खाते"
+
+msgid "Current Balance"
+msgstr "वर्तमान शेष"
+
+msgid "Current Balance Reports"
+msgstr "वर्तमान शेष रिपोर्ट"
+
+msgid "Customer Classification"
+msgstr "ग्राहक वर्गीकरण"
+
+msgid "DOB"
+msgstr "जन्म तिथि"
+
+msgid "Daily Cashbook"
+msgstr "दैनिक कैशबुक"
+
+msgid "Daily Collection"
+msgstr "दैनिक संग्रह"
+
+msgid "Daily Collection (₹)"
+msgstr "दैनिक संग्रह (₹)"
+
+msgid "Daily Commission"
+msgstr "दैनिक कमीशन"
+
+msgid "Daily Interest"
+msgstr "दैनिक ब्याज"
+
+msgid "Daily transactions"
+msgstr "दैनिक लेनदेन"
+
+msgid "Dashboard"
+msgstr "डैशबोर्ड"
+
+msgid "Date"
+msgstr "दिनांक"
+
+msgid "Date of Birth"
+msgstr "जन्म तिथि"
+
+msgid "Date-wise Daybook"
+msgstr "दिनांक-वार डे बुक"
+
+msgid "Date-wise collection daybook"
+msgstr "दिनांक-वार संग्रह डे बुक"
+
+msgid "Date:"
+msgstr "दिनांक:"
+
+msgid "Day Book"
+msgstr "डे बुक"
+
+msgid "Day End"
+msgstr "दिन समाप्ति"
+
+msgid "Day End Operations"
+msgstr "दिन समाप्ति कार्य"
+
+msgid "Day Operations"
+msgstr "दैनिक कार्य"
+
+msgid "Day is Closed"
+msgstr "दिन बंद है"
+
+msgid "Day is Open"
+msgstr "दिन खुला है — लेनदेन सक्रिय"
+
+msgid "Daybook"
+msgstr "डे बुक"
+
+msgid "Days"
+msgstr "दिन"
+
+msgid "Days Overdue"
+msgstr "अतिदेय दिन"
+
+msgid "Debit"
+msgstr "नामे"
+
+msgid "Deceased"
+msgstr "मृतक"
+
+msgid "Defaulter List"
+msgstr "चूककर्ता सूची"
+
+msgid "Del"
+msgstr "हटाएं"
+
+msgid "Delete"
+msgstr "हटाएं"
+
+msgid "Demand Gen."
+msgstr "मांग उत्पन्न"
+
+msgid "Demand List"
+msgstr "मांग सूची"
+
+msgid "Deposit"
+msgstr "जमा"
+
+msgid "Deposit (FD/RD)"
+msgstr "जमा (एफडी/आरडी)"
+
+msgid "Deposit A/c"
+msgstr "जमा खाता"
+
+msgid "Deposit Amount"
+msgstr "जमा राशि"
+
+msgid "Deposit Reports"
+msgstr "जमा रिपोर्ट"
+
+msgid "Deposit Type"
+msgstr "जमा प्रकार"
+
+msgid "Deposit Value"
+msgstr "जमा मूल्य"
+
+msgid "Deposits"
+msgstr "जमा"
+
+msgid "Deposits Module"
+msgstr "जमा मॉड्यूल"
+
+msgid "Description"
+msgstr "विवरण"
+
+msgid "Difference"
+msgstr "अंतर"
+
+msgid "Difference:"
+msgstr "अंतर:"
+
+msgid "Director"
+msgstr "निदेशक"
+
+msgid "Disbursed"
+msgstr "वितरित"
+
+msgid "Disbursement Register"
+msgstr "वितरण रजिस्टर"
+
+msgid "District"
+msgstr "जिला"
+
+msgid "Dividend"
+msgstr "लाभांश"
+
+msgid "Dividend Amount"
+msgstr "लाभांश राशि"
+
+msgid "Dividend Certificate"
+msgstr "लाभांश प्रमाणपत्र"
+
+msgid "Dividend Certificates"
+msgstr "लाभांश प्रमाणपत्र"
+
+msgid "Document Type"
+msgstr "दस्तावेज़ प्रकार"
+
+msgid "Documents"
+msgstr "दस्तावेज़"
+
+msgid "Dormant Accounts"
+msgstr "निष्क्रिय खाते"
+
+msgid "Download"
+msgstr "डाउनलोड"
+
+msgid "Download Sample Template"
+msgstr "नमूना टेम्पलेट डाउनलोड करें"
+
+msgid "Dr"
+msgstr "नामे"
+
+msgid "Dr."
+msgstr "नामे"
+
+msgid "Driving Licence"
+msgstr "ड्राइविंग लाइसेंस"
+
+msgid "Due Date"
+msgstr "देय तिथि"
+
+msgid "EMI"
+msgstr "ईएमआई"
+
+msgid "EMI Amount"
+msgstr "ईएमआई राशि"
+
+msgid "EMI Collections"
+msgstr "EMI संग्रह"
+
+msgid "EMI Schedule"
+msgstr "ईएमआई अनुसूची"
+
+msgid "EMIs due in period"
+msgstr "अवधि में देय ईएमआई"
+
+msgid "Edit"
+msgstr "संपादित करें"
+
+msgid "Edit Account"
+msgstr "खाता संपादित करें"
+
+msgid "Education"
+msgstr "शिक्षा"
+
+msgid "Email"
+msgstr "ईमेल"
+
+msgid "Employee"
+msgstr "कर्मचारी"
+
+msgid "Enquiry"
+msgstr "पूछताछ"
+
+msgid "Enquiry Module"
+msgstr "पूछताछ मॉड्यूल"
+
+msgid "Enter your password"
+msgstr "अपना पासवर्ड दर्ज करें"
+
+msgid "Enter your username"
+msgstr "अपना उपयोगकर्ता नाम दर्ज करें"
+
+msgid "Error"
+msgstr "त्रुटि"
+
+msgid "Error Details"
+msgstr "त्रुटि विवरण"
+
+msgid "Estimated Value"
+msgstr "अनुमानित मूल्य"
+
+msgid "Ex-Military"
+msgstr "पूर्व-सैनिक"
+
+msgid "Expenditure"
+msgstr "व्यय"
+
+msgid "Expires:"
+msgstr "समाप्ति:"
+
+msgid "Export"
+msgstr "निर्यात"
+
+msgid "FD Maturity / Renewal Notice"
+msgstr "एफडी परिपक्वता / नवीनीकरण नोटिस"
+
+msgid "FD Maturity Notice"
+msgstr "एफडी परिपक्वता नोटिस"
+
+msgid "FD No"
+msgstr "एफडी नं."
+
+msgid "FD No."
+msgstr "एफडी नं."
+
+msgid "FD/RD Interest Calculator"
+msgstr "एफडी/आरडी ब्याज गणक"
+
+msgid "FD/RD maturing in date range"
+msgstr "तिथि सीमा में परिपक्व एफडी/आरडी"
+
+msgid "FDs Maturing (30 days)"
+msgstr "FD परिपक्व (30 दिन)"
+
+msgid "FDs maturing soon"
+msgstr "जल्द परिपक्व होने वाली एफडी"
+
+msgid "FDs past maturity, still active"
+msgstr "परिपक्वता के बाद भी सक्रिय एफडी"
+
+msgid "Face Value"
+msgstr "अंकित मूल्य"
+
+msgid "Father's Name"
+msgstr "पिता का नाम"
+
+msgid "File"
+msgstr "फ़ाइल"
+
+msgid "Filter"
+msgstr "फ़िल्टर"
+
+msgid "Financial Statements"
+msgstr "वित्तीय विवरण"
+
+msgid "Fixed Deposit"
+msgstr "सावधि जमा"
+
+msgid "Fixed Deposit Details"
+msgstr "सावधि जमा विवरण"
+
+msgid "Fixed Deposits"
+msgstr "सावधि जमा"
+
+msgid "Folio"
+msgstr "फोलियो"
+
+msgid "Format"
+msgstr "प्रारूप"
+
+msgid "From"
+msgstr "से"
+
+msgid "From Date"
+msgstr "दिनांक से"
+
+msgid "GL Head"
+msgstr "जीएल शीर्ष"
+
+msgid "Gender"
+msgstr "लिंग"
+
+msgid "General Ledger"
+msgstr "सामान्य खाता"
+
+msgid "Generate"
+msgstr "उत्पन्न करें"
+
+msgid "Getting Started"
+msgstr "शुरुआत करें"
+
+msgid "Group"
+msgstr "समूह"
+
+msgid "Guarantee Amount"
+msgstr "गारंटी राशि"
+
+msgid "Guarantee exposure by member"
+msgstr "सदस्य अनुसार गारंटी"
+
+msgid "Guarantees"
+msgstr "गारंटी"
+
+msgid "Guarantor Exposure Report"
+msgstr "गारंटर रिपोर्ट"
+
+msgid "Guarantor Report"
+msgstr "गारंटर रिपोर्ट"
+
+msgid "Guarantors"
+msgstr "गारंटर"
+
+msgid "Guardian Details (Minor)"
+msgstr "अभिभावक विवरण (नाबालिग)"
+
+msgid "HO"
+msgstr "मुख्यालय"
+
+msgid "Half-Yearly"
+msgstr "अर्ध-वार्षिक"
+
+msgid "Head Master"
+msgstr "हेड मास्टर"
+
+msgid "Head Name"
+msgstr "शीर्ष नाम"
+
+msgid "Head-wise Summary"
+msgstr "शीर्ष-वार सारांश"
+
+msgid "Head-wise ledger"
+msgstr "शीर्ष-वार खाता बही"
+
+msgid "Heads"
+msgstr "हेड"
+
+msgid "Identity"
+msgstr "पहचान"
+
+msgid "Identity & Documents"
+msgstr "पहचान और दस्तावेज़"
+
+msgid "Import"
+msgstr "आयात"
+
+msgid "Import Members"
+msgstr "सदस्य आयात करें"
+
+msgid "Import Results"
+msgstr "आयात परिणाम"
+
+msgid "Inactive"
+msgstr "निष्क्रिय"
+
+msgid "Income"
+msgstr "आय"
+
+msgid "Income vs Expenditure"
+msgstr "आय बनाम व्यय"
+
+msgid "Info"
+msgstr "जानकारी"
+
+msgid "Inst #"
+msgstr "किस्त #"
+
+msgid "Installment"
+msgstr "किस्त"
+
+msgid "Int"
+msgstr "ब्याज"
+
+msgid "Interest"
+msgstr "ब्याज"
+
+msgid "Interest % wise"
+msgstr "ब्याज % अनुसार"
+
+msgid "Interest & EMI calculators"
+msgstr "ब्याज और ईएमआई गणक"
+
+msgid "Interest Calculate"
+msgstr "ब्याज गणना"
+
+msgid "Interest Calculation"
+msgstr "ब्याज गणना"
+
+msgid "Interest Due"
+msgstr "देय ब्याज"
+
+msgid "Interest Earned"
+msgstr "अर्जित ब्याज"
+
+msgid "Interest Master"
+msgstr "ब्याज मास्टर"
+
+msgid "Interest Post"
+msgstr "ब्याज पोस्ट"
+
+msgid "Interest Posting"
+msgstr "ब्याज पोस्टिंग"
+
+msgid "Interest Rate"
+msgstr "ब्याज दर"
+
+msgid "Interest Rate-wise Classification"
+msgstr "ब्याज दर-वार वर्गीकरण"
+
+msgid "Interest Receivable"
+msgstr "प्राप्य ब्याज"
+
+msgid "Interest Slab"
+msgstr "ब्याज स्लैब"
+
+msgid "Invalid username or password. Please try again."
+msgstr "अमान्य उपयोगकर्ता नाम या पासवर्ड। कृपया पुनः प्रयास करें।"
+
+msgid "Issue Date"
+msgstr "जारी तिथि"
+
+msgid "Join Date"
+msgstr "शामिल तिथि"
+
+msgid "KYC Documents"
+msgstr "केवाईसी दस्तावेज़"
+
+msgid "KYC Status"
+msgstr "केवाईसी स्थिति"
+
+msgid "Last Month"
+msgstr "पिछला माह"
+
+msgid "Last Transaction"
+msgstr "अंतिम लेनदेन"
+
+msgid "Ledger"
+msgstr "खाता बही"
+
+msgid "Ledgers & Books"
+msgstr "खाता बही और पुस्तकें"
+
+msgid "Liabilities & Capital"
+msgstr "देयताएं और पूंजी"
+
+msgid "Loading..."
+msgstr "लोड हो रहा है..."
+
+msgid "Loan Account Opening"
+msgstr "ऋण खाता खोलना"
+
+msgid "Loan Accounts"
+msgstr "ऋण खाते"
+
+msgid "Loan Against Deposit"
+msgstr "जमा पर ऋण"
+
+msgid "Loan Amount"
+msgstr "ऋण राशि"
+
+msgid "Loan Amount (₹)"
+msgstr "ऋण राशि (₹)"
+
+msgid "Loan Amt"
+msgstr "ऋण राशि"
+
+msgid "Loan Charges"
+msgstr "ऋण शुल्क"
+
+msgid "Loan Demand List"
+msgstr "ऋण मांग सूची"
+
+msgid "Loan Details"
+msgstr "ऋण विवरण"
+
+msgid "Loan EMI"
+msgstr "ऋण ईएमआई"
+
+msgid "Loan EMI Calculator (Reducing Balance)"
+msgstr "ऋण ईएमआई गणक (घटती शेष)"
+
+msgid "Loan Int."
+msgstr "ऋण ब्याज"
+
+msgid "Loan Int. Calc"
+msgstr "ऋण ब्याज गणना"
+
+msgid "Loan Ledger"
+msgstr "ऋण खाता बही"
+
+msgid "Loan No"
+msgstr "ऋण नं."
+
+msgid "Loan No."
+msgstr "ऋण नं."
+
+msgid "Loan Product"
+msgstr "ऋण उत्पाद"
+
+msgid "Loan Products"
+msgstr "ऋण उत्पाद"
+
+msgid "Loan Reports"
+msgstr "ऋण रिपोर्ट"
+
+msgid "Loan Status"
+msgstr "ऋण स्थिति"
+
+msgid "Loan Summary"
+msgstr "ऋण सारांश"
+
+msgid "Loans"
+msgstr "ऋण"
+
+msgid "Loans Against Deposit"
+msgstr "जमा पर ऋण"
+
+msgid "Loans Module"
+msgstr "ऋण मॉड्यूल"
+
+msgid "Loans disbursed in period"
+msgstr "अवधि में वितरित ऋण"
+
+msgid "Logout"
+msgstr "लॉगआउट"
+
+msgid "Marital Status"
+msgstr "वैवाहिक स्थिति"
+
+msgid "Master"
+msgstr "मास्टर"
+
+msgid "Matured Accounts"
+msgstr "परिपक्व खाते"
+
+msgid "Matured But Not Paid"
+msgstr "परिपक्व लेकिन भुगतान नहीं"
+
+msgid "Matured Not Paid"
+msgstr "परिपक्व अभुगतान"
+
+msgid "Matured Pigmmy Accounts (still active)"
+msgstr "परिपक्व पिग्मी खाते (अभी सक्रिय)"
+
+msgid "Maturing in (days)"
+msgstr "परिपक्वता (दिनों में)"
+
+msgid "Maturity"
+msgstr "परिपक्वता"
+
+msgid "Maturity Amount"
+msgstr "परिपक्वता राशि"
+
+msgid "Maturity Amt"
+msgstr "परिपक्वता राशि"
+
+msgid "Maturity Date"
+msgstr "परिपक्वता तिथि"
+
+msgid "Maturity Date-wise"
+msgstr "परिपक्वता तिथि-वार"
+
+msgid "Maturity Date-wise Listing"
+msgstr "परिपक्वता तिथि-वार सूची"
+
+msgid "Maturity-wise"
+msgstr "परिपक्वता-वार"
+
+msgid "Max Amount"
+msgstr "अधिकतम राशि"
+
+msgid "Max Tenure"
+msgstr "अधिकतम अवधि"
+
+msgid "Member"
+msgstr "सदस्य"
+
+msgid "Member Detail"
+msgstr "सदस्य विवरण"
+
+msgid "Member Name"
+msgstr "सदस्य नाम"
+
+msgid "Member No"
+msgstr "सदस्य नं."
+
+msgid "Member No."
+msgstr "सदस्य नं."
+
+msgid "Member No.:"
+msgstr "सदस्य नं.:"
+
+msgid "Member No:"
+msgstr "सदस्य नं.:"
+
+msgid "Member Type"
+msgstr "सदस्य प्रकार"
+
+msgid "Member balance certificate"
+msgstr "सदस्य शेष प्रमाणपत्र"
+
+msgid "Member not found."
+msgstr "सदस्य नहीं मिला।"
+
+msgid "Member statements"
+msgstr "सदस्य विवरण"
+
+msgid "Member-wise summary"
+msgstr "सदस्य-वार सारांश"
+
+msgid "Member:"
+msgstr "सदस्य:"
+
+msgid "Members"
+msgstr "सदस्य"
+
+msgid "Membership & Branch"
+msgstr "सदस्यता और शाखा"
+
+msgid "Min / Max"
+msgstr "न्यूनतम / अधिकतम"
+
+msgid "Min Amount"
+msgstr "न्यूनतम राशि"
+
+msgid "Minor Case"
+msgstr "नाबालिग"
+
+msgid "Mode"
+msgstr "मोड"
+
+msgid "Month"
+msgstr "माह"
+
+msgid "Monthly"
+msgstr "मासिक"
+
+msgid "Monthly EMI"
+msgstr "मासिक ईएमआई"
+
+msgid "Monthly Income"
+msgstr "मासिक आय"
+
+msgid "Monthly Installment"
+msgstr "मासिक किस्त"
+
+msgid "Mother's Name"
+msgstr "माता का नाम"
+
+msgid "My Profile"
+msgstr "मेरी प्रोफ़ाइल"
+
+msgid "NPA Accounts"
+msgstr "NPA खाते"
+
+msgid "Name"
+msgstr "नाम"
+
+msgid "Name (Regional)"
+msgstr "नाम (क्षेत्रीय)"
+
+msgid "Narration"
+msgstr "विवरण"
+
+msgid "Net"
+msgstr "शुद्ध"
+
+msgid "Net Loss"
+msgstr "शुद्ध हानि"
+
+msgid "Net Payable"
+msgstr "शुद्ध देय"
+
+msgid "Net Profit"
+msgstr "शुद्ध लाभ"
+
+msgid "New Account"
+msgstr "नया खाता"
+
+msgid "New Balance"
+msgstr "नया शेष"
+
+msgid "Next"
+msgstr "अगला"
+
+msgid "Nil Balance"
+msgstr "शून्य शेष"
+
+msgid "Nil Balance Accounts"
+msgstr "शून्य शेष खाते"
+
+msgid "No"
+msgstr "नहीं"
+
+msgid "No accounts found for this criteria."
+msgstr "इस मापदंड के लिए कोई खाता नहीं मिला।"
+
+msgid "No accounts found for this member."
+msgstr "इस सदस्य के लिए कोई खाता नहीं मिला।"
+
+msgid "No accounts found in this date range."
+msgstr "इस तिथि सीमा में कोई खाता नहीं मिला।"
+
+msgid "No assets"
+msgstr "कोई संपत्ति नहीं"
+
+msgid "No commission records found for this period."
+msgstr "इस अवधि में कोई कमीशन रिकॉर्ड नहीं।"
+
+msgid "No data found"
+msgstr "कोई डेटा नहीं मिला"
+
+msgid "No data found for the selected date."
+msgstr "चयनित तिथि के लिए कोई डेटा नहीं।"
+
+msgid "No data found for the selected period."
+msgstr "चयनित अवधि के लिए कोई डेटा नहीं।"
+
+msgid "No defaulters found."
+msgstr "कोई चूककर्ता नहीं मिला।"
+
+msgid "No documents uploaded."
+msgstr "कोई दस्तावेज़ अपलोड नहीं किया।"
+
+msgid "No expenses"
+msgstr "कोई व्यय नहीं"
+
+msgid "No income"
+msgstr "कोई आय नहीं"
+
+msgid "No liabilities"
+msgstr "कोई देयता नहीं"
+
+msgid "No matured active accounts found."
+msgstr "कोई परिपक्व सक्रिय खाता नहीं।"
+
+msgid "No members found"
+msgstr "कोई सदस्य नहीं मिला"
+
+msgid "No nominees added."
+msgstr "कोई नामांकित व्यक्ति नहीं जोड़ा।"
+
+msgid "No records found for the selected criteria."
+msgstr "चयनित मापदंड के लिए कोई रिकॉर्ड नहीं।"
+
+msgid "No records found."
+msgstr "कोई रिकॉर्ड नहीं मिला।"
+
+msgid "No transactions found for this member in the selected period."
+msgstr "चयनित अवधि में इस सदस्य के लिए कोई लेनदेन नहीं।"
+
+msgid "No transactions in 6+ months"
+msgstr "6+ माह में कोई लेनदेन नहीं"
+
+msgid "No transactions on this date."
+msgstr "इस तिथि पर कोई लेनदेन नहीं।"
+
+msgid "No."
+msgstr "सं."
+
+msgid "Nominal Member"
+msgstr "नाममात्र सदस्य"
+
+msgid "Nominees"
+msgstr "नामांकित"
+
+msgid "Non-Operated"
+msgstr "गैर-संचालित"
+
+msgid "Non-Operated (6+ months)"
+msgstr "गैर-संचालित (6+ माह)"
+
+msgid "Non-Operated Accounts (6+ months)"
+msgstr "गैर-संचालित खाते (6+ माह)"
+
+msgid "Not Balanced"
+msgstr "असंतुलित"
+
+msgid "Not Verified"
+msgstr "सत्यापित नहीं"
+
+msgid "Notice Printing"
+msgstr "नोटिस छपाई"
+
+msgid "Notice Type"
+msgstr "नोटिस प्रकार"
+
+msgid "Notices"
+msgstr "नोटिस"
+
+msgid "Notices & Certificates"
+msgstr "नोटिस और प्रमाणपत्र"
+
+msgid "Notifications"
+msgstr "सूचनाएं"
+
+msgid "Occupation"
+msgstr "व्यवसाय"
+
+msgid "Old Balance"
+msgstr "पुराना शेष"
+
+msgid "Open"
+msgstr "खुला"
+
+msgid "Open Fixed Deposit"
+msgstr "सावधि जमा खोलें"
+
+msgid "Open Recurring Deposit"
+msgstr "आवर्ती जमा खोलें"
+
+msgid "Opened"
+msgstr "खोला गया"
+
+msgid "Opening"
+msgstr "प्रारंभिक"
+
+msgid "Opening Balance"
+msgstr "प्रारंभिक शेष"
+
+msgid "Opening Balance Updation"
+msgstr "प्रारंभिक शेष अद्यतन"
+
+msgid "Opening Balances"
+msgstr "प्रारंभिक शेष"
+
+msgid "Opening Date"
+msgstr "खुलने की तिथि"
+
+msgid "Opening Register"
+msgstr "खोलने का रजिस्टर"
+
+msgid "Outstanding"
+msgstr "बकाया"
+
+msgid "Outstanding Loans"
+msgstr "बकाया ऋण"
+
+msgid "Outstanding interest on loans"
+msgstr "ऋण पर बकाया ब्याज"
+
+msgid "Overdue"
+msgstr "अतिदेय"
+
+msgid "Overdue Amt"
+msgstr "अतिदेय राशि"
+
+msgid "Overdue Days"
+msgstr "अतिदेय दिन"
+
+msgid "Overdue Loans"
+msgstr "अतिदेय ऋण"
+
+msgid "Overdue loans by months"
+msgstr "महीनों अनुसार अतिदेय ऋण"
+
+msgid "PAN No"
+msgstr "पैन नं."
+
+msgid "Page"
+msgstr "पृष्ठ"
+
+msgid "Paid"
+msgstr "भुगतान"
+
+msgid "Paid / Total"
+msgstr "भुगतान / कुल"
+
+msgid "Paid Date"
+msgstr "भुगतान तिथि"
+
+msgid "Parent / Guardian Address"
+msgstr "अभिभावक का पता"
+
+msgid "Parent / Guardian Name"
+msgstr "अभिभावक का नाम"
+
+msgid "Particular"
+msgstr "विवरण"
+
+msgid "Password"
+msgstr "पासवर्ड"
+
+msgid "Payment"
+msgstr "भुगतान"
+
+msgid "Payments"
+msgstr "भुगतान"
+
+msgid "Penal Rate"
+msgstr "दंड दर"
+
+msgid "Penalty"
+msgstr "दंड"
+
+msgid "Pending"
+msgstr "लंबित"
+
+msgid "Pending Loan Approvals"
+msgstr "ऋण स्वीकृति लंबित"
+
+msgid "Period"
+msgstr "अवधि"
+
+msgid "Period Range"
+msgstr "अवधि सीमा"
+
+msgid "Period, amount, interest-wise"
+msgstr "अवधि, राशि, ब्याज-वार"
+
+msgid "Period-wise"
+msgstr "अवधि-वार"
+
+msgid "Period-wise Classification"
+msgstr "अवधि-वार वर्गीकरण"
+
+msgid "Personal"
+msgstr "व्यक्तिगत"
+
+msgid "Personal Information"
+msgstr "व्यक्तिगत जानकारी"
+
+msgid "Personal Ledger"
+msgstr "व्यक्तिगत खाता बही"
+
+msgid "Phone"
+msgstr "फोन"
+
+msgid "Phone:"
+msgstr "फोन:"
+
+msgid "Photograph"
+msgstr "फोटो"
+
+msgid "Physically Disabled"
+msgstr "शारीरिक रूप से विकलांग"
+
+msgid "Pigmmy / Daily Deposit"
+msgstr "पिग्मी / दैनिक जमा"
+
+msgid "Pigmmy / Daily Deposit Reports"
+msgstr "पिग्मी / दैनिक जमा रिपोर्ट"
+
+msgid "Pigmmy Accounts"
+msgstr "पिग्मी खाते"
+
+msgid "Pigmmy Reports"
+msgstr "पिग्मी रिपोर्ट"
+
+msgid "Pincode"
+msgstr "पिनकोड"
+
+msgid "Plan:"
+msgstr "योजना:"
+
+msgid "Please correct the errors below"
+msgstr "कृपया नीचे दी गई त्रुटियां सुधारें"
+
+msgid "Please select a date range and click Generate."
+msgstr "कृपया तिथि सीमा चुनें और उत्पन्न करें पर क्लिक करें।"
+
+msgid "Posting"
+msgstr "पोस्टिंग"
+
+msgid "Prefix"
+msgstr "उपसर्ग"
+
+msgid "Premature Amt"
+msgstr "समय पूर्व राशि"
+
+msgid "Premature Closure"
+msgstr "समय पूर्व बंद"
+
+msgid "Premature Closures"
+msgstr "समय पूर्व बंद"
+
+msgid "Previous"
+msgstr "पिछला"
+
+msgid "Principal"
+msgstr "मूलधन"
+
+msgid "Principal (₹)"
+msgstr "मूलधन (₹)"
+
+msgid "Print"
+msgstr "प्रिंट"
+
+msgid "Product"
+msgstr "उत्पाद"
+
+msgid "Products"
+msgstr "उत्पाद"
+
+msgid "Professional Details"
+msgstr "व्यावसायिक विवरण"
+
+msgid "Profile"
+msgstr "प्रोफ़ाइल"
+
+msgid "Profit & Loss"
+msgstr "लाभ और हानि"
+
+msgid "Profit & Loss Statement"
+msgstr "लाभ और हानि विवरण"
+
+msgid "Purchase Date"
+msgstr "खरीद तिथि"
+
+msgid "Purchase Shares"
+msgstr "शेयर खरीदें"
+
+msgid "Quarterly"
+msgstr "त्रैमासिक"
+
+msgid "Quick Actions"
+msgstr "त्वरित कार्य"
+
+msgid "Quick:"
+msgstr "त्वरित:"
+
+msgid "RD Due Installments"
+msgstr "आरडी देय किस्तें"
+
+msgid "RD Install. Due"
+msgstr "आरडी किस्त देय"
+
+msgid "RD No"
+msgstr "आरडी नं."
+
+msgid "RD No."
+msgstr "आरडी नं."
+
+msgid "Range"
+msgstr "सीमा"
+
+msgid "Rate"
+msgstr "दर"
+
+msgid "Rate %"
+msgstr "दर %"
+
+msgid "Rate (% p.a.)"
+msgstr "दर (% प्रति वर्ष)"
+
+msgid "Ready Reckoner"
+msgstr "तत्काल गणक"
+
+msgid "Receipt"
+msgstr "रसीद"
+
+msgid "Receipts"
+msgstr "रसीदें"
+
+msgid "Recent Transactions"
+msgstr "हाल के लेनदेन"
+
+msgid "Recovery Statement"
+msgstr "वसूली विवरण"
+
+msgid "Recurring Deposit"
+msgstr "आवर्ती जमा"
+
+msgid "Recurring Deposit Details"
+msgstr "आवर्ती जमा विवरण"
+
+msgid "Recurring Deposits"
+msgstr "आवर्ती जमा"
+
+msgid "Regular Member"
+msgstr "नियमित सदस्य"
+
+msgid "Rejected"
+msgstr "अस्वीकृत"
+
+msgid "Relation"
+msgstr "संबंध"
+
+msgid "Religion"
+msgstr "धर्म"
+
+msgid "Remember me"
+msgstr "मुझे याद रखें"
+
+msgid "Renew"
+msgstr "नवीनीकरण"
+
+msgid "Renewal List"
+msgstr "नवीनीकरण सूची"
+
+msgid "Renewed Deposits"
+msgstr "नवीनीकृत जमा"
+
+msgid "Repayments in date range"
+msgstr "तिथि सीमा में पुनर्भुगतान"
+
+msgid "Report"
+msgstr "रिपोर्ट"
+
+msgid "Report Type"
+msgstr "रिपोर्ट प्रकार"
+
+msgid "Reports"
+msgstr "रिपोर्ट"
+
+msgid "Required"
+msgstr "आवश्यक"
+
+msgid "Reset"
+msgstr "रीसेट"
+
+msgid "Reupdate A/c Balance"
+msgstr "खाता शेष अपडेट"
+
+msgid "Reupdate Account Balance"
+msgstr "खाता शेष पुन: अद्यतन"
+
+msgid "Reupdate Balances"
+msgstr "शेष पुन: अद्यतन"
+
+msgid "Reupdate GL Balance"
+msgstr "खातेवही शेष अपडेट"
+
+msgid "Role"
+msgstr "भूमिका"
+
+msgid "Sanction Amount-wise"
+msgstr "मंजूरी राशि-वार"
+
+msgid "Sanction Amount-wise Classification"
+msgstr "मंजूरी राशि-वार वर्गीकरण"
+
+msgid "Sanction Date-wise"
+msgstr "मंजूरी तिथि-वार"
+
+msgid "Save"
+msgstr "सेव करें"
+
+msgid "Savings"
+msgstr "बचत"
+
+msgid "Savings / Current / Security"
+msgstr "बचत / चालू / सुरक्षा"
+
+msgid "Savings Accounts"
+msgstr "बचत खाते"
+
+msgid "Savings Int."
+msgstr "बचत ब्याज"
+
+msgid "Savings Interest"
+msgstr "बचत ब्याज"
+
+msgid "Savings Interest Calculator"
+msgstr "बचत ब्याज गणक"
+
+msgid "Search"
+msgstr "खोजें"
+
+msgid "Search by name, member no, phone..."
+msgstr "नाम, सदस्य संख्या, फ़ोन से खोजें..."
+
+msgid "Security Deposits"
+msgstr "सुरक्षा जमा"
+
+msgid "Select"
+msgstr "चुनें"
+
+msgid "Select Branch"
+msgstr "शाखा चुनें"
+
+msgid "Senior Citizen"
+msgstr "वरिष्ठ नागरिक"
+
+msgid "Share %"
+msgstr "हिस्सा %"
+
+msgid "Share Amount"
+msgstr "शेयर राशि"
+
+msgid "Share Capital"
+msgstr "शेयर पूंजी"
+
+msgid "Share Config"
+msgstr "शेयर विन्यास"
+
+msgid "Share Configurations"
+msgstr "शेयर विन्यास"
+
+msgid "Share Details"
+msgstr "शेयर विवरण"
+
+msgid "Share Holdings"
+msgstr "शेयर धारिता"
+
+msgid "Share Transactions"
+msgstr "शेयर लेनदेन"
+
+msgid "Shareholder Details"
+msgstr "शेयरधारक विवरण"
+
+msgid "Shareholder dividend receipts"
+msgstr "शेयरधारक लाभांश रसीदें"
+
+msgid "Shareholders"
+msgstr "शेयरधारक"
+
+msgid "Shares"
+msgstr "शेयर"
+
+msgid "Shares Module"
+msgstr "शेयर मॉड्यूल"
+
+msgid "Showing"
+msgstr "दिखा रहे हैं"
+
+msgid "Sign in"
+msgstr "साइन इन"
+
+msgid "Sign in to your account"
+msgstr "अपने खाते में साइन इन करें"
+
+msgid "Signature"
+msgstr "हस्ताक्षर"
+
+msgid "Sl No"
+msgstr "क्रम संख्या"
+
+msgid "Society Details"
+msgstr "संस्था विवरण"
+
+msgid "Sr. Citizen"
+msgstr "वरिष्ठ नागरिक"
+
+msgid "Sr. No."
+msgstr "क्र. सं."
+
+msgid "Staff & Users"
+msgstr "कर्मचारी और उपयोगकर्ता"
+
+msgid "Staff Users"
+msgstr "कर्मचारी"
+
+msgid "Start"
+msgstr "प्रारंभ"
+
+msgid "Start Date"
+msgstr "प्रारंभ तिथि"
+
+msgid "State"
+msgstr "राज्य"
+
+msgid "Status"
+msgstr "स्थिति"
+
+msgid "Submit"
+msgstr "जमा करें"
+
+msgid "Success"
+msgstr "सफल"
+
+msgid "Surrender Shares"
+msgstr "शेयर समर्पण"
+
+msgid "Switch Branch"
+msgstr "शाखा बदलें"
+
+msgid "TDS"
+msgstr "TDS"
+
+msgid "Tahsil"
+msgstr "तहसील"
+
+msgid "Tenure"
+msgstr "अवधि"
+
+msgid "Tenure (months)"
+msgstr "अवधि (महीने)"
+
+msgid "This FY"
+msgstr "यह वित्तीय वर्ष"
+
+msgid "This Month"
+msgstr "यह माह"
+
+msgid "To"
+msgstr "तक"
+
+msgid "To Date"
+msgstr "दिनांक तक"
+
+msgid "Today's Activity"
+msgstr "आज की गतिविधि"
+
+msgid "Tools"
+msgstr "उपकरण"
+
+msgid "Total"
+msgstr "कुल"
+
+msgid "Total Amount"
+msgstr "कुल राशि"
+
+msgid "Total Assets"
+msgstr "कुल संपत्ति"
+
+msgid "Total Balance"
+msgstr "कुल शेष"
+
+msgid "Total Commission"
+msgstr "कुल कमीशन"
+
+msgid "Total Deposits"
+msgstr "कुल जमा"
+
+msgid "Total EMI"
+msgstr "कुल ईएमआई"
+
+msgid "Total Expenditure"
+msgstr "कुल व्यय"
+
+msgid "Total Exposure"
+msgstr "कुल जोखिम"
+
+msgid "Total Income"
+msgstr "कुल आय"
+
+msgid "Total Interest"
+msgstr "कुल ब्याज"
+
+msgid "Total Liabilities"
+msgstr "कुल देयताएं"
+
+msgid "Total Payment"
+msgstr "कुल भुगतान"
+
+msgid "Total Payments"
+msgstr "कुल भुगतान"
+
+msgid "Total Receipts"
+msgstr "कुल रसीदें"
+
+msgid "Total Shareholders"
+msgstr "कुल शेयरधारक"
+
+msgid "Total Shares"
+msgstr "कुल शेयर"
+
+msgid "Total TDS"
+msgstr "कुल TDS"
+
+msgid "Total Transactions"
+msgstr "कुल लेनदेन"
+
+msgid "Transaction"
+msgstr "लेनदेन"
+
+msgid "Transfer Shares"
+msgstr "शेयर हस्तांतरण"
+
+msgid "Trial Balance"
+msgstr "तलपट"
+
+msgid "Txn"
+msgstr "लेनदेन"
+
+msgid "Type"
+msgstr "प्रकार"
+
+msgid "Update"
+msgstr "अपडेट करें"
+
+msgid "Upgrade"
+msgstr "अपग्रेड"
+
+msgid "Upgrade / Recharge"
+msgstr "अपग्रेड / रिचार्ज"
+
+msgid "Upload"
+msgstr "अपलोड"
+
+msgid "Upload Document"
+msgstr "दस्तावेज़ अपलोड करें"
+
+msgid "Upload File"
+msgstr "फ़ाइल अपलोड करें"
+
+msgid "Username"
+msgstr "उपयोगकर्ता नाम"
+
+msgid "Verified"
+msgstr "सत्यापित"
+
+msgid "View"
+msgstr "देखें"
+
+msgid "View All"
+msgstr "सभी देखें"
+
+msgid "View Statement"
+msgstr "विवरण देखें"
+
+msgid "Voter ID"
+msgstr "मतदाता पहचान पत्र"
+
+msgid "Voucher"
+msgstr "वाउचर"
+
+msgid "Voucher Entry"
+msgstr "वाउचर प्रविष्टि"
+
+msgid "Voucher No"
+msgstr "वाउचर नं."
+
+msgid "Voucher Type"
+msgstr "वाउचर प्रकार"
+
+msgid "Vouchers"
+msgstr "वाउचर"
+
+msgid "Warning"
+msgstr "चेतावनी"
+
+msgid "Welcome back"
+msgstr "वापस स्वागत है"
+
+msgid "Widow"
+msgstr "विधवा"
+
+msgid "Withdrawal"
+msgstr "निकासी"
+
+msgid "Withdrawals"
+msgstr "निकासी"
+
+msgid "Working Day"
+msgstr "कार्य दिवस"
+
+msgid "Working Days"
+msgstr "कार्य दिवस"
+
+msgid "Yearly"
+msgstr "वार्षिक"
+
+msgid "Yes"
+msgstr "हाँ"
+
+msgid "of"
+msgstr "का"
+
+msgid "— Select Member —"
+msgstr "— सदस्य चुनें —"
+
+msgid "— Select —"
+msgstr "— चुनें —"
+
+
+msgid "90 days free. No credit card needed. Setup in 2 minutes."
+msgstr "90 दिन मुफ़्त। क्रेडिट कार्ड की ज़रूरत नहीं। 2 मिनट में सेटअप।"
+
+msgid "A/c No"
+msgstr "खाता क्रमांक"
+
+msgid "Access Denied"
+msgstr "पहुंच अस्वीकृत"
+
+msgid "Add Agent"
+msgstr "एजंट जोड़ें"
+
+msgid "Add Client"
+msgstr "ग्राहक जोड़ें"
+
+msgid "Add Clients"
+msgstr "ग्राहक जोड़ें"
+
+msgid "Add Members"
+msgstr "सदस्य जोड़ें"
+
+msgid "Add Your Branches"
+msgstr "अपनी शाखाएं जोड़ें"
+
+msgid "Add one"
+msgstr "एक जोड़ें"
+
+msgid "Admin Account"
+msgstr "व्यवस्थापक खाता"
+
+msgid "Agent Declared Amount"
+msgstr "एजंट घोषित राशि"
+
+msgid "Agent Details"
+msgstr "एजंट विवरण"
+
+msgid "Agent Signature"
+msgstr "एजंट हस्ताक्षर"
+
+msgid "Agent-wise pigmmy collection records"
+msgstr "एजंट-वार पिग्मी वसूली रिकॉर्ड"
+
+msgid "Already have an account? Login"
+msgstr "पहले से खाता है? लॉगिन करें"
+
+msgid "An unexpected error occurred. Please try reloading the page."
+msgstr "एक अप्रत्याशित त्रुटि हुई। कृपया पृष्ठ रीलोड करें।"
+
+msgid "Approve"
+msgstr "अनुमोदन"
+
+msgid "Area"
+msgstr "क्षेत्र"
+
+msgid "Authority"
+msgstr "प्राधिकरण"
+
+msgid "Authorized"
+msgstr "अधिकृत"
+
+msgid "Authorized Capital"
+msgstr "अधिकृत पूंजी"
+
+msgid "Back"
+msgstr "वापस"
+
+msgid "Back to Home"
+msgstr "होम पर वापस"
+
+msgid "Balance After"
+msgstr "शेष बाद में"
+
+msgid "Bank"
+msgstr "बैंक"
+
+msgid "Branch Details"
+msgstr "शाखा विवरण"
+
+msgid "Cashier"
+msgstr "कैशियर"
+
+msgid "Cashier Signature"
+msgstr "कैशियर हस्ताक्षर"
+
+msgid "Cheque No"
+msgstr "चेक संख्या"
+
+msgid "Choose Society"
+msgstr "संस्था चुनें"
+
+msgid "Clear All"
+msgstr "सभी साफ़ करें"
+
+msgid "Close"
+msgstr "बंद करें"
+
+msgid "Collect Daily"
+msgstr "दैनिक वसूली"
+
+msgid "Collected"
+msgstr "वसूल किया"
+
+msgid "Collection Area / Route"
+msgstr "वसूली क्षेत्र / मार्ग"
+
+msgid "Collection Date"
+msgstr "वसूली तिथि"
+
+msgid "Commission Rate"
+msgstr "कमीशन दर"
+
+msgid "Component"
+msgstr "घटक"
+
+msgid "Confirm Password"
+msgstr "पासवर्ड की पुष्टि करें"
+
+msgid "Contact & Address"
+msgstr "संपर्क एवं पता"
+
+msgid "Continue to Login"
+msgstr "लॉगिन पर जारी रखें"
+
+msgid "Create Agent"
+msgstr "एजंट बनाएं"
+
+msgid "Create My Society — Start Free Trial"
+msgstr "मेरी संस्था बनाएं — मुफ़्त ट्रायल शुरू करें"
+
+msgid "Current"
+msgstr "वर्तमान"
+
+msgid "Current Plan"
+msgstr "वर्तमान योजना"
+
+msgid "Current logo"
+msgstr "वर्तमान लोगो"
+
+msgid "Daily Collection Sheet"
+msgstr "दैनिक वसूली शीट"
+
+msgid "Daily Collections"
+msgstr "दैनिक वसूली"
+
+msgid "Deposit Receipt"
+msgstr "जमा रसीद"
+
+msgid "EMI Collection Receipt"
+msgstr "EMI वसूली रसीद"
+
+msgid "EMI No"
+msgstr "EMI क्रमांक"
+
+msgid "Edit Notification Template"
+msgstr "सूचना टेम्पलेट संपादित करें"
+
+msgid "Edit Society"
+msgstr "संस्था संपादित करें"
+
+msgid "Edit Template"
+msgstr "टेम्पलेट संपादित करें"
+
+msgid "Event"
+msgstr "इवेंट"
+
+msgid "Expired On"
+msgstr "समाप्ति तिथि"
+
+msgid "Export CSV"
+msgstr "CSV निर्यात"
+
+msgid "Face Value per Share"
+msgstr "प्रति शेयर अंकित मूल्य"
+
+msgid "Failed"
+msgstr "विफल"
+
+msgid "Fax"
+msgstr "फैक्स"
+
+msgid "Fill Default Amounts"
+msgstr "डिफ़ॉल्ट राशि भरें"
+
+msgid "Financial & Tax"
+msgstr "वित्तीय एवं कर"
+
+msgid "GST No"
+msgstr "GST नंबर"
+
+msgid "Go Back"
+msgstr "वापस जाएं"
+
+msgid "Go Home"
+msgstr "होम जाएं"
+
+msgid "Head Office Address"
+msgstr "प्रधान कार्यालय पता"
+
+msgid "IP"
+msgstr "IP"
+
+msgid "Installment Amount"
+msgstr "किस्त राशि"
+
+msgid "Installments"
+msgstr "किस्तें"
+
+msgid "Joined"
+msgstr "शामिल"
+
+msgid "Loading client accounts..."
+msgstr "ग्राहक खाते लोड हो रहे हैं..."
+
+msgid "Locker"
+msgstr "लॉकर"
+
+msgid "Login"
+msgstr "लॉगिन"
+
+msgid "Login Now"
+msgstr "अभी लॉगिन करें"
+
+msgid "Login URL"
+msgstr "लॉगिन URL"
+
+msgid "Login to Your Society"
+msgstr "अपनी संस्था में लॉगिन करें"
+
+msgid "Logo"
+msgstr "लोगो"
+
+msgid "Manager Signature"
+msgstr "प्रबंधक हस्ताक्षर"
+
+msgid "Member IDs (comma-separated)"
+msgstr "सदस्य आईडी (अल्पविराम से अलग)"
+
+msgid "Member Sign"
+msgstr "सदस्य हस्ताक्षर"
+
+msgid "Member with Savings + Security Deposit"
+msgstr "बचत + सुरक्षा जमा सहित सदस्य"
+
+msgid "Message"
+msgstr "संदेश"
+
+msgid "Monthly Price"
+msgstr "मासिक मूल्य"
+
+msgid "New Agent"
+msgstr "नया एजंट"
+
+msgid "New Branch"
+msgstr "नई शाखा"
+
+msgid "New Collection"
+msgstr "नई वसूली"
+
+msgid "New Pigmmy Account"
+msgstr "नया पिग्मी खाता"
+
+msgid "No Pigmmy Interest Slabs Configured"
+msgstr "कोई पिग्मी ब्याज स्लैब कॉन्फ़िगर नहीं"
+
+msgid "No SMS logs yet."
+msgstr "अभी तक कोई SMS लॉग नहीं।"
+
+msgid "No agents found. Create one to get started."
+msgstr "कोई एजंट नहीं मिला। शुरू करने के लिए एक बनाएं।"
+
+msgid "No audit records found."
+msgstr "कोई ऑडिट रिकॉर्ड नहीं मिला।"
+
+msgid "No branches configured."
+msgstr "कोई शाखा कॉन्फ़िगर नहीं।"
+
+msgid "No client accounts yet."
+msgstr "अभी कोई ग्राहक खाता नहीं।"
+
+msgid "No collections recorded yet."
+msgstr "अभी तक कोई वसूली दर्ज नहीं।"
+
+msgid "No collections yet."
+msgstr "अभी तक कोई वसूली नहीं।"
+
+msgid "No pending collections to post."
+msgstr "पोस्ट करने के लिए कोई लंबित वसूली नहीं।"
+
+msgid "No pigmmy accounts found."
+msgstr "कोई पिग्मी खाता नहीं मिला।"
+
+msgid "No plans available. Please contact support."
+msgstr "कोई योजना उपलब्ध नहीं। कृपया सहायता से संपर्क करें।"
+
+msgid "No recently posted collections."
+msgstr "हाल में पोस्ट की गई कोई वसूली नहीं।"
+
+msgid "No societies registered yet."
+msgstr "अभी तक कोई संस्था पंजीकृत नहीं।"
+
+msgid "No templates configured."
+msgstr "कोई टेम्पलेट कॉन्फ़िगर नहीं।"
+
+msgid "No transactions yet."
+msgstr "अभी तक कोई लेनदेन नहीं।"
+
+msgid "Notification Templates"
+msgstr "सूचना टेम्पलेट"
+
+msgid "Number of Shares"
+msgstr "शेयरों की संख्या"
+
+msgid "Open Account"
+msgstr "खाता खोलें"
+
+msgid "Open Pigmmy accounts under agent"
+msgstr "एजंट के तहत पिग्मी खाते खोलें"
+
+msgid "Open Savings Accounts"
+msgstr "बचत खाते खोलें"
+
+msgid "Original"
+msgstr "मूल"
+
+msgid "Outstanding Principal"
+msgstr "बकाया मूलधन"
+
+msgid "Page Not Found"
+msgstr "पृष्ठ नहीं मिला"
+
+msgid "Paid-up Capital"
+msgstr "चुकता पूंजी"
+
+msgid "Paid/Total"
+msgstr "भुगतान/कुल"
+
+msgid "Particulars"
+msgstr "विवरण"
+
+msgid "Pay & Renew Now"
+msgstr "भुगतान करें और नवीनीकरण करें"
+
+msgid "Payment Mode"
+msgstr "भुगतान मोड"
+
+msgid "Pending Collections (Submitted)"
+msgstr "लंबित वसूली (प्रस्तुत)"
+
+msgid "Period (Months)"
+msgstr "अवधि (महीने)"
+
+msgid "Pigmmy A/C"
+msgstr "पिग्मी खाता"
+
+msgid "Pigmmy Agents"
+msgstr "पिग्मी एजंट"
+
+msgid "Pigmmy Details"
+msgstr "पिग्मी विवरण"
+
+msgid "Pigmmy Module"
+msgstr "पिग्मी मॉड्यूल"
+
+msgid "Pigmmy Workflow"
+msgstr "पिग्मी कार्यप्रवाह"
+
+msgid "Plan"
+msgstr "योजना"
+
+msgid "Please fix the errors below"
+msgstr "कृपया नीचे दी गई त्रुटियों को ठीक करें"
+
+msgid "Post"
+msgstr "पोस्ट करें"
+
+msgid "Post submitted agent collections to credit respective customer pigmmy accounts."
+msgstr "ग्राहक पिग्मी खातों में जमा करने के लिए एजंट वसूली पोस्ट करें।"
+
+msgid "Posted By"
+msgstr "पोस्ट करने वाला"
+
+msgid "Print Client Sheet"
+msgstr "ग्राहक शीट प्रिंट करें"
+
+msgid "Print Collection Sheet"
+msgstr "वसूली शीट प्रिंट करें"
+
+msgid "Print Passbook"
+msgstr "पासबुक प्रिंट करें"
+
+msgid "Print Receipt"
+msgstr "रसीद प्रिंट करें"
+
+msgid "Receipt No"
+msgstr "रसीद क्रमांक"
+
+msgid "Recent Collections"
+msgstr "हाल की वसूली"
+
+msgid "Recent system activity"
+msgstr "हाल की सिस्टम गतिविधि"
+
+msgid "Recently Posted (Reconciled)"
+msgstr "हाल में पोस्ट किए गए (समाधान)"
+
+msgid "Recharge Now"
+msgstr "अभी रिचार्ज करें"
+
+msgid "Recharge Subscription"
+msgstr "सदस्यता रिचार्ज"
+
+msgid "Recipient Type"
+msgstr "प्राप्तकर्ता प्रकार"
+
+msgid "Record"
+msgstr "रिकॉर्ड"
+
+msgid "Record Collection"
+msgstr "वसूली रिकॉर्ड"
+
+msgid "Record daily collections"
+msgstr "दैनिक वसूली रिकॉर्ड करें"
+
+msgid "Register Your Society"
+msgstr "अपनी संस्था पंजीकृत करें"
+
+msgid "Registration"
+msgstr "पंजीकरण"
+
+msgid "Registration Authority"
+msgstr "पंजीकरण प्राधिकरण"
+
+msgid "Registration Date"
+msgstr "पंजीकरण तिथि"
+
+msgid "Registration No"
+msgstr "पंजीकरण संख्या"
+
+msgid "Reload"
+msgstr "रीलोड"
+
+msgid "Reload Page"
+msgstr "पृष्ठ रीलोड करें"
+
+msgid "Reverse"
+msgstr "रिवर्स"
+
+msgid "SMS Log"
+msgstr "SMS लॉग"
+
+msgid "Save Branch"
+msgstr "शाखा सहेजें"
+
+msgid "Save Changes"
+msgstr "परिवर्तन सहेजें"
+
+msgid "Save Collection"
+msgstr "वसूली सहेजें"
+
+msgid "Savings A/C"
+msgstr "बचत खाता"
+
+msgid "Savings Account"
+msgstr "बचत खाता"
+
+msgid "Security Deposit Account"
+msgstr "सुरक्षा जमा खाता"
+
+msgid "Select Your Society"
+msgstr "अपनी संस्था चुनें"
+
+msgid "Select an agent above to load their client accounts."
+msgstr "ग्राहक खाते लोड करने के लिए ऊपर एजंट चुनें।"
+
+msgid "Select your society to continue to the login page"
+msgstr "लॉगिन पृष्ठ पर जारी रखने के लिए अपनी संस्था चुनें"
+
+msgid "Send"
+msgstr "भेजें"
+
+msgid "Send Bulk SMS"
+msgstr "बल्क SMS भेजें"
+
+msgid "Sent"
+msgstr "भेजा गया"
+
+msgid "Share Nominal Value"
+msgstr "शेयर अंकित मूल्य"
+
+msgid "Society Copy"
+msgstr "संस्था प्रति"
+
+msgid "Society Name"
+msgstr "संस्था का नाम"
+
+msgid "Society Type"
+msgstr "संस्था प्रकार"
+
+msgid "Something Went Wrong"
+msgstr "कुछ गलत हो गया"
+
+msgid "Start Banking Operations"
+msgstr "बैंकिंग संचालन शुरू करें"
+
+msgid "Start Free Trial"
+msgstr "मुफ़्त ट्रायल शुरू करें"
+
+msgid "Start Your Free Trial"
+msgstr "अपना मुफ़्त ट्रायल शुरू करें"
+
+msgid "Subscription"
+msgstr "सदस्यता"
+
+msgid "Subscription Expired"
+msgstr "सदस्यता समाप्त"
+
+msgid "TAN No"
+msgstr "TAN नंबर"
+
+msgid "Table"
+msgstr "तालिका"
+
+msgid "Templates"
+msgstr "टेम्पलेट"
+
+msgid "The page you are looking for does not exist or has been moved."
+msgstr "आप जिस पृष्ठ की तलाश कर रहे हैं वह मौजूद नहीं है।"
+
+msgid "This agent has no active client accounts."
+msgstr "इस एजंट के कोई सक्रिय ग्राहक खाते नहीं हैं।"
+
+msgid "This will be the primary admin for your society. You can add more users later."
+msgstr "यह आपकी संस्था का प्राथमिक व्यवस्थापक होगा। आप बाद में और उपयोगकर्ता जोड़ सकते हैं।"
+
+msgid "Time"
+msgstr "समय"
+
+msgid "Total Paid"
+msgstr "कुल भुगतान"
+
+msgid "Transaction History"
+msgstr "लेनदेन इतिहास"
+
+msgid "Transaction Type"
+msgstr "लेनदेन प्रकार"
+
+msgid "Transferred To"
+msgstr "स्थानांतरित किया"
+
+msgid "Txn No"
+msgstr "लेनदेन क्रमांक"
+
+msgid "Unlimited"
+msgstr "असीमित"
+
+msgid "User"
+msgstr "उपयोगकर्ता"
+
+msgid "Users"
+msgstr "उपयोगकर्ता"
+
+msgid "What to Do Next"
+msgstr "आगे क्या करें"
+
+msgid "Withdrawal Receipt"
+msgstr "निकासी रसीद"
+
+msgid "You don't have permission to access this page. Contact your administrator if you believe this is an error."
+msgstr "आपको इस पृष्ठ तक पहुंचने की अनुमति नहीं है।"
+
+msgid "Your Login Details"
+msgstr "आपका लॉगिन विवरण"
+
+msgid "Your Society is Ready!"
+msgstr "आपकी संस्था तैयार है!"
+
+msgid "months"
+msgstr "महीने"
+
+msgid "to"
+msgstr "से"
+
+msgid "Add members one-by-one or import from Excel. Upload KYC documents and photos."
+msgstr "सदस्यों को एक-एक करके जोड़ें या एक्सेल से आयात करें।"
+
+msgid "By signing up, you agree to our Terms of Service and Privacy Policy."
+msgstr "साइन अप करके, आप हमारी सेवा शर्तों और गोपनीयता नीति से सहमत हैं।"
+
+msgid "Create savings accounts for your members. Accept deposits and start operations."
+msgstr "अपने सदस्यों के लिए बचत खाते बनाएं।"
+
+msgid "Disburse loans, collect EMIs, open FDs/RDs. Run day-end to auto-calculate interest."
+msgstr "ऋण वितरित करें, EMI वसूल करें, FD/RD खोलें।"
+
+msgid "Don't have an account?"
+msgstr "क्या खाता नहीं है?"
+
+msgid "FAQ"
+msgstr "सामान्य प्रश्न"
+
+msgid "Features"
+msgstr "सुविधाएं"
+
+msgid "Head office is created automatically. Add sub-branches if your society has them."
+msgstr "प्रधान कार्यालय स्वचालित रूप से बनाया जाता है।"
+
+msgid "Need help getting started?"
+msgstr "शुरू करने में मदद चाहिए?"
+
+msgid "Pricing"
+msgstr "मूल्य"
+
+msgid "Solutions"
+msgstr "समाधान"
+
+msgid "The password you chose during signup"
+msgstr "साइनअप के दौरान आपने जो पासवर्ड चुना"
+
+msgid "You'll use this to log in"
+msgstr "आप इसे लॉगिन के लिए उपयोग करेंगे"
+
+msgid "has been set up successfully."
+msgstr "सफलतापूर्वक सेट अप किया गया है।"

@@ -1,48 +1,49 @@
 {% extends "base.html" %}
-{% block title %}Loan Charges{% endblock %}
-{% block page_title %}Loan Charges{% endblock %}
-{% block content %}
-<div class="space-y-6">
-    <div class="flex items-center justify-between">
-        <h1 class="text-2xl font-semibold text-gray-900">Loan Charges</h1>
-        {% if request.user.is_cashier %}
-        <a href="{% url 'loans:loan_charge_create' %}"
-           class="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition">
-            + Add Charge
-        </a>
-        {% endif %}
-    </div>
+{% load i18n %}
+{% block title %}{% trans "Loans Module" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Loans Module" %}{% endblock %}
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+{% block content %}
+<div class="space-y-4">
+
+    {% include "loans/_tabs.html" %}
+
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        {% if request.user.is_cashier %}
+        <div class="px-5 py-3 border-b border-gray-200 flex items-center justify-between">
+            <h3 class="text-xs font-semibold text-gray-500 uppercase">All {% trans "Loan Charges" %}</h3>
+            <a href="{% url 'loans:loan_charge_create' %}" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">+ Add Charge</a>
+        </div>
+        {% endif %}
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="min-w-full text-sm">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Loan No</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Member</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Charge Type</th>
-                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Narration</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created By</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">{% trans "Loan No" %}</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">{% trans "Member" %}</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">{% trans "Charge Type" %}</th>
+                        <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500 uppercase">{% trans "Amount" %}</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">{% trans "Date" %}</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">{% trans "Narration" %}</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">{% trans "Created By" %}</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200">
+                <tbody class="divide-y divide-gray-100">
                     {% for si in instructions %}
                     <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-3 text-sm">
-                            <a href="{% url 'loans:detail' si.loan.pk %}" class="text-primary-600 hover:underline">{{ si.loan.loan_no }}</a>
+                        <td class="px-4 py-2">
+                            <a href="{% url 'loans:detail' si.loan.pk %}" class="text-primary-600 hover:underline font-mono">{{ si.loan.loan_no }}</a>
                         </td>
-                        <td class="px-4 py-3 text-sm text-gray-900">{{ si.loan.member.name }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-600">{{ si.get_charge_type_display }}</td>
-                        <td class="px-4 py-3 text-sm font-medium text-gray-900 text-right">₹{{ si.amount|floatformat:2 }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-600">{{ si.charge_date|date:"d M Y" }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-500">{{ si.narration|truncatewords:8 }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-500">{{ si.created_by.get_full_name|default:si.created_by.username }}</td>
+                        <td class="px-4 py-2 text-gray-900">{{ si.loan.member.name }}</td>
+                        <td class="px-4 py-2 text-gray-600">{{ si.get_charge_type_display }}</td>
+                        <td class="px-4 py-2 font-medium text-gray-900 text-right">₹{{ si.amount|floatformat:2 }}</td>
+                        <td class="px-4 py-2 text-gray-600">{{ si.charge_date|date:"d M Y" }}</td>
+                        <td class="px-4 py-2 text-gray-500">{{ si.narration|truncatewords:8 }}</td>
+                        <td class="px-4 py-2 text-gray-500">{{ si.created_by.get_full_name|default:si.created_by.username }}</td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="7" class="px-4 py-8 text-center text-gray-400">No loan charges found.</td>
+                        <td colspan="7" class="px-4 py-6 text-center text-gray-400">No loan charges found.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

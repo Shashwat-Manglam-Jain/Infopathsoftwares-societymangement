@@ -1,66 +1,77 @@
 {% extends "base.html" %}
+{% load i18n %}
 {% block title %}Ledger — Loan {{ loan.loan_no }}{% endblock %}
-{% block page_title %}Loan Ledger{% endblock %}
+{% block page_title %}{% trans "Loan Ledger" %}{% endblock %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto space-y-6">
-    <div class="flex items-center justify-between">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">Loan Ledger</h1>
-            <p class="text-sm text-gray-500">
-                <a href="{% url 'loans:detail' pk=loan.pk %}" class="text-primary-600 hover:underline">{{ loan.loan_no }}</a>
-                &mdash; <a href="{% url 'members:detail' loan.member.pk %}" class="text-primary-600 hover:underline">{{ loan.member.name }}</a>
-                ({{ loan.member.member_no }}) &mdash; {{ loan.loan_product.name }}
-            </p>
-        </div>
-        <a href="{% url 'loans:detail' pk=loan.pk %}" class="text-sm text-gray-500 hover:text-gray-700">&larr; Back to Loan</a>
-    </div>
+<div class="max-w-full">
 
-    <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <p class="text-xs text-gray-500 uppercase">Disbursed</p>
-            <p class="text-xl font-bold text-gray-900 mt-1">&#8377;{{ loan.disbursed_amount|floatformat:2|default:"0.00" }}</p>
+    <!-- {% trans "Loan Summary" %} -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+        <div class="px-5 py-4 grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-3">
+            <div>
+                <span class="text-xs text-gray-500">Loan No</span>
+                <p class="text-sm font-semibold font-mono"><a href="{% url 'loans:detail' pk=loan.pk %}" class="text-primary-600 hover:underline">{{ loan.loan_no }}</a></p>
+            </div>
+            <div>
+                <span class="text-xs text-gray-500">{% trans "Member" %}</span>
+                <p class="text-sm font-medium"><a href="{% url 'members:detail' loan.member.pk %}" class="text-primary-600 hover:underline">{{ loan.member.name }}</a> <span class="text-gray-400">({{ loan.member.member_no }})</span></p>
+            </div>
+            <div>
+                <span class="text-xs text-gray-500">Product</span>
+                <p class="text-sm font-medium text-gray-900">{{ loan.loan_product.name }}</p>
+            </div>
+            <div>
+                <span class="text-xs text-gray-500">{% trans "Status" %}</span>
+                <p class="mt-0.5"><span class="px-2 py-0.5 rounded-full text-xs font-medium {% if loan.status == 'disbursed' %}bg-blue-100 text-blue-700{% elif loan.status == 'closed' %}bg-green-100 text-green-700{% elif loan.status == 'npa' %}bg-red-100 text-red-700{% else %}bg-gray-100 text-gray-700{% endif %}">{{ loan.get_status_display }}</span></p>
+            </div>
         </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <p class="text-xs text-gray-500 uppercase">Outstanding</p>
-            <p class="text-xl font-bold text-red-600 mt-1">&#8377;{{ loan.outstanding_principal|floatformat:2 }}</p>
+
+        <hr class="border-gray-200">
+
+        <div class="px-5 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+            <div>
+                <span class="text-xs text-gray-500">Disbursed</span>
+                <p class="text-lg font-bold text-gray-900">&#8377;{{ loan.disbursed_amount|floatformat:2|default:"0.00" }}</p>
+            </div>
+            <div>
+                <span class="text-xs text-gray-500">Outstanding</span>
+                <p class="text-lg font-bold text-red-600">&#8377;{{ loan.outstanding_principal|floatformat:2 }}</p>
+            </div>
+            <div>
+                <span class="text-xs text-gray-500">{% trans "Interest Rate" %}</span>
+                <p class="text-lg font-bold text-primary-600">{{ loan.interest_rate }}%</p>
+            </div>
         </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <p class="text-xs text-gray-500 uppercase">Interest Rate</p>
-            <p class="text-xl font-bold text-primary-600 mt-1">{{ loan.interest_rate }}%</p>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <p class="text-xs text-gray-500 uppercase">Status</p>
-            <p class="mt-1">
-                <span class="px-3 py-1 rounded-full text-sm font-medium {% if loan.status == 'disbursed' %}bg-blue-100 text-blue-700{% elif loan.status == 'closed' %}bg-green-100 text-green-700{% elif loan.status == 'npa' %}bg-red-100 text-red-700{% else %}bg-gray-100 text-gray-700{% endif %}">{{ loan.get_status_display }}</span>
-            </p>
+
+        <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-end">
+            <a href="{% url 'loans:detail' pk=loan.pk %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">&larr; Back to Loan</a>
         </div>
     </div>
 
     <!-- Ledger Table -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="px-5 py-4 border-b border-gray-200">
-            <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Transaction Ledger</h2>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-5 py-3 border-b border-gray-200">
+            <h3 class="text-xs font-semibold text-gray-500 uppercase">Transaction Ledger</h3>
         </div>
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="min-w-full text-sm">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Narration</th>
-                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Debit</th>
-                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Credit</th>
-                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Balance</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Receipt</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">{% trans "Date" %}</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">{% trans "Type" %}</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">{% trans "Narration" %}</th>
+                        <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500 uppercase">{% trans "Debit" %}</th>
+                        <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500 uppercase">{% trans "Credit" %}</th>
+                        <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500 uppercase">{% trans "Balance" %}</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">{% trans "Receipt" %}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     {% for e in entries %}
                     <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-3 text-sm text-gray-900">{{ e.date|date:"d M Y" }}</td>
-                        <td class="px-4 py-3 text-sm">
+                        <td class="px-4 py-2 text-gray-900">{{ e.date|date:"d M Y" }}</td>
+                        <td class="px-4 py-2">
                             {% if e.type == 'Disbursement' %}
                             <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">{{ e.type }}</span>
                             {% elif e.type == 'Repayment' %}
@@ -69,19 +80,19 @@
                             <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">{{ e.type }}</span>
                             {% endif %}
                         </td>
-                        <td class="px-4 py-3 text-sm text-gray-600">{{ e.narration }}</td>
-                        <td class="px-4 py-3 text-sm text-right {% if e.debit > 0 %}text-red-600 font-medium{% else %}text-gray-400{% endif %}">
+                        <td class="px-4 py-2 text-gray-600">{{ e.narration }}</td>
+                        <td class="px-4 py-2 text-right {% if e.debit > 0 %}text-red-600 font-medium{% else %}text-gray-400{% endif %}">
                             {% if e.debit > 0 %}&#8377;{{ e.debit|floatformat:2 }}{% else %}&mdash;{% endif %}
                         </td>
-                        <td class="px-4 py-3 text-sm text-right {% if e.credit > 0 %}text-green-600 font-medium{% else %}text-gray-400{% endif %}">
+                        <td class="px-4 py-2 text-right {% if e.credit > 0 %}text-green-600 font-medium{% else %}text-gray-400{% endif %}">
                             {% if e.credit > 0 %}&#8377;{{ e.credit|floatformat:2 }}{% else %}&mdash;{% endif %}
                         </td>
-                        <td class="px-4 py-3 text-sm text-right font-medium text-gray-900">&#8377;{{ e.balance|floatformat:2 }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-500">{{ e.receipt|default:"" }}</td>
+                        <td class="px-4 py-2 text-right font-medium text-gray-900">&#8377;{{ e.balance|floatformat:2 }}</td>
+                        <td class="px-4 py-2 text-gray-500">{{ e.receipt|default:"" }}</td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="7" class="px-4 py-8 text-center text-gray-400">No transactions yet. Ledger is created after loan disbursement.</td>
+                        <td colspan="7" class="px-4 py-6 text-center text-gray-400">No transactions yet. Ledger is created after loan disbursement.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

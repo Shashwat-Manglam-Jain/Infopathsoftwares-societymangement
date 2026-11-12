@@ -13,8 +13,10 @@ class CustomUserCreationForm(UserCreationForm):
         ('admin', 'Admin'),
         ('branch_manager', 'Branch Manager'),
         ('cashier', 'Cashier'),
+        ('clerk', 'Clerk'),
         ('accountant', 'Accountant'),
         ('auditor', 'Auditor'),
+        ('director', 'Director'),
     ]
 
     class Meta:

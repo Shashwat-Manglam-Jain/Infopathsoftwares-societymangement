@@ -12,6 +12,7 @@ from apps.accounts.permissions import (
     admin_required,
     auditor_or_above,
     cashier_required,
+    day_open_required,
     manager_required,
 )
 from apps.core.account_utils import amount_to_words as _amount_to_words
@@ -91,11 +92,13 @@ def share_list(request):
             'page_obj': page_obj,
             'is_paginated': page_obj.has_other_pages(),
             'paginator': paginator,
+            'active_tab': 'holdings',
         },
     )
 
 
 @cashier_required
+@day_open_required
 def share_purchase(request):
     if request.current_branch is None:
         messages.warning(request, 'Please select a specific branch before purchasing shares.')
@@ -127,10 +130,11 @@ def share_purchase(request):
             status='active',
         )
 
-    return render(request, 'shares/purchase.html', {'form': form})
+    return render(request, 'shares/purchase.html', {'form': form, 'active_tab': 'purchase'})
 
 
 @manager_required
+@day_open_required
 def share_transfer(request):
     if request.method == 'POST':
         form = ShareTransferForm(request.POST)
@@ -156,10 +160,11 @@ def share_transfer(request):
         form.fields['from_member'].queryset = branch_members
         form.fields['to_member'].queryset = branch_members
 
-    return render(request, 'shares/transfer.html', {'form': form})
+    return render(request, 'shares/transfer.html', {'form': form, 'active_tab': 'transfer'})
 
 
 @manager_required
+@day_open_required
 def share_surrender(request):
     if request.method == 'POST':
         form = ShareSurrenderForm(request.POST)
@@ -185,7 +190,7 @@ def share_surrender(request):
             status='active',
         )
 
-    return render(request, 'shares/surrender.html', {'form': form})
+    return render(request, 'shares/surrender.html', {'form': form, 'active_tab': 'surrender'})
 
 
 @auditor_or_above
@@ -238,7 +243,7 @@ def share_config_list(request):
     from .models import ShareConfig
 
     configs = ShareConfig.objects.all()
-    return render(request, 'shares/config_list.html', {'configs': configs})
+    return render(request, 'shares/config_list.html', {'configs': configs, 'active_tab': 'config'})
 
 
 @admin_required
@@ -259,7 +264,7 @@ def share_config_create(request):
                 is_active=True,
             )
             messages.success(request, 'Share configuration created and set as active.')
-        except (ValueError, Exception) as e:
+        except (ValueError, InvalidOperation) as e:
             messages.error(request, str(e))
             return render(request, 'shares/config_form.html', {'title': 'New Share Config'})
         return redirect('shares:config_list')
@@ -279,7 +284,7 @@ def share_config_edit(request, pk):
             config.min_shares_required = int(request.POST.get('min_shares_required', '1'))
             config.save()
             messages.success(request, 'Share configuration updated.')
-        except Exception as e:
+        except (ValueError, InvalidOperation) as e:
             messages.error(request, str(e))
             return render(request, 'shares/config_form.html', {'config': config, 'title': f'Edit: {config.name}'})
         return redirect('shares:config_list')

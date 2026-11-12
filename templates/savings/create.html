@@ -1,74 +1,69 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block title %}Open {{ create_title|default:"Account" }} — InfoSociety{% endblock %}
-{% block page_title %}Open Account{% endblock %}
+{% block page_title %}Open {{ create_title|default:"Account" }}{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto space-y-6">
-
-    <div>
-        <h2 class="text-xl font-bold text-gray-900">Open {{ create_title|default:"Account" }}</h2>
-        <p class="text-sm text-gray-500 mt-1">Create a new savings, current, or security deposit account for a member.</p>
-    </div>
+<div class="max-w-full">
 
     {% if form.errors %}
-    <div class="rounded-lg bg-red-50 border border-red-200 p-4">
-        <div class="flex">
-            <svg class="h-5 w-5 text-red-400 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <div class="ml-3">
-                <h3 class="text-sm font-medium text-red-800">Please correct the errors below</h3>
-                <ul class="mt-1 text-sm text-red-700 list-disc list-inside">
-                    {% for field, errors in form.errors.items %}
-                        {% for error in errors %}<li>{{ field|title }}: {{ error }}</li>{% endfor %}
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
+    <div class="rounded-xl bg-red-50 border border-red-200 p-4 mb-5">
+        <h3 class="text-sm font-medium text-red-800 flex items-center gap-2">
+            <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+            {% trans "Please correct the errors below" %}
+        </h3>
+        <ul class="mt-1 text-sm text-red-700 list-disc list-inside">
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}<li>{{ field|title }}: {{ error }}</li>{% endfor %}
+            {% endfor %}
+        </ul>
     </div>
     {% endif %}
 
-    <form method="post" class="space-y-6">
+    <form method="post">
         {% csrf_token %}
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 class="text-base font-semibold text-gray-900 mb-4">Account Details</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-xl">
+                <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    {% trans "Account Details" %}
+                </h3>
+            </div>
+            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Member <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Member" %} <span class="text-red-500">*</span></label>
                     {{ form.member }}
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Branch <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Branch" %} <span class="text-red-500">*</span></label>
                     {{ form.branch }}
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Account Type <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Account Type" %} <span class="text-red-500">*</span></label>
                     {{ form.account_type }}
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Interest Rate (%)</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Interest Rate" %} (%)</label>
                     {{ form.interest_rate }}
-                    <p id="rate-hint" class="text-xs text-gray-400 mt-1 hidden">Auto-filled from Interest Master slab</p>
-                    <div id="rate-missing-banner" class="hidden mt-2 rounded-lg bg-amber-50 border border-amber-200 p-3">
-                        <div class="flex items-start gap-2">
-                            <svg class="h-4 w-4 text-amber-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
-                            <div>
-                                <p class="text-xs font-medium text-amber-800">No interest slab found for this account type.</p>
-                                <a href="{% url 'accounting:interest_master_create' %}" class="text-xs font-medium text-amber-800 underline hover:text-amber-900">Configure Interest Master first &rarr;</a>
-                            </div>
-                        </div>
+                    <p id="rate-hint" class="text-xs text-gray-400 mt-0.5 hidden">Auto-filled from Interest Master</p>
+                    <div id="rate-missing-banner" class="hidden mt-1 rounded bg-amber-50 border border-amber-200 p-2">
+                        <p class="text-xs font-medium text-amber-800">No interest slab found.
+                            <a href="{% url 'accounting:interest_master_create' %}" class="underline">Configure Interest Master &rarr;</a>
+                        </p>
                     </div>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Minimum Balance</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Minimum Balance</label>
                     {{ form.minimum_balance }}
                 </div>
             </div>
-        </div>
 
-        <div class="flex items-center justify-end gap-3">
-            <a href="{% url 'savings:list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
-            <button id="submit-btn" type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">Open Account</button>
+            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex items-center justify-end gap-3">
+                <a href="{% url 'savings:list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
+                <button id="submit-btn" type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm">Save</button>
+            </div>
         </div>
     </form>
 </div>
@@ -87,9 +82,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!submitBtn) return;
         submitBtn.disabled = !enabled;
         if (enabled) {
-            submitBtn.className = 'px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm';
+            submitBtn.className = 'px-6 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm';
         } else {
-            submitBtn.className = 'px-6 py-2 bg-gray-300 text-gray-500 text-sm font-medium rounded-lg cursor-not-allowed shadow-sm';
+            submitBtn.className = 'px-6 py-2 bg-gray-300 text-gray-500 text-sm font-semibold rounded-lg cursor-not-allowed';
         }
     }
 
@@ -106,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(function(d) {
                 if (d.rate > 0) {
                     rateInput.value = d.rate;
-                    if (hint) { hint.classList.remove('hidden'); hint.textContent = 'Auto-filled from Interest Master slab'; hint.className = 'text-xs text-green-600 mt-1'; }
+                    if (hint) { hint.classList.remove('hidden'); hint.textContent = 'Auto-filled from Interest Master'; hint.className = 'text-xs text-green-600 mt-0.5'; }
                     if (banner) banner.classList.add('hidden');
                     setSubmitState(true);
                 } else {

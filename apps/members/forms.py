@@ -165,22 +165,3 @@ MemberNomineeFormSet = inlineformset_factory(
     extra=1,
     can_delete=True,
 )
-
-
-class MemberSearchForm(forms.Form):
-    q = forms.CharField(
-        required=False,
-        label='Search',
-        widget=forms.TextInput(attrs={'class': _tw, 'placeholder': 'Search by name, member no, phone...'}),
-    )
-    branch = forms.IntegerField(required=False, widget=forms.HiddenInput)
-    status = forms.ChoiceField(
-        required=False,
-        choices=[('', 'All')] + Member.STATUS_CHOICES,
-        widget=forms.Select(attrs={'class': _tw_select}),
-    )
-    category = forms.ChoiceField(
-        required=False,
-        choices=[('', 'All')] + Member.CATEGORY_CHOICES,
-        widget=forms.Select(attrs={'class': _tw_select}),
-    )

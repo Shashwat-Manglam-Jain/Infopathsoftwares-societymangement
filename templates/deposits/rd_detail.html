@@ -1,96 +1,107 @@
 {% extends "base.html" %}
+{% load i18n %}
 {% block title %}RD {{ rd.rd_no }} — InfoSociety{% endblock %}
-{% block page_title %}Recurring Deposit Details{% endblock %}
+{% block page_title %}{% trans "Recurring Deposit Details" %}{% endblock %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto">
-    <div class="flex items-center justify-between mb-6">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">{{ rd.rd_no }}</h1>
-            <p class="text-sm text-gray-500"><a href="{% url 'members:detail' rd.member.pk %}" class="text-primary-600 hover:underline">{{ rd.member.name }}</a> — Recurring Deposit</p>
-        </div>
-        <a href="{% url 'deposits:rd_list' %}" class="text-gray-500 hover:text-gray-700 text-sm">&larr; Back</a>
-    </div>
+<div class="max-w-full">
 
     <!-- Summary -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <p class="text-xs text-gray-500 uppercase">Monthly Installment</p>
-            <p class="text-2xl font-bold text-gray-900 mt-1">&#8377;{{ rd.monthly_installment|floatformat:2 }}</p>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+        <div class="px-5 py-4 grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-3">
+            <div>
+                <span class="text-xs text-gray-500">RD No</span>
+                <p class="text-sm font-semibold font-mono text-gray-900">{{ rd.rd_no }}</p>
+            </div>
+            <div>
+                <span class="text-xs text-gray-500">{% trans "Member" %}</span>
+                <p class="text-sm font-medium"><a href="{% url 'members:detail' rd.member.pk %}" class="text-primary-600 hover:underline">{{ rd.member.name }}</a></p>
+            </div>
+            <div>
+                <span class="text-xs text-gray-500">{% trans "Branch" %}</span>
+                <p class="text-sm font-medium text-gray-900">{{ rd.branch.branch_name }}</p>
+            </div>
+            <div>
+                <span class="text-xs text-gray-500">Status</span>
+                <p class="mt-0.5"><span class="px-2 py-0.5 rounded-full text-xs font-medium {% if rd.status == 'active' %}bg-green-100 text-green-700{% elif rd.status == 'matured' %}bg-blue-100 text-blue-700{% else %}bg-gray-100 text-gray-700{% endif %}">{{ rd.get_status_display }}</span></p>
+            </div>
         </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <p class="text-xs text-gray-500 uppercase">Total Deposited</p>
-            <p class="text-2xl font-bold text-green-600 mt-1">&#8377;{{ total_deposited|floatformat:2 }}</p>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <p class="text-xs text-gray-500 uppercase">Installments</p>
-            <p class="text-2xl font-bold text-primary-600 mt-1">{{ paid_count }} / {{ rd.tenure_months }}</p>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <p class="text-xs text-gray-500 uppercase">Status</p>
-            <p class="mt-1"><span class="px-3 py-1 rounded-full text-sm font-medium {% if rd.status == 'active' %}bg-green-100 text-green-700{% elif rd.status == 'matured' %}bg-blue-100 text-blue-700{% else %}bg-gray-100 text-gray-700{% endif %}">{{ rd.get_status_display }}</span></p>
-        </div>
-    </div>
 
-    <!-- Details + Collect -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 class="text-sm font-semibold text-gray-500 uppercase mb-3">RD Details</h3>
-            <dl class="space-y-2 text-sm">
-                <div class="flex justify-between"><dt class="text-gray-500">Member</dt><dd class="font-medium"><a href="{% url 'members:detail' rd.member.pk %}" class="text-primary-600 hover:underline">{{ rd.member.name }}</a></dd></div>
-                <div class="flex justify-between"><dt class="text-gray-500">Branch</dt><dd class="font-medium">{{ rd.branch.branch_name }}</dd></div>
-                <div class="flex justify-between"><dt class="text-gray-500">Interest Rate</dt><dd class="font-medium">{{ rd.interest_rate }}%</dd></div>
-                <div class="flex justify-between"><dt class="text-gray-500">Opening Date</dt><dd class="font-medium">{{ rd.start_date|date:"d M Y" }}</dd></div>
-                <div class="flex justify-between"><dt class="text-gray-500">Maturity Date</dt><dd class="font-medium">{{ rd.maturity_date|date:"d M Y" }}</dd></div>
-                <div class="flex justify-between"><dt class="text-gray-500">Maturity Amount</dt><dd class="font-medium">&#8377;{{ rd.maturity_amount|floatformat:2 }}</dd></div>
+        <hr class="border-gray-200">
+
+        <div class="px-5 py-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div>
+                <span class="text-xs text-gray-500">{% trans "Monthly Installment" %}</span>
+                <p class="text-lg font-bold text-gray-900">&#8377;{{ rd.monthly_installment|floatformat:2 }}</p>
+            </div>
+            <div>
+                <span class="text-xs text-gray-500">Total Deposited</span>
+                <p class="text-lg font-bold text-green-600">&#8377;{{ total_deposited|floatformat:2 }}</p>
+            </div>
+            <div>
+                <span class="text-xs text-gray-500">Installments</span>
+                <p class="text-lg font-bold text-primary-600">{{ paid_count }} / {{ rd.tenure_months }}</p>
+            </div>
+            <div>
+                <span class="text-xs text-gray-500">{% trans "Maturity Amount" %}</span>
+                <p class="text-lg font-bold text-gray-700">&#8377;{{ rd.maturity_amount|floatformat:2 }}</p>
+            </div>
+        </div>
+
+        <hr class="border-gray-200">
+
+        <div class="px-5 py-4">
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
+                <div class="flex justify-between"><dt class="text-gray-500">{% trans "Interest Rate" %}</dt><dd class="font-medium">{{ rd.interest_rate }}%</dd></div>
+                <div class="flex justify-between"><dt class="text-gray-500">{% trans "Opening Date" %}</dt><dd class="font-medium">{{ rd.start_date|date:"d M Y" }}</dd></div>
+                <div class="flex justify-between"><dt class="text-gray-500">{% trans "Maturity Date" %}</dt><dd class="font-medium">{{ rd.maturity_date|date:"d M Y" }}</dd></div>
             </dl>
         </div>
 
-        {% if rd.status == 'active' %}
-        {% if request.user.is_cashier %}
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col justify-between">
-            <div>
-                <h3 class="text-sm font-semibold text-gray-500 uppercase mb-3">Collect Installment</h3>
-                <p class="text-sm text-gray-600 mb-4">Next installment: &#8377;{{ rd.monthly_installment|floatformat:2 }}</p>
-            </div>
+        {% if rd.status == 'active' and request.user.is_cashier %}
+        <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-between">
+            <a href="{% url 'deposits:rd_list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">&larr; Back</a>
             <form method="post" action="{% url 'deposits:rd_collect' pk=rd.pk %}">
                 {% csrf_token %}
-                <button type="submit" class="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-medium">Collect &#8377;{{ rd.monthly_installment|floatformat:2 }}</button>
+                <button type="submit" class="px-5 py-1.5 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700">Collect &#8377;{{ rd.monthly_installment|floatformat:2 }}</button>
             </form>
         </div>
-        {% endif %}
+        {% else %}
+        <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-end">
+            <a href="{% url 'deposits:rd_list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">&larr; Back</a>
+        </div>
         {% endif %}
     </div>
 
     <!-- Installment Schedule -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-sm font-semibold text-gray-500 uppercase">Installment Schedule</h3>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-5 py-3 border-b border-gray-200">
+            <h3 class="text-xs font-semibold text-gray-500 uppercase">Installment Schedule</h3>
         </div>
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="min-w-full text-sm">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Due Date</th>
-                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Paid Date</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">{% trans "#" %}</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">{% trans "Due Date" %}</th>
+                        <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500 uppercase">{% trans "Amount" %}</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">{% trans "Status" %}</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">{% trans "Paid Date" %}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     {% for inst in installments %}
                     <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-3 text-sm text-gray-900">{{ inst.installment_no }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-900">{{ inst.due_date }}</td>
-                        <td class="px-4 py-3 text-sm text-right font-medium">&#8377;{{ inst.amount|floatformat:2 }}</td>
-                        <td class="px-4 py-3 text-sm">
+                        <td class="px-4 py-2 text-gray-900">{{ inst.installment_no }}</td>
+                        <td class="px-4 py-2 text-gray-900">{{ inst.due_date }}</td>
+                        <td class="px-4 py-2 text-right font-medium">&#8377;{{ inst.amount|floatformat:2 }}</td>
+                        <td class="px-4 py-2">
                             <span class="px-2 py-0.5 rounded-full text-xs font-medium {% if inst.status == 'paid' %}bg-green-100 text-green-700{% elif inst.status == 'overdue' %}bg-red-100 text-red-700{% else %}bg-yellow-100 text-yellow-700{% endif %}">{{ inst.get_status_display }}</span>
                         </td>
-                        <td class="px-4 py-3 text-sm text-gray-600">{{ inst.paid_date|default:"—" }}</td>
+                        <td class="px-4 py-2 text-gray-600">{{ inst.paid_date|default:"—" }}</td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="5" class="px-4 py-8 text-center text-sm text-gray-400">No installments scheduled.</td></tr>
+                    <tr><td colspan="5" class="px-4 py-6 text-center text-gray-400">No installments scheduled.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

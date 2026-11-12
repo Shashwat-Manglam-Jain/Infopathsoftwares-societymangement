@@ -1,14 +1,15 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Audit Trail — InfoSociety{% endblock %}
-{% block page_title %}Audit Trail{% endblock %}
+{% block title %}{% trans "Audit Trail" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Audit Trail" %}{% endblock %}
 
 {% block content %}
 <div class="space-y-4">
 
     <div>
-        <h2 class="text-xl font-bold text-gray-900">Audit Trail</h2>
-        <p class="text-sm text-gray-500 mt-1">Recent system activity</p>
+        <h2 class="text-xl font-bold text-gray-900">{% trans "Audit Trail" %}</h2>
+        <p class="text-sm text-gray-500 mt-1">{% trans "Recent system activity" %}</p>
     </div>
 
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -16,13 +17,13 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Time</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">User</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Action</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Table</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Record</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">Branch</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">IP</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Time" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "User" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Action" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Table" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">{% trans "Record" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">{% trans "Branch" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">{% trans "IP" %}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -32,15 +33,15 @@
                         <td class="px-4 py-3 text-sm text-gray-900">{{ log.user.get_short_name|default:"System" }}</td>
                         <td class="px-4 py-3">
                             {% if log.action == 'create' %}
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Create</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{% trans "Create" %}</span>
                             {% elif log.action == 'update' %}
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Update</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{% trans "Update" %}</span>
                             {% elif log.action == 'delete' %}
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Delete</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">{% trans "Delete" %}</span>
                             {% elif log.action == 'reverse' %}
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Reverse</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{% trans "Reverse" %}</span>
                             {% elif log.action == 'approve' %}
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">Approve</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">{% trans "Approve" %}</span>
                             {% else %}
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">{{ log.get_action_display }}</span>
                             {% endif %}
@@ -52,7 +53,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="7" class="px-4 py-8 text-center text-sm text-gray-400">No audit records found.</td>
+                        <td colspan="7" class="px-4 py-8 text-center text-sm text-gray-400">{% trans "No audit records found." %}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

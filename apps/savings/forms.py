@@ -117,9 +117,3 @@ class WithdrawalForm(forms.Form):
         required=False,
         widget=forms.TextInput(attrs={'class': _tw}),
     )
-
-
-class StatementFilterForm(forms.Form):
-    account_id = forms.IntegerField(widget=forms.HiddenInput())
-    from_date = forms.DateField(widget=forms.DateInput(attrs={'class': _tw, 'type': 'date'}))
-    to_date = forms.DateField(widget=forms.DateInput(attrs={'class': _tw, 'type': 'date'}))

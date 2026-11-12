@@ -1,25 +1,18 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Recharge Subscription — InfoSociety{% endblock %}
-{% block page_title %}Subscription{% endblock %}
+{% block title %}{% trans "Recharge Subscription" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Subscription" %}{% endblock %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto space-y-6" x-data="{ selectedPlan: '{{ subscription.plan.pk|default:"" }}' }">
-
-    <div>
-        <h2 class="text-xl font-bold text-gray-900">Subscription &amp; Plans</h2>
-        <p class="text-sm text-gray-500 mt-1">
-            {% if tenant %}{{ tenant.name }} &mdash;{% endif %}
-            Choose a plan and renew your subscription.
-        </p>
-    </div>
+<div class="max-w-full" x-data="{ selectedPlan: '{{ subscription.plan.pk|default:"" }}' }">
 
     {% if subscription %}
     <!-- Current plan status -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div class="flex items-center justify-between flex-wrap gap-4">
             <div>
-                <p class="text-xs text-gray-500 uppercase font-medium tracking-wider">Current Plan</p>
+                <p class="text-xs text-gray-500 uppercase font-medium tracking-wider">{% trans "Current Plan" %}</p>
                 <p class="text-lg font-bold text-gray-900">{{ subscription.plan.name }}</p>
             </div>
             <div class="text-right">
@@ -39,11 +32,11 @@
 
     <!-- Plan comparison grid -->
     {% if plans %}
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for plan in plans %}
         <div @click="selectedPlan = '{{ plan.pk }}'"
              :class="selectedPlan == '{{ plan.pk }}' ? 'ring-2 ring-primary-500 border-primary-300' : 'border-gray-200'"
-             class="relative bg-white rounded-lg shadow-sm border p-5 cursor-pointer hover:shadow-md transition-all">
+             class="relative bg-white rounded-xl shadow-sm border p-6 cursor-pointer hover:shadow-lg transition-all">
 
             {% if subscription and subscription.plan.pk == plan.pk %}
             <span class="absolute -top-2.5 left-4 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-100 text-primary-700">
@@ -61,15 +54,15 @@
 
             <div class="space-y-2 text-sm">
                 <div class="flex items-center justify-between py-1.5 border-b border-gray-100">
-                    <span class="text-gray-500">Members</span>
+                    <span class="text-gray-500">{% trans "Members" %}</span>
                     <span class="font-semibold text-gray-900">{% if plan.max_members >= 99999 %}Unlimited{% else %}{{ plan.max_members }}{% endif %}</span>
                 </div>
                 <div class="flex items-center justify-between py-1.5 border-b border-gray-100">
-                    <span class="text-gray-500">Users</span>
+                    <span class="text-gray-500">{% trans "Users" %}</span>
                     <span class="font-semibold text-gray-900">{{ plan.max_users }}</span>
                 </div>
                 <div class="flex items-center justify-between py-1.5">
-                    <span class="text-gray-500">Branches</span>
+                    <span class="text-gray-500">{% trans "Branches" %}</span>
                     <span class="font-semibold text-gray-900">{{ plan.max_branches }}</span>
                 </div>
             </div>
@@ -97,7 +90,7 @@
     </div>
 
     {% if subscription %}
-    <form method="post" class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+    <form method="post" class="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         {% csrf_token %}
         <input type="hidden" name="plan_id" :value="selectedPlan">
         <div class="flex items-center justify-between flex-wrap gap-4">
@@ -115,7 +108,7 @@
 
     {% else %}
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center">
-        <p class="text-gray-500">No plans available. Please contact support.</p>
+        <p class="text-gray-500">{% trans "No plans available. Please contact support." %}</p>
     </div>
     {% endif %}
 

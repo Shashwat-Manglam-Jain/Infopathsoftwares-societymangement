@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 
 from django.contrib import messages
@@ -36,6 +36,16 @@ def dayend_index(request):
     if last_cb:
         opening_cash = last_cb.closing_balance
 
+    if working_day and not working_day.is_day_open:
+        next_working_date = working_day.current_date + timedelta(days=1)
+    else:
+        next_working_date = date.today()
+
+    last_completed = DayEndLog.objects.filter(
+        branch=branch, status='completed',
+    ).order_by('-processing_date').first()
+    last_completed_date = last_completed.processing_date if last_completed else None
+
     return render(
         request,
         'dayend/day_end.html',
@@ -45,6 +55,8 @@ def dayend_index(request):
             'month_logs': month_logs,
             'opening_cash': opening_cash,
             'today': date.today(),
+            'next_working_date': next_working_date,
+            'last_completed_date': last_completed_date,
         },
     )
 
@@ -56,17 +68,11 @@ class BeginDayView(AccountantRequiredMixin, View):
             messages.error(request, 'Please select a branch.')
             return redirect('dayend:index')
 
-        working_date_str = request.POST.get('working_date')
-        if not working_date_str:
-            working_date = date.today()
+        working_day = WorkingDay.objects.filter(branch=branch).first()
+        if working_day and not working_day.is_day_open:
+            working_date = working_day.current_date + timedelta(days=1)
         else:
-            from datetime import datetime
-
-            try:
-                working_date = datetime.strptime(working_date_str, '%Y-%m-%d').date()
-            except ValueError:
-                messages.error(request, 'Invalid date format.')
-                return redirect('dayend:index')
+            working_date = date.today()
 
         from .services import begin_working_day
 
@@ -86,6 +92,8 @@ class RunDayEndView(AccountantRequiredMixin, View):
             messages.error(request, 'Please select a branch.')
             return redirect('dayend:index')
 
+        from django.db import IntegrityError
+
         from .services import run_day_end
 
         try:
@@ -98,7 +106,7 @@ class RunDayEndView(AccountantRequiredMixin, View):
                 f'Overdue: {log.loans_marked_overdue_count}, '
                 f'Cashbook: {log.cashbook_entries_posted}',
             )
-        except ValueError as e:
+        except (ValueError, IntegrityError) as e:
             messages.error(request, str(e))
 
         return redirect('dayend:index')
@@ -111,18 +119,13 @@ class RollbackDayEndView(ManagerRequiredMixin, View):
             messages.error(request, 'Please select a branch.')
             return redirect('dayend:index')
 
-        processing_date_str = request.POST.get('processing_date')
-        if not processing_date_str:
-            messages.error(request, 'Processing date is required.')
+        last_completed = DayEndLog.objects.filter(
+            branch=branch, status='completed',
+        ).order_by('-processing_date').first()
+        if not last_completed:
+            messages.error(request, 'No completed day end to rollback.')
             return redirect('dayend:index')
-
-        from datetime import datetime
-
-        try:
-            processing_date = datetime.strptime(processing_date_str, '%Y-%m-%d').date()
-        except ValueError:
-            messages.error(request, 'Invalid date format.')
-            return redirect('dayend:index')
+        processing_date = last_completed.processing_date
 
         from .services import rollback_day_end
 
@@ -142,17 +145,7 @@ class RunMonthEndView(ManagerRequiredMixin, View):
             messages.error(request, 'Please select a branch.')
             return redirect('dayend:index')
 
-        month_str = request.POST.get('month')
-        if not month_str:
-            month_date = date.today().replace(day=1)
-        else:
-            from datetime import datetime
-
-            try:
-                month_date = datetime.strptime(month_str + '-01', '%Y-%m-%d').date()
-            except ValueError:
-                messages.error(request, 'Invalid month format. Use YYYY-MM.')
-                return redirect('dayend:index')
+        month_date = date.today().replace(day=1)
 
         from .services import run_month_end
 

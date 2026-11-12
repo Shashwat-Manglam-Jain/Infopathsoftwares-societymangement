@@ -1,23 +1,36 @@
-{% load static %}
+{% load static i18n %}
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-gray-50">
+<html lang="{{ LANGUAGE_CODE|default:'en' }}" class="h-full bg-gray-50">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}InfoSociety — Society Banking Software{% endblock %}</title>
 
+    <!-- Dark mode: apply before paint to prevent flash -->
+    <script>if(localStorage.getItem('darkMode')==='true')document.documentElement.classList.add('dark')</script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
     <!-- Tailwind CSS (CDN for dev — replace with compiled in prod) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+                    },
                     colors: {
                         primary: {
-                            50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe',
-                            300: '#a5b4fc', 400: '#818cf8', 500: '#6366f1',
-                            600: '#4f46e5', 700: '#4338ca', 800: '#3730a3',
-                            900: '#312e81', 950: '#1e1b4b',
+                            50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe',
+                            300: '#93c5fd', 400: '#60a5fa', 500: '#3b82f6',
+                            600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af',
+                            900: '#1e3a8a', 950: '#172554',
                         }
                     }
                 }
@@ -37,18 +50,69 @@
         [x-cloak] { display: none !important; }
         .htmx-indicator { opacity: 0; transition: opacity 200ms ease-in; }
         .htmx-request .htmx-indicator { opacity: 1; }
-        /* Hide desktop sidebar below lg; above lg Alpine x-show controls it */
         @media (max-width: 1023px) {
             .desktop-sidebar { display: none !important; }
         }
+        input[type="text"], input[type="number"], input[type="email"], input[type="tel"],
+        input[type="date"], input[type="password"], input[type="url"], input[type="search"],
+        select, textarea {
+            font-family: 'Inter', system-ui, sans-serif;
+            font-size: 0.875rem;
+        }
+        .font-mono, code, pre, input.font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+        /* Dark mode overrides */
+        .dark { color-scheme: dark; }
+        .dark body { background-color: #0f172a; }
+        .dark .bg-white { background-color: #1e293b !important; }
+        .dark .bg-gray-50 { background-color: #0f172a !important; }
+        .dark .bg-gray-100 { background-color: #1e293b !important; }
+        .dark .text-gray-900 { color: #f1f5f9 !important; }
+        .dark .text-gray-800 { color: #e2e8f0 !important; }
+        .dark .text-gray-700 { color: #cbd5e1 !important; }
+        .dark .text-gray-600 { color: #94a3b8 !important; }
+        .dark .text-gray-500 { color: #64748b !important; }
+        .dark .text-gray-400 { color: #475569 !important; }
+        .dark .text-gray-300 { color: #475569 !important; }
+        .dark .border-gray-200 { border-color: #334155 !important; }
+        .dark .border-gray-100 { border-color: #1e293b !important; }
+        .dark .border-gray-300 { border-color: #475569 !important; }
+        .dark .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.3) !important; }
+        .dark input, .dark select, .dark textarea {
+            background-color: #1e293b !important;
+            color: #e2e8f0 !important;
+            border-color: #475569 !important;
+        }
+        .dark .hover\:bg-gray-50:hover { background-color: #334155 !important; }
+        .dark .hover\:bg-gray-100:hover { background-color: #334155 !important; }
+        .dark .divide-gray-200 > :not(:last-child) { border-color: #334155 !important; }
+        .dark .divide-gray-100 > :not(:last-child) { border-color: #1e293b !important; }
+        .dark .desktop-sidebar, .dark .desktop-sidebar .bg-gray-50\/80 { background-color: #0f172a !important; border-color: #1e293b !important; }
+        .dark .desktop-sidebar .bg-white\/80 { background-color: #0f172a !important; }
+        .dark footer { background-color: #1e293b !important; border-color: #334155 !important; }
+        .dark .bg-green-50 { background-color: rgba(34,197,94,0.1) !important; }
+        .dark .bg-red-50 { background-color: rgba(239,68,68,0.1) !important; }
+        .dark .bg-blue-50 { background-color: rgba(59,130,246,0.1) !important; }
+        .dark .bg-amber-50 { background-color: rgba(245,158,11,0.1) !important; }
+        .dark .bg-primary-50 { background-color: rgba(37,99,235,0.1) !important; }
+        .dark .bg-green-100 { background-color: rgba(34,197,94,0.15) !important; }
+        .dark .bg-red-100 { background-color: rgba(239,68,68,0.15) !important; }
+        .dark .bg-blue-100 { background-color: rgba(59,130,246,0.15) !important; }
+        .dark .bg-amber-100 { background-color: rgba(245,158,11,0.15) !important; }
+        .dark .bg-gray-200 { background-color: #334155 !important; }
+        .dark .bg-gray-700 { background-color: #475569 !important; }
+        .dark table thead { background-color: #0f172a !important; }
+        .dark table thead .bg-gray-50 { background-color: #0f172a !important; }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
 
-<body class="h-full" x-data="{
+<body class="h-full font-sans" x-data="{
     sidebarOpen: false,
+    darkMode: localStorage.getItem('darkMode') === 'true',
     desktopSidebar: localStorage.getItem('desktopSidebar') !== 'false',
-    toggleSidebar() { this.desktopSidebar = !this.desktopSidebar; localStorage.setItem('desktopSidebar', this.desktopSidebar); }
+    toggleSidebar() { this.desktopSidebar = !this.desktopSidebar; localStorage.setItem('desktopSidebar', this.desktopSidebar); },
+    toggleDark() { this.darkMode = !this.darkMode; localStorage.setItem('darkMode', this.darkMode); document.documentElement.classList.toggle('dark'); }
 }" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
 
     {% if user.is_authenticated %}
@@ -57,11 +121,11 @@
         <!-- Mobile sidebar overlay -->
         <div x-show="sidebarOpen" x-cloak class="fixed inset-0 z-40 lg:hidden">
             <div class="fixed inset-0 bg-gray-600 bg-opacity-75" @click="sidebarOpen = false"></div>
-            <div class="fixed inset-y-0 left-0 flex w-64 flex-col bg-white border-r border-gray-200">
-                <div class="flex items-center justify-between h-16 px-4 bg-gray-50 border-b border-gray-200">
+            <div class="fixed inset-y-0 left-0 flex w-64 flex-col bg-gray-50/80 border-r border-gray-200">
+                <div class="flex items-center justify-between h-16 px-4 bg-white/80 backdrop-blur-xl border-b border-gray-200/80">
                     <div class="flex items-center space-x-2 min-w-0">
                         <img src="{% static 'img/logo.png' %}" alt="InfoSociety" class="h-8 flex-shrink-0">
-                        <span class="text-gray-900 text-xs font-semibold truncate">{{ request.tenant.name|default:"InfoSociety" }}</span>
+                        <span class="text-gray-900 text-xs font-semibold truncate">{% if LANGUAGE_CODE != 'en' and request.tenant.name_regional %}{{ request.tenant.name_regional }}{% else %}{{ request.tenant.name|default:"InfoSociety" }}{% endif %}</span>
                     </div>
                     <button @click="sidebarOpen = false" class="text-gray-400 hover:text-gray-700 flex-shrink-0">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -77,11 +141,11 @@
         <div x-cloak
              :class="desktopSidebar ? 'flex' : 'hidden'"
              class="desktop-sidebar fixed inset-y-0 left-0 w-64 flex-col z-30 transition-transform duration-200">
-            <div class="flex min-h-0 flex-1 flex-col bg-white border-r border-gray-200">
-                <div class="flex h-16 items-center justify-between px-4 bg-gray-50 border-b border-gray-200">
+            <div class="flex min-h-0 flex-1 flex-col bg-gray-50/80 border-r border-gray-200">
+                <div class="flex h-16 items-center justify-between px-4 bg-white/80 backdrop-blur-xl border-b border-gray-200/80">
                     <div class="flex items-center space-x-2 min-w-0">
                         <img src="{% static 'img/logo.png' %}" alt="InfoSociety" class="h-9 flex-shrink-0">
-                        <span class="text-gray-900 text-sm font-semibold truncate">{{ request.tenant.name|default:"InfoSociety" }}</span>
+                        <span class="text-gray-900 text-sm font-semibold truncate">{% if LANGUAGE_CODE != 'en' and request.tenant.name_regional %}{{ request.tenant.name_regional }}{% else %}{{ request.tenant.name|default:"InfoSociety" }}{% endif %}</span>
                     </div>
                     <button @click="toggleSidebar()" class="text-gray-400 hover:text-gray-700 flex-shrink-0 ml-2" title="Hide sidebar">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
@@ -108,12 +172,12 @@
             {% include "components/alerts.html" %}
 
             <!-- Page content -->
-            <main class="flex-1 p-6">
+            <main class="flex-1 px-4 py-4 sm:px-6 lg:px-8">
                 {% block content %}{% endblock %}
             </main>
 
             <!-- Footer -->
-            <footer class="border-t border-gray-200 bg-white px-6 py-3">
+            <footer class="border-t border-gray-200 bg-white px-4 py-2">
                 <p class="text-xs text-gray-400 text-center">InfoSociety by InfopathSolutions &copy; {% now "Y" %} &mdash; To innovate your business process</p>
             </footer>
         </div>

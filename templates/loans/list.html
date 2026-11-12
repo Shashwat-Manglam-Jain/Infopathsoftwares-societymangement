@@ -1,14 +1,17 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Loan Accounts — InfoSociety{% endblock %}
-{% block page_title %}Loan Accounts{% endblock %}
+{% block title %}{% trans "Loans Module" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Loans Module" %}{% endblock %}
 
 {% block content %}
 <div class="space-y-4">
 
+    {% include "loans/_tabs.html" %}
+
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-            <h2 class="text-xl font-bold text-gray-900">Loan Accounts</h2>
+            <h2 class="text-xl font-bold text-gray-900">Loan {% trans "Accounts" %}</h2>
             <p class="text-sm text-gray-500 mt-1">{{ loans|length }} loan{{ loans|length|pluralize }}</p>
         </div>
         <div class="flex items-center gap-3">
@@ -35,20 +38,20 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Loan No</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Member</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Product</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Amount</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">Outstanding</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">EMI</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">Date</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
-                        <th class="pb-2 pl-4 text-right">Actions</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Loan No" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Member" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">{% trans "Product" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Amount" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">{% trans "Outstanding" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">{% trans "EMI" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">{% trans "Date" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Status" %}</th>
+                        <th class="pb-2 pl-4 text-right">{% trans "Actions" %}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     {% for l in loans %}
-                    <tr class="hover:bg-gray-50 transition-colors">
+                    <tr class="hover:bg-gray-50 transition-colors cursor-pointer" onclick="window.location.href='{% url 'loans:detail' pk=l.pk %}'">
                         <td class="px-4 py-3 text-sm">
                             <a href="{% url 'loans:detail' pk=l.pk %}" class="font-mono text-primary-600 hover:underline">{{ l.loan_no }}</a>
                         </td>
@@ -60,7 +63,7 @@
                         <td class="px-4 py-3 text-sm text-gray-500 hidden lg:table-cell">{{ l.applied_date|date:"d M Y" }}</td>
                         <td class="px-4 py-3">
                             {% if l.status == 'disbursed' %}
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Active</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{% trans "Active" %}</span>
                             {% elif l.status == 'npa' %}
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">NPA</span>
                             {% elif l.status == 'applied' %}
@@ -75,7 +78,7 @@
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">{{ l.get_status_display }}</span>
                             {% endif %}
                         </td>
-                        <td class="py-2.5 pl-4 text-right">
+                        <td class="py-2.5 pl-4 text-right" onclick="event.stopPropagation()">
                             <a href="{% url 'loans:detail' pk=l.pk %}" class="p-1.5 text-gray-400 hover:text-primary-600 rounded" title="View Loan">
                                 <svg class="h-4 w-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                             </a>

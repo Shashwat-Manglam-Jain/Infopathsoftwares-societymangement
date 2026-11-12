@@ -1,100 +1,104 @@
 {% extends "base.html" %}
+{% load i18n %}
 {% block title %}Savings Account {{ account.account_no }} — InfoSociety{% endblock %}
-{% block page_title %}Account Details{% endblock %}
+{% block page_title %}{% trans "Account Details" %}{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto">
-    <div class="flex items-center justify-between mb-6">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">{{ account.account_no }}</h1>
-            <p class="text-sm text-gray-500">{{ account.member.name }} — {{ account.get_account_type_display }}</p>
-        </div>
-        <div class="flex gap-3">
-            {% if request.user.is_manager and account.status != 'closed' %}
-            <a href="{% url 'savings:edit' account.pk %}" class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">
-                <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                Edit
-            </a>
-            {% endif %}
-            <a href="{% url 'savings:statement' pk=account.pk %}" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200">Statement</a>
-            <a href="{% url 'savings:passbook' account_id=account.pk %}" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200">Passbook</a>
-            <a href="{% url 'savings:list' %}" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm">&larr; Back</a>
-        </div>
-    </div>
+<div class="max-w-full">
 
-    <!-- Account Info -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <p class="text-sm text-gray-500">Current Balance</p>
-            <p class="text-3xl font-bold text-gray-900 mt-1">&#8377;{{ account.current_balance|floatformat:2 }}</p>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <p class="text-sm text-gray-500">Accrued Interest</p>
-            <p class="text-3xl font-bold text-green-600 mt-1">&#8377;{{ account.accrued_interest|floatformat:2 }}</p>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <p class="text-sm text-gray-500">Interest Rate</p>
-            <p class="text-3xl font-bold text-primary-600 mt-1">{{ account.interest_rate }}%</p>
-        </div>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 class="text-sm font-semibold text-gray-500 uppercase mb-3">Account Details</h3>
-            <dl class="space-y-2 text-sm">
-                <div class="flex justify-between"><dt class="text-gray-500">Account Type</dt><dd class="font-medium">{{ account.get_account_type_display }}</dd></div>
-                <div class="flex justify-between"><dt class="text-gray-500">Branch</dt><dd class="font-medium">{{ account.branch.branch_name }}</dd></div>
-                <div class="flex justify-between"><dt class="text-gray-500">Opened</dt><dd class="font-medium">{{ account.opening_date|date:"d M Y" }}</dd></div>
-                <div class="flex justify-between"><dt class="text-gray-500">Status</dt><dd><span class="px-2 py-0.5 rounded-full text-xs font-medium {% if account.status == 'active' %}bg-green-100 text-green-700{% elif account.status == 'frozen' %}bg-blue-100 text-blue-700{% elif account.status == 'dormant' %}bg-yellow-100 text-yellow-700{% else %}bg-red-100 text-red-700{% endif %}">{{ account.get_status_display }}</span></dd></div>
-                <div class="flex justify-between"><dt class="text-gray-500">Min Balance</dt><dd class="font-medium">&#8377;{{ account.minimum_balance|floatformat:2 }}</dd></div>
-            </dl>
-            <div class="mt-4 pt-3 border-t border-gray-200">
-                <h4 class="text-xs font-semibold text-gray-500 uppercase mb-2">Member Information</h4>
-                <dl class="space-y-2 text-sm">
-                    <div class="flex justify-between"><dt class="text-gray-500">Name</dt><dd class="font-medium"><a href="{% url 'members:detail' account.member.pk %}" class="text-primary-600 hover:underline">{{ account.member.name }}</a></dd></div>
-                    <div class="flex justify-between"><dt class="text-gray-500">Member No</dt><dd class="font-medium">{{ account.member.member_no }}</dd></div>
-                    {% if account.member.phone %}<div class="flex justify-between"><dt class="text-gray-500">Phone</dt><dd class="font-medium">{{ account.member.phone }}</dd></div>{% endif %}
-                    {% if account.member.email %}<div class="flex justify-between"><dt class="text-gray-500">Email</dt><dd class="font-medium">{{ account.member.email }}</dd></div>{% endif %}
-                    {% if account.member.join_date %}<div class="flex justify-between"><dt class="text-gray-500">Joined</dt><dd class="font-medium">{{ account.member.join_date|date:"d M Y" }}</dd></div>{% endif %}
-                    {% if account.member.aadhar_no %}<div class="flex justify-between"><dt class="text-gray-500">Aadhar</dt><dd class="font-medium">XXXX-XXXX-{{ account.member.aadhar_no|slice:"-4" }}</dd></div>{% endif %}
-                    {% if account.member.pan_no %}<div class="flex justify-between"><dt class="text-gray-500">PAN</dt><dd class="font-medium">{{ account.member.pan_no }}</dd></div>{% endif %}
-                    <div class="flex justify-between"><dt class="text-gray-500">KYC</dt><dd>{% if account.member.is_kyc_verified %}<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Verified</span>{% else %}<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Pending</span>{% endif %}</dd></div>
-                </dl>
+    <!-- {% trans "Account Summary" %} -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+        <div class="px-5 py-4 grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-3">
+            <div>
+                <span class="text-xs text-gray-500">{% trans "Account No" %}</span>
+                <p class="text-sm font-semibold font-mono text-gray-900">{{ account.account_no }}</p>
             </div>
-            <!-- Change Status -->
-            {% if request.user.is_manager %}
-            <div class="mt-4 pt-3 border-t border-gray-200">
-                <form method="post" action="{% url 'savings:change_status' pk=account.pk %}" class="flex items-center gap-2" onsubmit="return confirm('Change account status?');">
+            <div>
+                <span class="text-xs text-gray-500">{% trans "Member" %}</span>
+                <p class="text-sm font-medium"><a href="{% url 'members:detail' account.member.pk %}" class="text-primary-600 hover:underline">{{ account.member.name }}</a> <span class="text-gray-400">({{ account.member.member_no }})</span></p>
+            </div>
+            <div>
+                <span class="text-xs text-gray-500">Type</span>
+                <p class="text-sm font-medium text-gray-900">{{ account.get_account_type_display }}</p>
+            </div>
+            <div>
+                <span class="text-xs text-gray-500">{% trans "Status" %}</span>
+                <p class="mt-0.5"><span class="px-2 py-0.5 rounded-full text-xs font-medium {% if account.status == 'active' %}bg-green-100 text-green-700{% elif account.status == 'frozen' %}bg-blue-100 text-blue-700{% elif account.status == 'dormant' %}bg-yellow-100 text-yellow-700{% else %}bg-red-100 text-red-700{% endif %}">{{ account.get_status_display }}</span></p>
+            </div>
+        </div>
+
+        <hr class="border-gray-200">
+
+        <div class="px-5 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+            <div>
+                <span class="text-xs text-gray-500">Current Balance</span>
+                <p class="text-lg font-bold text-gray-900">&#8377;{{ account.current_balance|floatformat:2 }}</p>
+            </div>
+            <div>
+                <span class="text-xs text-gray-500">Accrued Interest</span>
+                <p class="text-lg font-bold text-green-600">&#8377;{{ account.accrued_interest|floatformat:2 }}</p>
+            </div>
+            <div>
+                <span class="text-xs text-gray-500">{% trans "Interest Rate" %}</span>
+                <p class="text-lg font-bold text-primary-600">{{ account.interest_rate }}%</p>
+            </div>
+        </div>
+
+        <hr class="border-gray-200">
+
+        <div class="px-5 py-4">
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
+                <div class="flex justify-between"><dt class="text-gray-500">{% trans "Branch" %}</dt><dd class="font-medium">{{ account.branch.branch_name }}</dd></div>
+                <div class="flex justify-between"><dt class="text-gray-500">Opened</dt><dd class="font-medium">{{ account.opening_date|date:"d M Y" }}</dd></div>
+                <div class="flex justify-between"><dt class="text-gray-500">Min Balance</dt><dd class="font-medium">&#8377;{{ account.minimum_balance|floatformat:2 }}</dd></div>
+                {% if account.member.phone %}<div class="flex justify-between"><dt class="text-gray-500">{% trans "Phone" %}</dt><dd class="font-medium">{{ account.member.phone }}</dd></div>{% endif %}
+                {% if account.member.aadhar_no %}<div class="flex justify-between"><dt class="text-gray-500">Aadhar</dt><dd class="font-medium">XXXX-XXXX-{{ account.member.aadhar_no|slice:"-4" }}</dd></div>{% endif %}
+                <div class="flex justify-between"><dt class="text-gray-500">KYC</dt><dd>{% if account.member.is_kyc_verified %}<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">{% trans "Verified" %}</span>{% else %}<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Pending</span>{% endif %}</dd></div>
+            </dl>
+        </div>
+
+        <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+                {% if request.user.is_manager and account.status != 'closed' %}
+                <a href="{% url 'savings:edit' account.pk %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Edit</a>
+                <form method="post" action="{% url 'savings:change_status' pk=account.pk %}" class="flex items-center gap-1" onsubmit="return confirm('Change account status?');">
                     {% csrf_token %}
-                    <label class="text-xs font-medium text-gray-500 whitespace-nowrap">Change Status:</label>
-                    <select name="status" class="flex-1 rounded-md border-gray-300 text-sm py-1">
-                        <option value="active" {% if account.status == 'active' %}selected{% endif %}>Active</option>
+                    <select name="status" class="rounded border-gray-300 text-sm py-1 px-2">
+                        <option value="active" {% if account.status == 'active' %}selected{% endif %}>{% trans "Active" %}</option>
                         <option value="dormant" {% if account.status == 'dormant' %}selected{% endif %}>Dormant</option>
                         <option value="frozen" {% if account.status == 'frozen' %}selected{% endif %}>Frozen</option>
                         <option value="closed" {% if account.status == 'closed' %}selected{% endif %}>Closed</option>
                     </select>
-                    <button type="submit" class="px-3 py-1 bg-gray-600 text-white text-xs rounded-md hover:bg-gray-700">Update</button>
+                    <button type="submit" class="px-3 py-1.5 bg-gray-600 text-white text-xs font-medium rounded hover:bg-gray-700">Update</button>
                 </form>
+                {% endif %}
             </div>
-            {% endif %}
+            <div class="flex items-center gap-2">
+                <a href="{% url 'savings:statement' pk=account.pk %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Statement</a>
+                <a href="{% url 'savings:passbook' account_id=account.pk %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Passbook</a>
+                <a href="{% url 'savings:list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">&larr; Back</a>
+            </div>
         </div>
+    </div>
 
-        {% if account.status == 'active' %}
-        {% if request.user.is_cashier %}
-        <!-- Deposit Form -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 class="text-sm font-semibold text-gray-500 uppercase mb-3">Quick Deposit</h3>
+    {% if account.status == 'active' and request.user.is_cashier %}
+    <!-- Deposit & Withdraw -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-5 py-3 border-b border-gray-200">
+                <h3 class="text-xs font-semibold text-gray-500 uppercase">Quick Deposit</h3>
+            </div>
             <form method="post" action="{% url 'savings:deposit' pk=account.pk %}">
                 {% csrf_token %}
                 <input type="hidden" name="account_id" value="{{ account.pk }}">
-                <div class="space-y-3">
+                <div class="px-5 py-4 space-y-3">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
-                        <input type="number" name="amount" step="0.01" min="1" required class="w-full rounded-lg border-gray-300 px-3 py-2">
+                        <label class="block text-xs font-medium text-gray-500 mb-0.5">Amount</label>
+                        <input type="number" name="amount" step="0.01" min="1" required class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Mode</label>
-                        <select name="payment_mode" class="w-full rounded-lg border-gray-300 px-3 py-2">
+                        <label class="block text-xs font-medium text-gray-500 mb-0.5">Mode</label>
+                        <select name="payment_mode" class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm">
                             <option value="cash">Cash</option>
                             <option value="cheque">Cheque</option>
                             <option value="transfer">Transfer</option>
@@ -102,90 +106,86 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Narration</label>
-                        <input type="text" name="narration" class="w-full rounded-lg border-gray-300 px-3 py-2">
+                        <label class="block text-xs font-medium text-gray-500 mb-0.5">Narration</label>
+                        <input type="text" name="narration" class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm">
                     </div>
                 </div>
-                <button type="submit" class="mt-4 w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 font-medium">Deposit</button>
+                <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg">
+                    <button type="submit" class="w-full px-4 py-1.5 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700">Deposit</button>
+                </div>
             </form>
         </div>
-        {% endif %}
-        {% endif %}
-    </div>
 
-    {% if account.status == 'active' %}
-    {% if request.user.is_cashier %}
-    <!-- Withdrawal Form -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-        <h3 class="text-sm font-semibold text-gray-500 uppercase mb-3">Withdrawal</h3>
-        <form method="post" action="{% url 'savings:withdraw' pk=account.pk %}" class="flex flex-wrap gap-4 items-end">
-            {% csrf_token %}
-            <input type="hidden" name="account_id" value="{{ account.pk }}">
-            <div class="flex-1 min-w-[150px]">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
-                <input type="number" name="amount" step="0.01" min="1" required class="w-full rounded-lg border-gray-300 px-3 py-2">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-5 py-3 border-b border-gray-200">
+                <h3 class="text-xs font-semibold text-gray-500 uppercase">Withdrawal</h3>
             </div>
-            <div class="w-40">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Mode</label>
-                <select name="payment_mode" class="w-full rounded-lg border-gray-300 px-3 py-2">
-                    <option value="cash">Cash</option>
-                    <option value="cheque">Cheque</option>
-                    <option value="transfer">Transfer</option>
-                </select>
-            </div>
-            <div class="flex-1 min-w-[150px]">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Narration</label>
-                <input type="text" name="narration" class="w-full rounded-lg border-gray-300 px-3 py-2">
-            </div>
-            <button type="submit" class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 font-medium">Withdraw</button>
-        </form>
+            <form method="post" action="{% url 'savings:withdraw' pk=account.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="account_id" value="{{ account.pk }}">
+                <div class="px-5 py-4 space-y-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-0.5">Amount</label>
+                        <input type="number" name="amount" step="0.01" min="1" required class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-0.5">Mode</label>
+                        <select name="payment_mode" class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm">
+                            <option value="cash">Cash</option>
+                            <option value="cheque">Cheque</option>
+                            <option value="transfer">Transfer</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-0.5">Narration</label>
+                        <input type="text" name="narration" class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm">
+                    </div>
+                </div>
+                <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg">
+                    <button type="submit" class="w-full px-4 py-1.5 bg-red-600 text-white text-sm font-medium rounded hover:bg-red-700">Withdraw</button>
+                </div>
+            </form>
+        </div>
     </div>
-    {% endif %}
     {% endif %}
 
     <!-- Recent Transactions -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-sm font-semibold text-gray-500 uppercase">Recent Transactions</h3>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-5 py-3 border-b border-gray-200">
+            <h3 class="text-xs font-semibold text-gray-500 uppercase">Recent Transactions</h3>
         </div>
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="min-w-full text-sm">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Narration</th>
-                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
-                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Balance</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Receipt</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">{% trans "Date" %}</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">{% trans "Type" %}</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">{% trans "Narration" %}</th>
+                        <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500 uppercase">{% trans "Amount" %}</th>
+                        <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500 uppercase">{% trans "Balance" %}</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">{% trans "Receipt" %}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     {% for txn in transactions %}
                     <tr class="hover:bg-gray-50 {% if txn.is_reversed %}opacity-50{% endif %}">
-                        <td class="px-4 py-3 text-sm text-gray-900">{{ txn.txn_date }}</td>
-                        <td class="px-4 py-3 text-sm">
+                        <td class="px-4 py-2 text-gray-900">{{ txn.txn_date }}</td>
+                        <td class="px-4 py-2">
                             <span class="px-2 py-0.5 rounded-full text-xs font-medium {% if txn.txn_type == 'deposit' or txn.txn_type == 'interest_credit' %}bg-green-100 text-green-700{% elif txn.txn_type == 'withdrawal' %}bg-red-100 text-red-700{% elif txn.txn_type == 'reversal' %}bg-yellow-100 text-yellow-700{% else %}bg-gray-100 text-gray-700{% endif %}">
                                 {{ txn.get_txn_type_display }}{% if txn.is_reversed %} (Reversed){% endif %}
                             </span>
                         </td>
-                        <td class="px-4 py-3 text-sm text-gray-600">{{ txn.narration }}</td>
-                        <td class="px-4 py-3 text-sm text-right font-medium {% if txn.txn_type == 'withdrawal' or txn.txn_type == 'charge' %}text-red-600{% else %}text-green-600{% endif %}">
+                        <td class="px-4 py-2 text-gray-600">{{ txn.narration }}</td>
+                        <td class="px-4 py-2 text-right font-medium {% if txn.txn_type == 'withdrawal' or txn.txn_type == 'charge' %}text-red-600{% else %}text-green-600{% endif %}">
                             {% if txn.txn_type == 'withdrawal' or txn.txn_type == 'charge' %}-{% endif %}&#8377;{{ txn.amount|floatformat:2 }}
                         </td>
-                        <td class="px-4 py-3 text-sm text-right text-gray-900 font-medium">&#8377;{{ txn.running_balance|floatformat:2 }}</td>
-                        <td class="px-4 py-3 text-sm">
+                        <td class="px-4 py-2 text-right font-medium text-gray-900">&#8377;{{ txn.running_balance|floatformat:2 }}</td>
+                        <td class="px-4 py-2">
                             {% if txn.receipt_no %}<a href="{% url 'savings:receipt' txn_id=txn.pk %}" class="text-primary-600 hover:underline">{{ txn.receipt_no }}</a>{% endif %}
-                        </td>
-                        <td class="px-4 py-3 text-sm">
-                            {% if not txn.is_reversed and txn.txn_type != 'reversal' and request.user.is_manager %}
-                            <a href="{% url 'savings:reverse_txn' pk=account.pk txn_id=txn.pk %}" class="text-red-600 hover:underline text-xs">Cancel</a>
-                            {% endif %}
                         </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="7" class="px-4 py-8 text-center text-sm text-gray-400">No transactions yet.</td></tr>
+                    <tr><td colspan="6" class="px-4 py-6 text-center text-gray-400">No transactions yet.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django import forms
 
 from apps.accounting.models import ChartOfAccounts, InterestMaster, JournalEntry
@@ -74,6 +76,7 @@ class VoucherForm(forms.Form):
     amount = forms.DecimalField(
         max_digits=15,
         decimal_places=2,
+        min_value=Decimal('0.01'),
         widget=forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
     )
 

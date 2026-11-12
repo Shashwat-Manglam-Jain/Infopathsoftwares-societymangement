@@ -1,59 +1,59 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Current Balance Reports — InfoSociety{% endblock %}
-{% block page_title %}Current Balance Reports{% endblock %}
+{% block title %}{% trans "Current Balance Reports" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Current Balance Reports" %}{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
+<div class="space-y-4">
 
     <div>
-        <h2 class="text-xl font-bold text-gray-900">Current Balance Reports (Jotting)</h2>
-        <p class="text-sm text-gray-500 mt-1">Account balance analysis and classification</p>
     </div>
 
     <!-- Filter Bar -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-4">
         <form method="get" class="flex flex-wrap items-end gap-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Report Type</label>
-                <select name="type" onchange="this.form.submit()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
-                    <option value="nil_balance" {% if report_type == 'nil_balance' %}selected{% endif %}>Nil Balance Accounts</option>
-                    <option value="non_operated" {% if report_type == 'non_operated' %}selected{% endif %}>Non-Operated (6+ months)</option>
-                    <option value="dormant" {% if report_type == 'dormant' %}selected{% endif %}>Dormant Accounts</option>
-                    <option value="balance_with_last_txn" {% if report_type == 'balance_with_last_txn' %}selected{% endif %}>Balance with Last Txn Date</option>
-                    <option value="balance_by_type" {% if report_type == 'balance_by_type' %}selected{% endif %}>Balance by Account Type</option>
-                    <option value="balance_range" {% if report_type == 'balance_range' %}selected{% endif %}>Balance Range-wise</option>
+                <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Report Type" %}</label>
+                <select name="type" onchange="this.form.submit()" class="border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
+                    <option value="nil_balance" {% if report_type == 'nil_balance' %}selected{% endif %}>{% trans "Nil Balance Accounts" %}</option>
+                    <option value="non_operated" {% if report_type == 'non_operated' %}selected{% endif %}>{% trans "Non-Operated (6+ months)" %}</option>
+                    <option value="dormant" {% if report_type == 'dormant' %}selected{% endif %}>{% trans "Dormant Accounts" %}</option>
+                    <option value="balance_with_last_txn" {% if report_type == 'balance_with_last_txn' %}selected{% endif %}>{% trans "Balance with Last Txn Date" %}</option>
+                    <option value="balance_by_type" {% if report_type == 'balance_by_type' %}selected{% endif %}>{% trans "Balance by Account Type" %}</option>
+                    <option value="balance_range" {% if report_type == 'balance_range' %}selected{% endif %}>{% trans "Balance Range-wise" %}</option>
                 </select>
             </div>
             {% if report_type == 'balance_range' %}
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Min Amount</label>
+                <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Min Amount" %}</label>
                 <input type="number" name="min_amount" value="{{ min_amount }}" step="0.01" placeholder="0.00"
-                       class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500 w-32">
+                       class="border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500 w-32">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Max Amount</label>
+                <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Max Amount" %}</label>
                 <input type="number" name="max_amount" value="{{ max_amount }}" step="0.01" placeholder="999999.00"
-                       class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500 w-32">
+                       class="border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500 w-32">
             </div>
-            <button type="submit" class="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">Filter</button>
+            <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "Filter" %}</button>
+            {% include "includes/export_csv.html" %}
             {% endif %}
         </form>
     </div>
 
     <!-- Balance By Type Summary -->
     {% if report_type == 'balance_by_type' and type_summary %}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-200">
-            <h3 class="text-base font-semibold text-gray-900">Balance Summary by Account Type</h3>
+            <h3 class="text-base font-semibold text-gray-900">{% trans "Balance Summary by Account Type" %}</h3>
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Account Type</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Count</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Total Balance</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Account Type" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Count" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Total Balance" %}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -72,14 +72,14 @@
 
     <!-- Account List Table -->
     {% if accounts is not None and report_type != 'balance_by_type' %}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
             <h3 class="text-base font-semibold text-gray-900">
-                {% if report_type == 'nil_balance' %}Nil Balance Accounts
-                {% elif report_type == 'non_operated' %}Non-Operated Accounts (6+ months)
-                {% elif report_type == 'dormant' %}Dormant Accounts
-                {% elif report_type == 'balance_with_last_txn' %}Account Balances
-                {% elif report_type == 'balance_range' %}Balance Range Report
+                {% if report_type == 'nil_balance' %}{% trans "Nil Balance Accounts" %}
+                {% elif report_type == 'non_operated' %}{% trans "Non-Operated Accounts (6+ months)" %}
+                {% elif report_type == 'dormant' %}{% trans "Dormant Accounts" %}
+                {% elif report_type == 'balance_with_last_txn' %}{% trans "Account Balances" %}
+                {% elif report_type == 'balance_range' %}{% trans "Balance Range Report" %}
                 {% endif %}
             </h3>
             <span class="text-sm text-gray-500">{{ accounts|length }} account{{ accounts|length|pluralize }}</span>
@@ -89,12 +89,12 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Account No.</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Member</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Type</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Balance</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Last Transaction</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Account No." %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Member" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Type" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Status" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Balance" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Last Transaction" %}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -120,7 +120,7 @@
             </table>
         </div>
         {% else %}
-        <div class="px-5 py-8 text-center text-sm text-gray-400">No accounts found for this criteria.</div>
+        <div class="px-5 py-8 text-center text-sm text-gray-400">{% trans "No accounts found for this criteria." %}</div>
         {% endif %}
     </div>
     {% endif %}

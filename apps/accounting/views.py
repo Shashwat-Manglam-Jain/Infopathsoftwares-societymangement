@@ -1,10 +1,11 @@
+import csv
 from datetime import date
 from decimal import Decimal, InvalidOperation
 
 from django.contrib import messages
 from django.db import models, transaction
 from django.db.models import Sum
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from apps.accounts.permissions import (
@@ -28,7 +29,7 @@ def voucher_list(request):
     if not request.user.can_access_all_branches:
         entries = entries.filter(branch=request.current_branch)
     entries = entries.order_by('-entry_date', '-created_at')[:50]
-    return render(request, 'accounting/vouchers.html', {'entries': entries})
+    return render(request, 'accounting/vouchers.html', {'entries': entries, 'active_tab': 'vouchers'})
 
 
 @cashier_required
@@ -87,6 +88,11 @@ def _update_personal_account(head, account_number, amount, txn_type, entry_date,
             account.current_balance += amount
             at_type = 'deposit'
         else:
+            if account.current_balance - amount < account.minimum_balance:
+                raise ValueError(
+                    f'Insufficient balance in {account.account_no}. '
+                    f'Available: {account.current_balance}, Minimum: {account.minimum_balance}'
+                )
             account.current_balance -= amount
             at_type = 'withdrawal'
         account.save(update_fields=['current_balance', 'updated_at'])
@@ -132,6 +138,7 @@ def _update_personal_account(head, account_number, amount, txn_type, entry_date,
 
 def _process_transaction(request, txn_type, heads):
     from apps.accounting.services import create_journal_entry
+    from apps.accounts.permissions import is_date_locked
 
     entry_date_str = request.POST.get('entry_date', '')
     narration = request.POST.get('narration', '')
@@ -143,6 +150,15 @@ def _process_transaction(request, txn_type, heads):
         entry_date = date.fromisoformat(entry_date_str)
     except (ValueError, TypeError):
         entry_date = date.today()
+
+    if is_date_locked(request.current_branch, entry_date):
+        messages.error(request, 'Day-end has been completed for this date. No transactions allowed.')
+        title = 'Receipt Transaction' if txn_type == 'receipt' else 'Payment Transaction'
+        return render(
+            request,
+            'accounting/transaction.html',
+            {'heads': heads, 'txn_type': txn_type, 'title': title},
+        )
 
     lines = []
     line_heads = []
@@ -205,6 +221,19 @@ def _process_transaction(request, txn_type, heads):
         lines.append({'account_code': cash_head.code, 'debit': total_amount, 'credit': Decimal('0')})
     else:
         lines.append({'account_code': cash_head.code, 'debit': Decimal('0'), 'credit': total_amount})
+
+    if txn_type == 'payment' and request.current_branch:
+        from apps.accounting.models import CashbookMaster
+
+        today_cb = CashbookMaster.objects.filter(
+            txn_date=entry_date,
+            branch=request.current_branch,
+        ).first()
+        if today_cb and today_cb.closing_balance < total_amount:
+            messages.warning(
+                request,
+                f'Warning: Payment of ₹{total_amount} exceeds available cash balance (₹{today_cb.closing_balance}).',
+            )
 
     try:
         branch = request.current_branch
@@ -307,25 +336,41 @@ def cashbook_entry(request):
     opening_cash = prev_cb.closing_balance if prev_cb else Decimal('0')
     closing_cash = opening_cash + receipt_cash - payment_cash
 
-    return render(
-        request,
-        'accounting/cashbook.html',
-        {
-            'heads': heads,
-            'today_entries': today_entries,
-            'total_receipts': receipt_total,
-            'total_payments': payment_total,
-            'receipt_cash': receipt_cash,
-            'receipt_transfer': receipt_transfer,
-            'payment_cash': payment_cash,
-            'payment_transfer': payment_transfer,
-            'opening_cash': opening_cash,
-            'closing_cash': closing_cash,
-            'cash_in_hand': receipt_total - payment_total,
-            'cb_date': cb_date,
-            'today': date.today(),
-        },
-    )
+    context = {
+        'heads': heads,
+        'today_entries': today_entries,
+        'total_receipts': receipt_total,
+        'total_payments': payment_total,
+        'receipt_cash': receipt_cash,
+        'receipt_transfer': receipt_transfer,
+        'payment_cash': payment_cash,
+        'payment_transfer': payment_transfer,
+        'opening_cash': opening_cash,
+        'closing_cash': closing_cash,
+        'cash_in_hand': receipt_total - payment_total,
+        'cb_date': cb_date,
+        'today': date.today(),
+    }
+
+    if request.GET.get('format') == 'csv':
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="cashbook_{cb_date}.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['Voucher No', 'Type', 'Date', 'Narration', 'Mode', 'Amount'])
+        for entry in today_entries:
+            total = sum(line.debit_amount for line in entry.lines.all())
+            writer.writerow([entry.voucher_no, entry.get_voucher_type_display(), entry.entry_date,
+                             entry.narration, entry.get_payment_mode_display(), total])
+        writer.writerow([])
+        writer.writerow(['Summary', 'Cash', 'Transfer', 'Total'])
+        writer.writerow(['Receipts', receipt_cash, receipt_transfer, receipt_total])
+        writer.writerow(['Payments', payment_cash, payment_transfer, payment_total])
+        writer.writerow(['Opening Cash', opening_cash])
+        writer.writerow(['Closing Cash', closing_cash])
+        return response
+
+    context['active_tab'] = 'cashbook'
+    return render(request, 'accounting/cashbook.html', context)
 
 
 @accountant_required
@@ -373,11 +418,40 @@ def voucher_create(request):
 @auditor_or_above
 def chart_of_accounts_list(request):
     heads = ChartOfAccounts.objects.filter(is_active=True).order_by('display_order', 'code')
-    groups = {}
+    heads_by_id = {h.id: h for h in heads}
+    children_map = {}
+    roots = []
     for head in heads:
+        if head.parent_id and head.parent_id in heads_by_id:
+            children_map.setdefault(head.parent_id, []).append(head)
+        else:
+            roots.append(head)
+
+    def build_tree(node_list, depth=0, ancestors=None):
+        if ancestors is None:
+            ancestors = []
+        result = []
+        for node in node_list:
+            has_children = node.id in children_map
+            result.append(
+                {
+                    'head': node,
+                    'depth': depth,
+                    'has_children': has_children,
+                    'ancestors': list(ancestors),
+                }
+            )
+            if has_children:
+                result.extend(build_tree(children_map[node.id], depth + 1, ancestors + [node.id]))
+        return result
+
+    groups = {}
+    for head in roots:
         group = head.get_account_group_display()
-        groups.setdefault(group, []).append(head)
-    return render(request, 'accounting/heads_list.html', {'groups': groups, 'total': heads.count()})
+        groups.setdefault(group, [])
+        groups[group].extend(build_tree([head]))
+
+    return render(request, 'accounting/heads_list.html', {'groups': groups, 'total': heads.count(), 'active_tab': 'heads'})
 
 
 @admin_required
@@ -430,9 +504,21 @@ def general_ledger(request):
         try:
             result = get_ledger(account_code, from_date, to_date, branch=branch)
             context['result'] = result
+
+            if request.GET.get('format') == 'csv' and result:
+                response = HttpResponse(content_type='text/csv')
+                response['Content-Disposition'] = f'attachment; filename="ledger_{account_code}_{from_date}_to_{to_date}.csv"'
+                writer = csv.writer(response)
+                writer.writerow(['Date', 'Voucher', 'Narration', 'Debit', 'Credit', 'Balance'])
+                for txn in result.get('entries', []):
+                    writer.writerow([txn['date'], txn['voucher_no'], txn['narration'],
+                                     txn['debit'], txn['credit'], txn['balance']])
+                return response
+
         except ChartOfAccounts.DoesNotExist:
             messages.error(request, 'Account head not found.')
 
+    context['active_tab'] = 'ledger'
     return render(request, 'accounting/general_ledger.html', context)
 
 
@@ -459,6 +545,21 @@ def day_book(request):
         entries = entries.filter(branch=request.current_branch)
     entries = entries.order_by('voucher_type', 'created_at')
 
+    if request.GET.get('format') == 'csv':
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="day_book_{book_date}.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['Voucher No', 'Type', 'Narration', 'Account', 'Debit', 'Credit', 'Created By'])
+        for entry in entries:
+            for line in entry.lines.all():
+                writer.writerow([
+                    entry.voucher_no, entry.get_voucher_type_display(),
+                    entry.narration, line.gl_account.name,
+                    line.debit_amount, line.credit_amount,
+                    entry.created_by.get_full_name() if entry.created_by else '',
+                ])
+        return response
+
     return render(
         request,
         'accounting/day_book.html',
@@ -466,6 +567,7 @@ def day_book(request):
             'book_date': book_date,
             'entries': entries,
             'today': date.today(),
+            'active_tab': 'daybook',
         },
     )
 
@@ -473,7 +575,13 @@ def day_book(request):
 @auditor_or_above
 def interest_master_list(request):
     slabs = InterestMaster.objects.select_related('account_head').order_by('account_head__code', 'min_period')
-    return render(request, 'accounting/interest_master_list.html', {'slabs': slabs})
+    grouped = {}
+    for slab in slabs:
+        key = slab.account_head_id
+        if key not in grouped:
+            grouped[key] = {'head': slab.account_head, 'slabs': []}
+        grouped[key]['slabs'].append(slab)
+    return render(request, 'accounting/interest_master_list.html', {'groups': grouped.values(), 'total': slabs.count(), 'active_tab': 'interest'})
 
 
 @admin_required
@@ -512,6 +620,16 @@ def cashbook_report(request):
         )
         context['total_receipts'] = totals['total_receipts'] or 0
         context['total_payments'] = totals['total_payments'] or 0
+
+        if request.GET.get('format') == 'csv':
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = f'attachment; filename="cashbook_summary_{from_date}_to_{to_date}.csv"'
+            writer = csv.writer(response)
+            writer.writerow(['Date', 'Opening Balance', 'Receipts', 'Payments', 'Closing Balance'])
+            for e in qs:
+                writer.writerow([e.txn_date, e.opening_balance, e.total_receipts, e.total_payments, e.closing_balance])
+            return response
+
     return render(request, 'accounting/cashbook_report.html', context)
 
 
@@ -552,6 +670,7 @@ def interest_master_edit(request, pk):
 
 
 @accountant_required
+@day_open_required
 def voucher_edit(request, pk):
     if request.current_branch is None:
         messages.warning(request, 'Please select a specific branch before editing vouchers.')
@@ -565,6 +684,12 @@ def voucher_edit(request, pk):
         return redirect('accounting:vouchers')
     if entry.entry_date != date.today():
         messages.error(request, 'Can only edit vouchers created today.')
+        return redirect('accounting:vouchers')
+
+    from apps.accounts.permissions import is_date_locked
+
+    if is_date_locked(request.current_branch, entry.entry_date):
+        messages.error(request, 'Day-end has been completed. This voucher cannot be modified.')
         return redirect('accounting:vouchers')
 
     lines = entry.lines.all()
@@ -631,11 +756,19 @@ def voucher_edit(request, pk):
 
 
 @manager_required
+@day_open_required
 def voucher_cancel(request, pk):
     entry = get_object_or_404(
         JournalEntry.objects.prefetch_related('lines__gl_account'),
         pk=pk,
     )
+
+    from apps.accounts.permissions import is_date_locked
+
+    branch = getattr(request, 'current_branch', None) or entry.branch
+    if is_date_locked(branch, entry.entry_date):
+        messages.error(request, 'Day-end has been completed. This voucher cannot be cancelled.')
+        return redirect('accounting:vouchers')
 
     if request.method == 'POST':
         if entry.is_reversed:

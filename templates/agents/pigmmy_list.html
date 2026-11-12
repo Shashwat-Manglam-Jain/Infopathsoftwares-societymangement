@@ -1,72 +1,67 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Pigmmy Accounts — InfoSociety{% endblock %}
-{% block page_title %}Pigmmy Module{% endblock %}
+{% block title %}{% trans "Pigmmy Accounts" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Pigmmy Module" %}{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
+<div class="max-w-full space-y-4">
 
-    <!-- Tab Navigation -->
     {% include "agents/_tabs.html" %}
 
-    <!-- Header + Actions -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-            <h2 class="text-xl font-bold text-gray-900">Pigmmy Accounts</h2>
-            <p class="text-sm text-gray-500 mt-1">{{ accounts|length }} active account{{ accounts|length|pluralize:"s" }} — Step 2: Add clients under agents</p>
+            <h2 class="text-lg font-semibold text-gray-900">{% trans "Pigmmy Accounts" %}</h2>
+            <p class="text-sm text-gray-500">{{ accounts|length }} active account{{ accounts|length|pluralize:"s" }}</p>
         </div>
         <div class="flex items-center gap-2">
             <form method="get" class="flex items-center gap-2">
-                <select name="agent" onchange="this.form.submit()" class="searchable text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
-                    <option value="">All Agents</option>
+                <select name="agent" onchange="this.form.submit()" class="searchable text-sm border border-gray-300 rounded px-2.5 py-1.5 focus:ring-primary-500 focus:border-primary-500">
+                    <option value="">{% trans "All Agents" %}</option>
                     {% for ag in agents %}
                     <option value="{{ ag.id }}" {% if request.GET.agent == ag.id|stringformat:"d" %}selected{% endif %}>{{ ag.agent_code }} — {{ ag.member.name }}</option>
                     {% endfor %}
                 </select>
             </form>
             {% if request.user.is_cashier %}
-            <a href="{% url 'agents:pigmmy_create' %}" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">
-                <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                Open Account
-            </a>
+            <a href="{% url 'agents:pigmmy_create' %}" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "Open Account" %}</a>
             {% endif %}
         </div>
     </div>
 
-    <!-- Accounts Table -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Account</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Member</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Agent</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Type</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Installment</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Balance</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">Paid/Total</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
+            <table class="min-w-full text-sm">
+                <thead>
+                    <tr class="text-left text-xs font-semibold text-gray-500 uppercase bg-gray-50">
+                        <th class="px-4 py-2">{% trans "Account" %}</th>
+                        <th class="px-4 py-2">{% trans "Member" %}</th>
+                        <th class="px-4 py-2 hidden md:table-cell">{% trans "Agent" %}</th>
+                        <th class="px-4 py-2 hidden md:table-cell">{% trans "Type" %}</th>
+                        <th class="px-4 py-2 text-right">{% trans "Installment" %}</th>
+                        <th class="px-4 py-2 text-right">{% trans "Balance" %}</th>
+                        <th class="px-4 py-2 text-right hidden lg:table-cell">{% trans "Paid/Total" %}</th>
+                        <th class="px-4 py-2">{% trans "Status" %}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     {% for acct in accounts %}
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-3 text-sm font-mono"><a href="{% url 'agents:pigmmy_detail' pk=acct.pk %}" class="text-primary-600 hover:underline">{{ acct.account_no }}</a></td>
-                        <td class="px-4 py-3 text-sm text-gray-900">{{ acct.member.name }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-600 hidden md:table-cell">
+                    <tr class="hover:bg-gray-50 cursor-pointer transition-colors" onclick="window.location.href='{% url 'agents:pigmmy_detail' pk=acct.pk %}'">
+                        <td class="px-4 py-2 font-mono"><a href="{% url 'agents:pigmmy_detail' pk=acct.pk %}" class="text-primary-600 hover:underline">{{ acct.account_no }}</a></td>
+                        <td class="px-4 py-2 text-gray-900">{{ acct.member.name }}</td>
+                        <td class="px-4 py-2 text-gray-600 hidden md:table-cell">
                             <a href="{% url 'agents:detail' pk=acct.agent.pk %}" class="hover:text-primary-600">{{ acct.agent.agent_code }}</a>
                         </td>
-                        <td class="px-4 py-3 text-sm text-gray-600 hidden md:table-cell">{{ acct.get_deposit_type_display }}</td>
-                        <td class="px-4 py-3 text-sm text-right text-gray-900">{{ acct.installment_amount|floatformat:2 }}</td>
-                        <td class="px-4 py-3 text-sm text-right font-medium text-gray-900">{{ acct.current_balance|floatformat:2 }}</td>
-                        <td class="px-4 py-3 text-sm text-right text-gray-600 hidden lg:table-cell">{{ acct.paid_installments }}/{{ acct.total_installments }}</td>
-                        <td class="px-4 py-3">
+                        <td class="px-4 py-2 text-gray-600 hidden md:table-cell">{{ acct.get_deposit_type_display }}</td>
+                        <td class="px-4 py-2 text-right text-gray-900">{{ acct.installment_amount|floatformat:2 }}</td>
+                        <td class="px-4 py-2 text-right font-medium text-gray-900">{{ acct.current_balance|floatformat:2 }}</td>
+                        <td class="px-4 py-2 text-right text-gray-600 hidden lg:table-cell">{{ acct.paid_installments }}/{{ acct.total_installments }}</td>
+                        <td class="px-4 py-2">
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if acct.status == 'active' %}bg-green-100 text-green-800{% elif acct.status == 'matured' %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-600{% endif %}">{{ acct.get_status_display }}</span>
                         </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="8" class="px-4 py-8 text-center text-sm text-gray-400">No pigmmy accounts found. Open one from an agent's detail page.</td></tr>
+                    <tr><td colspan="8" class="px-4 py-6 text-center text-sm text-gray-400">{% trans "No pigmmy accounts found." %}</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

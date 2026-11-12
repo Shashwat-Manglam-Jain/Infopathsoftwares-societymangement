@@ -1,3 +1,4 @@
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -60,10 +61,10 @@
 <body>
     <div class="no-print" style="text-align: center; padding: 10px; background: #f0f0f0;">
         <button onclick="window.print()" style="padding: 8px 24px; background: #22543d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
-            Print Receipt
+            {% trans "Print Receipt" %}
         </button>
         <button onclick="history.length > 1 ? history.back() : (window.close() || (location.href='/'))" style="padding: 8px 24px; background: #e2e8f0; color: #333; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; margin-left: 8px;">
-            Close
+            {% trans "Close" %}
         </button>
     </div>
 
@@ -74,24 +75,24 @@
 
             <div class="header">
                 <div class="society-name">{{ repayment.branch.branch_name|default:"Society Name" }}</div>
-                <div class="branch-name">Branch: {{ repayment.branch.branch_name }}</div>
-                <div class="receipt-title">EMI Collection Receipt</div>
+                <div class="branch-name">{% trans "Branch" %}: {{ repayment.branch.branch_name }}</div>
+                <div class="receipt-title">{% trans "EMI Collection Receipt" %}</div>
                 <div class="copy-label">{% if forloop.first %}Original{% else %}Society Copy{% endif %}</div>
             </div>
 
             <div class="info-row">
-                <div><span class="label">Receipt No:</span> <span class="value">{{ repayment.receipt_no|default:"--" }}</span></div>
-                <div><span class="label">Date:</span> <span class="value">{{ repayment.payment_date|date:"d-M-Y" }}</span></div>
+                <div><span class="label">{% trans "Receipt No" %}:</span> <span class="value">{{ repayment.receipt_no|default:"--" }}</span></div>
+                <div><span class="label">{% trans "Date" %}:</span> <span class="value">{{ repayment.payment_date|date:"d-M-Y" }}</span></div>
             </div>
 
             <div class="member-section">
                 <div class="info-row" style="margin-bottom:4px">
-                    <div><span class="label">Member:</span> <span class="value">{{ repayment.loan.member.name }}</span></div>
-                    <div><span class="label">No:</span> <span class="value">{{ repayment.loan.member.member_no }}</span></div>
+                    <div><span class="label">{% trans "Member" %}:</span> <span class="value">{{ repayment.loan.member.name }}</span></div>
+                    <div><span class="label">{% trans "No" %}:</span> <span class="value">{{ repayment.loan.member.member_no }}</span></div>
                 </div>
                 <div class="info-row" style="margin-bottom:0">
-                    <div><span class="label">Loan No:</span> <span class="value">{{ repayment.loan.loan_no }}</span></div>
-                    <div><span class="label">Product:</span> <span class="value">{{ repayment.loan.loan_product.name }}</span></div>
+                    <div><span class="label">{% trans "Loan No" %}:</span> <span class="value">{{ repayment.loan.loan_no }}</span></div>
+                    <div><span class="label">{% trans "Product" %}:</span> <span class="value">{{ repayment.loan.loan_product.name }}</span></div>
                 </div>
             </div>
 
@@ -102,40 +103,40 @@
 
             <table class="breakdown">
                 <tr>
-                    <th>Component</th>
-                    <th style="text-align:right">Amount</th>
+                    <th>{% trans "Component" %}</th>
+                    <th style="text-align:right">{% trans "Amount" %}</th>
                 </tr>
                 <tr>
-                    <td>Principal</td>
+                    <td>{% trans "Principal" %}</td>
                     <td>&#8377; {{ repayment.principal_adjusted|floatformat:2 }}</td>
                 </tr>
                 <tr>
-                    <td>Interest</td>
+                    <td>{% trans "Interest" %}</td>
                     <td>&#8377; {{ repayment.interest_adjusted|floatformat:2 }}</td>
                 </tr>
                 {% if repayment.penalty_adjusted %}
                 <tr>
-                    <td>Penalty</td>
+                    <td>{% trans "Penalty" %}</td>
                     <td>&#8377; {{ repayment.penalty_adjusted|floatformat:2 }}</td>
                 </tr>
                 {% endif %}
                 <tr>
-                    <td>Total Paid</td>
+                    <td>{% trans "Total Paid" %}</td>
                     <td>&#8377; {{ repayment.amount|floatformat:2 }}</td>
                 </tr>
             </table>
 
             <table class="details-table">
                 {% if repayment.emi_schedule %}
-                <tr><td>EMI No</td><td>#{{ repayment.emi_schedule.installment_no }}</td></tr>
+                <tr><td>{% trans "EMI No" %}</td><td>#{{ repayment.emi_schedule.installment_no }}</td></tr>
                 {% endif %}
-                <tr><td>Payment Mode</td><td>{{ repayment.get_payment_mode_display }}</td></tr>
-                <tr><td>Outstanding Principal</td><td>&#8377; {{ repayment.loan.outstanding_principal|floatformat:2 }}</td></tr>
+                <tr><td>{% trans "Payment Mode" %}</td><td>{{ repayment.get_payment_mode_display }}</td></tr>
+                <tr><td>{% trans "Outstanding Principal" %}</td><td>&#8377; {{ repayment.loan.outstanding_principal|floatformat:2 }}</td></tr>
             </table>
 
             <div class="footer">
-                <div class="signature-line">Member Sign</div>
-                <div class="signature-line">{{ repayment.created_by.get_full_name|default:repayment.created_by.username }}<br>Cashier</div>
+                <div class="signature-line">{% trans "Member Sign" %}</div>
+                <div class="signature-line">{{ repayment.created_by.get_full_name|default:repayment.created_by.username }}<br>{% trans "Cashier" %}</div>
             </div>
         </div>
         {% endfor %}

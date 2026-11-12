@@ -1,3 +1,4 @@
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -53,10 +54,10 @@
 <body>
     <div class="no-print" style="text-align: center; padding: 10px; background: #f0f0f0;">
         <button onclick="window.print()" style="padding: 8px 24px; background: #553c9a; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
-            Print Receipt
+            {% trans "Print Receipt" %}
         </button>
         <button onclick="history.length > 1 ? history.back() : (window.close() || (location.href='/shares/'))" style="padding: 8px 24px; background: #e2e8f0; color: #333; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; margin-left: 8px;">
-            Close
+            {% trans "Close" %}
         </button>
     </div>
 
@@ -67,20 +68,20 @@
 
             <div class="header">
                 <div class="society-name">{{ txn.branch.branch_name|default:"Society Name" }}</div>
-                <div class="branch-name">Branch: {{ txn.branch.branch_name }}</div>
+                <div class="branch-name">{% trans "Branch" %}: {{ txn.branch.branch_name }}</div>
                 <div class="receipt-title">Share {{ txn.get_txn_type_display }} Receipt</div>
                 <div class="copy-label">{% if forloop.first %}Original{% else %}Society Copy{% endif %}</div>
             </div>
 
             <div class="info-row">
-                <div><span class="label">Txn No:</span> <span class="value">#{{ txn.id }}</span></div>
-                <div><span class="label">Date:</span> <span class="value">{{ txn.txn_date|date:"d-M-Y" }}</span></div>
+                <div><span class="label">{% trans "Txn No" %}:</span> <span class="value">#{{ txn.id }}</span></div>
+                <div><span class="label">{% trans "Date" %}:</span> <span class="value">{{ txn.txn_date|date:"d-M-Y" }}</span></div>
             </div>
 
             <div class="member-section">
                 <div class="info-row" style="margin-bottom:0">
-                    <div><span class="label">Member:</span> <span class="value">{{ txn.member.name }}</span></div>
-                    <div><span class="label">No:</span> <span class="value">{{ txn.member.member_no }}</span></div>
+                    <div><span class="label">{% trans "Member" %}:</span> <span class="value">{{ txn.member.name }}</span></div>
+                    <div><span class="label">{% trans "No" %}:</span> <span class="value">{{ txn.member.member_no }}</span></div>
                 </div>
             </div>
 
@@ -90,23 +91,23 @@
             </div>
 
             <table class="details-table">
-                <tr><td>Number of Shares</td><td>{{ txn.shares_count }}</td></tr>
-                <tr><td>Face Value per Share</td><td>&#8377; {{ face_value|floatformat:2 }}</td></tr>
-                <tr><td>Transaction Type</td><td>{{ txn.get_txn_type_display }}</td></tr>
+                <tr><td>{% trans "Number of Shares" %}</td><td>{{ txn.shares_count }}</td></tr>
+                <tr><td>{% trans "Face Value per Share" %}</td><td>&#8377; {{ face_value|floatformat:2 }}</td></tr>
+                <tr><td>{% trans "Transaction Type" %}</td><td>{{ txn.get_txn_type_display }}</td></tr>
                 {% if txn.transfer_to_member %}
-                <tr><td>Transferred To</td><td>{{ txn.transfer_to_member.name }} ({{ txn.transfer_to_member.member_no }})</td></tr>
+                <tr><td>{% trans "Transferred To" %}</td><td>{{ txn.transfer_to_member.name }} ({{ txn.transfer_to_member.member_no }})</td></tr>
                 {% endif %}
                 {% if certificate_no %}
-                <tr><td>Certificate No</td><td>{{ certificate_no }}</td></tr>
+                <tr><td>{% trans "Certificate No" %}</td><td>{{ certificate_no }}</td></tr>
                 {% endif %}
                 {% if txn.narration %}
-                <tr><td>Narration</td><td>{{ txn.narration }}</td></tr>
+                <tr><td>{% trans "Narration" %}</td><td>{{ txn.narration }}</td></tr>
                 {% endif %}
             </table>
 
             <div class="footer">
-                <div class="signature-line">Member Sign</div>
-                <div class="signature-line">{{ txn.created_by.get_full_name|default:txn.created_by.username }}<br>Authorized</div>
+                <div class="signature-line">{% trans "Member Sign" %}</div>
+                <div class="signature-line">{{ txn.created_by.get_full_name|default:txn.created_by.username }}<br>{% trans "Authorized" %}</div>
             </div>
         </div>
         {% endfor %}

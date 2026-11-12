@@ -1,7 +1,8 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Profit & Loss — InfoSociety{% endblock %}
-{% block page_title %}Profit & Loss{% endblock %}
+{% block title %}{% trans "Profit & Loss" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Profit & Loss" %}{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -15,53 +16,35 @@
 {% endblock %}
 
 {% block content %}
-<div class="space-y-6">
-
-    <a href="{% url 'reports:index' %}" class="inline-flex items-center text-sm text-gray-500 hover:text-primary-600 no-print">
-        <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-        Back to Reports
-    </a>
-
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 no-print">
-        <div>
-            <h2 class="text-xl font-bold text-gray-900">Profit & Loss Statement</h2>
-            <p class="text-sm text-gray-500 mt-1">Income vs Expenditure Statement</p>
-        </div>
-        {% if income_items or expense_items %}
-        <button onclick="window.print()" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">
-            <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-            Print
-        </button>
-        {% endif %}
-    </div>
+<div class="space-y-4">
 
     <!-- Date Filter -->
     <form method="get" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 no-print"
           x-data="{ fromDate: '{{ from_date|default:'' }}', toDate: '{{ to_date|default:'' }}', today: new Date().toISOString().split('T')[0] }">
         <div class="flex flex-col sm:flex-row items-end gap-3">
             <div class="flex-1">
-                <label class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">{% trans "From Date" %}</label>
                 <input type="date" name="from_date" x-model="fromDate" :max="toDate || today" required class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
             </div>
             <div class="flex-1">
-                <label class="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">{% trans "To Date" %}</label>
                 <input type="date" name="to_date" x-model="toDate" :min="fromDate" :max="today" required class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
             </div>
-            <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">Generate</button>
+            <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">{% trans "Generate" %}</button>
+            {% include "includes/export_csv.html" %}
         </div>
         <div class="flex flex-wrap gap-2 mt-3">
-            <span class="text-xs text-gray-400 self-center mr-1">Quick:</span>
-            <button type="button" @click="let d=new Date(); fromDate=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01'; toDate=today" class="px-2.5 py-1 text-xs font-medium rounded bg-gray-100 text-gray-600 hover:bg-gray-200">This Month</button>
-            <button type="button" @click="let d=new Date(); d.setMonth(d.getMonth()-1); let l=new Date(d.getFullYear(),d.getMonth()+1,0); fromDate=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01'; toDate=l.toISOString().split('T')[0]" class="px-2.5 py-1 text-xs font-medium rounded bg-gray-100 text-gray-600 hover:bg-gray-200">Last Month</button>
-            <button type="button" @click="let d=new Date(), fy=d.getMonth()>=3?d.getFullYear():d.getFullYear()-1; fromDate=fy+'-04-01'; toDate=(fy+1)+'-03-31'" class="px-2.5 py-1 text-xs font-medium rounded bg-gray-100 text-gray-600 hover:bg-gray-200">This FY</button>
+            <span class="text-xs text-gray-400 self-center mr-1">{% trans "Quick:" %}</span>
+            <button type="button" @click="let d=new Date(); fromDate=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01'; toDate=today" class="px-2.5 py-1 text-xs font-medium rounded bg-gray-100 text-gray-600 hover:bg-gray-200">{% trans "This Month" %}</button>
+            <button type="button" @click="let d=new Date(); d.setMonth(d.getMonth()-1); let l=new Date(d.getFullYear(),d.getMonth()+1,0); fromDate=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01'; toDate=l.toISOString().split('T')[0]" class="px-2.5 py-1 text-xs font-medium rounded bg-gray-100 text-gray-600 hover:bg-gray-200">{% trans "Last Month" %}</button>
+            <button type="button" @click="let d=new Date(), fy=d.getMonth()>=3?d.getFullYear():d.getFullYear()-1; fromDate=fy+'-04-01'; toDate=(fy+1)+'-03-31'" class="px-2.5 py-1 text-xs font-medium rounded bg-gray-100 text-gray-600 hover:bg-gray-200">{% trans "This FY" %}</button>
         </div>
     </form>
 
     {% if income_items or expense_items %}
     <!-- Print Header -->
     <div class="print-only text-center mb-4">
-        <h2 class="text-lg font-bold">Profit & Loss Statement</h2>
+        <h2 class="text-lg font-bold">{% trans "Profit & Loss Statement" %}</h2>
         <p class="text-sm">From {{ from_date }} to {{ to_date }}</p>
     </div>
 
@@ -70,14 +53,14 @@
         <!-- Expenditure (Left) -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-4 py-3 bg-red-50 border-b border-red-100">
-                <h3 class="text-sm font-semibold text-red-800">Expenditure</h3>
+                <h3 class="text-sm font-semibold text-red-800">{% trans "Expenditure" %}</h3>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-600">Particular</th>
-                            <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-600">Amount</th>
+                            <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-600">{% trans "Particular" %}</th>
+                            <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-600">{% trans "Amount" %}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -87,17 +70,17 @@
                             <td class="px-4 py-2 text-sm text-right font-medium text-gray-900">{{ item.amount|floatformat:2 }}</td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="2" class="px-4 py-4 text-center text-sm text-gray-400">No expenses</td></tr>
+                        <tr><td colspan="2" class="px-4 py-4 text-center text-sm text-gray-400">{% trans "No expenses" %}</td></tr>
                         {% endfor %}
                     </tbody>
                     <tfoot class="bg-red-50 border-t-2 border-red-200">
                         <tr>
-                            <td class="px-4 py-3 text-sm font-bold text-red-800">Total Expenditure</td>
+                            <td class="px-4 py-3 text-sm font-bold text-red-800">{% trans "Total Expenditure" %}</td>
                             <td class="px-4 py-3 text-sm text-right font-bold text-red-800">{{ total_expense|floatformat:2 }}</td>
                         </tr>
                         {% if net_profit > 0 %}
                         <tr class="bg-green-50 border-t border-green-200">
-                            <td class="px-4 py-2 text-sm font-semibold text-green-700">Net Profit</td>
+                            <td class="px-4 py-2 text-sm font-semibold text-green-700">{% trans "Net Profit" %}</td>
                             <td class="px-4 py-2 text-sm text-right font-bold text-green-700">{{ net_profit|floatformat:2 }}</td>
                         </tr>
                         {% endif %}
@@ -109,14 +92,14 @@
         <!-- Income (Right) -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-4 py-3 bg-green-50 border-b border-green-100">
-                <h3 class="text-sm font-semibold text-green-800">Income</h3>
+                <h3 class="text-sm font-semibold text-green-800">{% trans "Income" %}</h3>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-600">Particular</th>
-                            <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-600">Amount</th>
+                            <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-600">{% trans "Particular" %}</th>
+                            <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-600">{% trans "Amount" %}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -126,17 +109,17 @@
                             <td class="px-4 py-2 text-sm text-right font-medium text-gray-900">{{ item.amount|floatformat:2 }}</td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="2" class="px-4 py-4 text-center text-sm text-gray-400">No income</td></tr>
+                        <tr><td colspan="2" class="px-4 py-4 text-center text-sm text-gray-400">{% trans "No income" %}</td></tr>
                         {% endfor %}
                     </tbody>
                     <tfoot class="bg-green-50 border-t-2 border-green-200">
                         <tr>
-                            <td class="px-4 py-3 text-sm font-bold text-green-800">Total Income</td>
+                            <td class="px-4 py-3 text-sm font-bold text-green-800">{% trans "Total Income" %}</td>
                             <td class="px-4 py-3 text-sm text-right font-bold text-green-800">{{ total_income|floatformat:2 }}</td>
                         </tr>
                         {% if net_profit < 0 %}
                         <tr class="bg-red-50 border-t border-red-200">
-                            <td class="px-4 py-2 text-sm font-semibold text-red-700">Net Loss</td>
+                            <td class="px-4 py-2 text-sm font-semibold text-red-700">{% trans "Net Loss" %}</td>
                             <td class="px-4 py-2 text-sm text-right font-bold text-red-700">{{ net_profit|floatformat:2 }}</td>
                         </tr>
                         {% endif %}
@@ -150,16 +133,16 @@
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
         <div class="flex items-center justify-between">
             <span class="text-sm font-semibold text-gray-700">
-                {% if net_profit >= 0 %}Net Profit{% else %}Net Loss{% endif %}
+                {% if net_profit >= 0 %}{% trans "Net Profit" %}{% else %}{% trans "Net Loss" %}{% endif %}
             </span>
-            <span class="text-xl font-bold {% if net_profit >= 0 %}text-green-700{% else %}text-red-700{% endif %}">
+            <span class="text-lg font-bold {% if net_profit >= 0 %}text-green-700{% else %}text-red-700{% endif %}">
                 {{ net_profit|floatformat:2 }}
             </span>
         </div>
     </div>
     {% elif from_date %}
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-        <p class="text-gray-400 text-sm">No data found for the selected period.</p>
+        <p class="text-gray-400 text-sm">{% trans "No data found for the selected period." %}</p>
     </div>
     {% endif %}
 </div>

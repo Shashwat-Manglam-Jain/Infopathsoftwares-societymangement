@@ -1,10 +1,11 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Import Results{% endblock %}
-{% block page_title %}Import Results{% endblock %}
+{% block title %}{% trans "Import Results" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Import Results" %}{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto">
+<div class="max-w-6xl mx-auto">
     <h1 class="text-2xl font-bold text-gray-900 mb-6">Import Results</h1>
 
     <!-- Summary cards -->
@@ -59,7 +60,7 @@
     {% if results.errors %}
     <div class="bg-white rounded-lg shadow mb-6 overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200 bg-red-50">
-            <h3 class="text-sm font-medium text-red-800">Error Details</h3>
+            <h3 class="text-sm font-medium text-red-800">{% trans "Error Details" %}</h3>
         </div>
         <div class="px-6 py-4 max-h-60 overflow-y-auto">
             <ul class="space-y-1">

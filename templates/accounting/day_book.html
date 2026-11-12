@@ -1,25 +1,28 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Day Book — InfoSociety{% endblock %}
-{% block page_title %}Day Book{% endblock %}
+{% block title %}{% trans "Day Book" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Accounting Module" %}{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-            <h2 class="text-xl font-bold text-gray-900">Day Book</h2>
-            <p class="text-sm text-gray-500 mt-1">All journal entries for {{ book_date|date:"d M Y" }}</p>
+<div>
+    {% include "accounting/_tabs.html" %}
+
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <p class="text-sm text-gray-500">All journal entries for {{ book_date|date:"d M Y" }}</p>
+        <div class="flex items-center gap-2">
+            <form method="get" class="flex items-center gap-2">
+                <input type="date" name="date" value="{{ book_date|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}"
+                       class="rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
+                <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">View</button>
+            </form>
+            {% if entries %}{% include "includes/export_csv.html" %}{% endif %}
         </div>
-        <form method="get" class="flex items-center gap-2">
-            <input type="date" name="date" value="{{ book_date|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}"
-                   class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
-            <button type="submit" class="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">View</button>
-        </form>
     </div>
 
     {% for entry in entries %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div class="px-5 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-3">
+        <div class="px-5 py-2.5 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <span class="font-mono text-sm font-semibold text-gray-900">{{ entry.voucher_no }}</span>
                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
@@ -34,43 +37,39 @@
             </div>
         </div>
         <div class="overflow-x-auto">
-        <table class="min-w-full">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-5 py-2 text-left text-xs font-semibold text-gray-600 uppercase">Account</th>
-                    <th class="px-5 py-2 text-right text-xs font-semibold text-gray-600 uppercase w-32">Debit</th>
-                    <th class="px-5 py-2 text-right text-xs font-semibold text-gray-600 uppercase w-32">Credit</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-                {% for line in entry.lines.all %}
-                <tr class="hover:bg-gray-50">
-                    <td class="px-5 py-2 text-sm">
-                        <span class="font-mono text-gray-500">{{ line.gl_account.code }}</span>
-                        <span class="ml-2 text-gray-900">{{ line.gl_account.name }}</span>
-                        {% if line.narration %}<span class="ml-2 text-xs text-gray-400">({{ line.narration }})</span>{% endif %}
-                    </td>
-                    <td class="px-5 py-2 text-sm text-right w-32">
-                        {% if line.debit_amount > 0 %}
-                        <span class="font-medium text-gray-900">{{ line.debit_amount|floatformat:2 }}</span>
-                        {% else %}<span class="text-gray-300">—</span>{% endif %}
-                    </td>
-                    <td class="px-5 py-2 text-sm text-right w-32">
-                        {% if line.credit_amount > 0 %}
-                        <span class="font-medium text-gray-900">{{ line.credit_amount|floatformat:2 }}</span>
-                        {% else %}<span class="text-gray-300">—</span>{% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+            <table class="min-w-full text-sm">
+                <thead>
+                    <tr class="text-left text-xs font-semibold text-gray-500 uppercase bg-gray-50">
+                        <th class="px-5 py-1.5">{% trans "Account" %}</th>
+                        <th class="px-5 py-1.5 text-right w-32">{% trans "Debit" %}</th>
+                        <th class="px-5 py-1.5 text-right w-32">{% trans "Credit" %}</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for line in entry.lines.all %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-5 py-1.5">
+                            <span class="font-mono text-gray-500">{{ line.gl_account.code }}</span>
+                            <span class="ml-2 text-gray-900">{{ line.gl_account.name }}</span>
+                            {% if line.narration %}<span class="ml-2 text-xs text-gray-400">({{ line.narration }})</span>{% endif %}
+                        </td>
+                        <td class="px-5 py-1.5 text-right w-32">
+                            {% if line.debit_amount > 0 %}<span class="font-medium text-gray-900">{{ line.debit_amount|floatformat:2 }}</span>{% else %}<span class="text-gray-300">—</span>{% endif %}
+                        </td>
+                        <td class="px-5 py-1.5 text-right w-32">
+                            {% if line.credit_amount > 0 %}<span class="font-medium text-gray-900">{{ line.credit_amount|floatformat:2 }}</span>{% else %}<span class="text-gray-300">—</span>{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
         {% if entry.narration %}
-        <div class="px-5 py-2 border-t bg-gray-50 text-xs text-gray-500">{{ entry.narration }}</div>
+        <div class="px-5 py-1.5 border-t bg-gray-50 text-xs text-gray-500">{{ entry.narration }}</div>
         {% endif %}
     </div>
     {% empty %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-6 text-center">
         <p class="text-gray-400 text-sm">No journal entries for {{ book_date|date:"d M Y" }}.</p>
     </div>
     {% endfor %}

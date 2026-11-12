@@ -1,10 +1,22 @@
+import csv
 from datetime import date
 from decimal import Decimal
 
 from django.db.models import Count, Max, Q, Sum
+from django.http import HttpResponse
 from django.shortcuts import render
 
 from apps.accounts.permissions import auditor_or_above
+
+
+def _csv_response(filename, headers, rows):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    writer = csv.writer(response)
+    writer.writerow(headers)
+    for row in rows:
+        writer.writerow(row)
+    return response
 
 
 @auditor_or_above
@@ -264,6 +276,20 @@ def personal_ledger(request):
 
         context['accounts'] = accounts
 
+        if request.GET.get('format') == 'csv' and accounts:
+            rows = []
+            for acct in accounts:
+                for r in acct.get('rows', []):
+                    rows.append([
+                        acct['type'], acct['account_no'], r['date'],
+                        r['description'], r['debit'], r['credit'], r['balance'],
+                    ])
+            return _csv_response(
+                f'personal_ledger_{member.member_no}_{date.today()}.csv',
+                ['Account Type', 'Account No', 'Date', 'Description', 'Debit', 'Credit', 'Balance'],
+                rows,
+            )
+
     return render(request, 'reports/personal_ledger.html', context)
 
 
@@ -278,6 +304,20 @@ def trial_balance(request):
         branch = None if request.user.can_access_all_branches else request.current_branch
         result = get_trial_balance(from_date=from_date, to_date=to_date, branch=branch)
         context['result'] = result
+        if request.GET.get('format') == 'csv' and result:
+            rows = []
+            for item in result.get('accounts', []):
+                rows.append([
+                    item['code'], item['name'],
+                    item['opening_debit'], item['opening_credit'],
+                    item['period_debit'], item['period_credit'],
+                    item['closing_debit'], item['closing_credit'],
+                ])
+            return _csv_response(
+                f'trial_balance_{from_date}_to_{to_date}.csv',
+                ['Code', 'Account', 'Opening Dr', 'Opening Cr', 'Period Dr', 'Period Cr', 'Closing Dr', 'Closing Cr'],
+                rows,
+            )
     return render(request, 'reports/trial_balance.html', context)
 
 
@@ -363,6 +403,20 @@ def profit_loss(request):
                 'net_profit': total_income - total_expense,
             }
         )
+        if request.GET.get('format') == 'csv':
+            rows = []
+            for item in income_items:
+                rows.append([item['code'], item['name'], 'Income', item['amount']])
+            for item in expense_items:
+                rows.append([item['code'], item['name'], 'Expense', item['amount']])
+            rows.append(['', 'Total Income', '', total_income])
+            rows.append(['', 'Total Expense', '', total_expense])
+            rows.append(['', 'Net Profit/(Loss)', '', total_income - total_expense])
+            return _csv_response(
+                f'profit_loss_{from_date}_to_{to_date}.csv',
+                ['Code', 'Account', 'Type', 'Amount'],
+                rows,
+            )
     return render(request, 'reports/profit_loss.html', context)
 
 
@@ -430,6 +484,19 @@ def balance_sheet(request):
                 'net_profit': net_profit,
             }
         )
+        if request.GET.get('format') == 'csv':
+            rows = []
+            for item in liabilities:
+                rows.append([item['code'], item['name'], 'Liability/Equity', item['amount']])
+            rows.append(['', 'Total Liabilities & Equity', '', total_liability])
+            for item in assets:
+                rows.append([item['code'], item['name'], 'Asset', item['amount']])
+            rows.append(['', 'Total Assets', '', total_asset])
+            return _csv_response(
+                f'balance_sheet_{as_on_date}.csv',
+                ['Code', 'Account', 'Type', 'Amount'],
+                rows,
+            )
     return render(request, 'reports/balance_sheet.html', context)
 
 
@@ -468,6 +535,14 @@ def cashbook_report(request):
         context['heads'] = heads
         context['total_debit'] = sum(h['debit'] for h in heads)
         context['total_credit'] = sum(h['credit'] for h in heads)
+
+        if request.GET.get('format') == 'csv' and heads:
+            rows = [[h['code'], h['name'], h['debit'], h['credit']] for h in heads]
+            return _csv_response(
+                f'cashbook_{report_date}.csv',
+                ['Code', 'Account', 'Debit', 'Credit'],
+                rows,
+            )
 
     return render(request, 'reports/cashbook_report.html', context)
 
@@ -537,6 +612,26 @@ def balance_reports(request):
         'min_amount': request.GET.get('min_amount', ''),
         'max_amount': request.GET.get('max_amount', ''),
     }
+
+    if request.GET.get('format') == 'csv':
+        if accounts is not None:
+            rows = [
+                [a.account_no, a.member.name, a.get_account_type_display(), a.current_balance, getattr(a, 'last_txn', '')]
+                for a in accounts
+            ]
+            return _csv_response(
+                f'balance_report_{report_type}_{date.today()}.csv',
+                ['Account No', 'Member', 'Type', 'Balance', 'Last Txn'],
+                rows,
+            )
+        if type_summary is not None:
+            rows = [[s['account_type'], s['count'], s['total']] for s in type_summary]
+            return _csv_response(
+                f'balance_by_type_{date.today()}.csv',
+                ['Account Type', 'Count', 'Total Balance'],
+                rows,
+            )
+
     return render(request, 'reports/balance_reports.html', context)
 
 
@@ -782,6 +877,31 @@ def pigmmy_reports(request):
             context['total_commission'] = qs.aggregate(t=Sum('commission_amount'))['t'] or Decimal('0')
             context['total_tds'] = qs.aggregate(t=Sum('tds_amount'))['t'] or Decimal('0')
             context['total_net'] = qs.aggregate(t=Sum('net_amount'))['t'] or Decimal('0')
+
+    if request.GET.get('format') == 'csv':
+        if report_type == 'agent_clients' and context.get('accounts') is not None:
+            rows = [[a.agent.agent_code, a.account_no, a.member.name, a.current_balance] for a in context['accounts']]
+            return _csv_response(
+                f'pigmmy_agent_clients_{date.today()}.csv',
+                ['Agent Code', 'Account No', 'Member', 'Balance'],
+                rows,
+            )
+        if report_type == 'date_daybook' and context.get('transactions') is not None:
+            rows = [[t.account.agent.agent_code, t.account.account_no, t.account.member.name, t.amount]
+                    for t in context['transactions']]
+            return _csv_response(
+                f'pigmmy_daybook_{context.get("report_date", date.today())}.csv',
+                ['Agent', 'Account No', 'Member', 'Amount'],
+                rows,
+            )
+        if report_type == 'commission' and context.get('commissions') is not None:
+            rows = [[c.agent.member.name, c.agent.agent_code, c.month, c.commission_amount, c.tds_amount, c.net_amount]
+                    for c in context['commissions']]
+            return _csv_response(
+                f'pigmmy_commission_{date.today()}.csv',
+                ['Agent', 'Code', 'Month', 'Commission', 'TDS', 'Net'],
+                rows,
+            )
 
     return render(request, 'reports/pigmmy_reports.html', context)
 
@@ -1100,6 +1220,26 @@ def deposit_reports(request):
             for inst in installments[:500]
         ]
 
+    if request.GET.get('format') == 'csv' and report_type:
+        if 'groups' in context:
+            rows = [[g.get('deposit_type', ''), g['label'], g['count'], g['total']] for g in context['groups']]
+            return _csv_response(
+                f'deposit_{report_type}_{date.today()}.csv',
+                ['Deposit Type', 'Range', 'Count', 'Total'],
+                rows,
+            )
+        if 'items' in context:
+            items = context['items']
+            if items and 'account_no' in items[0]:
+                rows = [[i.get('account_no', i.get('rd_no', '')), i.get('member', ''), i.get('amount', ''),
+                         i.get('maturity_date', i.get('due_date', '')), i.get('interest_rate', ''),
+                         i.get('status', '')] for i in items]
+                return _csv_response(
+                    f'deposit_{report_type}_{date.today()}.csv',
+                    ['Account No', 'Member', 'Amount', 'Date', 'Rate%', 'Status'],
+                    rows,
+                )
+
     return render(request, 'reports/deposit_reports.html', context)
 
 
@@ -1403,6 +1543,32 @@ def loan_reports(request):
             }
             for la in loans
         ]
+
+    if request.GET.get('format') == 'csv' and report_type:
+        if 'groups' in context:
+            rows = [[g['label'], g['count'], g['total']] for g in context['groups']]
+            return _csv_response(
+                f'loan_{report_type}_{date.today()}.csv',
+                ['Range', 'Count', 'Total'],
+                rows,
+            )
+        if 'items' in context:
+            items = context['items']
+            if items:
+                headers = list(items[0].keys())
+                rows = [list(i.values()) for i in items]
+                return _csv_response(f'loan_{report_type}_{date.today()}.csv', headers, rows)
+        elif 'defaulter_groups' in context:
+            rows = []
+            for group_name, group_items in context['defaulter_groups'].items():
+                for item in group_items:
+                    rows.append([group_name, item['loan_no'], item['member'], item['outstanding'],
+                                 item['overdue_amount'], item['overdue_days']])
+            return _csv_response(
+                f'loan_defaulters_{date.today()}.csv',
+                ['Category', 'Loan No', 'Member', 'Outstanding', 'Overdue Amt', 'Overdue Days'],
+                rows,
+            )
 
     return render(request, 'reports/loan_reports.html', context)
 

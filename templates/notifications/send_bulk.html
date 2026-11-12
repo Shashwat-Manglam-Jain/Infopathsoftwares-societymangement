@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Send Bulk SMS" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Send Bulk SMS" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl">
+    {% if messages %}
+    {% for message in messages %}
+    <div class="rounded-lg p-3 mb-4 text-sm {% if message.tags == 'error' %}bg-red-50 text-red-800 border border-red-200{% else %}bg-green-50 text-green-800 border border-green-200{% endif %}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-5 py-4 space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Recipient Type" %} <span class="text-red-500">*</span></label>
+                    {{ form.recipient_type }}
+                </div>
+                {% if form.branch %}
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Branch" %}</label>
+                    {{ form.branch }}
+                </div>
+                {% endif %}
+                {% if form.member_ids %}
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Member IDs (comma-separated)" %}</label>
+                    {{ form.member_ids }}
+                </div>
+                {% endif %}
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Message" %} <span class="text-red-500">*</span></label>
+                    {{ form.message }}
+                </div>
+            </div>
+            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
+                <a href="{% url 'notifications:sms_log' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
+                <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-primary-700">{% trans "Send" %}</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

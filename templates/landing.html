@@ -1,3 +1,4 @@
+{% load static i18n %}
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
@@ -28,7 +29,7 @@
         .gradient-bg { background: linear-gradient(135deg, #1e3a5f 0%, #3730a3 50%, #4f46e5 100%); }
         .hero-bg {
             background: linear-gradient(135deg, rgba(30,58,95,0.75) 0%, rgba(55,48,163,0.7) 50%, rgba(79,70,229,0.65) 100%),
-                        url('/static/img/penthouse_suite.webp') center/cover no-repeat;
+                        url('{% static "img/penthouse_suite.webp" %}') center/cover no-repeat;
         }
         .text-gradient-brand {
             background: linear-gradient(135deg, #4f46e5, #7c3aed);
@@ -60,15 +61,15 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
             <a href="#" class="flex items-center space-x-2">
-                <img src="/static/img/logo.png" alt="InfoSociety" class="h-10">
+                <img src="{% static 'img/logo.png' %}" alt="InfoSociety" class="h-10">
             </a>
             <div class="hidden md:flex items-center space-x-8">
-                <a href="#features" class="text-gray-600 hover:text-indigo-600 font-medium">Features</a>
-                <a href="#solutions" class="text-gray-600 hover:text-indigo-600 font-medium">Solutions</a>
-                <a href="#pricing" class="text-gray-600 hover:text-indigo-600 font-medium">Pricing</a>
-                <a href="#faq" class="text-gray-600 hover:text-indigo-600 font-medium">FAQ</a>
-                <a href="/accounts/login/" class="text-gray-600 hover:text-indigo-600 font-medium">Login</a>
-                <a href="/signup/" class="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 font-medium transition">Start Free Trial</a>
+                <a href="#features" class="text-gray-600 hover:text-indigo-600 font-medium">{% trans "Features" %}</a>
+                <a href="#solutions" class="text-gray-600 hover:text-indigo-600 font-medium">{% trans "Solutions" %}</a>
+                <a href="#pricing" class="text-gray-600 hover:text-indigo-600 font-medium">{% trans "Pricing" %}</a>
+                <a href="#faq" class="text-gray-600 hover:text-indigo-600 font-medium">{% trans "FAQ" %}</a>
+                <a href="/accounts/login/" class="text-gray-600 hover:text-indigo-600 font-medium">{% trans "Login" %}</a>
+                <a href="/signup/" class="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 font-medium transition">{% trans "Start Free Trial" %}</a>
             </div>
             <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-gray-100">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -76,12 +77,12 @@
         </div>
     </div>
     <div id="mobile-menu" class="hidden md:hidden border-t bg-white px-4 pb-4">
-        <a href="#features" class="block py-2 text-gray-600">Features</a>
-        <a href="#solutions" class="block py-2 text-gray-600">Solutions</a>
-        <a href="#pricing" class="block py-2 text-gray-600">Pricing</a>
-        <a href="#faq" class="block py-2 text-gray-600">FAQ</a>
-        <a href="/accounts/login/" class="block py-2 text-gray-600">Login</a>
-        <a href="/signup/" class="block mt-2 text-center bg-indigo-600 text-white px-5 py-2 rounded-lg">Start Free Trial</a>
+        <a href="#features" class="block py-2 text-gray-600">{% trans "Features" %}</a>
+        <a href="#solutions" class="block py-2 text-gray-600">{% trans "Solutions" %}</a>
+        <a href="#pricing" class="block py-2 text-gray-600">{% trans "Pricing" %}</a>
+        <a href="#faq" class="block py-2 text-gray-600">{% trans "FAQ" %}</a>
+        <a href="/accounts/login/" class="block py-2 text-gray-600">{% trans "Login" %}</a>
+        <a href="/signup/" class="block mt-2 text-center bg-indigo-600 text-white px-5 py-2 rounded-lg">{% trans "Start Free Trial" %}</a>
     </div>
 </nav>
 
@@ -97,10 +98,10 @@
             Manage members, deposits, loans, and accounting — all in one cloud platform. No installation needed.
         </p>
         <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
-            <a href="/signup/" class="bg-white text-indigo-700 px-8 py-4 rounded-xl text-lg font-bold hover:bg-indigo-50 transition shadow-lg">
+            <a href="/signup/" class="bg-white text-indigo-700 px-8 py-4 rounded-lg text-lg font-bold hover:bg-indigo-50 transition shadow-lg">
                 Start Free Trial
             </a>
-            <a href="#how-it-works" class="border-2 border-white text-white px-8 py-4 rounded-xl text-lg font-bold hover:bg-white/10 transition">
+            <a href="#how-it-works" class="border-2 border-white text-white px-8 py-4 rounded-lg text-lg font-bold hover:bg-white/10 transition">
                 See How It Works
             </a>
         </div>
@@ -126,7 +127,7 @@
             <!-- Phone mockup with dashboard preview -->
             <div class="relative flex shrink-0 justify-center">
                 <div class="absolute -inset-6 rounded-full bg-indigo-500/5 blur-3xl"></div>
-                <img src="/static/img/phone_mockup.svg"
+                <img src="{% static 'img/phone_mockup.svg' %}"
                      alt="InfoSociety dashboard on mobile — society banking at your fingertips"
                      class="relative z-10 w-full max-w-[260px] drop-shadow-2xl transition-transform duration-700 hover:scale-[1.02] md:max-w-[300px] lg:max-w-[340px]"
                      loading="lazy" decoding="async">
@@ -146,7 +147,7 @@
                     <div class="group relative block overflow-hidden rounded-3xl border border-slate-100 bg-white/80 p-6 shadow-card backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-slate-200 hover:bg-white hover:shadow-lift md:p-8">
                         <span class="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-emerald-400 to-teal-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></span>
                         <div class="flex items-center gap-5 md:gap-6">
-                            <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl text-emerald-600 bg-emerald-50">
+                            <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg text-emerald-600 bg-emerald-50">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 01-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 011-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 011.52 0C14.51 3.81 17 5 19 5a1 1 0 011 1z"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 12 2 2 4-4"/></svg>
                             </span>
                             <div class="min-w-0 flex-1">
@@ -160,7 +161,7 @@
                     <div class="group relative block overflow-hidden rounded-3xl border border-slate-100 bg-white/80 p-6 shadow-card backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-slate-200 hover:bg-white hover:shadow-lift md:p-8">
                         <span class="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-sky-400 to-cyan-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></span>
                         <div class="flex items-center gap-5 md:gap-6">
-                            <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl text-sky-600 bg-sky-50">
+                            <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg text-sky-600 bg-sky-50">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             </span>
                             <div class="min-w-0 flex-1">
@@ -174,7 +175,7 @@
                     <div class="group relative block overflow-hidden rounded-3xl border border-slate-100 bg-white/80 p-6 shadow-card backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-slate-200 hover:bg-white hover:shadow-lift md:p-8">
                         <span class="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-violet-400 to-purple-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></span>
                         <div class="flex items-center gap-5 md:gap-6">
-                            <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl text-violet-600 bg-violet-50">
+                            <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg text-violet-600 bg-violet-50">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
                             </span>
                             <div class="min-w-0 flex-1">
@@ -199,21 +200,21 @@
             <p class="mt-4 text-lg text-gray-600">Your society deserves better.</p>
         </div>
         <div class="grid md:grid-cols-3 gap-8">
-            <div class="bg-gray-50 rounded-xl p-8 shadow-sm border border-gray-100">
+            <div class="bg-gray-50 rounded-lg p-8 shadow-sm border border-gray-100">
                 <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
                     <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900">Manual Errors in Interest</h3>
                 <p class="mt-2 text-gray-600">Manual interest calculation leads to errors, disputes, and member distrust. Automate it with daily precision.</p>
             </div>
-            <div class="bg-gray-50 rounded-xl p-8 shadow-sm border border-gray-100">
+            <div class="bg-gray-50 rounded-lg p-8 shadow-sm border border-gray-100">
                 <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
                     <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900">No Real-time Visibility</h3>
                 <p class="mt-2 text-gray-600">Members can't check their balance. Staff wastes time answering passbook queries. Give everyone instant access.</p>
             </div>
-            <div class="bg-gray-50 rounded-xl p-8 shadow-sm border border-gray-100">
+            <div class="bg-gray-50 rounded-lg p-8 shadow-sm border border-gray-100">
                 <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
                     <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
@@ -241,7 +242,7 @@
 
             <!-- Card 1: Credit Cooperative Society -->
             <a href="/signup/" class="group relative flex aspect-[4/5] cursor-pointer flex-col overflow-hidden rounded-[2rem] p-6 shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lift">
-                <img src="/static/img/apartments_flats.webp" alt="Credit Cooperative Society" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" decoding="async">
+                <img src="{% static 'img/apartments_flats.webp' %}" alt="Credit Cooperative Society" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" decoding="async">
                 <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/85"></div>
                 <div class="relative mt-auto">
                     <h3 class="text-2xl font-extrabold leading-tight tracking-tight text-white md:text-[28px]">Credit Cooperative Society</h3>
@@ -255,7 +256,7 @@
 
             <!-- Card 2: Employee Cooperative Society -->
             <a href="/signup/" class="group relative flex aspect-[4/5] cursor-pointer flex-col overflow-hidden rounded-[2rem] p-6 shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lift">
-                <img src="/static/img/condo_building.webp" alt="Employee Cooperative Society" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" decoding="async">
+                <img src="{% static 'img/condo_building.webp' %}" alt="Employee Cooperative Society" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" decoding="async">
                 <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/85"></div>
                 <div class="relative mt-auto">
                     <h3 class="text-2xl font-extrabold leading-tight tracking-tight text-white md:text-[28px]">Employee Cooperative Society</h3>
@@ -269,7 +270,7 @@
 
             <!-- Card 3: Nidhi Company -->
             <a href="/signup/" class="group relative flex aspect-[4/5] cursor-pointer flex-col overflow-hidden rounded-[2rem] p-6 shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lift">
-                <img src="/static/img/penthouse_suite.webp" alt="Nidhi Company" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" decoding="async">
+                <img src="{% static 'img/penthouse_suite.webp' %}" alt="Nidhi Company" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" decoding="async">
                 <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/85"></div>
                 <div class="relative mt-auto">
                     <h3 class="text-2xl font-extrabold leading-tight tracking-tight text-white md:text-[28px]">Nidhi Company</h3>
@@ -283,7 +284,7 @@
 
             <!-- Card 4: Thrift & Savings Society -->
             <a href="/signup/" class="group relative flex aspect-[4/5] cursor-pointer flex-col overflow-hidden rounded-[2rem] p-6 shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lift">
-                <img src="/static/img/types-of-house-in-india.webp" alt="Thrift Society" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" decoding="async">
+                <img src="{% static 'img/types-of-house-in-india.webp' %}" alt="Thrift Society" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" decoding="async">
                 <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/85"></div>
                 <div class="relative mt-auto">
                     <h3 class="text-2xl font-extrabold leading-tight tracking-tight text-white md:text-[28px]">Thrift & Savings Society</h3>
@@ -297,7 +298,7 @@
 
             <!-- Card 5: Multi-State Cooperative Society -->
             <a href="/signup/" class="group relative flex aspect-[4/5] cursor-pointer flex-col overflow-hidden rounded-[2rem] p-6 shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lift">
-                <img src="/static/img/apartments_flats.webp" alt="Multi-State Cooperative" loading="lazy" class="absolute inset-0 h-full w-full object-cover object-bottom transition-transform duration-700 group-hover:scale-110" decoding="async">
+                <img src="{% static 'img/apartments_flats.webp' %}" alt="Multi-State Cooperative" loading="lazy" class="absolute inset-0 h-full w-full object-cover object-bottom transition-transform duration-700 group-hover:scale-110" decoding="async">
                 <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/85"></div>
                 <div class="relative mt-auto">
                     <h3 class="text-2xl font-extrabold leading-tight tracking-tight text-white md:text-[28px]">Multi-State Cooperative</h3>
@@ -322,47 +323,94 @@
             <p class="mt-4 text-lg text-gray-600">One platform to run all your banking operations</p>
         </div>
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div class="card-hover bg-white rounded-xl p-8 border border-gray-100 shadow-sm">
+            <div class="card-hover bg-white rounded-lg p-8 border border-gray-100 shadow-sm">
                 <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
                     <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900">Member Management</h3>
                 <p class="mt-2 text-gray-600">KYC, photos, nominees, documents. Import from Excel. Search & filter instantly. Multi-branch member register.</p>
             </div>
-            <div class="card-hover bg-white rounded-xl p-8 border border-gray-100 shadow-sm">
+            <div class="card-hover bg-white rounded-lg p-8 border border-gray-100 shadow-sm">
                 <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
                     <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900">Savings & Deposits</h3>
                 <p class="mt-2 text-gray-600">Daily interest accrual, passbook printing, deposit/withdrawal receipts. Automatic interest posting.</p>
             </div>
-            <div class="card-hover bg-white rounded-xl p-8 border border-gray-100 shadow-sm">
+            <div class="card-hover bg-white rounded-lg p-8 border border-gray-100 shadow-sm">
                 <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
                     <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900">Loan Management</h3>
                 <p class="mt-2 text-gray-600">Flat & reducing balance EMI. Auto-schedule generation, overdue tracking, NPA classification, guarantor management.</p>
             </div>
-            <div class="card-hover bg-white rounded-xl p-8 border border-gray-100 shadow-sm">
+            <div class="card-hover bg-white rounded-lg p-8 border border-gray-100 shadow-sm">
                 <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
                     <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900">Fixed & Recurring Deposits</h3>
                 <p class="mt-2 text-gray-600">FD with slab-based interest, auto-maturity, TDS calculation. RD with installment tracking and penalties.</p>
             </div>
-            <div class="card-hover bg-white rounded-xl p-8 border border-gray-100 shadow-sm">
+            <div class="card-hover bg-white rounded-lg p-8 border border-gray-100 shadow-sm">
                 <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
                     <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900">Double-Entry Accounting</h3>
                 <p class="mt-2 text-gray-600">Automatic journal entries for every transaction. Trial balance, P&L, balance sheet — always balanced.</p>
             </div>
-            <div class="card-hover bg-white rounded-xl p-8 border border-gray-100 shadow-sm">
+            <div class="card-hover bg-white rounded-lg p-8 border border-gray-100 shadow-sm">
                 <div class="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center mb-4">
                     <svg class="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900">Reports & Compliance</h3>
                 <p class="mt-2 text-gray-600">16+ reports for RCS audit. Day book, cash book, NPA report, TDS certificate. PDF & Excel export.</p>
+            </div>
+            <div class="card-hover bg-white rounded-lg p-8 border border-gray-100 shadow-sm">
+                <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l2-2m0 0l2 2m-2-2v6"/></svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900">Agent & Pigmmy Collection</h3>
+                <p class="mt-2 text-gray-600">Door-to-door daily collection by agents. Track pigmmy accounts, post collections, and monitor agent performance in real time.</p>
+            </div>
+            <div class="card-hover bg-white rounded-lg p-8 border border-gray-100 shadow-sm">
+                <div class="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900">Share Management</h3>
+                <p class="mt-2 text-gray-600">Issue, transfer, and surrender shares. Automated dividend calculation and posting to member savings accounts.</p>
+            </div>
+            <div class="card-hover bg-white rounded-lg p-8 border border-gray-100 shadow-sm">
+                <div class="w-12 h-12 bg-cyan-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900">Day-End Automation</h3>
+                <p class="mt-2 text-gray-600">One-click day-end processing. Interest calculation, posting, month-end and year-end closings — fully automated.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════
+     STATS BAR — Key numbers at a glance
+     ════════════════════════════════════════════════════════════════ -->
+<section class="bg-indigo-600 py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center" id="stats-bar">
+            <div>
+                <p class="text-3xl sm:text-4xl font-extrabold text-white"><span class="counter" data-target="50">0</span>+</p>
+                <p class="mt-1 text-indigo-200 text-sm font-medium">Reports & Statements</p>
+            </div>
+            <div>
+                <p class="text-3xl sm:text-4xl font-extrabold text-white"><span class="counter" data-target="9">0</span>+</p>
+                <p class="mt-1 text-indigo-200 text-sm font-medium">Banking Modules</p>
+            </div>
+            <div>
+                <p class="text-3xl sm:text-4xl font-extrabold text-white"><span class="counter" data-target="17">0</span>+</p>
+                <p class="mt-1 text-indigo-200 text-sm font-medium">Years of Trust</p>
+            </div>
+            <div>
+                <p class="text-3xl sm:text-4xl font-extrabold text-white"><span class="counter" data-target="10">0</span>+</p>
+                <p class="mt-1 text-indigo-200 text-sm font-medium">Societies Powered</p>
             </div>
         </div>
     </div>
@@ -390,16 +438,28 @@
 
             <!-- Slide images — each slide has a background image -->
             <div class="carousel-slide absolute inset-0 transition-opacity duration-1000 ease-out opacity-100">
-                <img src="/static/img/apartments_flats.webp" alt="Katol Nagri Credit Society" class="absolute inset-0 h-full w-full object-cover transition-transform duration-[6000ms] ease-out scale-110">
+                <img src="{% static 'img/apartments_flats.webp' %}" alt="Katol Nagri Credit Society" class="absolute inset-0 h-full w-full object-cover transition-transform duration-[6000ms] ease-out scale-110">
             </div>
             <div class="carousel-slide absolute inset-0 transition-opacity duration-1000 ease-out opacity-0">
-                <img src="/static/img/condo_building.webp" alt="MSEB Employee Society" class="absolute inset-0 h-full w-full object-cover transition-transform duration-[6000ms] ease-out scale-100">
+                <img src="{% static 'img/condo_building.webp' %}" alt="MSEB Employee Society" class="absolute inset-0 h-full w-full object-cover transition-transform duration-[6000ms] ease-out scale-100">
             </div>
             <div class="carousel-slide absolute inset-0 transition-opacity duration-1000 ease-out opacity-0">
-                <img src="/static/img/penthouse_suite.webp" alt="Santaji Yuwak Society" class="absolute inset-0 h-full w-full object-cover transition-transform duration-[6000ms] ease-out scale-100">
+                <img src="{% static 'img/penthouse_suite.webp' %}" alt="Santaji Yuwak Society" class="absolute inset-0 h-full w-full object-cover transition-transform duration-[6000ms] ease-out scale-100">
             </div>
             <div class="carousel-slide absolute inset-0 transition-opacity duration-1000 ease-out opacity-0">
-                <img src="/static/img/types-of-house-in-india.webp" alt="Nagar Parishad Employee Society" class="absolute inset-0 h-full w-full object-cover transition-transform duration-[6000ms] ease-out scale-100">
+                <img src="{% static 'img/types-of-house-in-india.webp' %}" alt="Nagar Parishad Employee Society" class="absolute inset-0 h-full w-full object-cover transition-transform duration-[6000ms] ease-out scale-100">
+            </div>
+            <div class="carousel-slide absolute inset-0 transition-opacity duration-1000 ease-out opacity-0">
+                <img src="{% static 'img/apartments_flats.webp' %}" alt="Priyadarshani Mahila Nagri Society" class="absolute inset-0 h-full w-full object-cover transition-transform duration-[6000ms] ease-out scale-100">
+            </div>
+            <div class="carousel-slide absolute inset-0 transition-opacity duration-1000 ease-out opacity-0">
+                <img src="{% static 'img/condo_building.webp' %}" alt="Bhagyashree Credit Society" class="absolute inset-0 h-full w-full object-cover transition-transform duration-[6000ms] ease-out scale-100">
+            </div>
+            <div class="carousel-slide absolute inset-0 transition-opacity duration-1000 ease-out opacity-0">
+                <img src="{% static 'img/penthouse_suite.webp' %}" alt="Sanghamitra Credit Society" class="absolute inset-0 h-full w-full object-cover transition-transform duration-[6000ms] ease-out scale-100">
+            </div>
+            <div class="carousel-slide absolute inset-0 transition-opacity duration-1000 ease-out opacity-0">
+                <img src="{% static 'img/types-of-house-in-india.webp' %}" alt="MSEB Parli TPS Employee Society" class="absolute inset-0 h-full w-full object-cover transition-transform duration-[6000ms] ease-out scale-100">
             </div>
 
             <!-- Dark gradient overlays for text readability -->
@@ -409,10 +469,10 @@
             <!-- Slide content — text area with counter, badge, title, subtitle -->
             <div class="relative z-10 flex h-full flex-col justify-between p-8 md:p-12">
 
-                <!-- Slide counter (01 / 04) -->
+                <!-- Slide counter (01 / 08) -->
                 <div class="flex items-center gap-3 text-white/80">
                     <span class="h-px w-10 bg-lime"></span>
-                    <span id="carousel-counter" class="text-[11px] font-extrabold uppercase tracking-[0.22em]">01 / 04</span>
+                    <span id="carousel-counter" class="text-[11px] font-extrabold uppercase tracking-[0.22em]">01 / 08</span>
                 </div>
 
                 <!-- Slide text content -->
@@ -466,7 +526,7 @@
             </div>
         </div>
         <div class="text-center mt-12">
-            <a href="/signup/" class="bg-indigo-600 text-white px-8 py-4 rounded-xl text-lg font-bold hover:bg-indigo-700 transition shadow-lg inline-block">
+            <a href="/signup/" class="bg-indigo-600 text-white px-8 py-4 rounded-lg text-lg font-bold hover:bg-indigo-700 transition shadow-lg inline-block">
                 Start Free Trial — 90 Days Free
             </a>
         </div>
@@ -555,28 +615,28 @@
             <p class="mt-4 text-lg text-gray-600">Bank-grade security for your society's financial data</p>
         </div>
         <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="bg-white rounded-xl p-6 text-center border border-gray-100">
+            <div class="bg-white rounded-lg p-6 text-center border border-gray-100">
                 <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mx-auto mb-3">
                     <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
                 </div>
                 <h3 class="font-semibold text-gray-900">AWS Mumbai Servers</h3>
                 <p class="mt-1 text-sm text-gray-500">Data stays in India, fast access</p>
             </div>
-            <div class="bg-white rounded-xl p-6 text-center border border-gray-100">
+            <div class="bg-white rounded-lg p-6 text-center border border-gray-100">
                 <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mx-auto mb-3">
                     <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
                 </div>
                 <h3 class="font-semibold text-gray-900">Daily Backups</h3>
                 <p class="mt-1 text-sm text-gray-500">Automated backups every 6 hours</p>
             </div>
-            <div class="bg-white rounded-xl p-6 text-center border border-gray-100">
+            <div class="bg-white rounded-lg p-6 text-center border border-gray-100">
                 <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mx-auto mb-3">
                     <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                 </div>
                 <h3 class="font-semibold text-gray-900">SSL Encryption</h3>
                 <p class="mt-1 text-sm text-gray-500">256-bit encryption for all data</p>
             </div>
-            <div class="bg-white rounded-xl p-6 text-center border border-gray-100">
+            <div class="bg-white rounded-lg p-6 text-center border border-gray-100">
                 <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mx-auto mb-3">
                     <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
                 </div>
@@ -596,35 +656,35 @@
             <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">Frequently Asked Questions</h2>
         </div>
         <div class="space-y-4">
-            <details class="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden group" open>
+            <details class="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden group" open>
                 <summary class="p-6 cursor-pointer font-semibold text-gray-900 flex justify-between items-center hover:bg-gray-100">
                     Is my society's data safe?
                     <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </summary>
                 <p class="px-6 pb-6 text-gray-600">Absolutely. Your data is stored on AWS servers in Mumbai (India), encrypted with 256-bit SSL, and backed up every 6 hours. Each society has its own isolated database — no other society can see your data. We maintain a complete audit trail of every action.</p>
             </details>
-            <details class="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden group">
+            <details class="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden group">
                 <summary class="p-6 cursor-pointer font-semibold text-gray-900 flex justify-between items-center hover:bg-gray-100">
                     Can I import existing member data from Excel?
                     <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </summary>
                 <p class="px-6 pb-6 text-gray-600">Yes. You can import your member data from Excel/CSV files. We provide a template with the required columns. Upload your file and members are added instantly. You can also export all data to Excel anytime.</p>
             </details>
-            <details class="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden group">
+            <details class="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden group">
                 <summary class="p-6 cursor-pointer font-semibold text-gray-900 flex justify-between items-center hover:bg-gray-100">
                     Do I need to install anything?
                     <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </summary>
                 <p class="px-6 pb-6 text-gray-600">No installation needed. InfoSociety is fully cloud-based. Just open your browser, log in, and start working. Works on any computer, tablet, or phone. Updates are automatic — you always have the latest version.</p>
             </details>
-            <details class="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden group">
+            <details class="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden group">
                 <summary class="p-6 cursor-pointer font-semibold text-gray-900 flex justify-between items-center hover:bg-gray-100">
                     What happens after the free trial?
                     <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </summary>
                 <p class="px-6 pb-6 text-gray-600">After 90 days, choose a plan that fits your society. Your data stays as-is — nothing is lost. If you decide not to continue, you can export all your data before your account is deactivated.</p>
             </details>
-            <details class="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden group">
+            <details class="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden group">
                 <summary class="p-6 cursor-pointer font-semibold text-gray-900 flex justify-between items-center hover:bg-gray-100">
                     Can I export my data?
                     <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -642,7 +702,7 @@
     <div class="max-w-4xl mx-auto px-4 text-center">
         <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white">Ready to Modernize Your Society?</h2>
         <p class="mt-4 text-lg text-indigo-100">Join societies across India who trust InfoSociety for their daily operations.</p>
-        <a href="/signup/" class="mt-8 inline-block bg-white text-indigo-700 px-10 py-4 rounded-xl text-lg font-bold hover:bg-indigo-50 transition shadow-lg">
+        <a href="/signup/" class="mt-8 inline-block bg-white text-indigo-700 px-10 py-4 rounded-lg text-lg font-bold hover:bg-indigo-50 transition shadow-lg">
             Start Your Free Trial Today
         </a>
         <p class="mt-3 text-indigo-200 text-sm">No credit card required. Setup in 2 minutes.</p>
@@ -652,52 +712,52 @@
 <!-- ════════════════════════════════════════════════════════════════
      FOOTER — Company info, links, contact details
      ════════════════════════════════════════════════════════════════ -->
-<footer class="bg-indigo-950 text-indigo-200 py-12">
+<footer class="bg-white/95 backdrop-blur border-t border-gray-200 text-gray-600 py-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid md:grid-cols-4 gap-8">
             <div>
                 <div class="flex items-center space-x-2 mb-4">
-                    <img src="/static/img/logo.png" alt="InfoSociety" class="h-8">
+                    <img src="{% static 'img/logo.png' %}" alt="InfoSociety" class="h-8">
                 </div>
-                <p class="text-sm text-indigo-300">Cloud banking software for cooperative societies, nidhi companies, and thrift societies across India. A product by InfopathSolutions.</p>
+                <p class="text-sm text-gray-500">Cloud banking software for cooperative societies, nidhi companies, and thrift societies across India. A product by InfopathSolutions.</p>
             </div>
             <div>
-                <h4 class="font-semibold text-white mb-4">Quick Links</h4>
+                <h4 class="font-semibold text-gray-900 mb-4">Quick Links</h4>
                 <ul class="space-y-2 text-sm">
-                    <li><a href="#features" class="hover:text-white transition">Features</a></li>
-                    <li><a href="#solutions" class="hover:text-white transition">Solutions</a></li>
-                    <li><a href="#pricing" class="hover:text-white transition">Pricing</a></li>
-                    <li><a href="#faq" class="hover:text-white transition">FAQ</a></li>
-                    <li><a href="/accounts/login/" class="hover:text-white transition">Login</a></li>
+                    <li><a href="#features" class="hover:text-indigo-600 transition">{% trans "Features" %}</a></li>
+                    <li><a href="#solutions" class="hover:text-indigo-600 transition">{% trans "Solutions" %}</a></li>
+                    <li><a href="#pricing" class="hover:text-indigo-600 transition">{% trans "Pricing" %}</a></li>
+                    <li><a href="#faq" class="hover:text-indigo-600 transition">{% trans "FAQ" %}</a></li>
+                    <li><a href="/accounts/login/" class="hover:text-indigo-600 transition">{% trans "Login" %}</a></li>
                 </ul>
             </div>
             <div>
-                <h4 class="font-semibold text-white mb-4">Contact</h4>
+                <h4 class="font-semibold text-gray-900 mb-4">Contact</h4>
                 <ul class="space-y-3 text-sm">
                     <li class="flex items-start gap-2">
-                        <svg class="w-4 h-4 mt-0.5 shrink-0 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                        <svg class="w-4 h-4 mt-0.5 shrink-0 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                         infopathsolutionskatol@gmail.com
                     </li>
                     <li class="flex items-start gap-2">
-                        <svg class="w-4 h-4 mt-0.5 shrink-0 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                        <svg class="w-4 h-4 mt-0.5 shrink-0 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
                         +91 98221 07368
                     </li>
                     <li class="flex items-start gap-2">
-                        <svg class="w-4 h-4 mt-0.5 shrink-0 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <svg class="w-4 h-4 mt-0.5 shrink-0 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         Mon-Sat, 9 AM - 7 PM IST
                     </li>
                 </ul>
             </div>
             <div>
-                <h4 class="font-semibold text-white mb-4">Address</h4>
+                <h4 class="font-semibold text-gray-900 mb-4">Address</h4>
                 <div class="flex items-start gap-2 text-sm">
-                    <svg class="w-4 h-4 mt-0.5 shrink-0 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <svg class="w-4 h-4 mt-0.5 shrink-0 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                     <p>Plot No. 40, Ramdev Baba Layout,<br>Katol, Dist. Nagpur — 441302<br>Maharashtra, India</p>
                 </div>
             </div>
         </div>
-        <div class="mt-8 pt-8 border-t border-indigo-800/50 text-sm text-center text-indigo-400">
-            &copy; 2026 InfoSociety by InfopathSolutions. All rights reserved. — To innovate your business process
+        <div class="mt-8 pt-8 border-t border-gray-200 text-sm text-center text-gray-400">
+            &copy; {% now "Y" %} InfoSociety by InfopathSolutions. All rights reserved. — To innovate your business process
         </div>
     </div>
 </footer>
@@ -762,28 +822,56 @@ function selectPlan(el) {
             title: 'Katol Nagri Credit Society',
             location: '— Katol, Maharashtra',
             desc: 'Multi-branch credit society with 1,200+ members managing savings, loans, and pigmy collection on InfoSociety.',
-            img: '/static/img/apartments_flats.webp'
+            img: '{% static "img/apartments_flats.webp" %}'
         },
         {
             badge: 'EMPLOYEE COOPERATIVE SOCIETY',
             title: 'MSEB Employee Society',
             location: '— Khaperkheda, Maharashtra',
             desc: 'Maharashtra State Power Generation employees trust InfoSociety for provident loans and salary-deducted EMI recovery.',
-            img: '/static/img/condo_building.webp'
+            img: '{% static "img/condo_building.webp" %}'
         },
         {
             badge: 'YOUTH CREDIT SOCIETY',
             title: 'Santaji Yuwak Credit Society',
             location: '— Katol & Sawargaon',
             desc: 'Young professionals\' cooperative running multi-branch operations with automated day-end processing and interest posting.',
-            img: '/static/img/penthouse_suite.webp'
+            img: '{% static "img/penthouse_suite.webp" %}'
         },
         {
             badge: 'MUNICIPAL EMPLOYEE SOCIETY',
             title: 'Nagar Parishad Employee Society',
             location: '— Katol, Maharashtra',
             desc: 'Government employee cooperative managing FD/RD schemes, share capital, and annual dividend distribution seamlessly.',
-            img: '/static/img/types-of-house-in-india.webp'
+            img: '{% static "img/types-of-house-in-india.webp" %}'
+        },
+        {
+            badge: 'WOMEN CREDIT SOCIETY',
+            title: 'Priyadarshani Mahila Nagri Society',
+            location: '— Karanja, Maharashtra',
+            desc: 'Women-led cooperative empowering female entrepreneurs with micro-loans, savings, and financial literacy programs.',
+            img: '{% static "img/apartments_flats.webp" %}'
+        },
+        {
+            badge: 'CREDIT COOPERATIVE SOCIETY',
+            title: 'Bhagyashree Credit Society',
+            location: '— Katol, Maharashtra',
+            desc: 'Community credit society serving local businesses and families with accessible savings and loan products.',
+            img: '{% static "img/condo_building.webp" %}'
+        },
+        {
+            badge: 'CREDIT COOPERATIVE SOCIETY',
+            title: 'Sanghamitra Credit Society',
+            location: '— Karanja, Maharashtra',
+            desc: 'Regional credit society providing financial inclusion through affordable loan schemes and recurring deposits.',
+            img: '{% static "img/penthouse_suite.webp" %}'
+        },
+        {
+            badge: 'EMPLOYEE COOPERATIVE SOCIETY',
+            title: 'MSEB Parli TPS Employee Society',
+            location: '— Parli, Maharashtra',
+            desc: 'Thermal power station employees managing provident fund loans and salary-linked EMI recovery seamlessly.',
+            img: '{% static "img/types-of-house-in-india.webp" %}'
         }
     ];
 
@@ -864,6 +952,44 @@ function selectPlan(el) {
     setInterval(function() {
         goTo((current + 1) % data.length);
     }, INTERVAL);
+})();
+
+/* ── Stats Counter Animation ──
+   Numbers count up from 0 to target when scrolled into view. */
+(function() {
+    var counters = document.querySelectorAll('.counter');
+    var started = false;
+
+    function animateCounters() {
+        if (started) return;
+        started = true;
+        counters.forEach(function(el) {
+            var target = parseInt(el.getAttribute('data-target'), 10);
+            var duration = 1800;
+            var steps = 60;
+            var stepTime = duration / steps;
+            var current = 0;
+            var increment = target / steps;
+            var timer = setInterval(function() {
+                current += increment;
+                if (current >= target) {
+                    el.textContent = target;
+                    clearInterval(timer);
+                } else {
+                    el.textContent = Math.ceil(current);
+                }
+            }, stepTime);
+        });
+    }
+
+    var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) animateCounters();
+        });
+    }, { threshold: 0.3 });
+
+    var statsBar = document.getElementById('stats-bar');
+    if (statsBar) observer.observe(statsBar);
 })();
 </script>
 </body>
