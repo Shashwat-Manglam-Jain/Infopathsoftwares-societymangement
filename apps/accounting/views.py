@@ -20,7 +20,7 @@ from apps.accounts.permissions import (
 from .forms import ChartOfAccountsForm, InterestMasterForm, VoucherForm
 from .models import ChartOfAccounts, InterestMaster, JournalEntry
 
-CUSTOMER_ACCOUNT_TYPES = ('saving', 'current', 'recurring', 'fixed', 'security', 'loan', 'advance', 'agent')
+CUSTOMER_ACCOUNT_TYPES = ('saving', 'current', 'recurring', 'fixed', 'security', 'loan', 'advance', 'agent', 'client')
 
 
 @auditor_or_above
@@ -37,8 +37,8 @@ def voucher_list(request):
 def receipt_transaction(request):
     if request.current_branch is None:
         messages.warning(request, 'Please select a specific branch before creating transactions.')
-        return redirect('accounting:voucher_list')
-    heads = ChartOfAccounts.objects.filter(allow_transactions=True, is_active=True).order_by('name')
+        return redirect('accounting:vouchers')
+    heads = ChartOfAccounts.objects.filter(allow_transactions=True, is_active=True).order_by('code')
     if request.method == 'POST':
         return _process_transaction(request, 'receipt', heads)
     return render(
@@ -57,8 +57,8 @@ def receipt_transaction(request):
 def payment_transaction(request):
     if request.current_branch is None:
         messages.warning(request, 'Please select a specific branch before creating transactions.')
-        return redirect('accounting:voucher_list')
-    heads = ChartOfAccounts.objects.filter(allow_transactions=True, is_active=True).order_by('name')
+        return redirect('accounting:vouchers')
+    heads = ChartOfAccounts.objects.filter(allow_transactions=True, is_active=True).order_by('code')
     if request.method == 'POST':
         return _process_transaction(request, 'payment', heads)
     return render(
@@ -198,12 +198,10 @@ def _process_transaction(request, txn_type, heads):
             },
         )
 
-    cash_head = ChartOfAccounts.objects.filter(
-        related_table_name='general',
-        name__icontains='cash',
-    ).first()
-    if not cash_head:
-        cash_head = ChartOfAccounts.objects.filter(code__startswith='1').first()
+    from apps.core.gl_utils import get_cash_code
+
+    cash_code = get_cash_code(request.current_branch)
+    cash_head = ChartOfAccounts.objects.filter(code=cash_code).first()
     if not cash_head:
         messages.error(request, 'Cash account head not found. Create it in Chart of Accounts first.')
         title = 'Receipt Transaction' if txn_type == 'receipt' else 'Payment Transaction'
@@ -333,7 +331,14 @@ def cashbook_entry(request):
         .order_by('-txn_date')
         .first()
     )
-    opening_cash = prev_cb.closing_balance if prev_cb else Decimal('0')
+    if prev_cb:
+        opening_cash = prev_cb.closing_balance
+    else:
+        from apps.core.gl_utils import get_cash_code
+        branch = getattr(request, 'current_branch', None)
+        cash_code = get_cash_code(branch)
+        cash_head = ChartOfAccounts.objects.filter(code=cash_code).first()
+        opening_cash = cash_head.opening_balance if cash_head else Decimal('0')
     closing_cash = opening_cash + receipt_cash - payment_cash
 
     context = {
@@ -385,7 +390,7 @@ def cashbook_entry(request):
 def voucher_create(request):
     if request.current_branch is None:
         messages.warning(request, 'Please select a specific branch before creating vouchers.')
-        return redirect('accounting:voucher_list')
+        return redirect('accounting:vouchers')
     if request.method == 'POST':
         form = VoucherForm(request.POST)
         if form.is_valid():
@@ -605,7 +610,11 @@ def interest_master_create(request):
             messages.success(request, 'Interest slab created.')
             return redirect('accounting:interest_master')
     else:
-        form = InterestMasterForm()
+        initial = {}
+        head_id = request.GET.get('head')
+        if head_id:
+            initial['account_head'] = head_id
+        form = InterestMasterForm(initial=initial)
     return render(request, 'accounting/interest_master_form.html', {'form': form, 'title': 'Create Interest Slab'})
 
 
@@ -652,19 +661,68 @@ def opening_balance_update(request):
         is_active=True,
     ).order_by('display_order', 'code')
 
+    total_debit = sum(
+        h.opening_balance for h in heads
+        if h.opening_balance and h.account_group in ('asset', 'expense')
+    )
+    total_credit = sum(
+        h.opening_balance for h in heads
+        if h.opening_balance and h.account_group in ('liability', 'income', 'equity')
+    )
+
     if request.method == 'POST':
         head_id = request.POST.get('head_id')
-        new_balance = request.POST.get('opening_balance', '0')
+        new_balance = request.POST.get('opening_balance', '').strip()
+
+        if not head_id:
+            messages.error(request, 'Please select an account head.')
+            return redirect('accounting:opening_balance')
+        if not new_balance:
+            messages.error(request, 'Please enter an opening balance amount.')
+            return redirect('accounting:opening_balance')
+        try:
+            amount = Decimal(new_balance)
+        except InvalidOperation:
+            messages.error(request, 'Invalid amount. Enter a valid number.')
+            return redirect('accounting:opening_balance')
+        if amount < 0:
+            messages.error(request, 'Opening balance cannot be negative.')
+            return redirect('accounting:opening_balance')
+
         try:
             head = ChartOfAccounts.objects.get(pk=head_id)
-            head.opening_balance = Decimal(new_balance)
-            head.save(update_fields=['opening_balance'])
-            messages.success(request, f'Opening balance updated for {head.name}: {new_balance}')
-        except (ChartOfAccounts.DoesNotExist, InvalidOperation):
-            messages.error(request, 'Invalid head or amount.')
+        except ChartOfAccounts.DoesNotExist:
+            messages.error(request, 'Selected account head not found.')
+            return redirect('accounting:opening_balance')
+
+        old_balance = head.opening_balance
+        head.opening_balance = amount
+        head.save(update_fields=['opening_balance'])
+
+        from apps.audit.services import log_action
+
+        log_action(
+            user=request.user,
+            branch=getattr(request, 'current_branch', None),
+            action='update', table_name='ChartOfAccounts', record_id=head.pk,
+            old_values={'opening_balance': str(old_balance)},
+            new_values={'opening_balance': str(amount)},
+            ip_address=request.META.get('REMOTE_ADDR'),
+        )
+        messages.success(
+            request,
+            f'Opening balance for {head.code} — {head.name} updated: '
+            f'₹{old_balance} → ₹{amount}',
+        )
         return redirect('accounting:opening_balance')
 
-    return render(request, 'accounting/opening_balance.html', {'heads': heads})
+    return render(request, 'accounting/opening_balance.html', {
+        'heads': heads,
+        'total_debit': total_debit,
+        'total_credit': total_credit,
+        'ob_difference': abs(total_debit - total_credit),
+        'ob_balanced': total_debit == total_credit,
+    })
 
 
 @admin_required
@@ -686,7 +744,7 @@ def interest_master_edit(request, pk):
 def voucher_edit(request, pk):
     if request.current_branch is None:
         messages.warning(request, 'Please select a specific branch before editing vouchers.')
-        return redirect('accounting:voucher_list')
+        return redirect('accounting:vouchers')
     entry = get_object_or_404(
         JournalEntry.objects.prefetch_related('lines__gl_account'),
         pk=pk,
@@ -845,7 +903,7 @@ def account_search(request):
         )
         results = [{'number': a.loan_no, 'name': a.member.name, 'balance': str(a.outstanding_principal)} for a in qs]
 
-    elif rt == 'agent':
+    elif rt in ('agent', 'client'):
         from apps.agents.models import PigmmyAccount
 
         qs = (
@@ -855,4 +913,87 @@ def account_search(request):
         )
         results = [{'number': a.account_no, 'name': a.member.name, 'balance': str(a.current_balance)} for a in qs]
 
+    elif rt == 'fixed':
+        from apps.deposits.models import FixedDeposit
+
+        qs = (
+            FixedDeposit.objects.filter(status='active')
+            .filter(models.Q(fd_no__icontains=q) | models.Q(member__name__icontains=q))
+            .select_related('member')[:10]
+        )
+        results = [{'number': a.fd_no, 'name': a.member.name, 'balance': str(a.deposit_amount)} for a in qs]
+
+    elif rt == 'recurring':
+        from apps.deposits.models import RecurringDeposit
+
+        qs = (
+            RecurringDeposit.objects.filter(status='active')
+            .filter(models.Q(rd_no__icontains=q) | models.Q(member__name__icontains=q))
+            .select_related('member')[:10]
+        )
+        results = [{'number': a.rd_no, 'name': a.member.name, 'balance': str(a.monthly_installment)} for a in qs]
+
     return JsonResponse({'results': results})
+
+
+@manager_required
+def inter_branch_transfer(request):
+    from apps.branches.models import Branch
+
+    from .models import InterBranchTransfer
+
+    branches = Branch.objects.filter(status='active').order_by('branch_name')
+    transfers = InterBranchTransfer.objects.select_related(
+        'from_branch', 'to_branch', 'created_by',
+    ).order_by('-transfer_date', '-created_at')[:50]
+
+    if request.method == 'POST':
+        from_branch_id = request.POST.get('from_branch')
+        to_branch_id = request.POST.get('to_branch')
+        amount_str = request.POST.get('amount', '0')
+        narration = request.POST.get('narration', '')
+        transfer_date_str = request.POST.get('transfer_date', '')
+
+        try:
+            from_branch = Branch.objects.get(pk=from_branch_id)
+            to_branch = Branch.objects.get(pk=to_branch_id)
+            amount = Decimal(amount_str)
+            transfer_date = date.fromisoformat(transfer_date_str) if transfer_date_str else date.today()
+        except (Branch.DoesNotExist, Exception) as e:
+            messages.error(request, f'Invalid input: {e}')
+            return redirect('accounting:inter_branch_transfer')
+
+        if from_branch == to_branch:
+            messages.error(request, 'From and To branch cannot be the same.')
+            return redirect('accounting:inter_branch_transfer')
+
+        if amount <= 0:
+            messages.error(request, 'Amount must be greater than zero.')
+            return redirect('accounting:inter_branch_transfer')
+
+        from .services import create_inter_branch_transfer
+
+        try:
+            transfer = create_inter_branch_transfer(
+                from_branch=from_branch,
+                to_branch=to_branch,
+                amount=amount,
+                transfer_date=transfer_date,
+                narration=narration,
+                user=request.user,
+            )
+            messages.success(
+                request,
+                f'Transfer {transfer.transfer_no}: ₹{amount:,.2f} from '
+                f'{from_branch.branch_name} to {to_branch.branch_name}',
+            )
+        except Exception as e:
+            messages.error(request, f'Transfer failed: {e}')
+
+        return redirect('accounting:inter_branch_transfer')
+
+    return render(request, 'accounting/inter_branch_transfer.html', {
+        'branches': branches,
+        'transfers': transfers,
+        'today': date.today(),
+    })

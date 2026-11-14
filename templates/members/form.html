@@ -7,7 +7,7 @@
 {% block content %}
 <form method="post" enctype="multipart/form-data" x-data="{ isMinor: {% if form.instance.is_minor %}true{% else %}false{% endif %} }" class="max-w-full">
 
-    {% if form.errors %}
+    {% if form.errors or nominee_formset.non_form_errors or nominee_formset.errors %}
     <div class="rounded-xl bg-red-50 border border-red-200 p-4 mb-5">
         <h3 class="text-sm font-medium text-red-800 flex items-center gap-2">
             <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
@@ -16,6 +16,14 @@
         <ul class="mt-1 text-sm text-red-700 list-disc list-inside">
             {% for field, errors in form.errors.items %}
                 {% for error in errors %}<li>{{ field|title }}: {{ error }}</li>{% endfor %}
+            {% endfor %}
+            {% for nf_errors in nominee_formset.errors %}
+                {% for field, errors in nf_errors.items %}
+                    {% for error in errors %}<li>{% trans "Nominee" %} — {{ field|title }}: {{ error }}</li>{% endfor %}
+                {% endfor %}
+            {% endfor %}
+            {% for error in nominee_formset.non_form_errors %}
+                <li>{% trans "Nominees" %}: {{ error }}</li>
             {% endfor %}
         </ul>
     </div>
@@ -105,7 +113,7 @@
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "State" %}</label>
-                <input type="text" name="state" value="{{ form.state.value|default:'' }}" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                {{ form.state }}
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "District" %}</label>
@@ -321,46 +329,67 @@
         </div>
 
         <!-- {% trans "Nominees" %} -->
-        <div class="px-5 py-3 border-b border-t border-gray-200 bg-gray-50/50">
-            <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                {% trans "Nominees" %}
-            </h3>
-        </div>
-        <div class="px-5 py-4">
-            {{ nominee_formset.management_form }}
-            <div class="overflow-x-auto">
-                <table class="min-w-full text-sm">
-                    <thead>
-                        <tr class="text-left text-xs text-gray-500 border-b">
-                            <th class="pb-1.5 pr-2 font-medium">{% trans "Name" %}</th>
-                            <th class="pb-1.5 pr-2 font-medium">{% trans "Relation" %}</th>
-                            <th class="pb-1.5 pr-2 font-medium">{% trans "DOB" %}</th>
-                            <th class="pb-1.5 pr-2 font-medium">{% trans "Aadhaar" %}</th>
-                            <th class="pb-1.5 pr-2 font-medium">{% trans "Phone" %}</th>
-                            <th class="pb-1.5 pr-2 font-medium">{% trans "Share %" %}</th>
-                            <th class="pb-1.5 font-medium">{% trans "Del" %}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for nf in nominee_formset %}
-                        <tr class="border-b border-gray-100">
-                            {{ nf.id }}
-                            <td class="py-1.5 pr-2"><input type="text" name="{{ nf.name.html_name }}" value="{{ nf.name.value|default:'' }}" class="block w-full rounded border border-gray-300 px-2 py-1 text-sm" placeholder="Name"></td>
-                            <td class="py-1.5 pr-2"><input type="text" name="{{ nf.relation.html_name }}" value="{{ nf.relation.value|default:'' }}" class="block w-full rounded border border-gray-300 px-2 py-1 text-sm" placeholder="Relation"></td>
-                            <td class="py-1.5 pr-2"><input type="date" name="{{ nf.dob.html_name }}" value="{{ nf.dob.value|default:'' }}" class="block w-full rounded border border-gray-300 px-2 py-1 text-sm"></td>
-                            <td class="py-1.5 pr-2"><input type="text" name="{{ nf.aadhar_no.html_name }}" value="{{ nf.aadhar_no.value|default:'' }}" maxlength="12" class="block w-full rounded border border-gray-300 px-2 py-1 text-sm" placeholder="12 digits"></td>
-                            <td class="py-1.5 pr-2"><input type="tel" name="{{ nf.phone.html_name }}" value="{{ nf.phone.value|default:'' }}" class="block w-full rounded border border-gray-300 px-2 py-1 text-sm" placeholder="Phone"></td>
-                            <td class="py-1.5 pr-2"><input type="number" name="{{ nf.share_percentage.html_name }}" value="{{ nf.share_percentage.value|default:'100' }}" step="0.01" min="0" max="100" class="block w-20 rounded border border-gray-300 px-2 py-1 text-sm"></td>
-                            <td class="py-1.5 text-center">
-                                {% if nf.instance.pk %}
-                                <label class="cursor-pointer"><input type="checkbox" name="{{ nf.DELETE.html_name }}" class="rounded border-gray-300 text-red-600 focus:ring-red-500"></label>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+        <div x-data="nomineeManager()">
+            <div class="px-5 py-3 border-b border-t border-gray-200 bg-gray-50/50">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                        <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                        {% trans "Nominees" %}
+                    </h3>
+                    <button type="button" @click="addRow()" :disabled="!canAdd"
+                            :class="canAdd ? 'text-primary-700 bg-primary-50 border-primary-200 hover:bg-primary-100' : 'text-gray-400 bg-gray-100 border-gray-200 cursor-not-allowed'"
+                            class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors">
+                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        {% trans "Add Nominee" %} <span class="text-gray-400" x-text="'(' + visibleCount + '/4)'"></span>
+                    </button>
+                </div>
+            </div>
+            <div class="px-5 py-4 space-y-3">
+                {{ nominee_formset.management_form }}
+                {% for nf in nominee_formset %}
+                <div x-show="shown[{{ forloop.counter0 }}]" x-cloak
+                     class="relative bg-gray-50/80 rounded-lg border border-gray-200 px-4 pt-3 pb-4 group hover:border-gray-300 transition-colors">
+                    {{ nf.id }}
+                    <input type="checkbox" name="{{ nf.DELETE.html_name }}" data-nom-del="{{ forloop.counter0 }}" class="hidden">
+
+                    <button type="button" @click="removeRow({{ forloop.counter0 }})"
+                            class="absolute top-2 right-2 p-1 rounded-full text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
+                            title="{% trans 'Remove nominee' %}">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-4 gap-y-3 pr-6">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Name" %}</label>
+                            <input type="text" name="{{ nf.name.html_name }}" value="{{ nf.name.value|default:'' }}" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500" placeholder="{% trans 'Full name' %}">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Relation" %}</label>
+                            <input type="text" name="{{ nf.relation.html_name }}" value="{{ nf.relation.value|default:'' }}" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500" placeholder="{% trans 'e.g. Son, Wife' %}">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "DOB" %}</label>
+                            <input type="date" name="{{ nf.dob.html_name }}" value="{{ nf.dob.value|default:'' }}" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Aadhaar" %}</label>
+                            <input type="text" name="{{ nf.aadhar_no.html_name }}" value="{{ nf.aadhar_no.value|default:'' }}" maxlength="12" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500" placeholder="12 digits">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Phone" %}</label>
+                            <input type="tel" name="{{ nf.phone.html_name }}" value="{{ nf.phone.value|default:'' }}" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500" placeholder="{% trans 'Phone' %}">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Share %" %}</label>
+                            <input type="number" name="{{ nf.share_percentage.html_name }}" value="{{ nf.share_percentage.value|default:'100' }}" step="0.01" min="0" max="100" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <div x-show="visibleCount === 0" class="text-center py-6 text-sm text-gray-400">
+                    {% trans "No nominees added." %}
+                </div>
             </div>
         </div>
 
@@ -393,4 +422,39 @@
 
     </div>
 </form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('alpine:init', function() {
+    Alpine.data('nomineeManager', function() {
+        return {
+            shown: [{% for nf in nominee_formset %}{% if nf.instance.pk or forloop.first %}true{% else %}false{% endif %}{% if not forloop.last %},{% endif %}{% endfor %}],
+            get visibleCount() { return this.shown.filter(function(s) { return s; }).length; },
+            get canAdd() { return this.shown.some(function(s) { return !s; }); },
+            addRow() {
+                for (var i = 0; i < this.shown.length; i++) {
+                    if (!this.shown[i]) {
+                        this.shown[i] = true;
+                        var cb = document.querySelector('[data-nom-del="' + i + '"]');
+                        if (cb) cb.checked = false;
+                        return;
+                    }
+                }
+            },
+            removeRow(idx) {
+                this.shown[idx] = false;
+                var cb = document.querySelector('[data-nom-del="' + idx + '"]');
+                if (cb) cb.checked = true;
+                var row = cb ? cb.closest('[x-cloak]') : null;
+                if (row) {
+                    row.querySelectorAll('input[type="text"], input[type="tel"], input[type="date"]').forEach(function(el) { el.value = ''; });
+                    var share = row.querySelector('input[type="number"]');
+                    if (share) share.value = '100';
+                }
+            }
+        };
+    });
+});
+</script>
 {% endblock %}

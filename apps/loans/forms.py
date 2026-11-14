@@ -49,7 +49,7 @@ class LoanProductForm(forms.ModelForm):
 class LoanApplicationForm(forms.ModelForm):
     class Meta:
         model = LoanAccount
-        fields = ['member', 'loan_product', 'applied_amount', 'tenure_months', 'director_recommendation', 'remarks']
+        fields = ['member', 'loan_product', 'applied_amount', 'tenure_months', 'director_recommendation', 'remarks', 'loan_form_no', 'meeting_no', 'meeting_date', 'mortgage_account_no', 'mortgage_value']
         widgets = {
             'member': forms.Select(attrs={'class': 'searchable ' + tw}),
             'loan_product': forms.Select(attrs={'class': tw}),
@@ -57,6 +57,11 @@ class LoanApplicationForm(forms.ModelForm):
             'tenure_months': forms.NumberInput(attrs={'class': tw, 'min': '1'}),
             'director_recommendation': forms.Select(attrs={'class': 'searchable ' + tw}),
             'remarks': forms.Textarea(attrs={'class': tw, 'rows': 3}),
+            'loan_form_no': forms.TextInput(attrs={'class': tw}),
+            'meeting_no': forms.TextInput(attrs={'class': tw}),
+            'meeting_date': forms.DateInput(attrs={'class': tw, 'type': 'date'}),
+            'mortgage_account_no': forms.TextInput(attrs={'class': tw}),
+            'mortgage_value': forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '0'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -81,6 +86,11 @@ class LoanApplicationForm(forms.ModelForm):
             id__in=shareholder_ids,
         )
         self.fields['director_recommendation'].required = False
+        self.fields['loan_form_no'].required = False
+        self.fields['meeting_no'].required = False
+        self.fields['meeting_date'].required = False
+        self.fields['mortgage_account_no'].required = False
+        self.fields['mortgage_value'].required = False
 
     def clean_applied_amount(self):
         amount = self.cleaned_data.get('applied_amount')

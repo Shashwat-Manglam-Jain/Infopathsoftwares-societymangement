@@ -10,6 +10,14 @@ def get_gl_code(related_table_name, fallback_code):
     return head.code if head else fallback_code
 
 
+def get_cash_code(branch):
+    """Return cash GL code for a branch, falling back to '1001'."""
+    from apps.accounting.models import ChartOfAccounts
+
+    cash = ChartOfAccounts.objects.filter(account_type='cash', branch=branch).first()
+    return cash.code if cash else '1001'
+
+
 def get_interest_head_code(gl_head, fallback_code):
     """Get the interest expense/income head linked to a GL head via interest_code FK."""
     if gl_head and gl_head.interest_code_id:

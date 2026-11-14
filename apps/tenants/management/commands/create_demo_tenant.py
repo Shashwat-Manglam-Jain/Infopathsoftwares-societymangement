@@ -236,35 +236,31 @@ class Command(BaseCommand):
         domain_name = options['domain']
 
         SubscriptionPlan.objects.update_or_create(
-            name='Basic',
+            name='Starter',
             defaults={
-                'max_members': 100,
-                'max_branches': 1,
-                'max_users': 3,
-                'price_monthly': Decimal('1000.00'),
+                'max_members': 200,
+                'max_branches': 2,
+                'max_users': 5,
+                'price_monthly': Decimal('2000.00'),
                 'features': {
-                    'savings': 'Savings Accounts',
-                    'loans': 'Loan Management',
-                    'reports': 'Reports & Analytics',
+                    'banking': 'All banking features',
+                    'support': 'Email support',
                 },
                 'is_active': True,
             },
         )
+        SubscriptionPlan.objects.filter(name='Basic').update(is_active=False)
 
         plan, _ = SubscriptionPlan.objects.update_or_create(
             name='Professional',
             defaults={
                 'max_members': 1000,
                 'max_branches': 5,
-                'max_users': 10,
+                'max_users': 15,
                 'price_monthly': Decimal('5000.00'),
                 'features': {
-                    'savings': 'Savings Accounts',
-                    'loans': 'Loan Management',
-                    'fd': 'Fixed Deposits',
-                    'rd': 'Recurring Deposits',
-                    'sms': 'SMS Notifications',
-                    'reports': 'Reports & Analytics',
+                    'sms': 'SMS notifications',
+                    'support': 'Priority support',
                 },
                 'is_active': True,
             },
@@ -274,16 +270,12 @@ class Command(BaseCommand):
             name='Enterprise',
             defaults={
                 'max_members': 99999,
-                'max_branches': 20,
-                'max_users': 50,
-                'price_monthly': Decimal('15000.00'),
+                'max_branches': 99,
+                'max_users': 999,
+                'price_monthly': Decimal('12000.00'),
                 'features': {
-                    'savings': 'Savings Accounts',
-                    'loans': 'Loan Management',
-                    'fd': 'Fixed Deposits',
-                    'rd': 'Recurring Deposits',
-                    'sms': 'SMS Notifications',
-                    'reports': 'Reports & Analytics',
+                    'support': 'Dedicated support',
+                    'branding': 'Custom branding',
                 },
                 'is_active': True,
             },
@@ -423,7 +415,6 @@ class Command(BaseCommand):
             face_value_per_share=Decimal('100.00'),
             max_shares_per_member=100,
             min_shares_required=1,
-            dividend_rate=Decimal('12.00'),
             is_active=True,
         )
 

@@ -336,15 +336,25 @@ def loan_product_create(request):
             return redirect('loans:product_list')
     else:
         form = LoanProductForm()
-    from apps.accounting.models import InterestMaster
+    from apps.accounting.models import ChartOfAccounts, InterestMaster
 
-    slabs = (
-        InterestMaster.objects.filter(is_active=True)
-        .select_related('account_head')
-        .order_by('account_head__name', 'min_period')
-    )
+    loan_head = ChartOfAccounts.objects.filter(related_table_name='loan', is_active=True).first()
+    slabs = []
+    if loan_head:
+        slabs = (
+            InterestMaster.objects.filter(account_head=loan_head, is_active=True)
+            .select_related('account_head')
+            .order_by('min_period')
+        )
     return render(
-        request, 'loans/product_form.html', {'form': form, 'title': 'Create Loan Product', 'interest_slabs': slabs}
+        request,
+        'loans/product_form.html',
+        {
+            'form': form,
+            'title': 'Create Loan Product',
+            'interest_slabs': slabs,
+            'head_id': loan_head.pk if loan_head else '',
+        },
     )
 
 
@@ -359,15 +369,25 @@ def loan_product_edit(request, pk):
             return redirect('loans:product_list')
     else:
         form = LoanProductForm(instance=product)
-    from apps.accounting.models import InterestMaster
+    from apps.accounting.models import ChartOfAccounts, InterestMaster
 
-    slabs = (
-        InterestMaster.objects.filter(is_active=True)
-        .select_related('account_head')
-        .order_by('account_head__name', 'min_period')
-    )
+    loan_head = ChartOfAccounts.objects.filter(related_table_name='loan', is_active=True).first()
+    slabs = []
+    if loan_head:
+        slabs = (
+            InterestMaster.objects.filter(account_head=loan_head, is_active=True)
+            .select_related('account_head')
+            .order_by('min_period')
+        )
     return render(
-        request, 'loans/product_form.html', {'form': form, 'title': f'Edit: {product.name}', 'interest_slabs': slabs}
+        request,
+        'loans/product_form.html',
+        {
+            'form': form,
+            'title': f'Edit: {product.name}',
+            'interest_slabs': slabs,
+            'head_id': loan_head.pk if loan_head else '',
+        },
     )
 
 

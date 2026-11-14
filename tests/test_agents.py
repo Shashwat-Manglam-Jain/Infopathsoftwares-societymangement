@@ -270,20 +270,25 @@ class AgentCollectionModelTests(BaseTestCase):
         self.assertEqual(coll.collected_amount, Decimal('800.00'))
         self.assertEqual(coll.status, 'submitted')
 
-    def test_collection_unique_per_agent_date(self):
+    def test_collection_multiple_per_agent_date(self):
         AgentCollection.objects.create(
             agent=self.agent,
             branch=self.head_office,
             collection_date=date(2024, 1, 2),
             status='open',
         )
-        with self.assertRaises(IntegrityError):
-            AgentCollection.objects.create(
-                agent=self.agent,
-                branch=self.head_office,
-                collection_date=date(2024, 1, 2),
-                status='open',
-            )
+        second = AgentCollection.objects.create(
+            agent=self.agent,
+            branch=self.head_office,
+            collection_date=date(2024, 1, 2),
+            status='open',
+        )
+        self.assertEqual(
+            AgentCollection.objects.filter(
+                agent=self.agent, collection_date=date(2024, 1, 2),
+            ).count(),
+            2,
+        )
 
 
 class AgentCommissionModelTests(BaseTestCase):

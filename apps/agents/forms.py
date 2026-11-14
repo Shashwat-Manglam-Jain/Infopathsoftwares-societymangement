@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django import forms
 
 from apps.agents.models import Agent, PigmmyAccount
@@ -17,14 +19,22 @@ class AgentForm(forms.ModelForm):
             'commission_rate',
             'phone',
             'area',
+            'joining_date',
+            'security_deposit_amount',
+            'security_document',
+            'status',
         ]
         widgets = {
             'member': forms.Select(attrs={'class': 'searchable ' + tw}),
             'savings_account': forms.Select(attrs={'class': 'searchable ' + tw}),
             'security_deposit_account': forms.Select(attrs={'class': 'searchable ' + tw}),
-            'commission_rate': forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
+            'commission_rate': forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '0', 'max': '100'}),
             'phone': forms.TextInput(attrs={'class': tw}),
             'area': forms.TextInput(attrs={'class': tw}),
+            'joining_date': forms.DateInput(attrs={'class': tw, 'type': 'date'}),
+            'security_deposit_amount': forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '0'}),
+            'security_document': forms.ClearableFileInput(attrs={'class': tw}),
+            'status': forms.Select(attrs={'class': tw}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -49,6 +59,9 @@ class AgentForm(forms.ModelForm):
         self.fields['savings_account'].queryset = SavingsAccount.objects.filter(**savings_filter)
         self.fields['security_deposit_account'].queryset = SavingsAccount.objects.filter(**security_filter)
         self.fields['security_deposit_account'].required = False
+        self.fields['joining_date'].required = True
+        self.fields['security_deposit_amount'].required = False
+        self.fields['security_document'].required = False
 
     def save(self, commit=True):
         instance = super().save(commit=False)
@@ -75,10 +88,12 @@ class PigmmyAccountForm(forms.Form):
     installment_amount = forms.DecimalField(
         max_digits=15,
         decimal_places=2,
-        widget=forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
+        min_value=Decimal('1'),
+        widget=forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '1'}),
     )
     deposit_period_months = forms.IntegerField(
-        widget=forms.NumberInput(attrs={'class': tw}),
+        min_value=1,
+        widget=forms.NumberInput(attrs={'class': tw, 'min': '1', 'max': '999'}),
     )
     interest_rate = forms.DecimalField(
         max_digits=5,
@@ -87,22 +102,56 @@ class PigmmyAccountForm(forms.Form):
             attrs={
                 'class': tw + ' bg-gray-50 cursor-not-allowed',
                 'step': '0.01',
+                'min': '0',
+                'max': '100',
                 'readonly': True,
                 'tabindex': '-1',
             }
         ),
     )
+    linked_savings_account = forms.ModelChoiceField(
+        queryset=SavingsAccount.objects.none(),
+        required=False,
+        widget=forms.Select(attrs={'class': 'searchable ' + tw}),
+    )
+    meeting_no = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': tw}))
+    meeting_date = forms.DateField(required=False, widget=forms.DateInput(attrs={'class': tw, 'type': 'date'}))
 
     def __init__(self, *args, **kwargs):
         branch = kwargs.pop('branch', None)
         super().__init__(*args, **kwargs)
         member_qs = Member.objects.filter(status='active')
         agent_qs = Agent.objects.filter(status='active')
+        sa_qs = SavingsAccount.objects.filter(status='active', account_type='savings')
         if branch:
             member_qs = member_qs.filter(branch=branch)
             agent_qs = agent_qs.filter(branch=branch)
+            sa_qs = sa_qs.filter(branch=branch)
         self.fields['member'].queryset = member_qs
         self.fields['agent'].queryset = agent_qs
+        self.fields['linked_savings_account'].queryset = sa_qs
+
+
+class PigmmyEditForm(forms.ModelForm):
+    class Meta:
+        model = PigmmyAccount
+        fields = ['agent', 'installment_amount', 'deposit_type', 'interest_rate', 'deposit_period_months']
+        widgets = {
+            'agent': forms.Select(attrs={'class': 'searchable ' + tw}),
+            'installment_amount': forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '1'}),
+            'deposit_type': forms.Select(attrs={'class': tw}),
+            'interest_rate': forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '0', 'max': '100'}),
+            'deposit_period_months': forms.NumberInput(attrs={'class': tw, 'min': '1', 'max': '999'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.branch:
+            self.fields['agent'].queryset = Agent.objects.filter(
+                status='active', branch=self.instance.branch
+            )
+        else:
+            self.fields['agent'].queryset = Agent.objects.filter(status='active')
 
 
 class CollectionForm(forms.Form):

@@ -8,8 +8,7 @@
 <div class="max-w-full" x-data="{ selectedPlan: '{{ subscription.plan.pk|default:"" }}' }">
 
     {% if subscription %}
-    <!-- Current plan status -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-8">
         <div class="flex items-center justify-between flex-wrap gap-4">
             <div>
                 <p class="text-xs text-gray-500 uppercase font-medium tracking-wider">{% trans "Current Plan" %}</p>
@@ -30,67 +29,80 @@
     </div>
     {% endif %}
 
-    <!-- Plan comparison grid -->
     {% if plans %}
-    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
         {% for plan in plans %}
         <div @click="selectedPlan = '{{ plan.pk }}'"
-             :class="selectedPlan == '{{ plan.pk }}' ? 'ring-2 ring-primary-500 border-primary-300' : 'border-gray-200'"
-             class="relative bg-white rounded-xl shadow-sm border p-6 cursor-pointer hover:shadow-lg transition-all">
+             class="relative rounded-2xl cursor-pointer transition-all duration-300"
+             :class="selectedPlan == '{{ plan.pk }}'
+                 ? 'bg-primary-600 text-white shadow-xl shadow-primary-200 scale-[1.02] -mt-2 mb-2'
+                 : 'bg-white border border-gray-200 shadow-sm hover:shadow-lg'">
 
-            {% if subscription and subscription.plan.pk == plan.pk %}
-            <span class="absolute -top-2.5 left-4 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-100 text-primary-700">
-                Current
-            </span>
-            {% endif %}
-
-            <div class="mb-4">
-                <h3 class="text-lg font-bold text-gray-900">{{ plan.name }}</h3>
-                <div class="mt-2">
-                    <span class="text-2xl font-bold text-primary-700">Rs. {{ plan.price_monthly }}</span>
-                    <span class="text-sm text-gray-500">/month</span>
-                </div>
+            <div x-show="selectedPlan == '{{ plan.pk }}'" x-transition class="flex justify-center -mt-3.5">
+                <span class="inline-flex items-center px-4 py-1 rounded-full text-xs font-bold bg-amber-400 text-amber-900 shadow-sm">
+                    {% if plan.name == 'Professional' %}Most Popular{% else %}Selected{% endif %}
+                </span>
             </div>
 
-            <div class="space-y-2 text-sm">
-                <div class="flex items-center justify-between py-1.5 border-b border-gray-100">
-                    <span class="text-gray-500">{% trans "Members" %}</span>
-                    <span class="font-semibold text-gray-900">{% if plan.max_members >= 99999 %}Unlimited{% else %}{{ plan.max_members }}{% endif %}</span>
-                </div>
-                <div class="flex items-center justify-between py-1.5 border-b border-gray-100">
-                    <span class="text-gray-500">{% trans "Users" %}</span>
-                    <span class="font-semibold text-gray-900">{{ plan.max_users }}</span>
-                </div>
-                <div class="flex items-center justify-between py-1.5">
-                    <span class="text-gray-500">{% trans "Branches" %}</span>
-                    <span class="font-semibold text-gray-900">{{ plan.max_branches }}</span>
-                </div>
-            </div>
+            <div class="p-6" :class="selectedPlan == '{{ plan.pk }}' ? 'pt-4' : ''">
+                <h3 class="text-xl font-bold" :class="selectedPlan == '{{ plan.pk }}' ? 'text-white' : 'text-gray-900'">{{ plan.name }}</h3>
+                <p class="text-sm mt-0.5" :class="selectedPlan == '{{ plan.pk }}' ? 'text-primary-100' : 'text-gray-500'">
+                    {% if plan.name == 'Starter' %}For small societies{% elif plan.name == 'Professional' %}For growing societies{% else %}For large societies{% endif %}
+                </p>
 
-            {% if plan.features %}
-            <div class="mt-3 pt-3 border-t border-gray-100">
-                {% for key, val in plan.features.items %}
-                <div class="flex items-center text-sm text-gray-600 mt-1">
-                    <svg class="h-4 w-4 mr-1.5 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                    {{ val }}
+                <div class="mt-5 mb-6">
+                    <span class="text-4xl font-extrabold" :class="selectedPlan == '{{ plan.pk }}' ? 'text-white' : 'text-gray-900'">₹{{ plan.price_monthly|floatformat:0 }}</span>
+                    <span class="text-sm" :class="selectedPlan == '{{ plan.pk }}' ? 'text-primary-200' : 'text-gray-500'">/month</span>
                 </div>
-                {% endfor %}
-            </div>
-            {% endif %}
 
-            <!-- Radio indicator -->
-            <div class="mt-4 flex justify-center">
-                <div :class="selectedPlan == '{{ plan.pk }}' ? 'bg-primary-600 border-primary-600' : 'border-gray-300'"
-                     class="h-5 w-5 rounded-full border-2 flex items-center justify-center transition-colors">
-                    <div x-show="selectedPlan == '{{ plan.pk }}'" class="h-2 w-2 rounded-full bg-white"></div>
+                <div class="space-y-3 mb-6">
+                    <div class="flex items-center gap-2.5">
+                        <svg class="h-5 w-5 flex-shrink-0" :class="selectedPlan == '{{ plan.pk }}' ? 'text-green-300' : 'text-green-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <span class="text-sm" :class="selectedPlan == '{{ plan.pk }}' ? 'text-primary-50' : 'text-gray-700'">
+                            {% if plan.max_members >= 99999 %}Unlimited members{% else %}Up to {{ plan.max_members|floatformat:0 }} members{% endif %}
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2.5">
+                        <svg class="h-5 w-5 flex-shrink-0" :class="selectedPlan == '{{ plan.pk }}' ? 'text-green-300' : 'text-green-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <span class="text-sm" :class="selectedPlan == '{{ plan.pk }}' ? 'text-primary-50' : 'text-gray-700'">
+                            {% if plan.max_branches >= 20 %}Unlimited branches{% else %}{{ plan.max_branches }} branch{{ plan.max_branches|pluralize:"es" }}{% endif %}
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2.5">
+                        <svg class="h-5 w-5 flex-shrink-0" :class="selectedPlan == '{{ plan.pk }}' ? 'text-green-300' : 'text-green-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <span class="text-sm" :class="selectedPlan == '{{ plan.pk }}' ? 'text-primary-50' : 'text-gray-700'">
+                            {% if plan.max_users >= 50 %}Unlimited users{% else %}{{ plan.max_users }} user accounts{% endif %}
+                        </span>
+                    </div>
+                    {% if plan.features %}
+                    {% for key, val in plan.features.items %}
+                    <div class="flex items-center gap-2.5">
+                        <svg class="h-5 w-5 flex-shrink-0" :class="selectedPlan == '{{ plan.pk }}' ? 'text-green-300' : 'text-green-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <span class="text-sm" :class="selectedPlan == '{{ plan.pk }}' ? 'text-primary-50' : 'text-gray-700'">{{ val }}</span>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
                 </div>
+
+                <button type="button"
+                        class="w-full py-2.5 rounded-xl text-sm font-semibold transition-colors"
+                        :class="selectedPlan == '{{ plan.pk }}'
+                            ? 'bg-white text-primary-700 hover:bg-primary-50'
+                            : 'border-2 border-gray-300 text-gray-700 hover:border-primary-400 hover:text-primary-700'"
+                        @click.stop="selectedPlan = '{{ plan.pk }}'">
+                    {% if subscription and subscription.plan.pk == plan.pk %}
+                        Current Plan
+                    {% else %}
+                        Select Plan
+                    {% endif %}
+                </button>
             </div>
         </div>
         {% endfor %}
     </div>
 
     {% if subscription %}
-    <form method="post" class="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <form method="post" class="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         {% csrf_token %}
         <input type="hidden" name="plan_id" :value="selectedPlan">
         <div class="flex items-center justify-between flex-wrap gap-4">
@@ -99,7 +111,7 @@
                 <p class="text-xs text-gray-400 mt-1">Payment gateway integration coming soon.</p>
             </div>
             <button type="submit" :disabled="!selectedPlan"
-                    class="px-8 py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed">
+                    class="px-8 py-3 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed">
                 Pay &amp; Renew Now
             </button>
         </div>

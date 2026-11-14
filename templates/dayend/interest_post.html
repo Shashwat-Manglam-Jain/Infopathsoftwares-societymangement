@@ -7,6 +7,47 @@
 {% block content %}
 <div class="max-w-full">
 
+    <!-- Posting Results (shown after POST) -->
+    {% if results %}
+    <div class="bg-white rounded-lg shadow-sm border border-green-200 overflow-hidden mb-4">
+        <div class="px-5 py-3 border-b border-green-200 bg-green-50 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <svg class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span class="text-sm font-semibold text-green-800">Interest Posted — {{ posted_count }} account{{ posted_count|pluralize }}</span>
+            </div>
+            <span class="text-sm font-bold text-green-700">Total: ₹{{ total_posted|floatformat:2 }}</span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead>
+                    <tr class="text-left text-xs font-semibold text-gray-500 uppercase bg-gray-50">
+                        <th class="px-4 py-2">{% trans "Account No." %}</th>
+                        <th class="px-4 py-2">{% trans "Member" %}</th>
+                        <th class="px-4 py-2">{% trans "Type" %}</th>
+                        <th class="px-4 py-2 text-right">{% trans "Balance Before" %}</th>
+                        <th class="px-4 py-2 text-right">{% trans "Interest Posted" %}</th>
+                        <th class="px-4 py-2 text-right">{% trans "Balance After" %}</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for r in results %}
+                    <tr class="bg-green-50/50">
+                        <td class="px-4 py-2 font-mono text-gray-900">{{ r.account_no }}</td>
+                        <td class="px-4 py-2 text-gray-700">{{ r.member_name }}</td>
+                        <td class="px-4 py-2">
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium {% if 'Fixed' in r.account_type %}bg-purple-100 text-purple-700{% else %}bg-blue-100 text-blue-700{% endif %}">{{ r.account_type }}</span>
+                        </td>
+                        <td class="px-4 py-2 text-right text-gray-700">{{ r.balance|floatformat:2 }}</td>
+                        <td class="px-4 py-2 text-right font-medium text-green-700">+{{ r.accrued|floatformat:2 }}</td>
+                        <td class="px-4 py-2 text-right font-bold text-gray-900">{{ r.after_post|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
     {% if accounts %}
     <!-- Summary -->
     {% if summary %}
@@ -34,7 +75,7 @@
                 </div>
                 <div class="flex items-end">
                     <button type="submit" class="w-full px-3 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded hover:bg-indigo-700"
-                            onclick="return confirm('Post accrued interest to {{ summary.total_accounts }} accounts for ₹{{ summary.total_accrued|floatformat:2 }}?')">Post Interest</button>
+                            onclick="return confirm('Post accrued interest to {{ summary.total_accounts }} accounts for ₹{{ summary.total_accrued|floatformat:2 }}?\n\nThis will:\n• Credit interest to account balances\n• Create journal entries (DR Interest Expense / CR Account)\n\nThis action cannot be undone.')">Post Interest</button>
                 </div>
             </div>
             <div class="px-5 py-2 bg-gray-50 border-t border-gray-200 rounded-b-lg flex justify-start">
@@ -43,7 +84,7 @@
         </form>
     </div>
 
-    <!-- {% trans "Accounts" %} Table -->
+    <!-- Pending Accounts Table -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mt-4">
         <div class="px-5 py-3 border-b border-gray-200">
             <p class="text-xs font-semibold text-gray-500 uppercase">{% trans "Accounts" %} Pending Interest Posting</p>
@@ -58,17 +99,27 @@
                         <th class="px-4 py-2 text-right">{% trans "Current Balance" %}</th>
                         <th class="px-4 py-2 text-right">{% trans "Accrued Interest" %}</th>
                         <th class="px-4 py-2 text-right">{% trans "After Post" %}</th>
+                        <th class="px-4 py-2">Last Posted</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     {% for acct in accounts %}
                     <tr class="hover:bg-gray-50">
                         <td class="px-4 py-2 font-mono text-gray-900">{{ acct.account_no }}</td>
-                        <td class="px-4 py-2 text-gray-700">{{ acct.member.name }}</td>
-                        <td class="px-4 py-2 text-gray-600">{{ acct.get_account_type_display }}</td>
-                        <td class="px-4 py-2 text-right text-gray-700">{{ acct.current_balance|floatformat:2 }}</td>
-                        <td class="px-4 py-2 text-right font-medium text-indigo-700">{{ acct.accrued_interest|floatformat:2 }}</td>
-                        <td class="px-4 py-2 text-right font-medium text-gray-900">{{ acct.balance_after_post|floatformat:2 }}</td>
+                        <td class="px-4 py-2 text-gray-700">{{ acct.member_name }}</td>
+                        <td class="px-4 py-2">
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium {% if 'Fixed' in acct.account_type %}bg-purple-100 text-purple-700{% else %}bg-blue-100 text-blue-700{% endif %}">{{ acct.account_type }}</span>
+                        </td>
+                        <td class="px-4 py-2 text-right text-gray-700">{{ acct.balance|floatformat:2 }}</td>
+                        <td class="px-4 py-2 text-right font-medium text-indigo-700">{{ acct.accrued|floatformat:2 }}</td>
+                        <td class="px-4 py-2 text-right font-medium text-gray-900">{{ acct.after_post|floatformat:2 }}</td>
+                        <td class="px-4 py-2 text-xs">
+                            {% if acct.last_post_date %}
+                            <span class="text-gray-500">{{ acct.last_post_date|date:"d M Y" }}</span>
+                            {% else %}
+                            <span class="text-gray-400">Never</span>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -76,10 +127,65 @@
         </div>
     </div>
 
-    {% else %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-8 text-center">
-        <p class="text-sm text-gray-400">No accounts have accrued interest to post.</p>
+    {% elif not results %}
+    <!-- No pending accounts — show status + history -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-6 text-center mb-4">
+        <svg class="mx-auto h-10 w-10 text-green-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <p class="text-sm font-medium text-gray-700">All interest has been posted. No pending accounts.</p>
         <a href="{% url 'dayend:interest_calculate' %}" class="mt-2 inline-block text-sm text-primary-600 hover:underline">Calculate interest first &rarr;</a>
+    </div>
+    {% endif %}
+
+    <!-- Recent Posting History -->
+    {% if recent_postings %}
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mt-4">
+        <div class="px-5 py-3 border-b border-gray-200 flex items-center justify-between">
+            <p class="text-xs font-semibold text-gray-500 uppercase">Recent Interest Postings</p>
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-gray-500">{{ recent_postings|length }} entries — ₹{{ total_posted_recently|floatformat:2 }}</span>
+                {% if today_posting_count > 0 %}
+                <form method="post" action="{% url 'dayend:rollback_all_interest_postings' %}" class="inline"
+                      onsubmit="return confirm('Rollback ALL {{ today_posting_count }} interest posting(s) for today?\nTotal: ₹{{ today_posting_total|floatformat:2 }}\n\nThis will reverse all journal entries and restore account balances.');">
+                    {% csrf_token %}
+                    <button type="submit" class="px-3 py-1 bg-red-600 text-white text-xs font-medium rounded hover:bg-red-700">Rollback All ({{ today_posting_count }})</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead>
+                    <tr class="text-left text-xs font-semibold text-gray-500 uppercase bg-gray-50">
+                        <th class="px-4 py-2">{% trans "Voucher No." %}</th>
+                        <th class="px-4 py-2">{% trans "Date" %}</th>
+                        <th class="px-4 py-2">{% trans "Narration" %}</th>
+                        <th class="px-4 py-2 text-right">{% trans "Amount" %}</th>
+                        <th class="px-4 py-2 text-center">{% trans "Action" %}</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for p in recent_postings %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-2 font-mono text-gray-900">{{ p.voucher_no }}</td>
+                        <td class="px-4 py-2 text-gray-600">{{ p.date|date:"d M Y" }}</td>
+                        <td class="px-4 py-2 text-gray-700 max-w-xs truncate">{{ p.narration }}</td>
+                        <td class="px-4 py-2 text-right font-medium text-green-700">{{ p.amount|floatformat:2 }}</td>
+                        <td class="px-4 py-2 text-center">
+                            {% if p.can_rollback %}
+                            <form method="post" action="{% url 'dayend:rollback_interest_posting' p.id %}" class="inline"
+                                  onsubmit="return confirm('Rollback interest posting {{ p.voucher_no }} for ₹{{ p.amount|floatformat:2 }}?\n\nThis will reverse the journal entry and restore account balances.');">
+                                {% csrf_token %}
+                                <button type="submit" class="px-2 py-1 bg-red-600 text-white text-xs font-medium rounded hover:bg-red-700">Rollback</button>
+                            </form>
+                            {% else %}
+                            <span class="text-xs text-gray-400">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
     {% endif %}
 

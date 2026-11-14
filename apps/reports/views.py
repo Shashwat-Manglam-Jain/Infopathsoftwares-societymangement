@@ -521,19 +521,51 @@ def cashbook_report(request):
     report_date = request.GET.get('date', '')
     context = {'report_date': report_date}
 
-    if report_date:
+    if request.user.can_access_all_branches:
+        from apps.branches.models import Branch
+
+        context['branches'] = Branch.objects.filter(status='active').order_by('-is_head_office', 'branch_name')
+        selected_branch_id = request.GET.get('branch', '')
+        context['selected_branch'] = selected_branch_id
+        if selected_branch_id:
+            branch = Branch.objects.filter(pk=selected_branch_id).first()
+        else:
+            branch = None
+    else:
         branch = request.current_branch
 
-        cb = CashbookMaster.objects.filter(branch=branch, txn_date=report_date).first()
-        if cb:
-            context['cashbook'] = cb
+    if report_date:
+        if branch:
+            cb = CashbookMaster.objects.filter(branch=branch, txn_date=report_date).first()
+            if cb:
+                context['cashbook'] = cb
 
-        entries = JournalEntry.objects.filter(
-            branch=branch,
-            entry_date=report_date,
-            is_reversed=False,
-            is_posted=True,
-        )
+            entries = JournalEntry.objects.filter(
+                branch=branch,
+                entry_date=report_date,
+                is_reversed=False,
+                is_posted=True,
+            )
+        else:
+            cbs = CashbookMaster.objects.filter(txn_date=report_date).select_related('branch')
+            if cbs.exists():
+                total_opening = sum(cb.opening_balance for cb in cbs)
+                total_receipts = sum(cb.total_receipts for cb in cbs)
+                total_payments = sum(cb.total_payments for cb in cbs)
+                total_closing = sum(cb.closing_balance for cb in cbs)
+                context['cashbook'] = type('CB', (), {
+                    'opening_balance': total_opening,
+                    'total_receipts': total_receipts,
+                    'total_payments': total_payments,
+                    'closing_balance': total_closing,
+                })()
+                context['branch_cashbooks'] = cbs
+
+            entries = JournalEntry.objects.filter(
+                entry_date=report_date,
+                is_reversed=False,
+                is_posted=True,
+            )
 
         head_summary = {}
         for line in JournalLine.objects.filter(journal_entry__in=entries).select_related('gl_account'):

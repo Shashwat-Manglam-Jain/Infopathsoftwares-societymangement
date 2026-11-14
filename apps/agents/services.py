@@ -19,8 +19,9 @@ def create_pigmmy_account(
     linked_savings=None,
     created_by=None,
 ):
-    if PigmmyAccount.objects.filter(member=member, status='active').exists():
-        raise ValueError('Member already has an active pigmmy account. Only one per member is allowed.')
+    client_type = 'D' if deposit_type == 'daily' else 'M'
+    if client_type == 'D' and PigmmyAccount.objects.filter(member=member, client_type='D', status='active').exists():
+        raise ValueError('Member already has an active daily pigmmy account.')
 
     from apps.savings.models import SavingsAccount
 
@@ -82,6 +83,7 @@ def create_pigmmy_account(
         agent=agent,
         linked_savings_account=linked_savings,
         deposit_type=deposit_type,
+        client_type=client_type,
         installment_amount=installment_amount,
         deposit_period_months=deposit_period_months,
         interest_rate=interest_rate,
@@ -102,13 +104,18 @@ def record_agent_collection(agent, collection_date, client_payments, branch, cre
     client_payments: list of dicts [{'account_id': int, 'amount': Decimal}, ...]
     agent_collection_amount: amount the agent declares they collected (for reconciliation)
     """
-    collection, _ = AgentCollection.objects.get_or_create(
+    if AgentCollection.objects.filter(
         agent=agent,
         collection_date=collection_date,
-        defaults={
-            'branch': branch,
-            'status': 'open',
-        },
+        status__in=['open', 'submitted'],
+    ).exists():
+        raise ValueError(f'An active collection already exists for {agent.agent_code} on {collection_date}.')
+
+    collection = AgentCollection.objects.create(
+        agent=agent,
+        collection_date=collection_date,
+        branch=branch,
+        status='open',
     )
 
     total_collected = Decimal('0.00')
@@ -150,36 +157,6 @@ def record_agent_collection(agent, collection_date, client_payments, branch, cre
     collection.deposited_amount = total_collected
     collection.status = 'submitted'
     collection.save()
-
-    from apps.accounting.models import ChartOfAccounts
-    from apps.accounting.services import create_journal_entry
-
-    cash_account = ChartOfAccounts.objects.filter(
-        code__startswith='1',
-        name__icontains='cash',
-    ).first()
-    pigmmy_head = (
-        ChartOfAccounts.objects.filter(
-            name__icontains='pigm',
-        ).first()
-        or ChartOfAccounts.objects.filter(
-            name__icontains='daily',
-        ).first()
-    )
-
-    if cash_account and pigmmy_head:
-        create_journal_entry(
-            entry_date=collection_date,
-            voucher_type='receipt',
-            branch=branch,
-            narration=f'Pigmmy collection by Agent {agent.agent_code} - {collection_date}',
-            lines=[
-                {'account_code': cash_account.code, 'debit': total_collected, 'credit': Decimal('0')},
-                {'account_code': pigmmy_head.code, 'debit': Decimal('0'), 'credit': total_collected},
-            ],
-            user=created_by,
-            reference_type='pigmmy_collection',
-        )
 
     return collection
 
@@ -226,7 +203,87 @@ def post_collection(collection, posted_by):
     collection.reconciled_by = posted_by
     collection.save()
 
+    from apps.accounting.services import create_journal_entry
+    from apps.core.gl_utils import get_cash_code, get_gl_code
+
+    cash_code = get_cash_code(collection.branch)
+    pigmmy_code = get_gl_code('client', '2005')
+
+    create_journal_entry(
+        entry_date=collection.collection_date,
+        voucher_type='receipt',
+        branch=collection.branch,
+        narration=f'Pigmmy collection by Agent {collection.agent.agent_code} - {collection.collection_date}',
+        lines=[
+            {'account_code': cash_code, 'debit': client_total, 'credit': Decimal('0')},
+            {'account_code': pigmmy_code, 'debit': Decimal('0'), 'credit': client_total},
+        ],
+        user=posted_by,
+        reference_type='pigmmy_collection',
+    )
+
+    from apps.accounting.services import update_cashbook
+
+    update_cashbook(collection.branch, collection.collection_date, receipt_amount=client_total)
+
+    from apps.audit.middleware import get_current_ip
+    from apps.audit.services import log_action
+
+    log_action(
+        user=posted_by, branch=collection.branch, action='approve',
+        table_name='AgentCollection', record_id=collection.pk,
+        new_values={
+            'agent': collection.agent.agent_code,
+            'amount': str(collection.collected_amount),
+            'posted_count': posted_count,
+        },
+        ip_address=get_current_ip(),
+    )
+
     return {'posted_count': posted_count, 'total_amount': collection.collected_amount}
+
+
+@transaction.atomic
+def rollback_collection(collection, user):
+    if collection.status != 'reconciled':
+        raise ValueError('Only reconciled collections can be rolled back.')
+    if collection.collection_date != date.today():
+        raise ValueError('Rollback is only allowed for same-day postings.')
+
+    transactions = PigmmyTransaction.objects.filter(
+        collected_by=collection.agent,
+        txn_date=collection.collection_date,
+        is_reversed=False,
+    ).select_related('account__linked_savings_account')
+
+    for txn in transactions:
+        savings_acct = txn.account.linked_savings_account
+        if savings_acct:
+            savings_acct.current_balance -= txn.amount
+            savings_acct.save(update_fields=['current_balance'])
+
+    from apps.accounting.models import JournalEntry
+    from apps.accounting.services import reverse_journal_entry, update_cashbook
+
+    journal = JournalEntry.objects.filter(
+        reference_type='pigmmy_collection',
+        entry_date=collection.collection_date,
+        narration__contains=collection.agent.agent_code,
+        is_reversed=False,
+    ).first()
+
+    total_amount = collection.deposited_amount
+
+    if journal:
+        reverse_journal_entry(journal, user)
+
+    update_cashbook(collection.branch, collection.collection_date, receipt_amount=-total_amount)
+
+    collection.status = 'submitted'
+    collection.reconciled_by = None
+    collection.save(update_fields=['status', 'reconciled_by'])
+
+    return total_amount
 
 
 def calculate_agent_commission(agent, month_start, month_end):

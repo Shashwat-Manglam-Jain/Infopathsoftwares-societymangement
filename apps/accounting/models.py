@@ -237,3 +237,37 @@ class CashbookMaster(models.Model):
 
     def __str__(self):
         return f'{self.branch.branch_code} - {self.txn_date}'
+
+
+class InterBranchTransfer(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+        ('rejected', 'Rejected'),
+    ]
+    transfer_no = models.CharField(max_length=30, unique=True)
+    from_branch = models.ForeignKey('branches.Branch', on_delete=models.PROTECT, related_name='transfers_sent')
+    to_branch = models.ForeignKey('branches.Branch', on_delete=models.PROTECT, related_name='transfers_received')
+    amount = models.DecimalField(max_digits=15, decimal_places=2)
+    transfer_date = models.DateField()
+    narration = models.TextField(blank=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    journal_entry_from = models.ForeignKey(
+        'JournalEntry', on_delete=models.SET_NULL, null=True, blank=True, related_name='+',
+    )
+    journal_entry_to = models.ForeignKey(
+        'JournalEntry', on_delete=models.SET_NULL, null=True, blank=True, related_name='+',
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='ibt_created',
+    )
+    approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='ibt_approved',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-transfer_date', '-created_at']
+
+    def __str__(self):
+        return f'{self.transfer_no} - {self.from_branch} → {self.to_branch} - ₹{self.amount}'

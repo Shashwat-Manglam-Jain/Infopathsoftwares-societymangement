@@ -12,7 +12,7 @@
     <!-- Master -->
     <div x-data="{ hover: false }" @mouseenter="hover = true" @mouseleave="hover = false" class="relative">
         <button class="px-3 py-1.5 text-xs font-semibold rounded transition-colors whitespace-nowrap flex items-center gap-1
-                       {% if request.resolver_match.app_name == 'branches' or request.resolver_match.app_name == 'members' or 'staff' in request.path or 'heads' in request.path or 'interest-master' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+                       {% if request.resolver_match.app_name == 'branches' or request.resolver_match.app_name == 'members' or 'staff' in request.path or 'heads' in request.path or 'interest-master' in request.path or 'products' in request.path and request.resolver_match.app_name == 'loans' or 'config' in request.path and request.resolver_match.app_name == 'shares' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
             {% trans "Master" %}
             <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </button>
@@ -34,7 +34,7 @@
     <!-- Account Opening — flat dropdown -->
     <div x-data="{ hover: false }" @mouseenter="hover = true" @mouseleave="hover = false" class="relative">
         <button class="px-3 py-1.5 text-xs font-semibold rounded transition-colors whitespace-nowrap flex items-center gap-1
-                       {% if request.resolver_match.app_name == 'savings' or request.resolver_match.app_name == 'deposits' or request.resolver_match.app_name == 'loans' or request.resolver_match.app_name == 'shares' or request.resolver_match.app_name == 'agents' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+                       {% if request.resolver_match.app_name == 'savings' or request.resolver_match.app_name == 'deposits' or request.resolver_match.app_name == 'loans' and 'products' not in request.path or request.resolver_match.app_name == 'shares' and 'config' not in request.path or request.resolver_match.app_name == 'agents' and 'collections' not in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
             {% trans "Accounts" %}
             <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </button>
@@ -62,7 +62,7 @@
     <!-- Transaction -->
     <div x-data="{ hover: false }" @mouseenter="hover = true" @mouseleave="hover = false" class="relative">
         <button class="px-3 py-1.5 text-xs font-semibold rounded transition-colors whitespace-nowrap flex items-center gap-1
-                       {% if 'receipt' in request.path and request.resolver_match.app_name == 'accounting' or 'payment' in request.path and request.resolver_match.app_name == 'accounting' or 'collections' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+                       {% if 'receipt' in request.path and request.resolver_match.app_name == 'accounting' or 'payment' in request.path and request.resolver_match.app_name == 'accounting' or 'voucher/create' in request.path or 'collections' in request.path and request.resolver_match.app_name == 'agents' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
             {% trans "Transaction" %}
             <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </button>
@@ -76,8 +76,12 @@
                 <a href="{% url 'accounting:voucher_create' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Voucher Entry" %}</a>
                 {% endif %}
                 <div class="border-t border-gray-100 my-1"></div>
-                <a href="{% url 'agents:collection_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Daily Collection" %}</a>
+                <a href="{% url 'agents:collection_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Agent Collections" %}</a>
                 <a href="{% url 'agents:collection_posting' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Collection Posting" %}</a>
+                {% if request.user.is_manager %}
+                <div class="border-t border-gray-100 my-1"></div>
+                <a href="{% url 'accounting:inter_branch_transfer' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Inter-Branch Transfer" %}</a>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -85,7 +89,7 @@
     <!-- Ledger -->
     <div x-data="{ hover: false }" @mouseenter="hover = true" @mouseleave="hover = false" class="relative">
         <button class="px-3 py-1.5 text-xs font-semibold rounded transition-colors whitespace-nowrap flex items-center gap-1
-                       {% if request.resolver_match.url_name == 'cashbook' or 'general-ledger' in request.path or 'day-book' in request.path or 'voucher' in request.path or 'cashbook-report' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+                       {% if request.resolver_match.url_name == 'cashbook' or 'general-ledger' in request.path or 'day-book' in request.path or request.resolver_match.url_name == 'vouchers' or request.resolver_match.url_name == 'voucher_edit' or request.resolver_match.url_name == 'voucher_cancel' or 'cashbook-report' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
             {% trans "Ledger" %}
             <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </button>

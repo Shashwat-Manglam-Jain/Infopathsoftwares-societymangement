@@ -43,6 +43,7 @@ def savings_list(request):
         {
             'accounts': page_obj,
             'account_type': account_type,
+            'status_filter': status_filter,
             'page_title': type_labels.get(account_type, 'All Accounts'),
             'page_obj': page_obj,
             'is_paginated': page_obj.has_other_pages(),
@@ -58,7 +59,6 @@ def savings_create(request):
         form = SavingsAccountForm(request.POST, current_branch=branch)
         if form.is_valid():
             account = form.save(commit=False)
-            account.opening_date = date.today()
             account.created_by = request.user
             if not account.branch_id and request.current_branch:
                 account.branch = request.current_branch
@@ -80,7 +80,7 @@ def savings_create(request):
             messages.success(request, f'Savings account {account.account_no} created successfully.')
             return redirect('savings:detail', pk=account.pk)
     else:
-        initial = {}
+        initial = {'opening_date': date.today().isoformat()}
         account_type = request.GET.get('type', '')
         if account_type in ('savings', 'current', 'security'):
             initial['account_type'] = account_type
@@ -189,6 +189,9 @@ def savings_deposit(request, pk):
                 )
             except ValueError as e:
                 messages.error(request, str(e))
+        else:
+            for error in form.errors.values():
+                messages.error(request, error[0])
     return redirect('savings:detail', pk=pk)
 
 
@@ -225,6 +228,9 @@ def savings_withdraw(request, pk):
                 )
             except ValueError as e:
                 messages.error(request, str(e))
+        else:
+            for error in form.errors.values():
+                messages.error(request, error[0])
     return redirect('savings:detail', pk=pk)
 
 
@@ -357,12 +363,16 @@ def account_type_rate_api(request):
     related = type_map.get(account_type, '')
 
     rate = 0
+    head_id = None
+    head_name = ''
     if related:
         head = ChartOfAccounts.objects.filter(
             related_table_name=related,
             is_active=True,
         ).first()
         if head:
+            head_id = head.pk
+            head_name = str(head)
             slab = InterestMaster.objects.filter(
                 account_head=head,
                 is_active=True,
@@ -370,7 +380,7 @@ def account_type_rate_api(request):
             if slab:
                 rate = float(slab.interest_rate)
 
-    return JsonResponse({'rate': rate, 'account_type': account_type})
+    return JsonResponse({'rate': rate, 'account_type': account_type, 'head_id': head_id, 'head_name': head_name})
 
 
 @manager_required

@@ -12,7 +12,7 @@ from apps.accounting.models import ChartOfAccounts, InterestMaster
 from apps.accounts.permissions import auditor_or_above, cashier_required, day_open_required, manager_required
 from apps.savings.models import SavingsAccount
 
-from .forms import AgentForm, CollectionForm, PigmmyAccountForm
+from .forms import AgentForm, CollectionForm, PigmmyAccountForm, PigmmyEditForm
 from .models import Agent, AgentCollection, PigmmyAccount, PigmmyTransaction
 
 
@@ -42,10 +42,9 @@ def agent_create(request):
         messages.warning(request, 'Please select a specific branch before creating an agent.')
         return redirect('agents:list')
     if request.method == 'POST':
-        form = AgentForm(request.POST, branch=branch)
+        form = AgentForm(request.POST, request.FILES, branch=branch)
         if form.is_valid():
             agent = form.save(commit=False)
-            agent.joining_date = date.today()
             agent.created_by = request.user
             max_code = Agent.objects.aggregate(m=Max('agent_code'))['m']
             if max_code:
@@ -60,7 +59,7 @@ def agent_create(request):
             messages.success(request, f'Agent {agent.agent_code} created successfully.')
             return redirect('agents:detail', pk=agent.pk)
     else:
-        form = AgentForm(branch=branch)
+        form = AgentForm(branch=branch, initial={'joining_date': date.today().isoformat()})
     return render(request, 'agents/create.html', {'form': form})
 
 
@@ -76,6 +75,9 @@ def agent_detail(request, pk):
             'agent': agent,
             'client_accounts': client_accounts,
             'recent_collections': recent_collections,
+            'daily_count': client_accounts.filter(deposit_type='daily').count(),
+            'weekly_count': client_accounts.filter(deposit_type='weekly').count(),
+            'monthly_count': client_accounts.filter(deposit_type='monthly').count(),
         },
     )
 
@@ -197,6 +199,7 @@ def pigmmy_create(request):
             'form': form,
             'selected_agent': selected_agent,
             'slabs_json': slabs_json,
+            'pigmmy_head_id': head.pk if head else '',
         },
     )
 
@@ -218,14 +221,80 @@ def pigmmy_detail(request, pk):
     )
 
 
+@manager_required
+def pigmmy_edit(request, pk):
+    account = get_object_or_404(PigmmyAccount, pk=pk)
+    if request.method == 'POST':
+        form = PigmmyEditForm(request.POST, instance=account)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Pigmmy account {account.account_no} updated.')
+            return redirect('agents:pigmmy_detail', pk=account.pk)
+    else:
+        form = PigmmyEditForm(instance=account)
+    return render(request, 'agents/pigmmy_edit.html', {'form': form, 'account': account})
+
+
+@manager_required
+def pigmmy_close(request, pk):
+    account = get_object_or_404(PigmmyAccount, pk=pk)
+    if account.status != 'active':
+        messages.warning(request, 'Account is already closed.')
+        return redirect('agents:pigmmy_detail', pk=account.pk)
+    if request.method == 'POST':
+        account.status = 'closed'
+        account.save(update_fields=['status'])
+        messages.success(request, f'Pigmmy account {account.account_no} closed.')
+        return redirect('agents:pigmmy_detail', pk=account.pk)
+    return render(request, 'agents/pigmmy_close_confirm.html', {'account': account})
+
+
 @auditor_or_above
 def collection_list(request):
     collections = AgentCollection.objects.select_related('agent__member', 'branch')
     if not request.user.can_access_all_branches:
         collections = collections.filter(branch=request.current_branch)
+    agent_id = request.GET.get('agent')
+    if agent_id:
+        collections = collections.filter(agent_id=agent_id)
+    status = request.GET.get('status')
+    if status:
+        collections = collections.filter(status=status)
+    date_from = request.GET.get('date_from')
+    if date_from:
+        collections = collections.filter(collection_date__gte=date_from)
+    date_to = request.GET.get('date_to')
+    if date_to:
+        collections = collections.filter(collection_date__lte=date_to)
+    deposit_type = request.GET.get('type')
+    if deposit_type:
+        from django.db.models import Exists, OuterRef
+        collections = collections.filter(
+            Exists(
+                PigmmyTransaction.objects.filter(
+                    collected_by=OuterRef('agent'),
+                    txn_date=OuterRef('collection_date'),
+                    is_reversed=False,
+                    account__deposit_type=deposit_type,
+                )
+            )
+        )
     collections = collections.order_by('-collection_date')
+    agents = Agent.objects.filter(status='active').select_related('member')
+    if not request.user.can_access_all_branches:
+        agents = agents.filter(branch=request.current_branch)
     paginator = Paginator(collections, 25)
     page_obj = paginator.get_page(request.GET.get('page'))
+    for col in page_obj:
+        col.client_transactions = (
+            PigmmyTransaction.objects.filter(
+                collected_by=col.agent,
+                txn_date=col.collection_date,
+                is_reversed=False,
+            )
+            .select_related('account__member')
+            .order_by('account__account_no')
+        )
     return render(
         request,
         'agents/collection_list.html',
@@ -234,6 +303,8 @@ def collection_list(request):
             'page_obj': page_obj,
             'is_paginated': page_obj.has_other_pages(),
             'paginator': paginator,
+            'agents': agents,
+            'status_choices': AgentCollection.STATUS_CHOICES,
         },
     )
 
@@ -282,9 +353,28 @@ def collection_create(request):
             else:
                 messages.warning(request, 'No amounts entered.')
     else:
-        form = CollectionForm(branch=branch)
+        initial = {}
+        agent_id = request.GET.get('agent')
+        if agent_id:
+            try:
+                initial['agent'] = int(agent_id)
+            except (ValueError, TypeError):
+                pass
+        from apps.dayend.models import WorkingDay
 
-    return render(request, 'agents/collection_create.html', {'form': form})
+        working_day = WorkingDay.objects.filter(branch=branch, is_day_open=True).first()
+        if working_day:
+            initial['collection_date'] = working_day.current_date
+        form = CollectionForm(branch=branch, initial=initial)
+
+    from apps.dayend.models import WorkingDay
+
+    working_day = WorkingDay.objects.filter(branch=branch, is_day_open=True).first()
+    return render(request, 'agents/collection_create.html', {
+        'form': form,
+        'working_day_date': working_day.current_date.isoformat() if working_day else '',
+        'preselected_agent': request.GET.get('agent', ''),
+    })
 
 
 @cashier_required
@@ -315,27 +405,80 @@ def agent_clients_api(request, agent_id):
 
 
 @auditor_or_above
-def collection_posting_list(request):
-    collections = (
-        AgentCollection.objects.filter(
-            status='submitted',
-        )
-        .select_related('agent__member', 'branch')
-        .order_by('-collection_date')
+def collection_detail(request, pk):
+    collection = get_object_or_404(
+        AgentCollection.objects.select_related('agent__member', 'branch', 'reconciled_by'),
+        pk=pk,
     )
+    transactions = (
+        PigmmyTransaction.objects.filter(
+            collected_by=collection.agent,
+            txn_date=collection.collection_date,
+            is_reversed=False,
+        )
+        .select_related('account__member')
+        .order_by('account__account_no')
+    )
+    return render(
+        request,
+        'agents/collection_detail.html',
+        {
+            'collection': collection,
+            'transactions': transactions,
+        },
+    )
+
+
+@auditor_or_above
+def collection_posting_list(request):
+    collections = AgentCollection.objects.filter(
+        status='submitted',
+    ).select_related('agent__member', 'branch').order_by('-collection_date')
     if not request.user.can_access_all_branches:
         collections = collections.filter(branch=request.current_branch)
+    agent_id = request.GET.get('agent')
+    if agent_id:
+        collections = collections.filter(agent_id=agent_id)
+    collections = list(collections)
 
-    posted = (
-        AgentCollection.objects.filter(
-            status='reconciled',
+    for col in collections:
+        col.client_transactions = (
+            PigmmyTransaction.objects.filter(
+                collected_by=col.agent,
+                txn_date=col.collection_date,
+                is_reversed=False,
+            )
+            .select_related('account__member')
+            .order_by('account__account_no')
         )
-        .select_related('agent__member', 'branch', 'reconciled_by')
-        .order_by('-collection_date')
-    )
+
+    posted = AgentCollection.objects.filter(
+        status__in=['reconciled', 'discrepancy'],
+    ).select_related('agent__member', 'branch', 'reconciled_by').order_by('-collection_date')
     if not request.user.can_access_all_branches:
         posted = posted.filter(branch=request.current_branch)
-    posted = posted[:20]
+    if agent_id:
+        posted = posted.filter(agent_id=agent_id)
+    posted = list(posted[:20])
+
+    today = date.today()
+    for col in posted:
+        col.client_transactions = (
+            PigmmyTransaction.objects.filter(
+                collected_by=col.agent,
+                txn_date=col.collection_date,
+                is_reversed=False,
+            )
+            .select_related('account__member')
+            .order_by('account__account_no')
+        )
+        col.can_rollback = col.status == 'reconciled' and col.collection_date == today
+
+    today_rollbackable = [c for c in posted if c.can_rollback]
+
+    agents = Agent.objects.filter(status='active').select_related('member')
+    if not request.user.can_access_all_branches:
+        agents = agents.filter(branch=request.current_branch)
 
     return render(
         request,
@@ -343,6 +486,9 @@ def collection_posting_list(request):
         {
             'pending': collections,
             'posted': posted,
+            'agents': agents,
+            'today_rollback_count': len(today_rollbackable),
+            'today_rollback_total': sum(c.collected_amount for c in today_rollbackable),
         },
     )
 
@@ -362,6 +508,98 @@ def collection_post(request, pk):
             )
         except ValueError as e:
             messages.error(request, str(e))
+    return redirect('agents:collection_posting')
+
+
+@manager_required
+@day_open_required
+def collection_reject(request, pk):
+    collection = get_object_or_404(AgentCollection, pk=pk)
+    if request.method == 'POST':
+        if collection.status != 'submitted':
+            messages.warning(request, 'Only submitted collections can be rejected.')
+        else:
+            txns = PigmmyTransaction.objects.filter(
+                collected_by=collection.agent,
+                txn_date=collection.collection_date,
+                is_reversed=False,
+            ).select_related('account')
+            for txn in txns:
+                acct = txn.account
+                acct.current_balance -= txn.amount
+                acct.total_deposited -= txn.amount
+                acct.paid_installments -= 1
+                acct.save()
+                txn.is_reversed = True
+                txn.save(update_fields=['is_reversed'])
+            from apps.accounting.models import JournalEntry
+
+            JournalEntry.objects.filter(
+                reference_type='pigmmy_collection',
+                entry_date=collection.collection_date,
+                narration__contains=collection.agent.agent_code,
+                is_reversed=False,
+            ).update(is_reversed=True)
+
+            collection.status = 'discrepancy'
+            collection.remarks = request.POST.get('remarks', '')
+            collection.save(update_fields=['status', 'remarks'])
+            messages.success(
+                request,
+                f'Collection for {collection.agent.agent_code} on {collection.collection_date} rejected and transactions reversed.',
+            )
+    return redirect('agents:collection_posting')
+
+
+@manager_required
+@day_open_required
+def collection_rollback(request, pk):
+    collection = get_object_or_404(AgentCollection, pk=pk)
+    if request.method == 'POST':
+        from apps.agents.services import rollback_collection
+
+        try:
+            amount = rollback_collection(collection, user=request.user)
+            messages.success(
+                request,
+                f'Collection for {collection.agent.agent_code} on {collection.collection_date} '
+                f'rolled back (₹{amount}).',
+            )
+        except ValueError as e:
+            messages.error(request, str(e))
+    return redirect('agents:collection_posting')
+
+
+@manager_required
+@day_open_required
+def collection_rollback_all(request):
+    if request.method != 'POST':
+        return redirect('agents:collection_posting')
+
+    from apps.agents.services import rollback_collection
+
+    today = date.today()
+    branch = getattr(request, 'current_branch', None)
+    qs = AgentCollection.objects.filter(status='reconciled', collection_date=today)
+    if branch and not request.user.can_access_all_branches:
+        qs = qs.filter(branch=branch)
+
+    collections = list(qs)
+    if not collections:
+        messages.info(request, 'No posted collections to rollback for today.')
+        return redirect('agents:collection_posting')
+
+    rolled_back = 0
+    total_amount = Decimal('0')
+    for collection in collections:
+        try:
+            amount = rollback_collection(collection, user=request.user)
+            rolled_back += 1
+            total_amount += amount
+        except ValueError:
+            pass
+
+    messages.success(request, f'Rolled back {rolled_back} collection(s) — total ₹{total_amount}')
     return redirect('agents:collection_posting')
 
 

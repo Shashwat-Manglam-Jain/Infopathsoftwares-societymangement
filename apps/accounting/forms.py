@@ -29,6 +29,7 @@ class ChartOfAccountsForm(forms.ModelForm):
             'report_position',
             'display_order',
             'allow_transactions',
+            'is_active',
         ]
         widgets = {
             'code': forms.TextInput(attrs={'class': tw}),
@@ -45,6 +46,7 @@ class ChartOfAccountsForm(forms.ModelForm):
             'interest_code': forms.Select(attrs={'class': tw}),
             'report_position': forms.Select(attrs={'class': tw}),
             'display_order': forms.NumberInput(attrs={'class': tw}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'rounded border-gray-300 text-primary-600 focus:ring-primary-500'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -100,20 +102,28 @@ class InterestMasterForm(forms.ModelForm):
             'is_active',
         ]
         widgets = {
-            'account_head': forms.Select(attrs={'class': tw}),
-            'min_period': forms.NumberInput(attrs={'class': tw}),
-            'max_period': forms.NumberInput(attrs={'class': tw}),
+            'account_head': forms.Select(attrs={'class': 'searchable ' + tw}),
+            'min_period': forms.NumberInput(attrs={'class': tw, 'min': '0', 'max': '9999'}),
+            'max_period': forms.NumberInput(attrs={'class': tw, 'min': '0', 'max': '9999'}),
             'period_unit': forms.Select(attrs={'class': tw}),
-            'interest_rate': forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
-            'penal_rate': forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
-            'senior_citizen_extra': forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
-            'widow_extra': forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
-            'ex_military_extra': forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
-            'disabled_extra': forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
-            'employee_extra': forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
-            'director_extra': forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
+            'interest_rate': forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '0', 'max': '100'}),
+            'penal_rate': forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '0', 'max': '100'}),
+            'senior_citizen_extra': forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '0', 'max': '50'}),
+            'widow_extra': forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '0', 'max': '50'}),
+            'ex_military_extra': forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '0', 'max': '50'}),
+            'disabled_extra': forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '0', 'max': '50'}),
+            'employee_extra': forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '0', 'max': '50'}),
+            'director_extra': forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '0', 'max': '50'}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['account_head'].queryset = ChartOfAccounts.objects.filter(is_active=True)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        min_p = cleaned_data.get('min_period')
+        max_p = cleaned_data.get('max_period')
+        if min_p is not None and max_p is not None and min_p > max_p:
+            raise forms.ValidationError('Min period cannot exceed max period.')
+        return cleaned_data

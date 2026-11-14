@@ -12,7 +12,13 @@
             <h2 class="text-lg font-semibold text-gray-900"><a href="{% url 'members:detail' account.member.pk %}" class="text-primary-600 hover:underline">{{ account.member.name }}</a></h2>
             <p class="text-sm text-gray-500">{% trans "Pigmmy A/C" %}: <span class="font-mono">{{ account.account_no }}</span> &middot; {% trans "Agent" %}: {{ account.agent.agent_code }}</p>
         </div>
-        <a href="{% url 'agents:pigmmy_list' %}" class="px-4 py-1.5 border border-gray-300 text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50">{% trans "Back" %}</a>
+        <div class="flex items-center gap-2">
+            {% if account.status == 'active' %}
+            <a href="{% url 'agents:pigmmy_edit' pk=account.pk %}" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "Edit" %}</a>
+            <a href="{% url 'agents:pigmmy_close' pk=account.pk %}" class="px-4 py-1.5 bg-red-600 text-white text-sm font-medium rounded hover:bg-red-700">{% trans "Close Account" %}</a>
+            {% endif %}
+            <a href="{% url 'agents:pigmmy_list' %}" class="px-4 py-1.5 border border-gray-300 text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50">{% trans "Back" %}</a>
+        </div>
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">

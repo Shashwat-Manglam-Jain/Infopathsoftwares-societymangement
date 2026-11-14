@@ -17,7 +17,7 @@
     {% if slabs_json == '[]' %}
     <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
         <p class="text-sm font-medium text-amber-900">{% trans "No Pigmmy Interest Slabs Configured" %}</p>
-        <p class="text-xs text-amber-700">Interest rates cannot be auto-filled. <a href="{% url 'accounting:interest_master_create' %}" class="underline font-medium">Configure Interest Master</a></p>
+        <p class="text-xs text-amber-700">Interest rates cannot be auto-filled. <a href="{% url 'accounting:interest_master_create' %}{% if pigmmy_head_id %}?head={{ pigmmy_head_id }}{% endif %}" class="underline font-medium">Configure Interest Master</a></p>
     </div>
     {% endif %}
 
@@ -75,7 +75,7 @@
                     <template x-if="rateError">
                         <p class="text-xs text-red-600 mt-0.5">
                             <span x-text="rateError"></span>
-                            <a href="{% url 'accounting:interest_master_create' %}" class="underline ml-1">Configure Interest Master</a>
+                            <a href="{% url 'accounting:interest_master_create' %}{% if pigmmy_head_id %}?head={{ pigmmy_head_id }}{% endif %}" class="underline ml-1">Configure Interest Master</a>
                         </p>
                     </template>
                 </div>

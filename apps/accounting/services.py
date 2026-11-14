@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from django.db import models, transaction
 
-from apps.accounting.models import ChartOfAccounts, JournalEntry, JournalLine
+from apps.accounting.models import CashbookMaster, ChartOfAccounts, JournalEntry, JournalLine
 
 
 def create_journal_entry(
@@ -55,12 +55,27 @@ def create_journal_entry(
                 narration=line_data.get('narration', ''),
             )
 
+            account.debit_balance += debit
+            account.credit_balance += credit
             if account.account_group in ('asset', 'expense'):
                 account.current_balance += debit - credit
             else:
                 account.current_balance += credit - debit
-            account.save(update_fields=['current_balance'])
+            account.save(update_fields=['current_balance', 'debit_balance', 'credit_balance'])
 
+        from apps.audit.middleware import get_current_ip
+        from apps.audit.services import log_action
+
+        log_action(
+            user=user, branch=branch, action='create',
+            table_name='JournalEntry', record_id=entry.pk,
+            new_values={
+                'voucher_no': entry.voucher_no, 'voucher_type': voucher_type,
+                'narration': narration, 'reference_type': reference_type,
+                'total': str(total_debit),
+            },
+            ip_address=get_current_ip(),
+        )
         return entry
 
 
@@ -91,11 +106,54 @@ def reverse_journal_entry(entry, user):
             reference_id=entry.reference_id,
         )
         reversal.reversal_of = entry
-        reversal.save(update_fields=['reversal_of'])
+        reversal.is_reversed = True
+        reversal.save(update_fields=['reversal_of', 'is_reversed'])
 
         entry.is_reversed = True
         entry.save(update_fields=['is_reversed'])
+
+        from apps.audit.middleware import get_current_ip
+        from apps.audit.services import log_action
+
+        log_action(
+            user=user, branch=entry.branch, action='reverse',
+            table_name='JournalEntry', record_id=entry.pk,
+            old_values={'voucher_no': entry.voucher_no, 'is_reversed': False},
+            new_values={'reversal_voucher': reversal.voucher_no, 'is_reversed': True},
+            ip_address=get_current_ip(),
+        )
         return reversal
+
+
+def update_cashbook(branch, txn_date, receipt_amount=Decimal('0'), payment_amount=Decimal('0'), payment_mode='cash'):
+    from apps.core.gl_utils import get_cash_code
+
+    cb, created = CashbookMaster.objects.get_or_create(
+        branch=branch, txn_date=txn_date,
+        defaults={'opening_balance': Decimal('0')},
+    )
+    if created:
+        prev = CashbookMaster.objects.filter(
+            branch=branch, txn_date__lt=txn_date,
+        ).order_by('-txn_date').first()
+        if prev:
+            cb.opening_balance = prev.closing_balance
+        else:
+            cash_code = get_cash_code(branch)
+            cash_head = ChartOfAccounts.objects.filter(code=cash_code).first()
+            cb.opening_balance = cash_head.opening_balance if cash_head else Decimal('0')
+
+    cb.total_receipts += receipt_amount
+    cb.total_payments += payment_amount
+    if payment_mode == 'cash':
+        cb.receipt_cash += receipt_amount
+        cb.payment_cash += payment_amount
+    else:
+        cb.receipt_transfer += receipt_amount
+        cb.payment_transfer += payment_amount
+    cb.closing_balance = cb.opening_balance + cb.total_receipts - cb.total_payments
+    cb.save()
+    return cb
 
 
 def get_trial_balance(from_date=None, to_date=None, branch=None, as_of_date=None):
@@ -290,3 +348,77 @@ def generate_voucher_no(voucher_type, branch):
 
     seq = (max_seq or 0) + 1
     return f'{prefix}/{seq:06d}'
+
+
+def _get_or_create_ibt_head():
+    head, _created = ChartOfAccounts.objects.get_or_create(
+        code='1020',
+        defaults={
+            'name': 'Inter-Branch Transfer Account',
+            'account_group': 'asset',
+            'related_table_name': 'general',
+            'is_system': True,
+            'allow_transactions': True,
+            'report_position': 'balance_sheet',
+        },
+    )
+    return head.code
+
+
+def create_inter_branch_transfer(from_branch, to_branch, amount, transfer_date, narration, user):
+    from apps.accounting.models import InterBranchTransfer
+    from apps.core.gl_utils import get_cash_code
+
+    last = InterBranchTransfer.objects.order_by('-pk').first()
+    seq = (last.pk + 1) if last else 1
+    transfer_no = f'IBT-{seq:06d}'
+
+    ibt_code = _get_or_create_ibt_head()
+    cash_code_from = get_cash_code(from_branch)
+    cash_code_to = get_cash_code(to_branch)
+
+    with transaction.atomic():
+        je_from = create_journal_entry(
+            entry_date=transfer_date,
+            voucher_type='contra',
+            branch=from_branch,
+            narration=f'Inter-branch transfer to {to_branch.branch_name}: {narration}',
+            lines=[
+                {'account_code': ibt_code, 'debit': amount, 'credit': Decimal('0')},
+                {'account_code': cash_code_from, 'debit': Decimal('0'), 'credit': amount},
+            ],
+            user=user,
+            reference_type='inter_branch_transfer',
+        )
+
+        je_to = create_journal_entry(
+            entry_date=transfer_date,
+            voucher_type='contra',
+            branch=to_branch,
+            narration=f'Inter-branch transfer from {from_branch.branch_name}: {narration}',
+            lines=[
+                {'account_code': cash_code_to, 'debit': amount, 'credit': Decimal('0')},
+                {'account_code': ibt_code, 'debit': Decimal('0'), 'credit': amount},
+            ],
+            user=user,
+            reference_type='inter_branch_transfer',
+        )
+
+        transfer = InterBranchTransfer.objects.create(
+            transfer_no=transfer_no,
+            from_branch=from_branch,
+            to_branch=to_branch,
+            amount=amount,
+            transfer_date=transfer_date,
+            narration=narration,
+            status='completed',
+            journal_entry_from=je_from,
+            journal_entry_to=je_to,
+            created_by=user,
+            approved_by=user,
+        )
+
+        update_cashbook(from_branch, transfer_date, payment_amount=amount)
+        update_cashbook(to_branch, transfer_date, receipt_amount=amount)
+
+    return transfer

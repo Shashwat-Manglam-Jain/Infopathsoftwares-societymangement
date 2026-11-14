@@ -7,10 +7,19 @@
 {% block content %}
 <div class="max-w-full space-y-4">
 
-
-    <div>
-        <h2 class="text-lg font-semibold text-gray-900">{% trans "Collection Posting" %}</h2>
-        <p class="text-sm text-gray-500">{% trans "Post submitted agent collections to credit respective customer pigmmy accounts." %}</p>
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+            <h2 class="text-lg font-semibold text-gray-900">{% trans "Collection Posting" %}</h2>
+            <p class="text-sm text-gray-500">{% trans "Post submitted agent collections to credit respective customer pigmmy accounts." %}</p>
+        </div>
+        <form method="get" class="flex items-center gap-2">
+            <select name="agent" onchange="this.form.submit()" class="searchable text-sm border border-gray-300 rounded px-2.5 py-1.5 focus:ring-primary-500 focus:border-primary-500">
+                <option value="">{% trans "All Agents" %}</option>
+                {% for ag in agents %}
+                <option value="{{ ag.id }}" {% if request.GET.agent == ag.id|stringformat:"d" %}selected{% endif %}>{{ ag.agent_code }} — {{ ag.member.name }}</option>
+                {% endfor %}
+            </select>
+        </form>
     </div>
 
     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
@@ -22,6 +31,7 @@
             <table class="min-w-full text-sm">
                 <thead>
                     <tr class="text-left text-xs font-semibold text-gray-500 uppercase bg-gray-50">
+                        <th class="px-2 py-2 w-8"></th>
                         <th class="px-4 py-2">{% trans "Date" %}</th>
                         <th class="px-4 py-2">{% trans "Agent" %}</th>
                         <th class="px-4 py-2">{% trans "Branch" %}</th>
@@ -30,26 +40,69 @@
                         <th class="px-4 py-2 text-center">{% trans "Action" %}</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
-                    {% for c in pending %}
-                    <tr class="hover:bg-gray-50">
+                {% for c in pending %}
+                <tbody x-data="{ open: false }" class="border-b border-gray-100">
+                    <tr class="hover:bg-gray-50 cursor-pointer" @click="open = !open">
+                        <td class="px-2 py-2 text-gray-400">
+                            <svg class="h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-90' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </td>
                         <td class="px-4 py-2 text-gray-900">{{ c.collection_date|date:"d-M-Y" }}</td>
-                        <td class="px-4 py-2 text-gray-900">{{ c.agent.agent_code }} — {{ c.agent.member.name }}</td>
+                        <td class="px-4 py-2"><a href="{% url 'agents:detail' pk=c.agent.pk %}" class="text-primary-600 hover:underline" @click.stop>{{ c.agent.agent_code }} — {{ c.agent.member.name }}</a></td>
                         <td class="px-4 py-2 text-gray-500">{{ c.branch.branch_name }}</td>
                         <td class="px-4 py-2 text-right text-gray-900">{{ c.total_clients_collected }}</td>
                         <td class="px-4 py-2 text-right font-medium text-gray-900">{{ c.collected_amount|floatformat:2 }}</td>
-                        <td class="px-4 py-2 text-center">
-                            {% if request.user.is_cashier %}
-                            <form method="post" action="{% url 'agents:collection_post' c.pk %}" class="inline"
-                                  onsubmit="return confirm('Post collection of {{ c.collected_amount|floatformat:2 }} for {{ c.agent.agent_code }} on {{ c.collection_date }}?');">
-                                {% csrf_token %}
-                                <button type="submit" class="px-3 py-1 bg-green-600 text-white text-xs font-medium rounded hover:bg-green-700">{% trans "Post" %}</button>
-                            </form>
-                            {% endif %}
+                        <td class="px-4 py-2 text-center" @click.stop>
+                            <div class="flex items-center justify-center gap-2">
+                                <a href="{% url 'agents:collection_detail' pk=c.pk %}" class="p-1 text-gray-400 hover:text-primary-600" title="{% trans 'View Detail' %}">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                </a>
+                                {% if request.user.is_manager %}
+                                <form method="post" action="{% url 'agents:collection_post' c.pk %}" class="inline"
+                                      onsubmit="return confirm('Post collection of {{ c.collected_amount|floatformat:2 }} for {{ c.agent.agent_code }} on {{ c.collection_date }}?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="px-3 py-1 bg-green-600 text-white text-xs font-medium rounded hover:bg-green-700">{% trans "Post" %}</button>
+                                </form>
+                                <form method="post" action="{% url 'agents:collection_reject' c.pk %}" class="inline"
+                                      onsubmit="return confirm('Reject collection of {{ c.collected_amount|floatformat:2 }} for {{ c.agent.agent_code }}? This will reverse all transactions.');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="px-3 py-1 bg-red-600 text-white text-xs font-medium rounded hover:bg-red-700">{% trans "Reject" %}</button>
+                                </form>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
-                    {% endfor %}
+                    <tr :class="open ? '' : 'hidden'">
+                        <td colspan="7" class="px-0 py-0 bg-gray-50">
+                            <table class="w-full text-xs">
+                                <thead>
+                                    <tr class="text-left text-xs font-semibold text-gray-400 uppercase">
+                                        <th class="px-6 py-1.5">{% trans "Account" %}</th>
+                                        <th class="px-4 py-1.5">{% trans "Member" %}</th>
+                                        <th class="px-4 py-1.5">{% trans "Type" %}</th>
+                                        <th class="px-4 py-1.5 text-right">{% trans "Installment #" %}</th>
+                                        <th class="px-4 py-1.5 text-right">{% trans "Amount" %}</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    {% for txn in c.client_transactions %}
+                                    <tr>
+                                        <td class="px-6 py-1.5 font-mono text-gray-700">{{ txn.account.account_no }}</td>
+                                        <td class="px-4 py-1.5 text-gray-700">{{ txn.account.member.name }}</td>
+                                        <td class="px-4 py-1.5">
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium {% if txn.account.deposit_type == 'daily' %}bg-blue-100 text-blue-700{% elif txn.account.deposit_type == 'weekly' %}bg-amber-100 text-amber-700{% else %}bg-purple-100 text-purple-700{% endif %}">{{ txn.account.get_deposit_type_display }}</span>
+                                        </td>
+                                        <td class="px-4 py-1.5 text-right text-gray-500">{{ txn.installment_no }}</td>
+                                        <td class="px-4 py-1.5 text-right font-medium text-gray-900">{{ txn.amount|floatformat:2 }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr><td colspan="5" class="px-6 py-2 text-gray-400">{% trans "No transactions" %}</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
                 </tbody>
+                {% endfor %}
             </table>
         </div>
         {% else %}
@@ -60,34 +113,91 @@
     </div>
 
     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div class="px-5 py-3 border-b border-gray-200">
-            <h3 class="text-xs font-semibold text-gray-500 uppercase">{% trans "Recently Posted (Reconciled)" %}</h3>
+        <div class="px-5 py-3 border-b border-gray-200 flex items-center justify-between">
+            <h3 class="text-xs font-semibold text-gray-500 uppercase">{% trans "Recently Posted / Rejected" %}</h3>
+            {% if today_rollback_count > 0 and request.user.is_manager %}
+            <form method="post" action="{% url 'agents:collection_rollback_all' %}" class="inline"
+                  onsubmit="return confirm('Rollback ALL {{ today_rollback_count }} posted collection(s) for today?\nTotal: ₹{{ today_rollback_total|floatformat:2 }}\n\nThis will reverse journal entries, cashbook, and savings account credits.');">
+                {% csrf_token %}
+                <button type="submit" class="px-3 py-1 bg-red-600 text-white text-xs font-medium rounded hover:bg-red-700">Rollback All ({{ today_rollback_count }})</button>
+            </form>
+            {% endif %}
         </div>
         {% if posted %}
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
                 <thead>
                     <tr class="text-left text-xs font-semibold text-gray-500 uppercase bg-gray-50">
-                        <th class="px-4 py-2">Date</th>
-                        <th class="px-4 py-2">Agent</th>
-                        <th class="px-4 py-2">Branch</th>
-                        <th class="px-4 py-2 text-right">Clients</th>
+                        <th class="px-2 py-2 w-8"></th>
+                        <th class="px-4 py-2">{% trans "Date" %}</th>
+                        <th class="px-4 py-2">{% trans "Agent" %}</th>
+                        <th class="px-4 py-2">{% trans "Branch" %}</th>
+                        <th class="px-4 py-2 text-right">{% trans "Clients" %}</th>
                         <th class="px-4 py-2 text-right">{% trans "Amount" %}</th>
-                        <th class="px-4 py-2">{% trans "Posted By" %}</th>
+                        <th class="px-4 py-2">{% trans "Status" %}</th>
+                        <th class="px-4 py-2">{% trans "By" %}</th>
+                        <th class="px-4 py-2 text-center">{% trans "Action" %}</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
-                    {% for c in posted %}
-                    <tr>
+                {% for c in posted %}
+                <tbody x-data="{ open: false }" class="border-b border-gray-100">
+                    <tr class="hover:bg-gray-50 cursor-pointer" @click="open = !open">
+                        <td class="px-2 py-2 text-gray-400">
+                            <svg class="h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-90' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </td>
                         <td class="px-4 py-2 text-gray-900">{{ c.collection_date|date:"d-M-Y" }}</td>
-                        <td class="px-4 py-2 text-gray-900">{{ c.agent.agent_code }} — {{ c.agent.member.name }}</td>
+                        <td class="px-4 py-2" @click.stop><a href="{% url 'agents:detail' pk=c.agent.pk %}" class="text-primary-600 hover:underline">{{ c.agent.agent_code }} — {{ c.agent.member.name }}</a></td>
                         <td class="px-4 py-2 text-gray-500">{{ c.branch.branch_name }}</td>
                         <td class="px-4 py-2 text-right text-gray-900">{{ c.total_clients_collected }}</td>
-                        <td class="px-4 py-2 text-right font-medium text-green-700">{{ c.collected_amount|floatformat:2 }}</td>
-                        <td class="px-4 py-2 text-gray-500">{{ c.reconciled_by.get_full_name|default:c.reconciled_by.username|default:"—" }}</td>
+                        <td class="px-4 py-2 text-right font-medium {% if c.status == 'reconciled' %}text-green-700{% else %}text-red-700{% endif %}">{{ c.collected_amount|floatformat:2 }}</td>
+                        <td class="px-4 py-2">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if c.status == 'reconciled' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">{{ c.get_status_display }}</span>
+                        </td>
+                        <td class="px-4 py-2 text-gray-500 text-sm">{% if c.reconciled_by %}{{ c.reconciled_by.get_full_name|default:c.reconciled_by.username }}{% else %}—{% endif %}</td>
+                        <td class="px-4 py-2 text-center" @click.stop>
+                            {% if c.can_rollback and request.user.is_manager %}
+                            <form method="post" action="{% url 'agents:collection_rollback' c.pk %}" class="inline"
+                                  onsubmit="return confirm('Rollback collection of ₹{{ c.collected_amount|floatformat:2 }} for {{ c.agent.agent_code }}?\n\nThis will reverse journal entries, cashbook, and savings account credits.');">
+                                {% csrf_token %}
+                                <button type="submit" class="px-2 py-1 bg-red-600 text-white text-xs font-medium rounded hover:bg-red-700">Rollback</button>
+                            </form>
+                            {% else %}
+                            <span class="text-xs text-gray-400">—</span>
+                            {% endif %}
+                        </td>
                     </tr>
-                    {% endfor %}
+                    <tr :class="open ? '' : 'hidden'">
+                        <td colspan="9" class="px-0 py-0 bg-gray-50">
+                            <table class="w-full text-xs">
+                                <thead>
+                                    <tr class="text-left text-xs font-semibold text-gray-400 uppercase">
+                                        <th class="px-6 py-1.5">{% trans "Account" %}</th>
+                                        <th class="px-4 py-1.5">{% trans "Member" %}</th>
+                                        <th class="px-4 py-1.5">{% trans "Type" %}</th>
+                                        <th class="px-4 py-1.5 text-right">{% trans "Installment #" %}</th>
+                                        <th class="px-4 py-1.5 text-right">{% trans "Amount" %}</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    {% for txn in c.client_transactions %}
+                                    <tr>
+                                        <td class="px-6 py-1.5 font-mono text-gray-700">{{ txn.account.account_no }}</td>
+                                        <td class="px-4 py-1.5 text-gray-700">{{ txn.account.member.name }}</td>
+                                        <td class="px-4 py-1.5">
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium {% if txn.account.deposit_type == 'daily' %}bg-blue-100 text-blue-700{% elif txn.account.deposit_type == 'weekly' %}bg-amber-100 text-amber-700{% else %}bg-purple-100 text-purple-700{% endif %}">{{ txn.account.get_deposit_type_display }}</span>
+                                        </td>
+                                        <td class="px-4 py-1.5 text-right text-gray-500">{{ txn.installment_no }}</td>
+                                        <td class="px-4 py-1.5 text-right font-medium text-gray-900">{{ txn.amount|floatformat:2 }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr><td colspan="5" class="px-6 py-2 text-gray-400">{% trans "No transactions" %}</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
                 </tbody>
+                {% endfor %}
             </table>
         </div>
         {% else %}

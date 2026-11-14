@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Collection Detail" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Pigmmy Module" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl space-y-4">
+
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div>
+            <h2 class="text-lg font-semibold text-gray-900">{% trans "Collection Detail" %}</h2>
+            <p class="text-sm text-gray-500">{{ collection.collection_date|date:"d-M-Y" }} — {{ collection.agent.agent_code }} ({{ collection.agent.member.name }})</p>
+        </div>
+        <a href="{% url 'agents:collection_list' %}" class="text-sm text-primary-600 hover:underline">&larr; {% trans "Back to Collections" %}</a>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="px-5 py-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+            <div>
+                <span class="text-gray-500 block text-xs">{% trans "Agent" %}</span>
+                <a href="{% url 'agents:detail' pk=collection.agent.pk %}" class="font-medium text-primary-600 hover:underline">{{ collection.agent.agent_code }} — {{ collection.agent.member.name }}</a>
+            </div>
+            <div>
+                <span class="text-gray-500 block text-xs">{% trans "Date" %}</span>
+                <span class="font-medium text-gray-900">{{ collection.collection_date|date:"d-M-Y" }}</span>
+            </div>
+            <div>
+                <span class="text-gray-500 block text-xs">{% trans "Collected Amount" %}</span>
+                <span class="font-medium text-gray-900">{{ collection.collected_amount|floatformat:2 }}</span>
+            </div>
+            <div>
+                <span class="text-gray-500 block text-xs">{% trans "Status" %}</span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if collection.status == 'reconciled' %}bg-green-100 text-green-800{% elif collection.status == 'submitted' %}bg-blue-100 text-blue-800{% elif collection.status == 'discrepancy' %}bg-red-100 text-red-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">{{ collection.get_status_display }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-5 py-3 border-b border-gray-200">
+            <h3 class="text-xs font-semibold text-gray-500 uppercase">{% trans "Client-wise Breakdown" %} ({{ transactions|length }})</h3>
+        </div>
+        {% if transactions %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead>
+                    <tr class="text-left text-xs font-semibold text-gray-500 uppercase bg-gray-50">
+                        <th class="px-4 py-2 w-8">#</th>
+                        <th class="px-4 py-2">{% trans "Account" %}</th>
+                        <th class="px-4 py-2">{% trans "Member" %}</th>
+                        <th class="px-4 py-2 text-right">{% trans "Installment #" %}</th>
+                        <th class="px-4 py-2 text-right">{% trans "Amount" %}</th>
+                        <th class="px-4 py-2 text-right">{% trans "Balance After" %}</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for txn in transactions %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-2 text-gray-400">{{ forloop.counter }}</td>
+                        <td class="px-4 py-2 font-mono">
+                            <a href="{% url 'agents:pigmmy_detail' pk=txn.account.pk %}" class="text-primary-600 hover:underline">{{ txn.account.account_no }}</a>
+                        </td>
+                        <td class="px-4 py-2 text-gray-900">{{ txn.account.member.name }}</td>
+                        <td class="px-4 py-2 text-right text-gray-600">{{ txn.installment_no }}</td>
+                        <td class="px-4 py-2 text-right font-medium text-gray-900">{{ txn.amount|floatformat:2 }}</td>
+                        <td class="px-4 py-2 text-right text-gray-600">{{ txn.running_balance|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="bg-gray-50 font-semibold text-sm">
+                        <td colspan="4" class="px-4 py-2 text-right text-gray-700">{% trans "Total" %}</td>
+                        <td class="px-4 py-2 text-right text-gray-900">{{ collection.deposited_amount|floatformat:2 }}</td>
+                        <td class="px-4 py-2"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        {% else %}
+        <div class="px-5 py-6 text-center">
+            <p class="text-sm text-gray-400">{% trans "No client transactions found for this collection." %}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

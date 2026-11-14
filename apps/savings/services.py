@@ -271,12 +271,6 @@ def _generate_receipt_no(branch, txn_type):
 
 
 def _get_cash_code(branch):
-    from apps.accounting.models import ChartOfAccounts
+    from apps.core.gl_utils import get_cash_code
 
-    cash = ChartOfAccounts.objects.filter(
-        account_type='cash',
-        branch=branch,
-    ).first()
-    if cash:
-        return cash.code
-    return '1001'
+    return get_cash_code(branch)

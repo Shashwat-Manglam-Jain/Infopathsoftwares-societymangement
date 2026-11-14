@@ -95,21 +95,20 @@
                 {{ guarantor_formset.management_form }}
                 <div id="guarantor-forms" class="space-y-3">
                     {% for gform in guarantor_formset %}
-                    <div class="guarantor-row border border-gray-200 rounded p-3 bg-gray-50" data-index="{{ forloop.counter0 }}">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-semibold text-gray-500">Guarantor {{ forloop.counter }}</span>
-                            <button type="button" class="remove-guarantor text-xs text-red-600 hover:text-red-800 font-medium" onclick="removeGuarantor(this)">Remove</button>
-                            <div style="display:none">{{ gform.DELETE }}</div>
-                        </div>
+                    <div class="guarantor-row relative border border-gray-200 rounded-lg p-4 bg-gray-50/80 group hover:border-gray-300 transition-colors" data-index="{{ forloop.counter0 }}">
+                        <div style="display:none">{{ gform.DELETE }}</div>
                         {{ gform.id }}
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <button type="button" class="remove-guarantor absolute top-2 right-2 p-1 rounded-full text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors" onclick="removeGuarantor(this)" title="{% trans 'Remove guarantor' %}">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pr-6">
                             <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-0.5">Guarantor Member</label>
+                                <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Guarantor Member" %}</label>
                                 {{ gform.guarantor_member }}
                                 {% if gform.guarantor_member.errors %}<p class="text-red-600 text-xs mt-0.5">{{ gform.guarantor_member.errors.0 }}</p>{% endif %}
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-0.5">Guarantee Amount</label>
+                                <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Guarantee Amount" %}</label>
                                 {{ gform.guarantee_amount }}
                                 {% if gform.guarantee_amount.errors %}<p class="text-red-600 text-xs mt-0.5">{{ gform.guarantee_amount.errors.0 }}</p>{% endif %}
                             </div>
@@ -121,8 +120,9 @@
                 <p class="text-red-600 text-sm mt-1">{{ guarantor_formset.non_form_errors.0 }}</p>
                 {% endif %}
 
-                <button type="button" onclick="addGuarantor()" class="mt-2 inline-flex items-center gap-1 px-3 py-1.5 border border-dashed border-gray-400 rounded text-xs text-gray-600 hover:border-primary-500 hover:text-primary-600">
-                    + Add Guarantor
+                <button type="button" onclick="addGuarantor()" class="mt-2 inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-primary-700 bg-primary-50 border border-primary-200 rounded-lg hover:bg-primary-100 transition-colors">
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    {% trans "Add Guarantor" %}
                 </button>
             </div>
 
@@ -176,20 +176,18 @@ function loanForm() {
 }
 
 function addGuarantor() {
-    const container = document.getElementById('guarantor-forms');
-    const totalInput = document.getElementById('id_guarantors-TOTAL_FORMS');
-    const idx = parseInt(totalInput.value);
+    var container = document.getElementById('guarantor-forms');
+    var totalInput = document.getElementById('id_guarantors-TOTAL_FORMS');
+    var idx = parseInt(totalInput.value);
 
-    const firstRow = container.querySelector('.guarantor-row');
+    var firstRow = container.querySelector('.guarantor-row');
     if (!firstRow) return;
 
-    const newRow = firstRow.cloneNode(true);
+    var newRow = firstRow.cloneNode(true);
     newRow.setAttribute('data-index', idx);
+    newRow.style.display = '';
 
-    const label = newRow.querySelector('.text-xs.font-semibold');
-    if (label) label.textContent = 'Guarantor ' + (idx + 1);
-
-    newRow.querySelectorAll('input, select, textarea').forEach(el => {
+    newRow.querySelectorAll('input, select, textarea').forEach(function(el) {
         if (el.name) el.name = el.name.replace(/-\d+-/, '-' + idx + '-');
         if (el.id) el.id = el.id.replace(/-\d+-/, '-' + idx + '-');
         if (el.type === 'hidden' && el.name.endsWith('-id')) {
@@ -203,48 +201,42 @@ function addGuarantor() {
         }
     });
 
-    newRow.querySelectorAll('.text-red-600').forEach(el => el.remove());
+    newRow.querySelectorAll('.text-red-600').forEach(function(el) { el.remove(); });
 
     container.appendChild(newRow);
     totalInput.value = idx + 1;
 }
 
 function removeGuarantor(btn) {
-    const row = btn.closest('.guarantor-row');
-    const container = document.getElementById('guarantor-forms');
-    const totalInput = document.getElementById('id_guarantors-TOTAL_FORMS');
+    var row = btn.closest('.guarantor-row');
+    var container = document.getElementById('guarantor-forms');
 
-    const idInput = row.querySelector('input[name$="-id"]');
+    var idInput = row.querySelector('input[name$="-id"]');
     if (idInput && idInput.value) {
-        const deleteCheckbox = row.querySelector('input[name$="-DELETE"]');
+        var deleteCheckbox = row.querySelector('input[name$="-DELETE"]');
         if (deleteCheckbox) deleteCheckbox.checked = true;
         row.style.display = 'none';
         return;
     }
 
-    const visibleRows = container.querySelectorAll('.guarantor-row:not([style*="display: none"])');
+    var visibleRows = container.querySelectorAll('.guarantor-row:not([style*="display: none"])');
     if (visibleRows.length <= 1) {
-        row.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
-        row.querySelectorAll('input:not([type=hidden])').forEach(el => el.value = '');
+        row.querySelectorAll('select').forEach(function(el) { el.selectedIndex = 0; });
+        row.querySelectorAll('input:not([type=hidden])').forEach(function(el) { el.value = ''; });
         return;
     }
 
     row.remove();
 
-    const allRows = container.querySelectorAll('.guarantor-row');
-    let visibleIdx = 0;
-    allRows.forEach((r, formIdx) => {
+    var allRows = container.querySelectorAll('.guarantor-row');
+    allRows.forEach(function(r, formIdx) {
         r.setAttribute('data-index', formIdx);
-        r.querySelectorAll('input, select, textarea').forEach(el => {
+        r.querySelectorAll('input, select, textarea').forEach(function(el) {
             if (el.name) el.name = el.name.replace(/-\d+-/, '-' + formIdx + '-');
             if (el.id) el.id = el.id.replace(/-\d+-/, '-' + formIdx + '-');
         });
-        if (r.style.display !== 'none') {
-            const label = r.querySelector('.text-xs.font-semibold');
-            if (label) label.textContent = 'Guarantor ' + (++visibleIdx);
-        }
     });
-    totalInput.value = allRows.length;
+    document.getElementById('id_guarantors-TOTAL_FORMS').value = allRows.length;
 }
 </script>
 {% endblock %}

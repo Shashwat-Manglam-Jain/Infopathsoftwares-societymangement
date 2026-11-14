@@ -48,15 +48,15 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-1">Max Loan Amount</label>
-                    <input type="number" name="max_amount" value="{{ form.max_amount.value|default:'' }}" step="0.01" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                    <input type="number" name="max_amount" value="{{ form.max_amount.value|default:'' }}" step="0.01" min="1" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-1">Max Tenure (Months)</label>
-                    <input type="number" name="max_tenure_months" value="{{ form.max_tenure_months.value|default:'' }}" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                    <input type="number" name="max_tenure_months" value="{{ form.max_tenure_months.value|default:'' }}" min="1" max="999" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-1">Max Loan-to-Deposit Ratio (%)</label>
-                    <input type="number" name="max_loan_to_deposit_ratio" value="{{ form.max_loan_to_deposit_ratio.value|default:'' }}" step="0.01" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500" placeholder="e.g. 90">
+                    <input type="number" name="max_loan_to_deposit_ratio" value="{{ form.max_loan_to_deposit_ratio.value|default:'' }}" step="0.01" min="0" max="100" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500" placeholder="e.g. 90">
                 </div>
             </div>
 
@@ -69,36 +69,47 @@
             </div>
             <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
                 {% if interest_slabs %}
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Pick from Interest Master</label>
+                <div class="lg:col-span-2">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Interest Slab (from Interest Master)" %} <span class="text-red-500">*</span></label>
                     <select id="slab-picker" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
-                        <option value="">— Select a slab —</option>
+                        <option value="">— {% trans "Select a slab" %} —</option>
                         {% for slab in interest_slabs %}
-                        <option value="{{ slab.interest_rate }}" data-penal="{{ slab.penal_rate }}">{{ slab.account_head.name }} · {{ slab.min_period }}-{{ slab.max_period }} {{ slab.get_period_unit_display }} · {{ slab.interest_rate }}%</option>
+                        <option value="{{ slab.interest_rate }}" data-penal="{{ slab.penal_rate }}" {% if form.interest_rate.value and slab.interest_rate|stringformat:"s" == form.interest_rate.value|stringformat:"s" %}selected{% endif %}>{{ slab.min_period }}–{{ slab.max_period }} {{ slab.get_period_unit_display }} — {{ slab.interest_rate }}% {% if slab.penal_rate %}(penal {{ slab.penal_rate }}%){% endif %}</option>
                         {% endfor %}
                     </select>
-                    <p class="text-xs text-gray-400 mt-0.5">Auto-fills rate &amp; penal rate below</p>
+                    <p class="text-xs text-gray-400 mt-0.5">{% trans "Auto-fills interest rate and penal rate" %}</p>
+                </div>
+                {% else %}
+                <div class="lg:col-span-3">
+                    <div class="rounded-lg bg-amber-50 border border-amber-200 p-3">
+                        <p class="text-sm font-medium text-amber-800">{% trans "No loan interest slabs configured." %}</p>
+                        <p class="text-xs text-amber-700 mt-1">{% trans "Configure interest rate slabs in the Interest Master before creating a loan product." %}
+                            <a href="{% url 'accounting:interest_master_create' %}{% if head_id %}?head={{ head_id }}{% endif %}" class="underline font-medium">{% trans "Configure Interest Master" %} &rarr;</a>
+                        </p>
+                    </div>
                 </div>
                 {% endif %}
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Interest Rate" %} (%) <span class="text-red-500">*</span></label>
-                    <input type="number" id="interest-rate" name="interest_rate" value="{{ form.interest_rate.value|default:'' }}" step="0.01" required class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                    <input type="number" id="interest-rate" name="interest_rate" value="{{ form.interest_rate.value|default:'' }}" step="0.01" min="0" max="100" required readonly class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm bg-gray-50 cursor-not-allowed focus:border-primary-500 focus:ring-primary-500" tabindex="-1">
+                    <p class="text-xs text-gray-400 mt-0.5">{% trans "Set from Interest Master slab above" %}</p>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Interest Type</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Interest Type" %}</label>
                     {{ form.interest_type }}
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Penal Interest Rate (%)</label>
-                    <input type="number" id="penal-rate" name="penal_interest_rate" value="{{ form.penal_interest_rate.value|default:'0' }}" step="0.01" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Penal Interest Rate" %} (%)</label>
+                    <input type="number" id="penal-rate" name="penal_interest_rate" value="{{ form.penal_interest_rate.value|default:'0' }}" step="0.01" min="0" max="100" readonly class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm bg-gray-50 cursor-not-allowed focus:border-primary-500 focus:ring-primary-500" tabindex="-1">
+                    <p class="text-xs text-gray-400 mt-0.5">{% trans "Set from Interest Master slab above" %}</p>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Processing Fee (%)</label>
-                    <input type="number" name="processing_fee_percent" value="{{ form.processing_fee_percent.value|default:'0' }}" step="0.01" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Processing Fee" %} (%)</label>
+                    <input type="number" name="processing_fee_percent" value="{{ form.processing_fee_percent.value|default:'0' }}" step="0.01" min="0" max="100" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">NPA Threshold (Days)</label>
-                    <input type="number" name="npa_days_threshold" value="{{ form.npa_days_threshold.value|default:'90' }}" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "NPA Threshold (Days)" %}</label>
+                    <input type="number" name="npa_days_threshold" value="{{ form.npa_days_threshold.value|default:'90' }}" min="1" max="9999" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                 </div>
             </div>
 

@@ -25,26 +25,101 @@
         {% csrf_token %}
 
         <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+
+            <!-- Basic Details -->
             <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-xl">
                 <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
                     <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                    Branch Details
+                    {% trans "Branch Details" %}
                 </h3>
             </div>
-            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                {% for field in form %}
-                <div {% if field.name == 'address' %}class="md:col-span-2"{% endif %}>
-                    {% if field.field.widget.input_type == 'checkbox' %}
-                    <label class="flex items-center gap-1.5 cursor-pointer">
-                        {{ field }}
-                        <span class="text-sm text-gray-700">{{ field.label }}</span>
-                    </label>
-                    {% else %}
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ field.label }}{% if field.field.required %} <span class="text-red-500">*</span>{% endif %}</label>
-                    {{ field }}
-                    {% endif %}
+            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ form.branch_code.label }} <span class="text-red-500">*</span></label>
+                    {{ form.branch_code }}
                 </div>
-                {% endfor %}
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ form.branch_name.label }} <span class="text-red-500">*</span></label>
+                    {{ form.branch_name }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ form.ifsc_code.label }}</label>
+                    {{ form.ifsc_code }}
+                </div>
+                <div class="md:col-span-2 lg:col-span-3">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ form.address.label }}</label>
+                    {{ form.address }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ form.address_line_2.label }}</label>
+                    {{ form.address_line_2 }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ form.city.label }}</label>
+                    {{ form.city }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ form.state.label }}</label>
+                    {{ form.state }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ form.pincode.label }}</label>
+                    {{ form.pincode }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ form.phone.label }}</label>
+                    {{ form.phone }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ form.email.label }}</label>
+                    {{ form.email }}
+                </div>
+            </div>
+
+            <!-- Features -->
+            <div class="px-5 py-3 border-b border-t border-gray-200 bg-gray-50/50">
+                <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    {% trans "Features & Services" %}
+                </h3>
+            </div>
+            <div class="px-5 py-4">
+                <div class="flex flex-wrap gap-x-8 gap-y-3">
+                    <label class="flex items-center gap-2 cursor-pointer px-4 py-2.5 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+                        {{ form.is_head_office }}
+                        <span class="text-sm text-gray-700">{{ form.is_head_office.label }}</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer px-4 py-2.5 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+                        {{ form.locker_facility }}
+                        <span class="text-sm text-gray-700">{{ form.locker_facility.label }}</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer px-4 py-2.5 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+                        {{ form.neft_imps_service }}
+                        <span class="text-sm text-gray-700">{{ form.neft_imps_service.label }}</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Management -->
+            <div class="px-5 py-3 border-b border-t border-gray-200 bg-gray-50/50">
+                <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    {% trans "Management" %}
+                </h3>
+            </div>
+            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ form.opening_date.label }}</label>
+                    {{ form.opening_date }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ form.status.label }}</label>
+                    {{ form.status }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ form.manager.label }}</label>
+                    {{ form.manager }}
+                </div>
             </div>
 
             <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex items-center justify-end gap-3">

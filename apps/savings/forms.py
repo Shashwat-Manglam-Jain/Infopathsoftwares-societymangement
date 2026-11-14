@@ -9,7 +9,7 @@ _tw_s = 'searchable ' + _tw
 class SavingsAccountForm(forms.ModelForm):
     class Meta:
         model = SavingsAccount
-        fields = ['member', 'branch', 'account_type', 'interest_rate', 'minimum_balance', 'interest_posting_frequency']
+        fields = ['member', 'branch', 'account_type', 'interest_rate', 'minimum_balance', 'interest_posting_frequency', 'opening_date', 'meeting_no', 'meeting_date', 'introducer', 'gl_head', 'folio_number']
         widgets = {
             'member': forms.Select(attrs={'class': _tw_s}),
             'branch': forms.Select(attrs={'class': _tw}),
@@ -18,17 +18,31 @@ class SavingsAccountForm(forms.ModelForm):
                 attrs={
                     'class': _tw + ' bg-gray-50 cursor-not-allowed',
                     'step': '0.01',
+                    'min': '0',
+                    'max': '100',
                     'readonly': True,
                     'tabindex': '-1',
                 }
             ),
-            'minimum_balance': forms.NumberInput(attrs={'class': _tw, 'step': '0.01'}),
+            'minimum_balance': forms.NumberInput(attrs={'class': _tw, 'step': '0.01', 'min': '0'}),
             'interest_posting_frequency': forms.Select(attrs={'class': _tw}),
+            'opening_date': forms.DateInput(attrs={'class': _tw, 'type': 'date'}),
+            'meeting_no': forms.TextInput(attrs={'class': _tw}),
+            'meeting_date': forms.DateInput(attrs={'class': _tw, 'type': 'date'}),
+            'introducer': forms.Select(attrs={'class': _tw_s}),
+            'gl_head': forms.Select(attrs={'class': _tw}),
+            'folio_number': forms.TextInput(attrs={'class': _tw}),
         }
 
     def __init__(self, *args, **kwargs):
         self.current_branch = kwargs.pop('current_branch', None)
         super().__init__(*args, **kwargs)
+        self.fields['opening_date'].required = True
+        self.fields['meeting_no'].required = False
+        self.fields['meeting_date'].required = False
+        self.fields['introducer'].required = False
+        self.fields['gl_head'].required = False
+        self.fields['folio_number'].required = False
         self.fields['branch'].empty_label = None
         if self.current_branch:
             self.fields['branch'].initial = self.current_branch
@@ -63,11 +77,13 @@ class SavingsAccountEditForm(forms.ModelForm):
                 attrs={
                     'class': _tw + ' bg-gray-50 cursor-not-allowed',
                     'step': '0.01',
+                    'min': '0',
+                    'max': '100',
                     'readonly': True,
                     'tabindex': '-1',
                 }
             ),
-            'minimum_balance': forms.NumberInput(attrs={'class': _tw, 'step': '0.01'}),
+            'minimum_balance': forms.NumberInput(attrs={'class': _tw, 'step': '0.01', 'min': '0'}),
             'interest_posting_frequency': forms.Select(attrs={'class': _tw}),
         }
 

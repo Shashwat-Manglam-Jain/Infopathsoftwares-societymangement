@@ -417,8 +417,10 @@
                 list.innerHTML = '';
                 var f = filter.toLowerCase();
                 var count = 0;
+                var excludeVal = sel.dataset.excludeValue || '';
                 opts.forEach(function(o) {
                     if (!o.value) return;
+                    if (o.value === excludeVal) return;
                     if (f && o.text.toLowerCase().indexOf(f) === -1) return;
                     if (count++ > 50) return;
                     var div = document.createElement('div');

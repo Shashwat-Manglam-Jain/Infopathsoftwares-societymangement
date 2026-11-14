@@ -13,11 +13,11 @@
             <p class="text-sm text-gray-500 mt-1">{{ total }} interest slab{{ total|pluralize }} across {{ groups|length }} account head{{ groups|length|pluralize }}.</p>
         </div>
         <div class="flex gap-2">
-            <button onclick="document.querySelectorAll('[data-int-tree]').forEach(el => el.__x.$data.open = true)"
+            <button onclick="document.querySelectorAll('[data-int-tree]').forEach(el => { var d = Alpine.$data(el); d.open = true })"
                     class="px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
                 Expand All
             </button>
-            <button onclick="document.querySelectorAll('[data-int-tree]').forEach(el => el.__x.$data.open = false)"
+            <button onclick="document.querySelectorAll('[data-int-tree]').forEach(el => { var d = Alpine.$data(el); d.open = false })"
                     class="px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
                 Collapse All
             </button>

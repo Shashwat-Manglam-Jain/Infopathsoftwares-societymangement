@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Close Pigmmy Account" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Close Pigmmy Account" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="px-5 py-4">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                    <svg class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900">{% trans "Close this pigmmy account?" %}</h3>
+                    <p class="text-sm text-gray-500 mt-0.5">{% trans "This action cannot be undone." %}</p>
+                </div>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-3 text-sm space-y-1">
+                <p><span class="text-gray-500">{% trans "Account" %}:</span> <span class="font-mono font-medium">{{ account.account_no }}</span></p>
+                <p><span class="text-gray-500">{% trans "Member" %}:</span> <span class="font-medium">{{ account.member.name }}</span></p>
+                <p><span class="text-gray-500">{% trans "Balance" %}:</span> <span class="font-medium">{{ account.current_balance|floatformat:2 }}</span></p>
+            </div>
+        </div>
+        <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-end gap-3">
+            <a href="{% url 'agents:pigmmy_detail' pk=account.pk %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
+            <form method="post" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="px-5 py-1.5 bg-red-600 text-white text-sm font-medium rounded hover:bg-red-700">{% trans "Close Account" %}</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

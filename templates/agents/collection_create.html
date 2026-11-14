@@ -25,6 +25,9 @@
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Collection Date" %} <span class="text-red-500">*</span></label>
                     {{ form.collection_date }}
+                    {% if working_day_date %}
+                    <p class="text-xs text-green-600 mt-0.5">Working day: {{ working_day_date }}</p>
+                    {% endif %}
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Agent Declared Amount" %} <span class="text-red-500">*</span></label>
@@ -176,6 +179,16 @@ function collectionApp() {
         init() {
             const agentSelect = document.getElementById('id_agent');
             const declaredInput = document.querySelector('[name="agent_collection_amount"]');
+            const dateInput = document.querySelector('[name="collection_date"]');
+
+            // Lock date to working day
+            {% if working_day_date %}
+            if (dateInput) {
+                dateInput.value = '{{ working_day_date }}';
+                dateInput.readOnly = true;
+                dateInput.classList.add('bg-gray-50', 'cursor-not-allowed');
+            }
+            {% endif %}
 
             if (agentSelect) {
                 const onChange = () => {
@@ -191,7 +204,6 @@ function collectionApp() {
                     }
                 };
                 agentSelect.addEventListener('change', onChange);
-                // For searchable select which dispatches custom event
                 agentSelect.addEventListener('searchable-change', onChange);
                 if (agentSelect.value) {
                     this.agentId = agentSelect.value;

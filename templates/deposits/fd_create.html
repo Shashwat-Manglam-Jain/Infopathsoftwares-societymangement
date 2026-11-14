@@ -10,7 +10,7 @@
     <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
         <h3 class="text-sm font-semibold text-amber-800">No FD Interest Slabs Configured</h3>
         <p class="text-sm text-amber-700 mt-1">Configure interest rate slabs in the Interest Master before opening a Fixed Deposit.
-            <a href="{% url 'accounting:interest_master_create' %}" class="underline font-medium">Configure Interest Master &rarr;</a>
+            <a href="{% url 'accounting:interest_master_create' %}{% if head_id %}?head={{ head_id }}{% endif %}" class="underline font-medium">Configure Interest Master &rarr;</a>
         </p>
     </div>
     {% endif %}
@@ -64,7 +64,7 @@
             <template x-if="rateError">
                 <div class="mx-5 mb-3 bg-amber-50 border border-amber-200 rounded p-2">
                     <p class="text-xs text-amber-800" x-text="rateError"></p>
-                    <a href="{% url 'accounting:interest_master_create' %}" class="text-xs font-medium text-amber-800 underline">Configure Interest Master slabs &rarr;</a>
+                    <a href="{% url 'accounting:interest_master_create' %}{% if head_id %}?head={{ head_id }}{% endif %}" class="text-xs font-medium text-amber-800 underline">Configure Interest Master &rarr;</a>
                 </div>
             </template>
 

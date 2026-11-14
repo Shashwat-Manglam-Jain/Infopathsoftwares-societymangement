@@ -64,8 +64,8 @@ class SendBulkSMSView(ManagerRequiredMixin, FormView):
         if recipient_type == 'all':
             members = Member.objects.filter(status='active', phone__isnull=False).exclude(phone='')
         elif recipient_type == 'branch':
-            branch_id = form.cleaned_data.get('branch')
-            members = Member.objects.filter(status='active', branch_id=branch_id, phone__isnull=False).exclude(phone='')
+            branch = form.cleaned_data.get('branch')
+            members = Member.objects.filter(status='active', branch=branch, phone__isnull=False).exclude(phone='')
         else:
             ids_str = form.cleaned_data.get('member_ids', '')
             ids = [int(x.strip()) for x in ids_str.split(',') if x.strip().isdigit()]

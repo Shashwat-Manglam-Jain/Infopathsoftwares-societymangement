@@ -407,10 +407,9 @@ def _create_emi_collection_journal(loan, repayment, branch, user):
 
 
 def _get_cash_code(branch):
-    from apps.accounting.models import ChartOfAccounts
+    from apps.core.gl_utils import get_cash_code
 
-    cash = ChartOfAccounts.objects.filter(account_type='cash', branch=branch).first()
-    return cash.code if cash else '1001'
+    return get_cash_code(branch)
 
 
 def get_active_guarantee_count(member):

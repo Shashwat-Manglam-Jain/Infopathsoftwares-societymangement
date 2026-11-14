@@ -85,6 +85,8 @@ class FixedDeposit(models.Model):
     tenure_days = models.IntegerField()
     maturity_amount = models.DecimalField(max_digits=15, decimal_places=2)
     accrued_interest = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    last_interest_calculated_date = models.DateField(null=True, blank=True)
+    last_interest_posted_date = models.DateField(null=True, blank=True)
     is_auto_renew = models.BooleanField(default=False)
     compounding_type = models.CharField(max_length=20, default='quarterly')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')

@@ -1,5 +1,6 @@
 import logging
 import re
+import uuid
 
 from django.conf import settings
 from django.core.mail import send_mail
@@ -28,19 +29,20 @@ def render_template(template_name, context_dict):
 
 
 def send_sms(phone, message, member=None, message_type='custom'):
+    message_id = f'MSG-{uuid.uuid4().hex[:10].upper()}'
     log = SMSLog.objects.create(
         member=member,
         phone_number=phone,
         message_type=message_type,
         message_text=message,
         status='queued',
+        provider_message_id=message_id,
     )
 
     try:
         if getattr(settings, 'SMS_BACKEND', 'console') == 'console':
             logger.info('SMS [console] to %s: %s', phone, message)
             log.status = 'sent'
-            log.provider_message_id = 'console-mock'
         else:
             # Production: integrate MSG91 or other provider here
             # import requests

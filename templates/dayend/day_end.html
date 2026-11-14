@@ -82,11 +82,18 @@
             <p class="text-xs text-gray-500 mb-2">Loan interest, demand, RD dues.</p>
             <form method="post" action="{% url 'dayend:month_end' %}">
                 {% csrf_token %}
-                <div class="w-full rounded border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-sm mb-2 text-gray-700 font-medium">
-                    {{ today|date:"M Y" }}
+                <div class="w-full rounded border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-sm mb-2 text-gray-700 font-medium flex items-center justify-between">
+                    <span>{{ today|date:"M Y" }}</span>
+                    {% if month_end_done %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Completed</span>
+                    {% endif %}
                 </div>
+                {% if month_end_done %}
+                <button type="button" disabled class="w-full px-3 py-1.5 bg-gray-400 text-white text-sm font-medium rounded cursor-not-allowed">Month End Done</button>
+                {% else %}
                 <button type="submit" class="w-full px-3 py-1.5 bg-purple-600 text-white text-sm font-medium rounded hover:bg-purple-700"
                         onclick="return confirm('Run Month End Procedure?')">Run Month End</button>
+                {% endif %}
             </form>
         </div>
 
@@ -138,6 +145,71 @@
             </a>
         </div>
     </div>
+
+    <!-- Branch Operations Status (HO only) -->
+    {% if branch_statuses %}
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mt-4">
+        <div class="px-5 py-3 border-b border-gray-200 flex items-center justify-between">
+            <p class="text-xs font-semibold text-gray-500 uppercase">Branch Operations Status</p>
+            <span class="text-xs text-gray-500">{{ branch_statuses|length }} branches</span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead>
+                    <tr class="text-left text-xs font-semibold text-gray-500 uppercase bg-gray-50">
+                        <th class="px-4 py-2">{% trans "Branch" %}</th>
+                        <th class="px-4 py-2">{% trans "Working Date" %}</th>
+                        <th class="px-4 py-2">{% trans "Day Status" %}</th>
+                        <th class="px-4 py-2">{% trans "Day End" %}</th>
+                        <th class="px-4 py-2">{% trans "Last Day End" %}</th>
+                        <th class="px-4 py-2">{% trans "Month End" %} ({{ today|date:"M Y" }})</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for s in branch_statuses %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-2 font-medium text-gray-900">
+                            {{ s.branch.branch_name }}
+                            {% if s.branch.is_head_office %}
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700 ml-1">HO</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-2 text-gray-700">
+                            {% if s.current_date %}{{ s.current_date|date:"d M Y" }}{% else %}<span class="text-gray-400">Not started</span>{% endif %}
+                        </td>
+                        <td class="px-4 py-2">
+                            {% if s.is_day_open %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Open</span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Closed</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-2">
+                            {% if s.day_end_completed %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Done</span>
+                            {% elif s.is_day_open %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">Pending</span>
+                            {% else %}
+                            <span class="text-gray-400">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-2 text-gray-500">
+                            {% if s.last_dayend_date %}{{ s.last_dayend_date|date:"d M Y" }}{% else %}<span class="text-gray-400">—</span>{% endif %}
+                        </td>
+                        <td class="px-4 py-2">
+                            {% if s.month_end_done %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Completed</span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">Pending</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Recent Day End Logs -->
     {% if logs %}
@@ -194,7 +266,7 @@
                 <tbody class="divide-y divide-gray-100">
                     {% for log in month_logs %}
                     <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-2 font-medium text-gray-900">{{ log.month_date|date:"M Y" }}</td>
+                        <td class="px-4 py-2 font-medium text-gray-900">{{ log.month|date:"M Y" }}</td>
                         <td class="px-4 py-2 text-right text-gray-700">{{ log.loan_interest_calculated_count }}</td>
                         <td class="px-4 py-2 text-right text-gray-700">{{ log.demand_generated_count }}</td>
                         <td class="px-4 py-2 text-right text-gray-700">{{ log.rd_installments_due_count }}</td>

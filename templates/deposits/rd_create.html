@@ -10,7 +10,7 @@
     <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
         <h3 class="text-sm font-semibold text-amber-800">No RD Interest Slabs Configured</h3>
         <p class="text-sm text-amber-700 mt-1">Configure Interest Master slabs for Recurring Deposits before opening an RD.
-            <a href="{% url 'accounting:interest_master_create' %}" class="underline font-medium">Configure Interest Master &rarr;</a>
+            <a href="{% url 'accounting:interest_master_create' %}{% if head_id %}?head={{ head_id }}{% endif %}" class="underline font-medium">Configure Interest Master &rarr;</a>
         </p>
     </div>
     {% endif %}
@@ -48,7 +48,7 @@
                     <template x-if="rateError">
                         <p class="text-xs text-red-600 mt-0.5">
                             <span x-text="rateError"></span>
-                            <a href="{% url 'accounting:interest_master_create' %}" class="underline ml-1">Configure Interest Master</a>
+                            <a href="{% url 'accounting:interest_master_create' %}{% if head_id %}?head={{ head_id }}{% endif %}" class="underline ml-1">Configure Interest Master</a>
                         </p>
                     </template>
                 </div>

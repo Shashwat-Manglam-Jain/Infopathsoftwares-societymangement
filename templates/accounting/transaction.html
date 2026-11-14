@@ -45,9 +45,7 @@
                 <label class="block text-xs font-medium text-gray-500 mb-1">Mode</label>
                 <select name="payment_mode" class="block w-full border border-gray-300 rounded-lg px-2.5 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
                     <option value="cash">Cash</option>
-                    <option value="cheque">Cheque</option>
-                    <option value="transfer">Bank Transfer</option>
-                    <option value="upi">UPI</option>
+                    <option value="transfer">Transfer</option>
                 </select>
             </div>
         </div>
@@ -61,30 +59,47 @@
                     Add Line
                 </button>
             </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full text-sm">
+            <div>
+                <table class="w-full text-sm table-fixed">
                     <thead>
                         <tr class="text-left text-gray-500 border-b">
-                            <th class="pb-2 pr-3">{% trans "GL Head" %}</th>
-                            <th class="pb-2 pr-3">{% trans "Account No" %}</th>
-                            <th class="pb-2 pr-3">{% trans "Description" %}</th>
-                            <th class="pb-2 pr-3 w-32 text-right">{% trans "Amount" %}</th>
-                            <th class="pb-2 w-10"></th>
+                            <th class="pb-2 pr-3" style="width:30%">{% trans "GL Head" %}</th>
+                            <th class="pb-2 pr-3" style="width:22%">{% trans "Account No" %}</th>
+                            <th class="pb-2 pr-3" style="width:28%">{% trans "Description" %}</th>
+                            <th class="pb-2 pr-3 text-right" style="width:14%">{% trans "Amount" %}</th>
+                            <th class="pb-2" style="width:6%"></th>
                         </tr>
                     </thead>
                     <tbody>
                         <template x-for="(line, idx) in lines" :key="idx">
                             <tr class="border-b border-gray-50">
                                 <td class="py-2 pr-3">
-                                    <select :name="'lines-'+idx+'-gl_account'" required
-                                            class="block w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500"
-                                            x-model="line.gl_id"
-                                            @change="onHeadChange(idx)">
-                                        <option value="">Select GL Head</option>
-                                        {% for h in heads %}
-                                        <option value="{{ h.id }}" data-rt="{{ h.related_table_name }}">{{ h.code }} — {{ h.name }}</option>
-                                        {% endfor %}
-                                    </select>
+                                    <input type="hidden" :name="'lines-'+idx+'-gl_account'" x-model="line.gl_id" :required="true">
+                                    <div class="relative">
+                                        <input type="text"
+                                               x-model="line.headQuery"
+                                               @input="onHeadInput(idx)"
+                                               @focus="line.showHeadList = true; filterHeads(idx)"
+                                               @click.away="setTimeout(() => line.showHeadList = false, 200)"
+                                               @keydown.escape="line.showHeadList = false"
+                                               autocomplete="off"
+                                               placeholder="Select GL Head..."
+                                               :class="line.gl_id ? 'block w-full border border-green-300 bg-green-50/30 rounded-lg pl-2 pr-7 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500' : 'block w-full border border-gray-300 rounded-lg pl-2 pr-7 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500'">
+                                        <svg class="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/></svg>
+                                        <div x-show="line.showHeadList && line.headResults.length > 0"
+                                             x-transition
+                                             class="absolute z-20 mt-1 min-w-full w-max max-w-sm bg-white border border-gray-200 rounded-lg shadow-lg max-h-52 overflow-y-auto">
+                                            <template x-for="(h, hi) in line.headResults" :key="hi">
+                                                <button type="button"
+                                                        @mousedown.prevent="selectHead(idx, h)"
+                                                        class="w-full text-left px-3 py-1.5 hover:bg-primary-50 text-sm border-b border-gray-100 last:border-0"
+                                                        :class="line.gl_id == h.id ? 'bg-primary-50 font-semibold' : ''">
+                                                    <span class="text-gray-600" x-text="h.code"></span>
+                                                    <span class="text-gray-500" x-text="' — ' + h.name"></span>
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </div>
                                 </td>
                                 <td class="py-2 pr-3" x-show="line.isCustomer">
                                     <div class="relative">
@@ -132,7 +147,7 @@
                     </tbody>
                     <tfoot>
                         <tr class="border-t-2 border-gray-200">
-                            <td colspan="3" class="py-3 pr-3 text-right font-semibold text-gray-700">Total</td>
+                            <td colspan="3" class="py-3 pr-3 text-right font-semibold text-gray-700" style="width:auto">Total</td>
                             <td class="py-3 pr-3 text-right font-bold text-gray-900 text-base" x-text="total.toLocaleString('en-IN', {minimumFractionDigits: 2})"></td>
                             <td></td>
                         </tr>
@@ -163,11 +178,15 @@
 </div>
 
 <script>
-const CUSTOMER_TYPES = ['saving', 'current', 'recurring', 'fixed', 'security', 'loan', 'advance', 'agent'];
+const CUSTOMER_TYPES = ['saving', 'current', 'recurring', 'fixed', 'security', 'loan', 'advance', 'agent', 'client'];
 const SEARCH_URL = '{% url "accounting:account_search" %}';
+const GL_HEADS = [
+    {% for h in heads %}{ id: '{{ h.id }}', code: '{{ h.code }}', name: '{{ h.name|escapejs }}', rt: '{{ h.related_table_name|default:"" }}' }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+].sort(function(a, b) { return a.code.localeCompare(b.code, undefined, {numeric: true}); });
 
 function newLine() {
-    return { amount: 0, gl_id: '', isCustomer: false, account_number: '', accountName: '', searchResults: [], showResults: false };
+    return { amount: 0, gl_id: '', isCustomer: false, account_number: '', accountName: '', searchResults: [], showResults: false, headQuery: '', headResults: [], showHeadList: false };
 }
 
 function transactionForm() {
@@ -178,13 +197,27 @@ function transactionForm() {
         addLine() { this.lines.push(newLine()); },
         removeLine(idx) { this.lines.splice(idx, 1); },
 
-        onHeadChange(idx) {
-            const sel = this.$el.closest('form').querySelectorAll('select[name^="lines-"]')[idx * 1] ||
-                        document.querySelector(`select[name="lines-${idx}-gl_account"]`);
-            if (!sel) return;
-            const opt = sel.options[sel.selectedIndex];
-            const rt = opt ? opt.dataset.rt : '';
-            this.lines[idx].isCustomer = CUSTOMER_TYPES.includes(rt);
+        filterHeads(idx) {
+            var q = (this.lines[idx].headQuery || '').toLowerCase();
+            if (!q) { this.lines[idx].headResults = GL_HEADS; return; }
+            this.lines[idx].headResults = GL_HEADS.filter(function(h) {
+                return h.code.toLowerCase().indexOf(q) !== -1 || h.name.toLowerCase().indexOf(q) !== -1;
+            });
+        },
+
+        onHeadInput(idx) {
+            this.lines[idx].gl_id = '';
+            this.lines[idx].isCustomer = false;
+            this.lines[idx].showHeadList = true;
+            this.filterHeads(idx);
+        },
+
+        selectHead(idx, head) {
+            this.lines[idx].gl_id = head.id;
+            this.lines[idx].headQuery = head.code + ' — ' + head.name;
+            this.lines[idx].showHeadList = false;
+            this.lines[idx].headResults = [];
+            this.lines[idx].isCustomer = CUSTOMER_TYPES.includes(head.rt);
             this.lines[idx].account_number = '';
             this.lines[idx].accountName = '';
             this.lines[idx].searchResults = [];

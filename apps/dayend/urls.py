@@ -15,4 +15,6 @@ urlpatterns = [
     path('reupdate-gl-balance/', views.reupdate_gl_balance, name='reupdate_gl_balance'),
     path('interest-calculate/', views.InterestCalculateView.as_view(), name='interest_calculate'),
     path('interest-post/', views.InterestPostView.as_view(), name='interest_post'),
+    path('interest-post/rollback/<int:entry_id>/', views.rollback_interest_posting, name='rollback_interest_posting'),
+    path('interest-post/rollback-all/', views.rollback_all_interest_postings, name='rollback_all_interest_postings'),
 ]

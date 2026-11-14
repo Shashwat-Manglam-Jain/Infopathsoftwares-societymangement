@@ -91,6 +91,7 @@ def fd_create(request):
             'form': form,
             'members': members,
             'slabs_json': slabs_json,
+            'head_id': fd_head.pk if fd_head else '',
         },
     )
 
@@ -222,6 +223,7 @@ def rd_create(request):
             'form': form,
             'members': members,
             'slabs_json': slabs_json,
+            'head_id': rd_head.pk if rd_head else '',
         },
     )
 

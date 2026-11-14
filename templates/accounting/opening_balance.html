@@ -1,32 +1,67 @@
 {% extends "base.html" %}
 {% load i18n %}
-{% block title %}{% trans "Opening Balance Updation" %} — InfoSociety{% endblock %}
-{% block page_title %}{% trans "Opening Balance Updation" %}{% endblock %}
+{% block title %}{% trans "Opening Balance" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Opening Balance" %}{% endblock %}
 
 {% block content %}
 <div class="max-w-full">
 
+    <!-- Purpose Note -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 mb-4 flex items-start gap-3">
+        <svg class="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div>
+            <p class="text-sm font-medium text-blue-800">What is this?</p>
+            <p class="text-xs text-blue-700 mt-0.5">Set the starting balance for each GL head at the beginning of the financial year. These balances are carried forward from last year's closing. All reports (Trial Balance, Cashbook, Ledger) use these as the starting point.</p>
+            <p class="text-xs text-blue-600 mt-1 font-medium">This is typically done once during initial setup or at year-start. Changing it later will affect all accounting reports.</p>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-4 py-3">
+            <span class="text-xs font-medium text-gray-500">Total Debit (Asset + Expense)</span>
+            <p class="text-lg font-bold text-gray-800">₹{{ total_debit|floatformat:2 }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-4 py-3">
+            <span class="text-xs font-medium text-gray-500">Total Credit (Liability + Income + Equity)</span>
+            <p class="text-lg font-bold text-gray-800">₹{{ total_credit|floatformat:2 }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm border {% if ob_balanced %}border-green-200{% else %}border-red-200{% endif %} px-4 py-3">
+            <span class="text-xs font-medium text-gray-500">Balance Check</span>
+            {% if ob_balanced %}
+            <p class="text-lg font-bold text-green-700">Balanced</p>
+            {% else %}
+            <p class="text-lg font-bold text-red-600">Off by ₹{{ ob_difference|floatformat:2 }}</p>
+            <p class="text-xs text-red-500 mt-0.5">Debit and Credit opening balances do not match</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Update Form -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
-        <form method="post">
+        <form method="post" id="ob-form">
             {% csrf_token %}
-            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-3">
                 <div class="md:col-span-2">
                     <label class="block text-xs font-medium text-gray-500 mb-0.5">Account Head <span class="text-red-500">*</span></label>
-                    <select name="head_id" required
-                            class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
+                    <select name="head_id" required id="head-select"
+                            class="searchable w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
                         <option value="">— Select Head —</option>
                         {% for head in heads %}
-                        <option value="{{ head.pk }}" data-balance="{{ head.opening_balance|floatformat:2 }}">
-                            {{ head.code }} — {{ head.name }} ({{ head.get_account_group_display }}) [OB: {{ head.opening_balance|floatformat:2 }}]
+                        <option value="{{ head.pk }}" data-balance="{{ head.opening_balance|floatformat:2 }}" data-name="{{ head.name }}">
+                            {{ head.code }} — {{ head.name }} ({{ head.get_account_group_display }}) [OB: ₹{{ head.opening_balance|floatformat:2 }}]
                         </option>
                         {% endfor %}
                     </select>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-0.5">New Opening Balance <span class="text-red-500">*</span></label>
-                    <input type="number" step="0.01" name="opening_balance" required placeholder="0.00"
+                    <input type="number" step="0.01" min="0" name="opening_balance" required placeholder="0.00" id="new-balance"
                            class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
                 </div>
+            </div>
+            <div id="current-ob" class="px-5 py-2 bg-amber-50 border-t border-amber-200 text-xs text-amber-700 hidden">
+                Current opening balance: <strong id="current-ob-value"></strong>
             </div>
             <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-end">
                 <button type="submit" class="px-5 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">Update Opening Balance</button>
@@ -34,6 +69,7 @@
         </form>
     </div>
 
+    <!-- Current Opening Balances Table -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-3 border-b border-gray-200">
             <h3 class="text-xs font-semibold text-gray-500 uppercase">Current {% trans "Opening Balances" %}</h3>
@@ -55,9 +91,16 @@
                     <tr class="hover:bg-gray-50">
                         <td class="px-4 py-2 font-mono text-gray-900">{{ head.code }}</td>
                         <td class="px-4 py-2 text-gray-900">{{ head.name }}</td>
-                        <td class="px-4 py-2 text-gray-500">{{ head.get_account_group_display }}</td>
-                        <td class="px-4 py-2 text-right text-gray-900">{{ head.opening_balance|floatformat:2 }}</td>
-                        <td class="px-4 py-2 text-right font-medium text-gray-900">{{ head.current_balance|floatformat:2 }}</td>
+                        <td class="px-4 py-2">
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium
+                                {% if head.account_group == 'asset' %}bg-blue-100 text-blue-700
+                                {% elif head.account_group == 'liability' %}bg-purple-100 text-purple-700
+                                {% elif head.account_group == 'income' %}bg-green-100 text-green-700
+                                {% elif head.account_group == 'expense' %}bg-red-100 text-red-700
+                                {% else %}bg-gray-100 text-gray-700{% endif %}">{{ head.get_account_group_display }}</span>
+                        </td>
+                        <td class="px-4 py-2 text-right text-gray-900">₹{{ head.opening_balance|floatformat:2 }}</td>
+                        <td class="px-4 py-2 text-right font-medium text-gray-900">₹{{ head.current_balance|floatformat:2 }}</td>
                     </tr>
                     {% endif %}
                     {% endfor %}
@@ -66,4 +109,39 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var sel = document.getElementById('head-select');
+    var obRow = document.getElementById('current-ob');
+    var obVal = document.getElementById('current-ob-value');
+    var balInput = document.getElementById('new-balance');
+    sel.addEventListener('change', function() {
+        var opt = sel.options[sel.selectedIndex];
+        if (opt.value) {
+            obVal.textContent = '₹' + opt.dataset.balance;
+            obRow.classList.remove('hidden');
+            balInput.value = opt.dataset.balance;
+        } else {
+            obRow.classList.add('hidden');
+            balInput.value = '';
+        }
+    });
+    document.getElementById('ob-form').addEventListener('submit', function(e) {
+        var opt = sel.options[sel.selectedIndex];
+        if (opt.value) {
+            var oldBal = opt.dataset.balance;
+            var newBal = balInput.value;
+            if (oldBal === newBal) {
+                e.preventDefault();
+                alert('No change — the new balance is the same as the current opening balance.');
+                return;
+            }
+            if (!confirm('Update opening balance for ' + opt.dataset.name + '?\n\nOld: ₹' + oldBal + '\nNew: ₹' + newBal + '\n\nThis will affect all accounting reports.')) {
+                e.preventDefault();
+            }
+        }
+    });
+});
+</script>
 {% endblock %}

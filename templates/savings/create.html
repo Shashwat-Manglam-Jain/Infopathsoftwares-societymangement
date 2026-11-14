@@ -50,13 +50,25 @@
                     <p id="rate-hint" class="text-xs text-gray-400 mt-0.5 hidden">Auto-filled from Interest Master</p>
                     <div id="rate-missing-banner" class="hidden mt-1 rounded bg-amber-50 border border-amber-200 p-2">
                         <p class="text-xs font-medium text-amber-800">No interest slab found.
-                            <a href="{% url 'accounting:interest_master_create' %}" class="underline">Configure Interest Master &rarr;</a>
+                            <a id="configure-interest-link" href="{% url 'accounting:interest_master_create' %}" class="underline">Configure Interest Master &rarr;</a>
                         </p>
                     </div>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-1">Minimum Balance</label>
                     {{ form.minimum_balance }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Interest Posting Frequency" %} <span class="text-red-500">*</span></label>
+                    {{ form.interest_posting_frequency }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Opening Date" %} <span class="text-red-500">*</span></label>
+                    {{ form.opening_date }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Introducer" %} <span class="text-gray-400 font-normal">(Referred by)</span></label>
+                    {{ form.introducer }}
                 </div>
             </div>
 
@@ -77,6 +89,8 @@ document.addEventListener('DOMContentLoaded', function() {
     var hint = document.getElementById('rate-hint');
     var banner = document.getElementById('rate-missing-banner');
     var submitBtn = document.getElementById('submit-btn');
+    var configLink = document.getElementById('configure-interest-link');
+    var configBaseUrl = configLink ? configLink.href : '';
 
     function setSubmitState(enabled) {
         if (!submitBtn) return;
@@ -108,6 +122,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     rateInput.value = '0';
                     if (hint) hint.classList.add('hidden');
                     if (banner) banner.classList.remove('hidden');
+                    if (configLink && d.head_id) {
+                        configLink.href = configBaseUrl + '?head=' + d.head_id;
+                    }
                     setSubmitState(false);
                 }
             });
@@ -116,6 +133,17 @@ document.addEventListener('DOMContentLoaded', function() {
     if (typeSelect && rateInput) {
         typeSelect.addEventListener('change', fetchRate);
         if (typeSelect.value) fetchRate();
+    }
+
+    var memberSelect = document.querySelector('select[name="member"]');
+    var introducerSelect = document.querySelector('select[name="introducer"]');
+    if (memberSelect && introducerSelect) {
+        memberSelect.addEventListener('change', function() {
+            introducerSelect.dataset.excludeValue = memberSelect.value;
+        });
+        if (memberSelect.value) {
+            introducerSelect.dataset.excludeValue = memberSelect.value;
+        }
     }
 });
 </script>

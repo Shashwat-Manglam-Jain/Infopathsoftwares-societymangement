@@ -23,4 +23,5 @@ urlpatterns = [
     path('cashbook-report/', views.cashbook_report, name='cashbook_report'),
     path('opening-balance/', views.opening_balance_update, name='opening_balance'),
     path('account-search/', views.account_search, name='account_search'),
+    path('inter-branch-transfer/', views.inter_branch_transfer, name='inter_branch_transfer'),
 ]

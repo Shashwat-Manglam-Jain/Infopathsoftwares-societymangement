@@ -12,11 +12,11 @@
             <p class="text-sm text-gray-500 mt-1">{{ total }} account head{{ total|pluralize:"s" }}</p>
         </div>
         <div class="flex gap-2">
-            <button onclick="document.querySelectorAll('[data-tree]').forEach(t => t.__x.$data.expandAll())"
+            <button onclick="document.querySelectorAll('[data-tree]').forEach(t => Alpine.$data(t).expandAll())"
                     class="px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
                 Expand All
             </button>
-            <button onclick="document.querySelectorAll('[data-tree]').forEach(t => t.__x.$data.collapseAll())"
+            <button onclick="document.querySelectorAll('[data-tree]').forEach(t => Alpine.$data(t).collapseAll())"
                     class="px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
                 Collapse All
             </button>

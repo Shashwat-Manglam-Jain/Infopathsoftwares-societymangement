@@ -5,43 +5,97 @@
 {% block page_title %}{% trans "Send Bulk SMS" %}{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl">
-    {% if messages %}
-    {% for message in messages %}
-    <div class="rounded-lg p-3 mb-4 text-sm {% if message.tags == 'error' %}bg-red-50 text-red-800 border border-red-200{% else %}bg-green-50 text-green-800 border border-green-200{% endif %}">{{ message }}</div>
-    {% endfor %}
-    {% endif %}
+<div class="max-w-2xl">
+
+    <!-- Purpose Note -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 mb-4 flex items-start gap-3">
+        <svg class="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div>
+            <p class="text-sm font-medium text-blue-800">Send SMS to members</p>
+            <p class="text-xs text-blue-700 mt-0.5">Send a custom SMS to all active members, a specific branch, or selected members by ID.</p>
+        </div>
+    </div>
 
     <form method="post">
         {% csrf_token %}
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
             <div class="px-5 py-4 space-y-4">
+
+                <!-- Recipient Type -->
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Recipient Type" %} <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Send To" %} <span class="text-red-500">*</span></label>
                     {{ form.recipient_type }}
+                    {% if form.recipient_type.errors %}
+                    <p class="text-xs text-red-600 mt-0.5">{{ form.recipient_type.errors.0 }}</p>
+                    {% endif %}
                 </div>
-                {% if form.branch %}
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Branch" %}</label>
+
+                <!-- Branch (shown when recipient_type == 'branch') -->
+                <div id="branch-field" class="hidden">
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Branch" %} <span class="text-red-500">*</span></label>
                     {{ form.branch }}
+                    {% if form.branch.errors %}
+                    <p class="text-xs text-red-600 mt-0.5">{{ form.branch.errors.0 }}</p>
+                    {% endif %}
                 </div>
-                {% endif %}
-                {% if form.member_ids %}
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Member IDs (comma-separated)" %}</label>
+
+                <!-- Member IDs (shown when recipient_type == 'selected') -->
+                <div id="member-ids-field" class="hidden">
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Member IDs" %} <span class="text-red-500">*</span></label>
                     {{ form.member_ids }}
+                    <p class="text-xs text-gray-400 mt-0.5">Comma-separated member IDs, e.g. 1, 2, 5, 12</p>
+                    {% if form.member_ids.errors %}
+                    <p class="text-xs text-red-600 mt-0.5">{{ form.member_ids.errors.0 }}</p>
+                    {% endif %}
                 </div>
-                {% endif %}
+
+                <!-- Message -->
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Message" %} <span class="text-red-500">*</span></label>
                     {{ form.message }}
+                    <div class="flex justify-between mt-0.5">
+                        <p class="text-xs text-gray-400">Max 160 characters per SMS</p>
+                        <p class="text-xs text-gray-400"><span id="char-count">0</span> / 160</p>
+                    </div>
+                    {% if form.message.errors %}
+                    <p class="text-xs text-red-600 mt-0.5">{{ form.message.errors.0 }}</p>
+                    {% endif %}
                 </div>
+
             </div>
-            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
-                <a href="{% url 'notifications:sms_log' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
-                <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-primary-700">{% trans "Send" %}</button>
+            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-between">
+                <a href="{% url 'notifications:sms_log' %}" class="text-sm text-gray-500 hover:underline">&larr; SMS Log</a>
+                <button type="submit" class="px-5 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700"
+                        onclick="return confirm('Send SMS to the selected recipients?')">{% trans "Send SMS" %}</button>
             </div>
         </div>
     </form>
+
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var recipientType = document.getElementById('id_recipient_type');
+    var branchField = document.getElementById('branch-field');
+    var memberIdsField = document.getElementById('member-ids-field');
+    var messageArea = document.querySelector('textarea[name="message"]');
+    var charCount = document.getElementById('char-count');
+
+    function toggleFields() {
+        var val = recipientType.value;
+        branchField.classList.toggle('hidden', val !== 'branch');
+        memberIdsField.classList.toggle('hidden', val !== 'selected');
+    }
+
+    recipientType.addEventListener('change', toggleFields);
+    toggleFields();
+
+    if (messageArea && charCount) {
+        messageArea.addEventListener('input', function() {
+            charCount.textContent = messageArea.value.length;
+        });
+        charCount.textContent = messageArea.value.length;
+    }
+});
+</script>
 {% endblock %}

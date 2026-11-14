@@ -45,7 +45,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     {% for entry in entries %}
-                    <tr class="hover:bg-gray-50 cursor-pointer transition-colors" onclick="window.location.href='{% url 'accounting:voucher_edit' entry.pk %}'">
+                    <tr class="{% if not entry.is_reversed %}hover:bg-gray-50 cursor-pointer{% else %}opacity-60{% endif %} transition-colors" {% if not entry.is_reversed %}onclick="window.location.href='{% url 'accounting:voucher_edit' entry.pk %}'"{% endif %}>
                         <td class="px-4 py-3 text-sm font-mono text-gray-900">{{ entry.voucher_no }}</td>
                         <td class="px-4 py-3 text-sm text-gray-600">{{ entry.entry_date|date:"d M Y" }}</td>
                         <td class="px-4 py-3">

@@ -14,11 +14,14 @@
             <div class="px-5 py-4 grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-3">
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Account Type" %}</label>
-                    <select name="account_type" class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
-                        <option value="all" {% if account_type == 'all' %}selected{% endif %}>All Types</option>
+                    <select name="account_type" class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500" onchange="this.form.method='get'; this.form.submit();">
+                        <option value="all" {% if account_type == 'all' or not account_type %}selected{% endif %}>All Types</option>
                         <option value="savings" {% if account_type == 'savings' %}selected{% endif %}>Savings</option>
                         <option value="current" {% if account_type == 'current' %}selected{% endif %}>Current</option>
                         <option value="security" {% if account_type == 'security' %}selected{% endif %}>Security</option>
+                        <option value="fd" {% if account_type == 'fd' %}selected{% endif %}>Fixed Deposit</option>
+                        <option value="rd" {% if account_type == 'rd' %}selected{% endif %}>Recurring Deposit</option>
+                        <option value="loan" {% if account_type == 'loan' %}selected{% endif %}>Loan</option>
                     </select>
                 </div>
                 <div>
@@ -38,7 +41,7 @@
 
     <!-- Summary -->
     {% if summary %}
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 mt-4">
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-4 py-3">
             <span class="text-xs font-medium text-gray-500">Total {% trans "Accounts" %}</span>
             <p class="text-lg font-bold text-gray-800">{{ summary.total_accounts }}</p>
@@ -51,22 +54,47 @@
             <span class="text-xs font-medium text-gray-500">Total Accrued</span>
             <p class="text-lg font-bold text-teal-700">₹{{ summary.total_accrued|floatformat:2 }}</p>
         </div>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-4 py-3">
+            <span class="text-xs font-medium text-gray-500">Calculated Today</span>
+            <p class="text-lg font-bold {% if summary.already_calculated_today > 0 %}text-amber-600{% else %}text-gray-400{% endif %}">
+                {{ summary.already_calculated_today }} / {{ summary.total_accounts }}
+            </p>
+        </div>
     </div>
     {% endif %}
 
-    <!-- Calculation Results -->
-    {% if results %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mt-4">
-        <div class="px-5 py-3 border-b border-gray-200 bg-teal-50 flex items-center justify-between">
-            <span class="text-sm font-semibold text-teal-800">Interest Calculated — {{ calculated_count }} accounts</span>
-            <span class="text-sm font-medium text-teal-700">Total: ₹{{ total_interest|floatformat:2 }}</span>
+    {% if summary.already_calculated_today > 0 and not results %}
+    <div class="mt-4 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 flex items-start gap-3">
+        <svg class="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+        <div>
+            <p class="text-sm font-medium text-amber-800">{{ summary.already_calculated_today }} account(s) already calculated for {{ calc_date|date:"d M Y" }}</p>
+            <p class="text-xs text-amber-600 mt-0.5">These will be skipped if you calculate again. Change the date to calculate for a different day.</p>
         </div>
+    </div>
+    {% endif %}
+
+    <!-- Calculation Results (POST response) -->
+    {% if results %}
+    <div class="bg-white rounded-lg shadow-sm border border-teal-200 overflow-hidden mt-4">
+        <div class="px-5 py-3 border-b border-teal-200 bg-teal-50 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <svg class="h-5 w-5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span class="text-sm font-semibold text-teal-800">Interest Calculated — {{ calculated_count }} account{{ calculated_count|pluralize }}</span>
+            </div>
+            <span class="text-sm font-bold text-teal-700">Total: ₹{{ total_interest|floatformat:2 }}</span>
+        </div>
+        {% if skipped_count > 0 %}
+        <div class="px-5 py-2 bg-amber-50 border-b border-amber-200 text-xs text-amber-700">
+            {{ skipped_count }} account(s) skipped — already calculated for {{ calc_date|date:"d M Y" }}
+        </div>
+        {% endif %}
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
                 <thead>
                     <tr class="text-left text-xs font-semibold text-gray-500 uppercase bg-gray-50">
                         <th class="px-4 py-2">{% trans "Account No." %}</th>
                         <th class="px-4 py-2">{% trans "Member" %}</th>
+                        <th class="px-4 py-2">{% trans "Type" %}</th>
                         <th class="px-4 py-2 text-right">{% trans "Balance" %}</th>
                         <th class="px-4 py-2 text-right">Rate %</th>
                         <th class="px-4 py-2 text-right">{% trans "Daily Interest" %}</th>
@@ -76,7 +104,10 @@
                     {% for r in results %}
                     <tr class="hover:bg-gray-50">
                         <td class="px-4 py-2 font-mono text-gray-900">{{ r.account_no }}</td>
-                        <td class="px-4 py-2 text-gray-700">{{ r.member_name }}</td>
+                        <td class="px-4 py-2"><a href="{% url 'members:detail' r.member_id %}" class="text-primary-600 hover:underline">{{ r.member_name }}</a></td>
+                        <td class="px-4 py-2">
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium {% if 'Loan' in r.account_type %}bg-amber-100 text-amber-700{% elif 'Fixed' in r.account_type %}bg-purple-100 text-purple-700{% elif 'Recurring' in r.account_type %}bg-indigo-100 text-indigo-700{% else %}bg-blue-100 text-blue-700{% endif %}">{{ r.account_type }}</span>
+                        </td>
                         <td class="px-4 py-2 text-right text-gray-700">{{ r.balance|floatformat:2 }}</td>
                         <td class="px-4 py-2 text-right text-gray-700">{{ r.rate }}%</td>
                         <td class="px-4 py-2 text-right font-medium text-teal-700">{{ r.daily_interest|floatformat:2 }}</td>
@@ -85,10 +116,15 @@
                 </tbody>
             </table>
         </div>
+        <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 flex justify-end">
+            <a href="{% url 'dayend:interest_post' %}" class="inline-flex items-center px-4 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded hover:bg-indigo-700">
+                Go to Interest Posting &rarr;
+            </a>
+        </div>
     </div>
     {% endif %}
 
-    <!-- Account List (GET view) -->
+    <!-- Account List (GET view, no results yet) -->
     {% if accounts and not results %}
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mt-4">
         <div class="px-5 py-3 border-b border-gray-200">
@@ -104,17 +140,29 @@
                         <th class="px-4 py-2 text-right">{% trans "Balance" %}</th>
                         <th class="px-4 py-2 text-right">Rate %</th>
                         <th class="px-4 py-2 text-right">{% trans "Accrued" %}</th>
+                        <th class="px-4 py-2">Last Calculated</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     {% for acct in accounts %}
-                    <tr class="hover:bg-gray-50">
+                    <tr class="hover:bg-gray-50 {% if acct.last_calc_date == calc_date %}bg-amber-50{% endif %}">
                         <td class="px-4 py-2 font-mono text-gray-900">{{ acct.account_no }}</td>
-                        <td class="px-4 py-2 text-gray-700">{{ acct.member.name }}</td>
-                        <td class="px-4 py-2 text-gray-600">{{ acct.get_account_type_display }}</td>
-                        <td class="px-4 py-2 text-right text-gray-700">{{ acct.current_balance|floatformat:2 }}</td>
-                        <td class="px-4 py-2 text-right text-gray-700">{{ acct.interest_rate }}%</td>
-                        <td class="px-4 py-2 text-right text-teal-700">{{ acct.accrued_interest|floatformat:2 }}</td>
+                        <td class="px-4 py-2"><a href="{% url 'members:detail' acct.member_id %}" class="text-primary-600 hover:underline">{{ acct.member_name }}</a></td>
+                        <td class="px-4 py-2">
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium {% if 'Loan' in acct.account_type %}bg-amber-100 text-amber-700{% elif 'Fixed' in acct.account_type %}bg-purple-100 text-purple-700{% elif 'Recurring' in acct.account_type %}bg-indigo-100 text-indigo-700{% else %}bg-blue-100 text-blue-700{% endif %}">{{ acct.account_type }}</span>
+                        </td>
+                        <td class="px-4 py-2 text-right text-gray-700">{{ acct.balance|floatformat:2 }}</td>
+                        <td class="px-4 py-2 text-right text-gray-700">{{ acct.rate }}%</td>
+                        <td class="px-4 py-2 text-right text-teal-700">{{ acct.accrued|floatformat:2 }}</td>
+                        <td class="px-4 py-2 text-xs">
+                            {% if acct.last_calc_date == calc_date %}
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">Done today</span>
+                            {% elif acct.last_calc_date %}
+                            <span class="text-gray-500">{{ acct.last_calc_date|date:"d M Y" }}</span>
+                            {% else %}
+                            <span class="text-gray-400">Never</span>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

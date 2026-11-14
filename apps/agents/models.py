@@ -240,7 +240,6 @@ class AgentCollection(models.Model):
 
     class Meta:
         ordering = ['-collection_date']
-        unique_together = ['agent', 'collection_date']
 
     def __str__(self):
         return f'{self.agent.agent_code} - {self.collection_date}'

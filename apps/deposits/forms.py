@@ -13,7 +13,7 @@ class FDCreateForm(forms.Form):
         min_value=Decimal('1'),
         widget=forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
     )
-    tenure_days = forms.IntegerField(min_value=1, widget=forms.NumberInput(attrs={'class': tw}))
+    tenure_days = forms.IntegerField(min_value=1, widget=forms.NumberInput(attrs={'class': tw, 'min': '1', 'max': '9999'}))
     compounding = forms.ChoiceField(
         choices=[
             ('quarterly', 'Quarterly'),
@@ -29,18 +29,28 @@ class FDCreateForm(forms.Form):
     is_senior = forms.BooleanField(
         required=False, label='Senior Citizen', widget=forms.CheckboxInput(attrs={'class': 'rounded'})
     )
+    certificate_no = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': tw}))
+    tds_applicable = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={'class': 'rounded'}))
+    meeting_no = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': tw}))
+    meeting_date = forms.DateField(required=False, widget=forms.DateInput(attrs={'class': tw, 'type': 'date'}))
 
     def clean_member(self):
         from apps.members.models import Member
 
-        return Member.objects.get(pk=self.cleaned_data['member'])
+        try:
+            return Member.objects.get(pk=self.cleaned_data['member'])
+        except Member.DoesNotExist as err:
+            raise forms.ValidationError('Invalid member selected.') from err
 
     def clean_linked_savings_account(self):
         val = self.cleaned_data.get('linked_savings_account')
         if val:
             from apps.savings.models import SavingsAccount
 
-            return SavingsAccount.objects.get(pk=val)
+            try:
+                return SavingsAccount.objects.get(pk=val)
+            except SavingsAccount.DoesNotExist as err:
+                raise forms.ValidationError('Invalid savings account selected.') from err
         return None
 
 
@@ -52,7 +62,7 @@ class RDCreateForm(forms.Form):
         min_value=Decimal('1'),
         widget=forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
     )
-    tenure_months = forms.IntegerField(min_value=1, widget=forms.NumberInput(attrs={'class': tw}))
+    tenure_months = forms.IntegerField(min_value=1, widget=forms.NumberInput(attrs={'class': tw, 'min': '1', 'max': '999'}))
     interest_rate = forms.DecimalField(
         max_digits=5,
         decimal_places=2,
@@ -60,22 +70,32 @@ class RDCreateForm(forms.Form):
             attrs={
                 'class': 'w-full rounded-lg border-gray-300 px-3 py-2 bg-gray-50 cursor-not-allowed',
                 'step': '0.01',
+                'min': '0',
+                'max': '100',
                 'readonly': True,
                 'tabindex': '-1',
             }
         ),
     )
     linked_savings_account = forms.IntegerField(required=False, widget=forms.Select(attrs={'class': tw}))
+    meeting_no = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': tw}))
+    meeting_date = forms.DateField(required=False, widget=forms.DateInput(attrs={'class': tw, 'type': 'date'}))
 
     def clean_member(self):
         from apps.members.models import Member
 
-        return Member.objects.get(pk=self.cleaned_data['member'])
+        try:
+            return Member.objects.get(pk=self.cleaned_data['member'])
+        except Member.DoesNotExist as err:
+            raise forms.ValidationError('Invalid member selected.') from err
 
     def clean_linked_savings_account(self):
         val = self.cleaned_data.get('linked_savings_account')
         if val:
             from apps.savings.models import SavingsAccount
 
-            return SavingsAccount.objects.get(pk=val)
+            try:
+                return SavingsAccount.objects.get(pk=val)
+            except SavingsAccount.DoesNotExist as err:
+                raise forms.ValidationError('Invalid savings account selected.') from err
         return None

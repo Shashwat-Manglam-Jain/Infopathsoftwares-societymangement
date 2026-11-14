@@ -55,6 +55,19 @@ def run_day_end(branch, user):
 
     processing_date = wd.current_date
 
+    from apps.agents.models import AgentCollection
+
+    pending_collections = AgentCollection.objects.filter(
+        branch=branch,
+        collection_date=processing_date,
+        status__in=['open', 'submitted'],
+    ).count()
+    if pending_collections:
+        raise ValueError(
+            f'{pending_collections} agent collection(s) still pending for {processing_date}. '
+            f'Post or reject all collections before running Day End.'
+        )
+
     existing = DayEndLog.objects.filter(branch=branch, processing_date=processing_date).first()
     if existing and existing.status == 'completed':
         raise ValueError(f'Day End already completed for {processing_date}.')

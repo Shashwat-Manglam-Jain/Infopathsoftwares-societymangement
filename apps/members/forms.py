@@ -9,6 +9,46 @@ _tw_date = _tw
 _tw_textarea = _tw
 _tw_checkbox = 'rounded border-gray-300 text-primary-600 focus:ring-primary-500'
 
+INDIAN_STATES = [
+    ('', '—'),
+    ('Andhra Pradesh', 'Andhra Pradesh'),
+    ('Arunachal Pradesh', 'Arunachal Pradesh'),
+    ('Assam', 'Assam'),
+    ('Bihar', 'Bihar'),
+    ('Chhattisgarh', 'Chhattisgarh'),
+    ('Goa', 'Goa'),
+    ('Gujarat', 'Gujarat'),
+    ('Haryana', 'Haryana'),
+    ('Himachal Pradesh', 'Himachal Pradesh'),
+    ('Jharkhand', 'Jharkhand'),
+    ('Karnataka', 'Karnataka'),
+    ('Kerala', 'Kerala'),
+    ('Madhya Pradesh', 'Madhya Pradesh'),
+    ('Maharashtra', 'Maharashtra'),
+    ('Manipur', 'Manipur'),
+    ('Meghalaya', 'Meghalaya'),
+    ('Mizoram', 'Mizoram'),
+    ('Nagaland', 'Nagaland'),
+    ('Odisha', 'Odisha'),
+    ('Punjab', 'Punjab'),
+    ('Rajasthan', 'Rajasthan'),
+    ('Sikkim', 'Sikkim'),
+    ('Tamil Nadu', 'Tamil Nadu'),
+    ('Telangana', 'Telangana'),
+    ('Tripura', 'Tripura'),
+    ('Uttar Pradesh', 'Uttar Pradesh'),
+    ('Uttarakhand', 'Uttarakhand'),
+    ('West Bengal', 'West Bengal'),
+    ('Andaman and Nicobar Islands', 'Andaman and Nicobar Islands'),
+    ('Chandigarh', 'Chandigarh'),
+    ('Dadra and Nagar Haveli and Daman and Diu', 'Dadra and Nagar Haveli and Daman and Diu'),
+    ('Delhi', 'Delhi'),
+    ('Jammu and Kashmir', 'Jammu and Kashmir'),
+    ('Ladakh', 'Ladakh'),
+    ('Lakshadweep', 'Lakshadweep'),
+    ('Puducherry', 'Puducherry'),
+]
+
 
 class MemberForm(forms.ModelForm):
     class Meta:
@@ -64,6 +104,9 @@ class MemberForm(forms.ModelForm):
             'guardian_name',
             'guardian_address',
             'info',
+            'introducer',
+            'kyc_verified',
+            'kyc_date',
         ]
         widgets = {
             'member_no': forms.TextInput(attrs={'class': _tw, 'readonly': 'readonly'}),
@@ -90,10 +133,10 @@ class MemberForm(forms.ModelForm):
             'city': forms.TextInput(attrs={'class': _tw}),
             'district': forms.TextInput(attrs={'class': _tw}),
             'tahsil': forms.TextInput(attrs={'class': _tw}),
-            'state': forms.TextInput(attrs={'class': _tw}),
+            'state': forms.Select(choices=INDIAN_STATES, attrs={'class': _tw_select}),
             'pincode': forms.TextInput(attrs={'class': _tw}),
             'occupation': forms.TextInput(attrs={'class': _tw}),
-            'monthly_income': forms.NumberInput(attrs={'class': _tw, 'step': '0.01'}),
+            'monthly_income': forms.NumberInput(attrs={'class': _tw, 'step': '0.01', 'min': '0'}),
             'education': forms.TextInput(attrs={'class': _tw}),
             'religion': forms.TextInput(attrs={'class': _tw}),
             'caste': forms.TextInput(attrs={'class': _tw}),
@@ -114,6 +157,9 @@ class MemberForm(forms.ModelForm):
             'guardian_name': forms.TextInput(attrs={'class': _tw}),
             'guardian_address': forms.Textarea(attrs={'class': _tw_textarea, 'rows': 2}),
             'info': forms.Textarea(attrs={'class': _tw_textarea, 'rows': 2}),
+            'introducer': forms.Select(attrs={'class': _tw_select + ' searchable'}),
+            'kyc_verified': forms.CheckboxInput(attrs={'class': _tw_checkbox}),
+            'kyc_date': forms.DateInput(attrs={'class': _tw_date, 'type': 'date'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -126,6 +172,12 @@ class MemberForm(forms.ModelForm):
         if not self.instance.pk:
             self.fields['member_no'].required = False
             self.fields['member_no'].widget = forms.HiddenInput()
+        self.fields['introducer'].required = False
+        self.fields['kyc_verified'].required = False
+        self.fields['kyc_date'].required = False
+        self.fields['introducer'].queryset = Member.objects.filter(status='active')
+        if self.instance.pk:
+            self.fields['introducer'].queryset = self.fields['introducer'].queryset.exclude(pk=self.instance.pk)
 
 
 class MemberNomineeForm(forms.ModelForm):
@@ -138,6 +190,7 @@ class MemberNomineeForm(forms.ModelForm):
             'aadhar_no',
             'phone',
             'share_percentage',
+            'is_primary',
         ]
         widgets = {
             'name': forms.TextInput(attrs={'class': _tw}),
@@ -146,7 +199,13 @@ class MemberNomineeForm(forms.ModelForm):
             'aadhar_no': forms.TextInput(attrs={'class': _tw}),
             'phone': forms.TextInput(attrs={'class': _tw}),
             'share_percentage': forms.NumberInput(attrs={'class': _tw, 'step': '0.01'}),
+            'is_primary': forms.CheckboxInput(attrs={'class': _tw_checkbox}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self.instance.pk:
+            self.fields['share_percentage'].initial = 100
 
 
 class MemberDocumentForm(forms.ModelForm):
@@ -162,6 +221,6 @@ MemberNomineeFormSet = inlineformset_factory(
     Member,
     MemberNominee,
     form=MemberNomineeForm,
-    extra=1,
+    extra=4,
     can_delete=True,
 )
