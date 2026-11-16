@@ -2,7 +2,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('deposits', '0007_rd_locking_and_frequency'),
     ]

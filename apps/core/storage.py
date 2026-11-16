@@ -38,4 +38,4 @@ try:
             return super().listdir(path)
 
 except ImportError:
-    TenantMediaStorage = None
+    TenantMediaStorage = None  # type: ignore[assignment]

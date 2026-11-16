@@ -269,6 +269,7 @@ def collection_list(request):
     deposit_type = request.GET.get('type')
     if deposit_type:
         from django.db.models import Exists, OuterRef
+
         collections = collections.filter(
             Exists(
                 PigmmyTransaction.objects.filter(
@@ -368,11 +369,15 @@ def collection_create(request):
         form = CollectionForm(branch=branch, initial=initial)
 
     working_day = WorkingDay.objects.filter(branch=branch, is_day_open=True).first()
-    return render(request, 'agents/collection_create.html', {
-        'form': form,
-        'working_day_date': working_day.current_date.isoformat() if working_day else '',
-        'preselected_agent': request.GET.get('agent', ''),
-    })
+    return render(
+        request,
+        'agents/collection_create.html',
+        {
+            'form': form,
+            'working_day_date': working_day.current_date.isoformat() if working_day else '',
+            'preselected_agent': request.GET.get('agent', ''),
+        },
+    )
 
 
 @cashier_required
@@ -429,9 +434,13 @@ def collection_detail(request, pk):
 
 @auditor_or_above
 def collection_posting_list(request):
-    collections = AgentCollection.objects.filter(
-        status='submitted',
-    ).select_related('agent__member', 'branch').order_by('-collection_date')
+    collections = (
+        AgentCollection.objects.filter(
+            status='submitted',
+        )
+        .select_related('agent__member', 'branch')
+        .order_by('-collection_date')
+    )
     if not request.user.can_access_all_branches:
         collections = collections.filter(branch=request.current_branch)
     agent_id = request.GET.get('agent')
@@ -450,9 +459,13 @@ def collection_posting_list(request):
             .order_by('account__account_no')
         )
 
-    posted = AgentCollection.objects.filter(
-        status__in=['reconciled', 'discrepancy'],
-    ).select_related('agent__member', 'branch', 'reconciled_by').order_by('-collection_date')
+    posted = (
+        AgentCollection.objects.filter(
+            status__in=['reconciled', 'discrepancy'],
+        )
+        .select_related('agent__member', 'branch', 'reconciled_by')
+        .order_by('-collection_date')
+    )
     if not request.user.can_access_all_branches:
         posted = posted.filter(branch=request.current_branch)
     if agent_id:

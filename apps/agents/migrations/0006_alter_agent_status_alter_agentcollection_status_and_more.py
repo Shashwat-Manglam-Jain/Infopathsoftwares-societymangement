@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('agents', '0005_remove_collection_unique_together'),
     ]
@@ -13,16 +12,41 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='agent',
             name='status',
-            field=models.CharField(choices=[('active', 'Active'), ('inactive', 'Inactive'), ('terminated', 'Terminated')], db_index=True, default='active', max_length=15),
+            field=models.CharField(
+                choices=[('active', 'Active'), ('inactive', 'Inactive'), ('terminated', 'Terminated')],
+                db_index=True,
+                default='active',
+                max_length=15,
+            ),
         ),
         migrations.AlterField(
             model_name='agentcollection',
             name='status',
-            field=models.CharField(choices=[('open', 'Open'), ('submitted', 'Submitted'), ('reconciled', 'Reconciled'), ('discrepancy', 'Discrepancy')], db_index=True, default='open', max_length=15),
+            field=models.CharField(
+                choices=[
+                    ('open', 'Open'),
+                    ('submitted', 'Submitted'),
+                    ('reconciled', 'Reconciled'),
+                    ('discrepancy', 'Discrepancy'),
+                ],
+                db_index=True,
+                default='open',
+                max_length=15,
+            ),
         ),
         migrations.AlterField(
             model_name='pigmmyaccount',
             name='status',
-            field=models.CharField(choices=[('active', 'Active'), ('matured', 'Matured'), ('closed', 'Closed'), ('defaulted', 'Defaulted')], db_index=True, default='active', max_length=15),
+            field=models.CharField(
+                choices=[
+                    ('active', 'Active'),
+                    ('matured', 'Matured'),
+                    ('closed', 'Closed'),
+                    ('defaulted', 'Defaulted'),
+                ],
+                db_index=True,
+                default='active',
+                max_length=15,
+            ),
         ),
     ]

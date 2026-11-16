@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('shares', '0005_remove_dividend_rate'),
     ]
@@ -13,6 +12,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='shareholding',
             name='status',
-            field=models.CharField(choices=[('active', 'Active'), ('transferred', 'Transferred'), ('surrendered', 'Surrendered')], db_index=True, default='active', max_length=15),
+            field=models.CharField(
+                choices=[('active', 'Active'), ('transferred', 'Transferred'), ('surrendered', 'Surrendered')],
+                db_index=True,
+                default='active',
+                max_length=15,
+            ),
         ),
     ]

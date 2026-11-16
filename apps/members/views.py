@@ -221,7 +221,7 @@ class MemberExportView(AuditorOrAboveMixin, View):
         ]
         ws.append(headers)
 
-        for cell in ws[1]:
+        for cell in ws[1]:  # type: ignore[index]
             cell.font = cell.font.copy(bold=True)
 
         members = Member.objects.select_related('branch').order_by('member_no')
@@ -346,9 +346,9 @@ class SampleImportTemplateView(ManagerRequiredMixin, View):
             ]
         )
 
-        for cell in ws[1]:
+        for cell in ws[1]:  # type: ignore[index]
             cell.font = cell.font.copy(bold=True)
-        for cell in ws[4]:
+        for cell in ws[4]:  # type: ignore[index]
             cell.font = cell.font.copy(italic=True, color='808080')
 
         for col in ws.columns:

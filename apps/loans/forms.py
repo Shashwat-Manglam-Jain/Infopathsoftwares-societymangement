@@ -49,7 +49,19 @@ class LoanProductForm(forms.ModelForm):
 class LoanApplicationForm(forms.ModelForm):
     class Meta:
         model = LoanAccount
-        fields = ['member', 'loan_product', 'applied_amount', 'tenure_months', 'director_recommendation', 'remarks', 'loan_form_no', 'meeting_no', 'meeting_date', 'mortgage_account_no', 'mortgage_value']
+        fields = [
+            'member',
+            'loan_product',
+            'applied_amount',
+            'tenure_months',
+            'director_recommendation',
+            'remarks',
+            'loan_form_no',
+            'meeting_no',
+            'meeting_date',
+            'mortgage_account_no',
+            'mortgage_value',
+        ]
         widgets = {
             'member': forms.Select(attrs={'class': 'searchable ' + tw}),
             'loan_product': forms.Select(attrs={'class': tw}),

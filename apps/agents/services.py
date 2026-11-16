@@ -230,8 +230,11 @@ def post_collection(collection, posted_by):
     from apps.audit.services import log_action
 
     log_action(
-        user=posted_by, branch=collection.branch, action='approve',
-        table_name='AgentCollection', record_id=collection.pk,
+        user=posted_by,
+        branch=collection.branch,
+        action='approve',
+        table_name='AgentCollection',
+        record_id=collection.pk,
         new_values={
             'agent': collection.agent.agent_code,
             'amount': str(collection.collected_amount),

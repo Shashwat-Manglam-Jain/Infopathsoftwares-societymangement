@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('accounting', '0004_cashbook_payment_mode_split'),
         ('branches', '0002_branch_address_line_2_branch_country_and_more'),
@@ -22,14 +21,67 @@ class Migration(migrations.Migration):
                 ('amount', models.DecimalField(decimal_places=2, max_digits=15)),
                 ('transfer_date', models.DateField()),
                 ('narration', models.TextField(blank=True)),
-                ('status', models.CharField(choices=[('pending', 'Pending'), ('completed', 'Completed'), ('rejected', 'Rejected')], default='pending', max_length=10)),
+                (
+                    'status',
+                    models.CharField(
+                        choices=[('pending', 'Pending'), ('completed', 'Completed'), ('rejected', 'Rejected')],
+                        default='pending',
+                        max_length=10,
+                    ),
+                ),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('approved_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='ibt_approved', to=settings.AUTH_USER_MODEL)),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='ibt_created', to=settings.AUTH_USER_MODEL)),
-                ('from_branch', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='transfers_sent', to='branches.branch')),
-                ('journal_entry_from', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='accounting.journalentry')),
-                ('journal_entry_to', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='accounting.journalentry')),
-                ('to_branch', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='transfers_received', to='branches.branch')),
+                (
+                    'approved_by',
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name='ibt_approved',
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    'created_by',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name='ibt_created',
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    'from_branch',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, related_name='transfers_sent', to='branches.branch'
+                    ),
+                ),
+                (
+                    'journal_entry_from',
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name='+',
+                        to='accounting.journalentry',
+                    ),
+                ),
+                (
+                    'journal_entry_to',
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name='+',
+                        to='accounting.journalentry',
+                    ),
+                ),
+                (
+                    'to_branch',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name='transfers_received',
+                        to='branches.branch',
+                    ),
+                ),
             ],
             options={
                 'ordering': ['-transfer_date', '-created_at'],

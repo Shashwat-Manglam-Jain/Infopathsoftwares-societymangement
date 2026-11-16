@@ -1,10 +1,10 @@
 {% load i18n static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ LANGUAGE_CODE|default:'en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login — InfoSociety</title>
+    <title>{% trans "Login" %} — InfoSociety</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center">
@@ -15,6 +15,21 @@
             </a>
             <h1 class="mt-4 text-2xl font-bold text-gray-900">{% trans "Login to Your Society" %}</h1>
             <p class="mt-2 text-sm text-gray-600">{% trans "Select your society to continue to the login page" %}</p>
+        </div>
+
+        <!-- Language switcher -->
+        <div class="flex justify-center mb-4">
+            <form method="post" action="{% url 'set_language' %}" data-no-guard class="flex items-center gap-1">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <select name="language" onchange="this.form.submit()" class="text-xs border border-gray-300 rounded px-2 py-1 bg-white text-gray-700 focus:ring-1 focus:ring-indigo-500">
+                    {% get_current_language as LANGUAGE_CODE %}
+                    {% get_available_languages as LANGUAGES %}
+                    {% for lang_code, lang_name in LANGUAGES %}
+                    <option value="{{ lang_code }}" {% if lang_code == LANGUAGE_CODE %}selected{% endif %}>{{ lang_name }}</option>
+                    {% endfor %}
+                </select>
+            </form>
         </div>
 
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
@@ -35,7 +50,8 @@
                         {% endfor %}
                     </select>
                 </div>
-                <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition">
+                <button type="submit" data-loading-text="{% trans 'Redirecting…' %}"
+                        class="w-full bg-indigo-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition">
                     {% trans "Continue to Login" %}
                 </button>
             </form>
@@ -57,30 +73,6 @@
         </div>
     </div>
 
-    <style>
-        @keyframes btn-spin { to { transform: rotate(360deg); } }
-        .btn-spinner { display: inline-block; width: 1em; height: 1em; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: btn-spin 0.6s linear infinite; vertical-align: middle; margin-right: 0.4em; }
-        button[disabled] { opacity: 0.55; cursor: not-allowed !important; }
-    </style>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        document.addEventListener('submit', function(e) {
-            var form = e.target;
-            if (form.tagName !== 'FORM') return;
-            if (form.dataset.submitted === 'true') { e.preventDefault(); return; }
-            form.dataset.submitted = 'true';
-            var btns = form.querySelectorAll('button[type="submit"], button:not([type])');
-            btns.forEach(function(btn) {
-                btn.disabled = true;
-                btn.dataset.originalText = btn.innerHTML;
-                btn.innerHTML = '<span class="btn-spinner"></span> Redirecting…';
-            });
-            setTimeout(function() {
-                form.dataset.submitted = '';
-                btns.forEach(function(btn) { btn.disabled = false; if (btn.dataset.originalText) btn.innerHTML = btn.dataset.originalText; });
-            }, 10000);
-        }, true);
-    });
-    </script>
+    <script src="{% static 'js/form-guard.js' %}"></script>
 </body>
 </html>

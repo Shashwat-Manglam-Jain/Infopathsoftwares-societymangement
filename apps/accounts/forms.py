@@ -62,7 +62,7 @@ class CustomUserCreationForm(UserCreationForm):
 
 
 class CustomUserChangeForm(UserChangeForm):
-    password = None
+    password = None  # type: ignore[assignment]
 
     class Meta:
         model = CustomUser

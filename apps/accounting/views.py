@@ -335,6 +335,7 @@ def cashbook_entry(request):
         opening_cash = prev_cb.closing_balance
     else:
         from apps.core.gl_utils import get_cash_code
+
         branch = getattr(request, 'current_branch', None)
         cash_code = get_cash_code(branch)
         cash_head = ChartOfAccounts.objects.filter(code=cash_code).first()
@@ -661,13 +662,9 @@ def opening_balance_update(request):
         is_active=True,
     ).order_by('display_order', 'code')
 
-    total_debit = sum(
-        h.opening_balance for h in heads
-        if h.opening_balance and h.account_group in ('asset', 'expense')
-    )
+    total_debit = sum(h.opening_balance for h in heads if h.opening_balance and h.account_group in ('asset', 'expense'))
     total_credit = sum(
-        h.opening_balance for h in heads
-        if h.opening_balance and h.account_group in ('liability', 'income', 'equity')
+        h.opening_balance for h in heads if h.opening_balance and h.account_group in ('liability', 'income', 'equity')
     )
 
     if request.method == 'POST':
@@ -704,25 +701,30 @@ def opening_balance_update(request):
         log_action(
             user=request.user,
             branch=getattr(request, 'current_branch', None),
-            action='update', table_name='ChartOfAccounts', record_id=head.pk,
+            action='update',
+            table_name='ChartOfAccounts',
+            record_id=head.pk,
             old_values={'opening_balance': str(old_balance)},
             new_values={'opening_balance': str(amount)},
             ip_address=request.META.get('REMOTE_ADDR'),
         )
         messages.success(
             request,
-            f'Opening balance for {head.code} — {head.name} updated: '
-            f'₹{old_balance} → ₹{amount}',
+            f'Opening balance for {head.code} — {head.name} updated: ₹{old_balance} → ₹{amount}',
         )
         return redirect('accounting:opening_balance')
 
-    return render(request, 'accounting/opening_balance.html', {
-        'heads': heads,
-        'total_debit': total_debit,
-        'total_credit': total_credit,
-        'ob_difference': abs(total_debit - total_credit),
-        'ob_balanced': total_debit == total_credit,
-    })
+    return render(
+        request,
+        'accounting/opening_balance.html',
+        {
+            'heads': heads,
+            'total_debit': total_debit,
+            'total_credit': total_credit,
+            'ob_difference': abs(total_debit - total_credit),
+            'ob_balanced': total_debit == total_credit,
+        },
+    )
 
 
 @admin_required
@@ -944,7 +946,9 @@ def inter_branch_transfer(request):
 
     branches = Branch.objects.filter(status='active').order_by('branch_name')
     transfers = InterBranchTransfer.objects.select_related(
-        'from_branch', 'to_branch', 'created_by',
+        'from_branch',
+        'to_branch',
+        'created_by',
     ).order_by('-transfer_date', '-created_at')[:50]
 
     if request.method == 'POST':
@@ -992,8 +996,12 @@ def inter_branch_transfer(request):
 
         return redirect('accounting:inter_branch_transfer')
 
-    return render(request, 'accounting/inter_branch_transfer.html', {
-        'branches': branches,
-        'transfers': transfers,
-        'today': date.today(),
-    })
+    return render(
+        request,
+        'accounting/inter_branch_transfer.html',
+        {
+            'branches': branches,
+            'transfers': transfers,
+            'today': date.today(),
+        },
+    )

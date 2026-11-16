@@ -26,7 +26,15 @@ from .forms import (
     LoanCollateralForm,
     LoanProductForm,
 )
-from .models import EMISchedule, LoanAccount, LoanCollateral, LoanGuarantor, LoanProduct, LoanRepayment, StandingInstruction
+from .models import (
+    EMISchedule,
+    LoanAccount,
+    LoanCollateral,
+    LoanGuarantor,
+    LoanProduct,
+    LoanRepayment,
+    StandingInstruction,
+)
 from .services import (
     approve_loan,
     collect_emi,

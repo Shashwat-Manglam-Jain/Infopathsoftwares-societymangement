@@ -13,7 +13,9 @@ class FDCreateForm(forms.Form):
         min_value=Decimal('1'),
         widget=forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
     )
-    tenure_days = forms.IntegerField(min_value=1, widget=forms.NumberInput(attrs={'class': tw, 'min': '1', 'max': '9999'}))
+    tenure_days = forms.IntegerField(
+        min_value=1, widget=forms.NumberInput(attrs={'class': tw, 'min': '1', 'max': '9999'})
+    )
     compounding = forms.ChoiceField(
         choices=[
             ('quarterly', 'Quarterly'),
@@ -62,7 +64,9 @@ class RDCreateForm(forms.Form):
         min_value=Decimal('1'),
         widget=forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
     )
-    tenure_months = forms.IntegerField(min_value=1, widget=forms.NumberInput(attrs={'class': tw, 'min': '1', 'max': '999'}))
+    tenure_months = forms.IntegerField(
+        min_value=1, widget=forms.NumberInput(attrs={'class': tw, 'min': '1', 'max': '999'})
+    )
     interest_rate = forms.DecimalField(
         max_digits=5,
         decimal_places=2,

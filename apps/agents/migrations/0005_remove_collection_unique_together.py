@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('agents', '0004_pigmmyaccount_folio_number_and_more'),
     ]

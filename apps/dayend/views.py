@@ -55,7 +55,9 @@ def dayend_index(request):
 
     current_month = date.today().replace(day=1)
     month_end_done = MonthEndLog.objects.filter(
-        branch=branch, month=current_month, status='completed',
+        branch=branch,
+        month=current_month,
+        status='completed',
     ).exists()
 
     branch_statuses = None
@@ -68,15 +70,17 @@ def dayend_index(request):
             wd = WorkingDay.objects.filter(branch=b).first()
             me_done = MonthEndLog.objects.filter(branch=b, month=current_month, status='completed').exists()
             last_dayend = DayEndLog.objects.filter(branch=b, status='completed').order_by('-processing_date').first()
-            statuses.append({
-                'branch': b,
-                'working_day': wd,
-                'is_day_open': wd.is_day_open if wd else False,
-                'day_end_completed': wd.day_end_completed if wd else False,
-                'current_date': wd.current_date if wd else None,
-                'last_dayend_date': last_dayend.processing_date if last_dayend else None,
-                'month_end_done': me_done,
-            })
+            statuses.append(
+                {
+                    'branch': b,
+                    'working_day': wd,
+                    'is_day_open': wd.is_day_open if wd else False,
+                    'day_end_completed': wd.day_end_completed if wd else False,
+                    'current_date': wd.current_date if wd else None,
+                    'last_dayend_date': last_dayend.processing_date if last_dayend else None,
+                    'month_end_done': me_done,
+                }
+            )
         branch_statuses = statuses
 
     return render(
@@ -116,8 +120,11 @@ class BeginDayView(AccountantRequiredMixin, View):
             from apps.audit.services import log_action
 
             log_action(
-                user=request.user, branch=branch, action='create',
-                table_name='WorkingDay', record_id=wd.pk,
+                user=request.user,
+                branch=branch,
+                action='create',
+                table_name='WorkingDay',
+                record_id=wd.pk,
                 new_values={'current_date': str(wd.current_date), 'is_day_open': True},
                 ip_address=request.META.get('REMOTE_ADDR'),
             )
@@ -144,8 +151,11 @@ class RunDayEndView(AccountantRequiredMixin, View):
             from apps.audit.services import log_action
 
             log_action(
-                user=request.user, branch=branch, action='approve',
-                table_name='DayEndLog', record_id=log.pk,
+                user=request.user,
+                branch=branch,
+                action='approve',
+                table_name='DayEndLog',
+                record_id=log.pk,
                 new_values={
                     'processing_date': str(log.processing_date),
                     'savings_interest': log.savings_interest_accrued_count,
@@ -364,7 +374,7 @@ def reupdate_gl_balance(request):
     if request.method == 'POST':
         from_date_str = request.POST.get('from_date', '')
         try:
-            from_date = date.fromisoformat(from_date_str)
+            date.fromisoformat(from_date_str)
         except (ValueError, TypeError):
             messages.error(request, 'Invalid date.')
             return render(request, 'dayend/reupdate_gl_balance.html', {})
@@ -423,69 +433,109 @@ class InterestCalculateView(AccountantRequiredMixin, View):
 
         if account_type in ('all', 'savings', 'current', 'security'):
             sb_qs = SavingsAccount.objects.filter(
-                status='active', current_balance__gt=0, interest_rate__gt=0, **branch_filter,
+                status='active',
+                current_balance__gt=0,
+                interest_rate__gt=0,
+                **branch_filter,
             ).select_related('member', 'branch')
             if account_type in ('savings', 'current', 'security'):
                 sb_qs = sb_qs.filter(account_type=account_type)
             for a in sb_qs:
-                rows.append({
-                    'account_no': a.account_no, 'member_name': a.member.name,
-                    'member_id': a.member_id, 'account_id': a.pk,
-                    'balance': a.current_balance, 'rate': a.interest_rate,
-                    'accrued': a.accrued_interest, 'account_type': f'SB-{a.get_account_type_display()}',
-                    'category': 'savings', 'obj': a,
-                    'last_calc_date': a.last_interest_calculated_date,
-                    'last_post_date': a.last_interest_posted_date,
-                })
+                rows.append(
+                    {
+                        'account_no': a.account_no,
+                        'member_name': a.member.name,
+                        'member_id': a.member_id,
+                        'account_id': a.pk,
+                        'balance': a.current_balance,
+                        'rate': a.interest_rate,
+                        'accrued': a.accrued_interest,
+                        'account_type': f'SB-{a.get_account_type_display()}',
+                        'category': 'savings',
+                        'obj': a,
+                        'last_calc_date': a.last_interest_calculated_date,
+                        'last_post_date': a.last_interest_posted_date,
+                    }
+                )
 
         if account_type in ('all', 'fd'):
             fd_qs = FixedDeposit.objects.filter(
-                status='active', interest_rate__gt=0, **branch_filter,
+                status='active',
+                interest_rate__gt=0,
+                **branch_filter,
             ).select_related('member', 'branch')
             for fd in fd_qs:
-                rows.append({
-                    'account_no': fd.fd_no, 'member_name': fd.member.name,
-                    'member_id': fd.member_id, 'account_id': fd.pk,
-                    'balance': fd.deposit_amount, 'rate': fd.interest_rate,
-                    'accrued': fd.accrued_interest, 'account_type': 'Fixed Deposit',
-                    'category': 'fd', 'obj': fd,
-                    'last_calc_date': fd.last_interest_calculated_date,
-                    'last_post_date': fd.last_interest_posted_date,
-                })
+                rows.append(
+                    {
+                        'account_no': fd.fd_no,
+                        'member_name': fd.member.name,
+                        'member_id': fd.member_id,
+                        'account_id': fd.pk,
+                        'balance': fd.deposit_amount,
+                        'rate': fd.interest_rate,
+                        'accrued': fd.accrued_interest,
+                        'account_type': 'Fixed Deposit',
+                        'category': 'fd',
+                        'obj': fd,
+                        'last_calc_date': fd.last_interest_calculated_date,
+                        'last_post_date': fd.last_interest_posted_date,
+                    }
+                )
 
         if account_type in ('all', 'rd'):
             rd_qs = RecurringDeposit.objects.filter(
-                status='active', interest_rate__gt=0, **branch_filter,
+                status='active',
+                interest_rate__gt=0,
+                **branch_filter,
             ).select_related('member', 'branch')
             for rd in rd_qs:
                 from apps.deposits.models import RDInstallment
+
                 paid = RDInstallment.objects.filter(rd=rd, status='paid').aggregate(
                     total=Sum('amount', default=Decimal('0')),
                 )['total']
                 if paid > 0:
-                    rows.append({
-                        'account_no': rd.rd_no, 'member_name': rd.member.name,
-                        'member_id': rd.member_id, 'account_id': rd.pk,
-                        'balance': paid, 'rate': rd.interest_rate,
-                        'accrued': Decimal('0'), 'account_type': 'Recurring Deposit',
-                        'category': 'rd', 'obj': rd,
-                        'last_calc_date': None, 'last_post_date': None,
-                    })
+                    rows.append(
+                        {
+                            'account_no': rd.rd_no,
+                            'member_name': rd.member.name,
+                            'member_id': rd.member_id,
+                            'account_id': rd.pk,
+                            'balance': paid,
+                            'rate': rd.interest_rate,
+                            'accrued': Decimal('0'),
+                            'account_type': 'Recurring Deposit',
+                            'category': 'rd',
+                            'obj': rd,
+                            'last_calc_date': None,
+                            'last_post_date': None,
+                        }
+                    )
 
         if account_type in ('all', 'loan'):
             loan_qs = LoanAccount.objects.filter(
-                status='disbursed', interest_rate__gt=0, outstanding_principal__gt=0, **branch_filter,
+                status='disbursed',
+                interest_rate__gt=0,
+                outstanding_principal__gt=0,
+                **branch_filter,
             ).select_related('member', 'branch')
             for loan in loan_qs:
-                rows.append({
-                    'account_no': loan.loan_no, 'member_name': loan.member.name,
-                    'member_id': loan.member_id, 'account_id': loan.pk,
-                    'balance': loan.outstanding_principal, 'rate': loan.interest_rate,
-                    'accrued': loan.outstanding_interest, 'account_type': 'Loan',
-                    'category': 'loan', 'obj': loan,
-                    'last_calc_date': loan.last_interest_calculated_date,
-                    'last_post_date': None,
-                })
+                rows.append(
+                    {
+                        'account_no': loan.loan_no,
+                        'member_name': loan.member.name,
+                        'member_id': loan.member_id,
+                        'account_id': loan.pk,
+                        'balance': loan.outstanding_principal,
+                        'rate': loan.interest_rate,
+                        'accrued': loan.outstanding_interest,
+                        'account_type': 'Loan',
+                        'category': 'loan',
+                        'obj': loan,
+                        'last_calc_date': loan.last_interest_calculated_date,
+                        'last_post_date': None,
+                    }
+                )
 
         return rows
 
@@ -499,18 +549,24 @@ class InterestCalculateView(AccountantRequiredMixin, View):
         rows = self._get_accounts(request, branch, account_type)
         total_balance = sum(r['balance'] for r in rows)
         total_accrued = sum(r['accrued'] for r in rows)
-        already_calculated_today = sum(
-            1 for r in rows if r['last_calc_date'] == date.today()
-        )
+        already_calculated_today = sum(1 for r in rows if r['last_calc_date'] == date.today())
         summary = {
-            'total_accounts': len(rows), 'total_balance': total_balance,
-            'total_accrued': total_accrued, 'already_calculated_today': already_calculated_today,
+            'total_accounts': len(rows),
+            'total_balance': total_balance,
+            'total_accrued': total_accrued,
+            'already_calculated_today': already_calculated_today,
         }
 
-        return render(request, 'dayend/interest_calculate.html', {
-            'accounts': rows[:200], 'summary': summary, 'calc_date': date.today(),
-            'account_type': account_type,
-        })
+        return render(
+            request,
+            'dayend/interest_calculate.html',
+            {
+                'accounts': rows[:200],
+                'summary': summary,
+                'calc_date': date.today(),
+                'account_type': account_type,
+            },
+        )
 
     def post(self, request):
         branch = getattr(request, 'current_branch', None)
@@ -544,11 +600,7 @@ class InterestCalculateView(AccountantRequiredMixin, View):
                 if daily_interest <= 0:
                     continue
 
-                if row['category'] == 'savings':
-                    obj.accrued_interest = F('accrued_interest') + daily_interest
-                    obj.last_interest_calculated_date = calc_date
-                    obj.save(update_fields=['accrued_interest', 'last_interest_calculated_date'])
-                elif row['category'] == 'fd':
+                if row['category'] in ('savings', 'fd'):
                     obj.accrued_interest = F('accrued_interest') + daily_interest
                     obj.last_interest_calculated_date = calc_date
                     obj.save(update_fields=['accrued_interest', 'last_interest_calculated_date'])
@@ -561,12 +613,17 @@ class InterestCalculateView(AccountantRequiredMixin, View):
 
                 calculated_count += 1
                 total_interest += daily_interest
-                results.append({
-                    'account_no': row['account_no'], 'member_name': row['member_name'],
-                    'member_id': row['member_id'],
-                    'balance': row['balance'], 'rate': row['rate'],
-                    'daily_interest': daily_interest, 'account_type': row['account_type'],
-                })
+                results.append(
+                    {
+                        'account_no': row['account_no'],
+                        'member_name': row['member_name'],
+                        'member_id': row['member_id'],
+                        'balance': row['balance'],
+                        'rate': row['rate'],
+                        'daily_interest': daily_interest,
+                        'account_type': row['account_type'],
+                    }
+                )
 
         if skipped_count > 0:
             messages.warning(
@@ -585,20 +642,28 @@ class InterestCalculateView(AccountantRequiredMixin, View):
         rows_refreshed = self._get_accounts(request, branch, account_type)
         total_balance = sum(r['balance'] for r in rows_refreshed)
         total_accrued = sum(r['accrued'] for r in rows_refreshed)
-        already_calculated_today = sum(
-            1 for r in rows_refreshed if r['last_calc_date'] == calc_date
-        )
+        already_calculated_today = sum(1 for r in rows_refreshed if r['last_calc_date'] == calc_date)
         summary = {
-            'total_accounts': len(rows_refreshed), 'total_balance': total_balance,
-            'total_accrued': total_accrued, 'already_calculated_today': already_calculated_today,
+            'total_accounts': len(rows_refreshed),
+            'total_balance': total_balance,
+            'total_accrued': total_accrued,
+            'already_calculated_today': already_calculated_today,
         }
 
-        return render(request, 'dayend/interest_calculate.html', {
-            'accounts': rows_refreshed[:200], 'summary': summary, 'calc_date': calc_date,
-            'results': results, 'calculated_count': calculated_count,
-            'skipped_count': skipped_count, 'total_interest': total_interest,
-            'account_type': account_type,
-        })
+        return render(
+            request,
+            'dayend/interest_calculate.html',
+            {
+                'accounts': rows_refreshed[:200],
+                'summary': summary,
+                'calc_date': calc_date,
+                'results': results,
+                'calculated_count': calculated_count,
+                'skipped_count': skipped_count,
+                'total_interest': total_interest,
+                'account_type': account_type,
+            },
+        )
 
 
 class InterestPostView(ManagerRequiredMixin, View):
@@ -610,34 +675,48 @@ class InterestPostView(ManagerRequiredMixin, View):
         rows = []
 
         sb_qs = SavingsAccount.objects.filter(
-            status='active', accrued_interest__gt=0, **branch_filter,
+            status='active',
+            accrued_interest__gt=0,
+            **branch_filter,
         ).select_related('member', 'branch')
         if lock:
             sb_qs = sb_qs.select_for_update()
         for a in sb_qs:
-            rows.append({
-                'account_no': a.account_no, 'member_name': a.member.name,
-                'balance': a.current_balance, 'accrued': a.accrued_interest,
-                'after_post': a.current_balance + a.accrued_interest,
-                'account_type': f'SB-{a.get_account_type_display()}',
-                'category': 'savings', 'obj': a,
-                'last_post_date': a.last_interest_posted_date,
-            })
+            rows.append(
+                {
+                    'account_no': a.account_no,
+                    'member_name': a.member.name,
+                    'balance': a.current_balance,
+                    'accrued': a.accrued_interest,
+                    'after_post': a.current_balance + a.accrued_interest,
+                    'account_type': f'SB-{a.get_account_type_display()}',
+                    'category': 'savings',
+                    'obj': a,
+                    'last_post_date': a.last_interest_posted_date,
+                }
+            )
 
         fd_qs = FixedDeposit.objects.filter(
-            status='active', accrued_interest__gt=0, **branch_filter,
+            status='active',
+            accrued_interest__gt=0,
+            **branch_filter,
         ).select_related('member', 'branch')
         if lock:
             fd_qs = fd_qs.select_for_update()
         for fd in fd_qs:
-            rows.append({
-                'account_no': fd.fd_no, 'member_name': fd.member.name,
-                'balance': fd.deposit_amount, 'accrued': fd.accrued_interest,
-                'after_post': fd.deposit_amount + fd.accrued_interest,
-                'account_type': 'Fixed Deposit',
-                'category': 'fd', 'obj': fd,
-                'last_post_date': fd.last_interest_posted_date,
-            })
+            rows.append(
+                {
+                    'account_no': fd.fd_no,
+                    'member_name': fd.member.name,
+                    'balance': fd.deposit_amount,
+                    'accrued': fd.accrued_interest,
+                    'after_post': fd.deposit_amount + fd.accrued_interest,
+                    'account_type': 'Fixed Deposit',
+                    'category': 'fd',
+                    'obj': fd,
+                    'last_post_date': fd.last_interest_posted_date,
+                }
+            )
 
         return rows
 
@@ -647,7 +726,9 @@ class InterestPostView(ManagerRequiredMixin, View):
         branch_filter = {} if request.user.can_access_all_branches else {'branch': branch}
         entries = (
             JournalEntry.objects.filter(
-                reference_type='interest_posting', is_reversed=False, **branch_filter,
+                reference_type='interest_posting',
+                is_reversed=False,
+                **branch_filter,
             )
             .prefetch_related('lines__gl_account')
             .order_by('-entry_date', '-created_at')[:50]
@@ -657,12 +738,17 @@ class InterestPostView(ManagerRequiredMixin, View):
         day_is_open = wd and wd.is_day_open and not wd.day_end_completed
         postings = []
         for e in entries:
-            amount = sum(l.debit_amount for l in e.lines.all())
-            postings.append({
-                'id': e.pk, 'voucher_no': e.voucher_no, 'date': e.entry_date,
-                'narration': e.narration, 'amount': amount,
-                'can_rollback': day_is_open and e.entry_date == today,
-            })
+            amount = sum(line.debit_amount for line in e.lines.all())
+            postings.append(
+                {
+                    'id': e.pk,
+                    'voucher_no': e.voucher_no,
+                    'date': e.entry_date,
+                    'narration': e.narration,
+                    'amount': amount,
+                    'can_rollback': day_is_open and e.entry_date == today,
+                }
+            )
         return postings
 
     def get(self, request):
@@ -679,12 +765,19 @@ class InterestPostView(ManagerRequiredMixin, View):
         total_posted_recently = sum(p['amount'] for p in recent)
         today_postings = [p for p in recent if p['can_rollback']]
 
-        return render(request, 'dayend/interest_post.html', {
-            'accounts': rows[:200], 'summary': summary, 'post_date': date.today(),
-            'recent_postings': recent, 'total_posted_recently': total_posted_recently,
-            'today_posting_count': len(today_postings),
-            'today_posting_total': sum(p['amount'] for p in today_postings),
-        })
+        return render(
+            request,
+            'dayend/interest_post.html',
+            {
+                'accounts': rows[:200],
+                'summary': summary,
+                'post_date': date.today(),
+                'recent_postings': recent,
+                'total_posted_recently': total_posted_recently,
+                'today_posting_count': len(today_postings),
+                'today_posting_total': sum(p['amount'] for p in today_postings),
+            },
+        )
 
     def post(self, request):
         branch = getattr(request, 'current_branch', None)
@@ -724,32 +817,45 @@ class InterestPostView(ManagerRequiredMixin, View):
                     obj.interest_charged += interest_amount
                     obj.accrued_interest = Decimal('0')
                     obj.last_interest_posted_date = post_date
-                    obj.save(update_fields=[
-                        'current_balance', 'interest_charged',
-                        'accrued_interest', 'last_interest_posted_date',
-                    ])
+                    obj.save(
+                        update_fields=[
+                            'current_balance',
+                            'interest_charged',
+                            'accrued_interest',
+                            'last_interest_posted_date',
+                        ]
+                    )
 
                     txn = AccountTransaction.objects.create(
-                        account=obj, branch=obj.branch,
-                        txn_date=post_date, value_date=post_date,
-                        txn_type='interest_credit', amount=interest_amount,
+                        account=obj,
+                        branch=obj.branch,
+                        txn_date=post_date,
+                        value_date=post_date,
+                        txn_type='interest_credit',
+                        amount=interest_amount,
                         running_balance=obj.current_balance,
                         narration=f'Interest credited for period ending {post_date}',
-                        payment_mode='transfer', created_by=request.user,
+                        payment_mode='transfer',
+                        created_by=request.user,
                     )
 
                     from apps.core.gl_utils import get_account_gl_code
+
                     savings_code = get_account_gl_code(obj, 'saving', '2001')
                     gl_head = obj.gl_head if hasattr(obj, 'gl_head') and obj.gl_head_id else None
                     interest_expense_code = get_interest_head_code(gl_head, get_gl_code('interest_paid', '4001'))
                     create_journal_entry(
-                        entry_date=post_date, voucher_type='journal', branch=obj.branch,
+                        entry_date=post_date,
+                        voucher_type='journal',
+                        branch=obj.branch,
                         narration=f'Interest on savings {obj.account_no}',
                         lines=[
                             {'account_code': interest_expense_code, 'debit': interest_amount, 'credit': Decimal('0')},
                             {'account_code': savings_code, 'debit': Decimal('0'), 'credit': interest_amount},
                         ],
-                        user=request.user, reference_type='interest_posting', reference_id=txn.pk,
+                        user=request.user,
+                        reference_type='interest_posting',
+                        reference_id=txn.pk,
                     )
 
                 elif row['category'] == 'fd':
@@ -762,29 +868,40 @@ class InterestPostView(ManagerRequiredMixin, View):
                     if hasattr(obj, 'gl_head') and obj.gl_head_id and obj.gl_head.interest_code_id:
                         interest_expense_code = obj.gl_head.interest_code.code
                     create_journal_entry(
-                        entry_date=post_date, voucher_type='journal', branch=obj.branch,
+                        entry_date=post_date,
+                        voucher_type='journal',
+                        branch=obj.branch,
                         narration=f'Interest on FD {obj.fd_no}',
                         lines=[
                             {'account_code': interest_expense_code, 'debit': interest_amount, 'credit': Decimal('0')},
                             {'account_code': fd_code, 'debit': Decimal('0'), 'credit': interest_amount},
                         ],
-                        user=request.user, reference_type='interest_posting',
+                        user=request.user,
+                        reference_type='interest_posting',
                     )
 
                 posted_count += 1
                 total_posted += interest_amount
-                results.append({
-                    'account_no': row['account_no'], 'member_name': row['member_name'],
-                    'balance': row['balance'], 'accrued': interest_amount,
-                    'after_post': row['after_post'], 'account_type': row['account_type'],
-                })
+                results.append(
+                    {
+                        'account_no': row['account_no'],
+                        'member_name': row['member_name'],
+                        'balance': row['balance'],
+                        'accrued': interest_amount,
+                        'after_post': row['after_post'],
+                        'account_type': row['account_type'],
+                    }
+                )
 
         if posted_count > 0:
             from apps.audit.services import log_action
 
             log_action(
-                user=request.user, branch=branch, action='approve',
-                table_name='InterestPosting', record_id=0,
+                user=request.user,
+                branch=branch,
+                action='approve',
+                table_name='InterestPosting',
+                record_id=0,
                 new_values={'posted_count': posted_count, 'total': str(total_posted), 'post_date': str(post_date)},
                 ip_address=request.META.get('REMOTE_ADDR'),
             )
@@ -793,10 +910,18 @@ class InterestPostView(ManagerRequiredMixin, View):
         total_remaining = sum(r['accrued'] for r in remaining)
         summary = {'total_accounts': len(remaining), 'total_accrued': total_remaining}
 
-        return render(request, 'dayend/interest_post.html', {
-            'accounts': remaining[:200], 'summary': summary, 'post_date': post_date,
-            'results': results, 'posted_count': posted_count, 'total_posted': total_posted,
-        })
+        return render(
+            request,
+            'dayend/interest_post.html',
+            {
+                'accounts': remaining[:200],
+                'summary': summary,
+                'post_date': post_date,
+                'results': results,
+                'posted_count': posted_count,
+                'total_posted': total_posted,
+            },
+        )
 
 
 def _rollback_single_interest_entry(entry, user):
@@ -804,7 +929,7 @@ def _rollback_single_interest_entry(entry, user):
     from apps.deposits.models import FixedDeposit
     from apps.savings.models import AccountTransaction
 
-    interest_amount = sum(l.debit_amount for l in entry.lines.all())
+    interest_amount = sum(line.debit_amount for line in entry.lines.all())
 
     if entry.reference_id:
         txn = AccountTransaction.objects.filter(pk=entry.reference_id).select_related('account').first()
@@ -814,10 +939,14 @@ def _rollback_single_interest_entry(entry, user):
             acct.interest_charged -= interest_amount
             acct.accrued_interest = interest_amount
             acct.last_interest_posted_date = None
-            acct.save(update_fields=[
-                'current_balance', 'interest_charged',
-                'accrued_interest', 'last_interest_posted_date',
-            ])
+            acct.save(
+                update_fields=[
+                    'current_balance',
+                    'interest_charged',
+                    'accrued_interest',
+                    'last_interest_posted_date',
+                ]
+            )
             txn.delete()
     else:
         narration = entry.narration
@@ -842,8 +971,10 @@ def rollback_interest_posting(request, entry_id):
     from apps.accounting.models import JournalEntry
 
     entry = get_object_or_404(
-        JournalEntry, pk=entry_id,
-        reference_type='interest_posting', is_reversed=False,
+        JournalEntry,
+        pk=entry_id,
+        reference_type='interest_posting',
+        is_reversed=False,
     )
     if entry.entry_date != date.today():
         messages.error(request, 'Rollback is only allowed for same-day postings.')
@@ -866,7 +997,9 @@ def rollback_all_interest_postings(request):
 
     today = date.today()
     entries = JournalEntry.objects.filter(
-        reference_type='interest_posting', is_reversed=False, entry_date=today,
+        reference_type='interest_posting',
+        is_reversed=False,
+        entry_date=today,
     ).prefetch_related('lines__gl_account')
 
     if not entries.exists():

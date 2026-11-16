@@ -2555,3 +2555,30 @@ msgstr "तुम्ही हे लॉगिन करण्यासाठी
 
 msgid "has been set up successfully."
 msgstr "यशस्वीरित्या सेट अप केले आहे."
+
+msgid "Sign Up"
+msgstr "साइन अप"
+
+msgid "Complete banking software for cooperative societies, credit societies, and nidhi companies."
+msgstr "सहकारी संस्था, क्रेडिट सोसायट्या आणि निधी कंपन्यांसाठी संपूर्ण बँकिंग सॉफ्टवेअर."
+
+msgid "Savings, Loans, FD, RD Management"
+msgstr "बचत, कर्ज, एफडी, आरडी व्यवस्थापन"
+
+msgid "Multi-Branch Operations"
+msgstr "मल्टी-ब्रँच ऑपरेशन्स"
+
+msgid "Double-Entry Accounting & Audit Trail"
+msgstr "डबल-एंट्री लेखांकन आणि ऑडिट ट्रेल"
+
+msgid "Regulatory Compliance & TDS Reports"
+msgstr "नियामक अनुपालन आणि टीडीएस अहवाल"
+
+msgid "Creating your society…"
+msgstr "तुमची सोसायटी तयार होत आहे…"
+
+msgid "Signing in…"
+msgstr "साइन इन होत आहे…"
+
+msgid "Redirecting…"
+msgstr "पुनर्निर्देशित होत आहे…"

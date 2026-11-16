@@ -9,13 +9,19 @@ class NotificationTemplateForm(forms.ModelForm):
         fields = ['name', 'channel', 'subject', 'template_text', 'is_active']
         widgets = {
             'name': forms.TextInput(
-                attrs={'class': 'w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500'}
+                attrs={
+                    'class': 'w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500'
+                }
             ),
             'channel': forms.Select(
-                attrs={'class': 'w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500'}
+                attrs={
+                    'class': 'w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500'
+                }
             ),
             'subject': forms.TextInput(
-                attrs={'class': 'w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500'}
+                attrs={
+                    'class': 'w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500'
+                }
             ),
             'template_text': forms.Textarea(
                 attrs={
@@ -36,8 +42,10 @@ class BulkSMSForm(forms.Form):
     recipient_type = forms.ChoiceField(
         choices=RECIPIENT_CHOICES,
         widget=forms.Select(
-            attrs={'class': 'w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500',
-                   'id': 'id_recipient_type'}
+            attrs={
+                'class': 'w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500',
+                'id': 'id_recipient_type',
+            }
         ),
     )
     branch = forms.ModelChoiceField(
@@ -45,7 +53,9 @@ class BulkSMSForm(forms.Form):
         queryset=None,
         empty_label='— Select Branch —',
         widget=forms.Select(
-            attrs={'class': 'w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500'}
+            attrs={
+                'class': 'w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500'
+            }
         ),
     )
     member_ids = forms.CharField(
@@ -71,6 +81,7 @@ class BulkSMSForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         from apps.branches.models import Branch
+
         self.fields['branch'].queryset = Branch.objects.all()
 
     def clean(self):

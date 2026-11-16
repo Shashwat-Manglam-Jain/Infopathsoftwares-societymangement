@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('deposits', '0008_fd_interest_date_tracking'),
     ]
@@ -13,16 +12,41 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='fixeddeposit',
             name='status',
-            field=models.CharField(choices=[('active', 'Active'), ('matured', 'Matured'), ('prematurely_closed', 'Prematurely Closed'), ('renewed', 'Renewed')], db_index=True, default='active', max_length=20),
+            field=models.CharField(
+                choices=[
+                    ('active', 'Active'),
+                    ('matured', 'Matured'),
+                    ('prematurely_closed', 'Prematurely Closed'),
+                    ('renewed', 'Renewed'),
+                ],
+                db_index=True,
+                default='active',
+                max_length=20,
+            ),
         ),
         migrations.AlterField(
             model_name='rdinstallment',
             name='status',
-            field=models.CharField(choices=[('pending', 'Pending'), ('paid', 'Paid'), ('overdue', 'Overdue'), ('defaulted', 'Defaulted')], db_index=True, default='pending', max_length=10),
+            field=models.CharField(
+                choices=[('pending', 'Pending'), ('paid', 'Paid'), ('overdue', 'Overdue'), ('defaulted', 'Defaulted')],
+                db_index=True,
+                default='pending',
+                max_length=10,
+            ),
         ),
         migrations.AlterField(
             model_name='recurringdeposit',
             name='status',
-            field=models.CharField(choices=[('active', 'Active'), ('matured', 'Matured'), ('defaulted', 'Defaulted'), ('closed', 'Closed')], db_index=True, default='active', max_length=10),
+            field=models.CharField(
+                choices=[
+                    ('active', 'Active'),
+                    ('matured', 'Matured'),
+                    ('defaulted', 'Defaulted'),
+                    ('closed', 'Closed'),
+                ],
+                db_index=True,
+                default='active',
+                max_length=10,
+            ),
         ),
     ]

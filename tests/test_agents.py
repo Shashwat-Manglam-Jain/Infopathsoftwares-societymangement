@@ -285,7 +285,8 @@ class AgentCollectionModelTests(BaseTestCase):
         )
         self.assertEqual(
             AgentCollection.objects.filter(
-                agent=self.agent, collection_date=date(2024, 1, 2),
+                agent=self.agent,
+                collection_date=date(2024, 1, 2),
             ).count(),
             2,
         )

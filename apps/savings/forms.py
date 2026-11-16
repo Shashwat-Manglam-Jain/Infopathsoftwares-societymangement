@@ -9,7 +9,20 @@ _tw_s = 'searchable ' + _tw
 class SavingsAccountForm(forms.ModelForm):
     class Meta:
         model = SavingsAccount
-        fields = ['member', 'branch', 'account_type', 'interest_rate', 'minimum_balance', 'interest_posting_frequency', 'opening_date', 'meeting_no', 'meeting_date', 'introducer', 'gl_head', 'folio_number']
+        fields = [
+            'member',
+            'branch',
+            'account_type',
+            'interest_rate',
+            'minimum_balance',
+            'interest_posting_frequency',
+            'opening_date',
+            'meeting_no',
+            'meeting_date',
+            'introducer',
+            'gl_head',
+            'folio_number',
+        ]
         widgets = {
             'member': forms.Select(attrs={'class': _tw_s}),
             'branch': forms.Select(attrs={'class': _tw}),

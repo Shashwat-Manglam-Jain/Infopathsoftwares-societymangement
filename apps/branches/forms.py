@@ -40,6 +40,10 @@ class BranchForm(forms.ModelForm):
             'status': forms.Select(attrs={'class': tw}),
             'manager': forms.Select(attrs={'class': tw}),
             'ifsc_code': forms.TextInput(attrs={'class': tw, 'maxlength': '11'}),
-            'locker_facility': forms.CheckboxInput(attrs={'class': 'rounded border-gray-300 text-primary-600 focus:ring-primary-500'}),
-            'neft_imps_service': forms.CheckboxInput(attrs={'class': 'rounded border-gray-300 text-primary-600 focus:ring-primary-500'}),
+            'locker_facility': forms.CheckboxInput(
+                attrs={'class': 'rounded border-gray-300 text-primary-600 focus:ring-primary-500'}
+            ),
+            'neft_imps_service': forms.CheckboxInput(
+                attrs={'class': 'rounded border-gray-300 text-primary-600 focus:ring-primary-500'}
+            ),
         }

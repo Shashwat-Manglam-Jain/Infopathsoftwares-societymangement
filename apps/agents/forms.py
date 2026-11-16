@@ -147,9 +147,7 @@ class PigmmyEditForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.branch:
-            self.fields['agent'].queryset = Agent.objects.filter(
-                status='active', branch=self.instance.branch
-            )
+            self.fields['agent'].queryset = Agent.objects.filter(status='active', branch=self.instance.branch)
         else:
             self.fields['agent'].queryset = Agent.objects.filter(status='active')
 

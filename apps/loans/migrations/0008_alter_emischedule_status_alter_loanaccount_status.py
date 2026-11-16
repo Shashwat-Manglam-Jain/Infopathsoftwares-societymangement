@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('loans', '0007_migrate_non_mortgage'),
     ]
@@ -13,11 +12,34 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='emischedule',
             name='status',
-            field=models.CharField(choices=[('pending', 'Pending'), ('paid', 'Paid'), ('overdue', 'Overdue'), ('partially_paid', 'Partially Paid')], db_index=True, default='pending', max_length=15),
+            field=models.CharField(
+                choices=[
+                    ('pending', 'Pending'),
+                    ('paid', 'Paid'),
+                    ('overdue', 'Overdue'),
+                    ('partially_paid', 'Partially Paid'),
+                ],
+                db_index=True,
+                default='pending',
+                max_length=15,
+            ),
         ),
         migrations.AlterField(
             model_name='loanaccount',
             name='status',
-            field=models.CharField(choices=[('applied', 'Applied'), ('approved', 'Approved'), ('rejected', 'Rejected'), ('disbursed', 'Disbursed'), ('closed', 'Closed'), ('written_off', 'Written Off'), ('npa', 'NPA')], db_index=True, default='applied', max_length=15),
+            field=models.CharField(
+                choices=[
+                    ('applied', 'Applied'),
+                    ('approved', 'Approved'),
+                    ('rejected', 'Rejected'),
+                    ('disbursed', 'Disbursed'),
+                    ('closed', 'Closed'),
+                    ('written_off', 'Written Off'),
+                    ('npa', 'NPA'),
+                ],
+                db_index=True,
+                default='applied',
+                max_length=15,
+            ),
         ),
     ]

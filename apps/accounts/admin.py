@@ -8,7 +8,7 @@ from .models import CustomUser
 class CustomUserAdmin(UserAdmin):
     list_display = ['username', 'email', 'role', 'branch', 'is_active']
     list_filter = ['role', 'is_active', 'branch']
-    fieldsets = UserAdmin.fieldsets + (
+    fieldsets = UserAdmin.fieldsets + (  # type: ignore[assignment]
         (
             'Society Info',
             {

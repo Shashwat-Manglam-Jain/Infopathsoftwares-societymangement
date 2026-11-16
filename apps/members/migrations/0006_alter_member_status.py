@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('members', '0005_accountnominee'),
     ]
@@ -13,6 +12,16 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='member',
             name='status',
-            field=models.CharField(choices=[('active', 'Active'), ('inactive', 'Inactive'), ('deceased', 'Deceased'), ('expelled', 'Expelled')], db_index=True, default='active', max_length=10),
+            field=models.CharField(
+                choices=[
+                    ('active', 'Active'),
+                    ('inactive', 'Inactive'),
+                    ('deceased', 'Deceased'),
+                    ('expelled', 'Expelled'),
+                ],
+                db_index=True,
+                default='active',
+                max_length=10,
+            ),
         ),
     ]

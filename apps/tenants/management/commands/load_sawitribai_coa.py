@@ -155,9 +155,7 @@ class Command(BaseCommand):
     help = 'Load Sawitribai Society chart of accounts with opening balances'
 
     def add_arguments(self, parser):
-        parser.add_argument(
-            '--schema', default='demo', help='Tenant schema name (default: demo)'
-        )
+        parser.add_argument('--schema', default='demo', help='Tenant schema name (default: demo)')
 
     def handle(self, *args, **options):
         schema = options['schema']
@@ -172,12 +170,7 @@ class Command(BaseCommand):
             try:
                 parents[group] = ChartOfAccounts.objects.get(code=code)
             except ChartOfAccounts.DoesNotExist:
-                self.stderr.write(
-                    self.style.ERROR(
-                        f'Parent head {code} not found. '
-                        f'Run create_demo_tenant first.'
-                    )
-                )
+                self.stderr.write(self.style.ERROR(f'Parent head {code} not found. Run create_demo_tenant first.'))
                 return
 
         created = 0
@@ -185,7 +178,7 @@ class Command(BaseCommand):
 
         with transaction.atomic():
             for code, name, group, related, report, opening in SAWITRIBAI_COA:
-                obj, was_created = ChartOfAccounts.objects.get_or_create(
+                _obj, was_created = ChartOfAccounts.objects.get_or_create(
                     code=code,
                     defaults={
                         'name': name,
@@ -216,31 +209,22 @@ class Command(BaseCommand):
                     head.current_balance = opening
                     head.save(update_fields=['opening_balance', 'current_balance'])
                     updated += 1
-                    self.stdout.write(
-                        f'  Updated {code} {head.name}: '
-                        f'opening={opening:,.2f}'
-                    )
+                    self.stdout.write(f'  Updated {code} {head.name}: opening={opening:,.2f}')
                 except ChartOfAccounts.DoesNotExist:
-                    self.stderr.write(
-                        self.style.WARNING(f'  Head {code} not found, skipping')
-                    )
+                    self.stderr.write(self.style.WARNING(f'  Head {code} not found, skipping'))
 
             # Set cash opening balance
-            cash_heads = ChartOfAccounts.objects.filter(
-                code__startswith='1001'
-            )
+            cash_heads = ChartOfAccounts.objects.filter(code__startswith='1001')
             for ch in cash_heads:
                 ch.opening_balance = Decimal('1612.00')
                 ch.current_balance = Decimal('1612.00')
                 ch.save(update_fields=['opening_balance', 'current_balance'])
-                self.stdout.write(
-                    f'  Cash head {ch.code}: opening=1,612.00'
-                )
+                self.stdout.write(f'  Cash head {ch.code}: opening=1,612.00')
 
             # CashbookMaster opening entry
             ho_branch = Branch.objects.filter(branch_code='HO').first()
             if ho_branch:
-                cb, cb_created = CashbookMaster.objects.get_or_create(
+                _cb, cb_created = CashbookMaster.objects.get_or_create(
                     branch=ho_branch,
                     txn_date=date(2026, 4, 1),
                     defaults={
@@ -249,14 +233,9 @@ class Command(BaseCommand):
                     },
                 )
                 if cb_created:
-                    self.stdout.write(
-                        '  CashbookMaster created for HO: '
-                        '2026-04-01, opening=1,612.00'
-                    )
+                    self.stdout.write('  CashbookMaster created for HO: 2026-04-01, opening=1,612.00')
                 else:
-                    self.stdout.write(
-                        '  CashbookMaster already exists for HO 2026-04-01'
-                    )
+                    self.stdout.write('  CashbookMaster already exists for HO 2026-04-01')
 
         self.stdout.write(
             self.style.SUCCESS(

@@ -46,7 +46,9 @@ class ChartOfAccountsForm(forms.ModelForm):
             'interest_code': forms.Select(attrs={'class': tw}),
             'report_position': forms.Select(attrs={'class': tw}),
             'display_order': forms.NumberInput(attrs={'class': tw}),
-            'is_active': forms.CheckboxInput(attrs={'class': 'rounded border-gray-300 text-primary-600 focus:ring-primary-500'}),
+            'is_active': forms.CheckboxInput(
+                attrs={'class': 'rounded border-gray-300 text-primary-600 focus:ring-primary-500'}
+            ),
         }
 
     def __init__(self, *args, **kwargs):

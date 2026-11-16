@@ -18,11 +18,13 @@ def audit_log(request):
         qs = qs.filter(table_name=table)
 
     logs = qs[:200]
-    table_choices = (
-        AuditTrail.objects.values_list('table_name', flat=True).distinct().order_by('table_name')
-    )
+    table_choices = AuditTrail.objects.values_list('table_name', flat=True).distinct().order_by('table_name')
 
-    return render(request, 'audit/log.html', {
-        'logs': logs,
-        'table_choices': table_choices,
-    })
+    return render(
+        request,
+        'audit/log.html',
+        {
+            'logs': logs,
+            'table_choices': table_choices,
+        },
+    )

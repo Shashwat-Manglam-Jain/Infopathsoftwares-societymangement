@@ -253,16 +253,30 @@ class InterBranchTransfer(models.Model):
     narration = models.TextField(blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     journal_entry_from = models.ForeignKey(
-        'JournalEntry', on_delete=models.SET_NULL, null=True, blank=True, related_name='+',
+        'JournalEntry',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+',
     )
     journal_entry_to = models.ForeignKey(
-        'JournalEntry', on_delete=models.SET_NULL, null=True, blank=True, related_name='+',
+        'JournalEntry',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+',
     )
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='ibt_created',
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name='ibt_created',
     )
     approved_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='ibt_approved',
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='ibt_approved',
     )
     created_at = models.DateTimeField(auto_now_add=True)
 

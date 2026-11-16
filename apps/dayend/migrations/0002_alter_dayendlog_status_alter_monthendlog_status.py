@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('dayend', '0001_initial'),
     ]
@@ -13,11 +12,26 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='dayendlog',
             name='status',
-            field=models.CharField(choices=[('running', 'Running'), ('completed', 'Completed'), ('failed', 'Failed'), ('rolled_back', 'Rolled Back')], db_index=True, default='running', max_length=15),
+            field=models.CharField(
+                choices=[
+                    ('running', 'Running'),
+                    ('completed', 'Completed'),
+                    ('failed', 'Failed'),
+                    ('rolled_back', 'Rolled Back'),
+                ],
+                db_index=True,
+                default='running',
+                max_length=15,
+            ),
         ),
         migrations.AlterField(
             model_name='monthendlog',
             name='status',
-            field=models.CharField(choices=[('running', 'Running'), ('completed', 'Completed'), ('failed', 'Failed')], db_index=True, default='running', max_length=10),
+            field=models.CharField(
+                choices=[('running', 'Running'), ('completed', 'Completed'), ('failed', 'Failed')],
+                db_index=True,
+                default='running',
+                max_length=10,
+            ),
         ),
     ]

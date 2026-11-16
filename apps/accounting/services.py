@@ -67,11 +67,16 @@ def create_journal_entry(
         from apps.audit.services import log_action
 
         log_action(
-            user=user, branch=branch, action='create',
-            table_name='JournalEntry', record_id=entry.pk,
+            user=user,
+            branch=branch,
+            action='create',
+            table_name='JournalEntry',
+            record_id=entry.pk,
             new_values={
-                'voucher_no': entry.voucher_no, 'voucher_type': voucher_type,
-                'narration': narration, 'reference_type': reference_type,
+                'voucher_no': entry.voucher_no,
+                'voucher_type': voucher_type,
+                'narration': narration,
+                'reference_type': reference_type,
                 'total': str(total_debit),
             },
             ip_address=get_current_ip(),
@@ -116,8 +121,11 @@ def reverse_journal_entry(entry, user):
         from apps.audit.services import log_action
 
         log_action(
-            user=user, branch=entry.branch, action='reverse',
-            table_name='JournalEntry', record_id=entry.pk,
+            user=user,
+            branch=entry.branch,
+            action='reverse',
+            table_name='JournalEntry',
+            record_id=entry.pk,
             old_values={'voucher_no': entry.voucher_no, 'is_reversed': False},
             new_values={'reversal_voucher': reversal.voucher_no, 'is_reversed': True},
             ip_address=get_current_ip(),
@@ -129,13 +137,19 @@ def update_cashbook(branch, txn_date, receipt_amount=Decimal('0'), payment_amoun
     from apps.core.gl_utils import get_cash_code
 
     cb, created = CashbookMaster.objects.get_or_create(
-        branch=branch, txn_date=txn_date,
+        branch=branch,
+        txn_date=txn_date,
         defaults={'opening_balance': Decimal('0')},
     )
     if created:
-        prev = CashbookMaster.objects.filter(
-            branch=branch, txn_date__lt=txn_date,
-        ).order_by('-txn_date').first()
+        prev = (
+            CashbookMaster.objects.filter(
+                branch=branch,
+                txn_date__lt=txn_date,
+            )
+            .order_by('-txn_date')
+            .first()
+        )
         if prev:
             cb.opening_balance = prev.closing_balance
         else:

@@ -553,12 +553,16 @@ def cashbook_report(request):
                 total_receipts = sum(cb.total_receipts for cb in cbs)
                 total_payments = sum(cb.total_payments for cb in cbs)
                 total_closing = sum(cb.closing_balance for cb in cbs)
-                context['cashbook'] = type('CB', (), {
-                    'opening_balance': total_opening,
-                    'total_receipts': total_receipts,
-                    'total_payments': total_payments,
-                    'closing_balance': total_closing,
-                })()
+                context['cashbook'] = type(
+                    'CB',
+                    (),
+                    {
+                        'opening_balance': total_opening,
+                        'total_receipts': total_receipts,
+                        'total_payments': total_payments,
+                        'closing_balance': total_closing,
+                    },
+                )()
                 context['branch_cashbooks'] = cbs
 
             entries = JournalEntry.objects.filter(
