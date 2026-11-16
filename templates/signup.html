@@ -1,187 +1,181 @@
 {% load i18n static %}
 <!DOCTYPE html>
-<html lang="{{ LANGUAGE_CODE|default:'en' }}">
+<html lang="{{ LANGUAGE_CODE|default:'en' }}" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% trans "Sign Up" %} — InfoSociety | InfopathSolutions</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: { brand: '#4f46e5', ink: '#1e293b' },
+            }
+        }
+    }
+    </script>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 min-h-screen">
 
-<!-- Navbar -->
-<nav class="bg-white shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-14">
-            <a href="/" class="flex items-center space-x-2">
-                <img src="{% static 'img/logo.png' %}" alt="InfoSociety" class="h-8">
-            </a>
-            <div class="flex items-center gap-4">
-                <form method="post" action="{% url 'set_language' %}" data-no-guard class="flex items-center gap-1">
-                    {% csrf_token %}
-                    <input type="hidden" name="next" value="{{ request.path }}">
-                    <select name="language" onchange="this.form.submit()" class="text-xs border border-gray-300 rounded px-2 py-1 bg-white text-gray-700 focus:ring-1 focus:ring-indigo-500">
-                        {% get_current_language as LANGUAGE_CODE %}
-                        {% get_available_languages as LANGUAGES %}
-                        {% for lang_code, lang_name in LANGUAGES %}
-                        <option value="{{ lang_code }}" {% if lang_code == LANGUAGE_CODE %}selected{% endif %}>{{ lang_name }}</option>
-                        {% endfor %}
-                    </select>
-                </form>
-                <a href="/accounts/login/" class="text-sm text-gray-600 hover:text-indigo-600 font-medium">{% trans "Already have an account? Login" %}</a>
+{% include "includes/public_navbar.html" with active_page="signup" %}
+
+<div class="pt-24 pb-12 px-4">
+    <div class="max-w-3xl mx-auto">
+
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                {% trans "90 days free" %}
             </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900">{% trans "Start Your Free Trial" %}</h1>
+            <p class="mt-2 text-sm text-gray-500 max-w-md mx-auto">{% trans "No credit card needed. Setup in 2 minutes." %}</p>
         </div>
+
+        {% if form.errors %}
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-xl p-4">
+            <div class="flex items-center gap-2 mb-1">
+                <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                <span class="text-red-800 font-semibold text-sm">{% trans "Please fix the errors below" %}:</span>
+            </div>
+            {% for error in form.non_field_errors %}
+            <p class="text-red-700 text-sm ml-7">{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post" action="/signup/" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- Step 1: Society Details -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center shadow-sm">
+                        <span class="text-white font-bold text-sm">1</span>
+                    </div>
+                    <h2 class="text-lg font-bold text-gray-900">{% trans "Society Details" %}</h2>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label for="id_society_name" class="block text-sm font-semibold text-gray-700 mb-1">{{ form.society_name.label }} <span class="text-red-500">*</span></label>
+                        {{ form.society_name }}
+                        {% if form.society_name.errors %}<p class="mt-1 text-sm text-red-600">{{ form.society_name.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="id_society_type" class="block text-sm font-semibold text-gray-700 mb-1">{{ form.society_type.label }} <span class="text-red-500">*</span></label>
+                            {{ form.society_type }}
+                            {% if form.society_type.errors %}<p class="mt-1 text-sm text-red-600">{{ form.society_type.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div>
+                            <label for="id_registration_no" class="block text-sm font-semibold text-gray-700 mb-1">{{ form.registration_no.label }}</label>
+                            {{ form.registration_no }}
+                            {% if form.registration_no.errors %}<p class="mt-1 text-sm text-red-600">{{ form.registration_no.errors.0 }}</p>{% endif %}
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="id_phone" class="block text-sm font-semibold text-gray-700 mb-1">{{ form.phone.label }} <span class="text-red-500">*</span></label>
+                            {{ form.phone }}
+                            {% if form.phone.errors %}<p class="mt-1 text-sm text-red-600">{{ form.phone.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div>
+                            <label for="id_email" class="block text-sm font-semibold text-gray-700 mb-1">{% trans "Email" %} <span class="text-red-500">*</span></label>
+                            {{ form.email }}
+                            {% if form.email.errors %}<p class="mt-1 text-sm text-red-600">{{ form.email.errors.0 }}</p>{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Address -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center shadow-sm">
+                        <span class="text-white font-bold text-sm">2</span>
+                    </div>
+                    <h2 class="text-lg font-bold text-gray-900">{% trans "Head Office Address" %}</h2>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label for="id_address" class="block text-sm font-semibold text-gray-700 mb-1">{{ form.address.label }}</label>
+                        {{ form.address }}
+                        {% if form.address.errors %}<p class="mt-1 text-sm text-red-600">{{ form.address.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div class="grid sm:grid-cols-3 gap-4">
+                        <div>
+                            <label for="id_city" class="block text-sm font-semibold text-gray-700 mb-1">{% trans "City" %} <span class="text-red-500">*</span></label>
+                            {{ form.city }}
+                            {% if form.city.errors %}<p class="mt-1 text-sm text-red-600">{{ form.city.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div>
+                            <label for="id_state" class="block text-sm font-semibold text-gray-700 mb-1">{% trans "State" %} <span class="text-red-500">*</span></label>
+                            {{ form.state }}
+                            {% if form.state.errors %}<p class="mt-1 text-sm text-red-600">{{ form.state.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div>
+                            <label for="id_pincode" class="block text-sm font-semibold text-gray-700 mb-1">{% trans "Pincode" %} <span class="text-red-500">*</span></label>
+                            {{ form.pincode }}
+                            {% if form.pincode.errors %}<p class="mt-1 text-sm text-red-600">{{ form.pincode.errors.0 }}</p>{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Admin Account -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center shadow-sm">
+                        <span class="text-white font-bold text-sm">3</span>
+                    </div>
+                    <h2 class="text-lg font-bold text-gray-900">{% trans "Admin Account" %}</h2>
+                </div>
+                <p class="text-sm text-gray-500 mb-5 -mt-2">{% trans "This will be the primary admin for your society. You can add more users later." %}</p>
+                <div class="space-y-4">
+                    <div>
+                        <label for="id_admin_name" class="block text-sm font-semibold text-gray-700 mb-1">{{ form.admin_name.label }} <span class="text-red-500">*</span></label>
+                        {{ form.admin_name }}
+                        {% if form.admin_name.errors %}<p class="mt-1 text-sm text-red-600">{{ form.admin_name.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div>
+                        <label for="id_admin_username" class="block text-sm font-semibold text-gray-700 mb-1">{{ form.admin_username.label }} <span class="text-red-500">*</span></label>
+                        {{ form.admin_username }}
+                        {% if form.admin_username.errors %}<p class="mt-1 text-sm text-red-600">{{ form.admin_username.errors.0 }}</p>{% endif %}
+                        <p class="mt-1 text-xs text-gray-400">{% trans "You'll use this to log in" %}</p>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="id_password" class="block text-sm font-semibold text-gray-700 mb-1">{% trans "Password" %} <span class="text-red-500">*</span></label>
+                            {{ form.password }}
+                            {% if form.password.errors %}<p class="mt-1 text-sm text-red-600">{{ form.password.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div>
+                            <label for="id_confirm_password" class="block text-sm font-semibold text-gray-700 mb-1">{% trans "Confirm Password" %} <span class="text-red-500">*</span></label>
+                            {{ form.confirm_password }}
+                            {% if form.confirm_password.errors %}<p class="mt-1 text-sm text-red-600">{{ form.confirm_password.errors.0 }}</p>{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="text-center">
+                <button type="submit" data-loading-text="{% trans 'Creating your society…' %}"
+                        class="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-10 py-3.5 rounded-xl text-sm font-bold hover:from-indigo-700 hover:to-purple-700 active:scale-[0.98] transition shadow-lg shadow-indigo-600/25 disabled:opacity-50 disabled:cursor-not-allowed">
+                    {% trans "Create My Society — Start Free Trial" %}
+                    <svg class="inline w-4 h-4 ml-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                </button>
+                <p class="mt-3 text-xs text-gray-400">{% trans "By signing up, you agree to our Terms of Service and Privacy Policy." %}</p>
+            </div>
+        </form>
     </div>
-</nav>
-
-<div class="max-w-3xl mx-auto px-4 py-6 sm:py-8">
-    <!-- Header -->
-    <div class="text-center mb-6">
-        <h1 class="text-xl sm:text-2xl font-bold text-gray-900">{% trans "Start Your Free Trial" %}</h1>
-        <p class="mt-1 text-sm text-gray-600">{% trans "90 days free. No credit card needed. Setup in 2 minutes." %}</p>
-    </div>
-
-    {% if form.errors %}
-    <div class="mb-4 bg-red-50 border border-red-200 rounded-lg p-3">
-        <div class="flex items-center mb-1">
-            <svg class="w-4 h-4 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-            <span class="text-red-800 font-medium text-sm">{% trans "Please fix the errors below" %}:</span>
-        </div>
-        {% for error in form.non_field_errors %}
-        <p class="text-red-700 text-sm ml-6">{{ error }}</p>
-        {% endfor %}
-    </div>
-    {% endif %}
-
-    <form method="post" action="/signup/" class="space-y-5">
-        {% csrf_token %}
-
-        <!-- Step 1: Society Details -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <div class="flex items-center mb-4">
-                <div class="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center mr-2">
-                    <span class="text-white font-bold text-xs">1</span>
-                </div>
-                <h2 class="text-base font-semibold text-gray-900">{% trans "Society Details" %}</h2>
-            </div>
-            <div class="space-y-4">
-                <div>
-                    <label for="id_society_name" class="block text-sm font-medium text-gray-700 mb-1">{{ form.society_name.label }} <span class="text-red-500">*</span></label>
-                    {{ form.society_name }}
-                    {% if form.society_name.errors %}<p class="mt-1 text-sm text-red-600">{{ form.society_name.errors.0 }}</p>{% endif %}
-                </div>
-                <div class="grid sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="id_society_type" class="block text-sm font-medium text-gray-700 mb-1">{{ form.society_type.label }} <span class="text-red-500">*</span></label>
-                        {{ form.society_type }}
-                        {% if form.society_type.errors %}<p class="mt-1 text-sm text-red-600">{{ form.society_type.errors.0 }}</p>{% endif %}
-                    </div>
-                    <div>
-                        <label for="id_registration_no" class="block text-sm font-medium text-gray-700 mb-1">{{ form.registration_no.label }}</label>
-                        {{ form.registration_no }}
-                        {% if form.registration_no.errors %}<p class="mt-1 text-sm text-red-600">{{ form.registration_no.errors.0 }}</p>{% endif %}
-                    </div>
-                </div>
-                <div class="grid sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="id_phone" class="block text-sm font-medium text-gray-700 mb-1">{{ form.phone.label }} <span class="text-red-500">*</span></label>
-                        {{ form.phone }}
-                        {% if form.phone.errors %}<p class="mt-1 text-sm text-red-600">{{ form.phone.errors.0 }}</p>{% endif %}
-                    </div>
-                    <div>
-                        <label for="id_email" class="block text-sm font-medium text-gray-700 mb-1">{% trans "Email" %} <span class="text-red-500">*</span></label>
-                        {{ form.email }}
-                        {% if form.email.errors %}<p class="mt-1 text-sm text-red-600">{{ form.email.errors.0 }}</p>{% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Step 2: Address -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <div class="flex items-center mb-4">
-                <div class="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center mr-2">
-                    <span class="text-white font-bold text-xs">2</span>
-                </div>
-                <h2 class="text-base font-semibold text-gray-900">{% trans "Head Office Address" %}</h2>
-            </div>
-            <div class="space-y-4">
-                <div>
-                    <label for="id_address" class="block text-sm font-medium text-gray-700 mb-1">{{ form.address.label }}</label>
-                    {{ form.address }}
-                    {% if form.address.errors %}<p class="mt-1 text-sm text-red-600">{{ form.address.errors.0 }}</p>{% endif %}
-                </div>
-                <div class="grid sm:grid-cols-3 gap-4">
-                    <div>
-                        <label for="id_city" class="block text-sm font-medium text-gray-700 mb-1">{% trans "City" %} <span class="text-red-500">*</span></label>
-                        {{ form.city }}
-                        {% if form.city.errors %}<p class="mt-1 text-sm text-red-600">{{ form.city.errors.0 }}</p>{% endif %}
-                    </div>
-                    <div>
-                        <label for="id_state" class="block text-sm font-medium text-gray-700 mb-1">{% trans "State" %} <span class="text-red-500">*</span></label>
-                        {{ form.state }}
-                        {% if form.state.errors %}<p class="mt-1 text-sm text-red-600">{{ form.state.errors.0 }}</p>{% endif %}
-                    </div>
-                    <div>
-                        <label for="id_pincode" class="block text-sm font-medium text-gray-700 mb-1">{% trans "Pincode" %} <span class="text-red-500">*</span></label>
-                        {{ form.pincode }}
-                        {% if form.pincode.errors %}<p class="mt-1 text-sm text-red-600">{{ form.pincode.errors.0 }}</p>{% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Step 3: Admin Account -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <div class="flex items-center mb-4">
-                <div class="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center mr-2">
-                    <span class="text-white font-bold text-xs">3</span>
-                </div>
-                <h2 class="text-base font-semibold text-gray-900">{% trans "Admin Account" %}</h2>
-            </div>
-            <p class="text-sm text-gray-500 mb-4">{% trans "This will be the primary admin for your society. You can add more users later." %}</p>
-            <div class="space-y-4">
-                <div>
-                    <label for="id_admin_name" class="block text-sm font-medium text-gray-700 mb-1">{{ form.admin_name.label }} <span class="text-red-500">*</span></label>
-                    {{ form.admin_name }}
-                    {% if form.admin_name.errors %}<p class="mt-1 text-sm text-red-600">{{ form.admin_name.errors.0 }}</p>{% endif %}
-                </div>
-                <div>
-                    <label for="id_admin_username" class="block text-sm font-medium text-gray-700 mb-1">{{ form.admin_username.label }} <span class="text-red-500">*</span></label>
-                    {{ form.admin_username }}
-                    {% if form.admin_username.errors %}<p class="mt-1 text-sm text-red-600">{{ form.admin_username.errors.0 }}</p>{% endif %}
-                    <p class="mt-1 text-xs text-gray-400">{% trans "You'll use this to log in" %}</p>
-                </div>
-                <div class="grid sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="id_password" class="block text-sm font-medium text-gray-700 mb-1">{% trans "Password" %} <span class="text-red-500">*</span></label>
-                        {{ form.password }}
-                        {% if form.password.errors %}<p class="mt-1 text-sm text-red-600">{{ form.password.errors.0 }}</p>{% endif %}
-                    </div>
-                    <div>
-                        <label for="id_confirm_password" class="block text-sm font-medium text-gray-700 mb-1">{% trans "Confirm Password" %} <span class="text-red-500">*</span></label>
-                        {{ form.confirm_password }}
-                        {% if form.confirm_password.errors %}<p class="mt-1 text-sm text-red-600">{{ form.confirm_password.errors.0 }}</p>{% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Submit -->
-        <div class="text-center">
-            <button type="submit" data-loading-text="{% trans 'Creating your society…' %}"
-                    class="w-full sm:w-auto bg-indigo-600 text-white px-8 py-2.5 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                {% trans "Create My Society — Start Free Trial" %}
-            </button>
-            <p class="mt-2 text-xs text-gray-500">{% trans "By signing up, you agree to our Terms of Service and Privacy Policy." %}</p>
-        </div>
-    </form>
 </div>
 
 <!-- Footer -->
-<footer class="bg-gray-100 border-t mt-8 py-4 text-center text-xs text-gray-500">
+<footer class="border-t bg-white/50 py-5 text-center text-xs text-gray-400">
     &copy; {% now "Y" %} InfoSociety by InfopathSolutions. All rights reserved. &middot;
-    <a href="/" class="text-indigo-600 hover:underline">{% trans "Back to Home" %}</a>
+    <a href="/" class="text-indigo-600 hover:underline font-medium">{% trans "Back to Home" %}</a>
 </footer>
 
 <script src="{% static 'js/form-guard.js' %}"></script>
