@@ -44,8 +44,7 @@ for h in _raw_hosts:
 CSRF_TRUSTED_ORIGINS = _csrf_origins
 
 CORS_ALLOWED_ORIGIN_REGEXES = [
-    rf'https://[\w-]+\.{h.replace(".", r"\.")}' for h in _raw_hosts
-    if not h.startswith('*') and '.' in h
+    rf'https://[\w-]+\.{h.replace(".", r"\.")}' for h in _raw_hosts if not h.startswith('*') and '.' in h
 ]
 
 CELERY_BROKER_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
