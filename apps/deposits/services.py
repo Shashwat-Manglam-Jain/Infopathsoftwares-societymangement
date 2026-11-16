@@ -37,6 +37,10 @@ def create_fd(
     linked_savings_account=None,
     is_senior=False,
     compounding='quarterly',
+    tds_applicable=False,
+    certificate_no=None,
+    meeting_no='',
+    meeting_date=None,
 ):
     from apps.accounting.models import ChartOfAccounts, InterestMaster
 
@@ -86,7 +90,7 @@ def create_fd(
 
     with transaction.atomic():
         fd_no = _generate_fd_no(branch)
-        cert_no = f'FDC-{fd_no}'
+        cert_no = certificate_no or f'FDC-{fd_no}'
 
         fd = FixedDeposit.objects.create(
             member=member,
@@ -105,6 +109,9 @@ def create_fd(
             premature_penalty_percent=penalty,
             linked_savings_account=linked_savings_account,
             certificate_no=cert_no,
+            tds_applicable=tds_applicable,
+            meeting_no=meeting_no or '',
+            meeting_date=meeting_date,
             created_by=user,
         )
 
@@ -199,6 +206,8 @@ def create_rd(
     user,
     linked_savings_account=None,
     rd_product=None,
+    meeting_no='',
+    meeting_date=None,
 ):
     from apps.accounting.models import ChartOfAccounts, InterestMaster
 
@@ -241,6 +250,8 @@ def create_rd(
             tenure_months=tenure_months,
             maturity_amount=maturity_amount,
             linked_savings_account=linked_savings_account,
+            meeting_no=meeting_no or '',
+            meeting_date=meeting_date,
             created_by=user,
         )
 

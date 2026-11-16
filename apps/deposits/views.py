@@ -82,6 +82,10 @@ def fd_create(request):
                     linked_savings_account=form.cleaned_data.get('linked_savings_account'),
                     is_senior=form.cleaned_data.get('is_senior', False),
                     compounding=form.cleaned_data['compounding'],
+                    tds_applicable=form.cleaned_data.get('tds_applicable', False),
+                    certificate_no=form.cleaned_data.get('certificate_no'),
+                    meeting_no=form.cleaned_data.get('meeting_no', ''),
+                    meeting_date=form.cleaned_data.get('meeting_date'),
                 )
                 messages.success(request, f'Fixed Deposit {fd.fd_no} created successfully.')
                 return redirect('deposits:fd_detail', pk=fd.pk)
@@ -221,6 +225,8 @@ def rd_create(request):
                     branch=request.current_branch,
                     user=request.user,
                     linked_savings_account=form.cleaned_data.get('linked_savings_account'),
+                    meeting_no=form.cleaned_data.get('meeting_no', ''),
+                    meeting_date=form.cleaned_data.get('meeting_date'),
                 )
                 messages.success(request, f'Recurring Deposit {rd.rd_no} created successfully.')
                 return redirect('deposits:rd_detail', pk=rd.pk)

@@ -363,7 +363,7 @@ class SampleImportTemplateView(ManagerRequiredMixin, View):
 
 @auditor_or_above
 def member_detail(request, pk):
-    member = get_object_or_404(Member, pk=pk)
+    member = get_object_or_404(Member.objects.select_related('branch'), pk=pk)
     from decimal import Decimal
 
     from apps.agents.models import PigmmyAccount

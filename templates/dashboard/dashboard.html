@@ -18,6 +18,33 @@
         </div>
         <a href="{% url 'dayend:index' %}" class="px-3 py-1.5 text-xs font-medium text-primary-600 bg-primary-50 rounded-lg hover:bg-primary-100">{% trans "Day Operations" %}</a>
     </div>
+    {% if not working_day.is_day_open %}
+    <div class="bg-amber-50 rounded-lg border border-amber-200 p-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg class="h-4 w-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
+            <div>
+                <p class="text-sm font-semibold text-amber-800">{% trans "Day not started" %}</p>
+                <p class="text-xs text-amber-600">{% trans "Transactions cannot be processed until the day is opened. Start the day to begin operations." %}</p>
+            </div>
+        </div>
+        <a href="{% url 'dayend:index' %}" class="px-4 py-2 text-xs font-bold text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-colors whitespace-nowrap">{% trans "Start Day" %}</a>
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="bg-red-50 rounded-lg border border-red-200 p-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg class="h-4 w-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div>
+                <p class="text-sm font-semibold text-red-800">{% trans "No working day configured" %}</p>
+                <p class="text-xs text-red-600">{% trans "No operations are possible until a branch is selected and the working day is initialized." %}</p>
+            </div>
+        </div>
+        <a href="{% url 'dayend:index' %}" class="px-4 py-2 text-xs font-bold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors whitespace-nowrap">{% trans "Setup Day" %}</a>
+    </div>
     {% endif %}
 
     {% if not setup_progress.all_done %}
@@ -248,33 +275,41 @@
 
     <!-- Subscription -->
     {% if subscription %}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex items-center justify-between">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex items-center justify-between flex-wrap gap-3">
         <div class="flex items-center gap-3 text-sm">
-            <div class="w-8 h-8 bg-primary-50 rounded-lg flex items-center justify-center">
+            <div class="w-8 h-8 bg-primary-50 rounded-lg flex items-center justify-center flex-shrink-0">
                 <svg class="h-4 w-4 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
             </div>
             <div>
-                <span class="text-gray-500">Plan:</span>
+                <span class="text-gray-500">{% trans "Plan" %}:</span>
                 <span class="font-semibold text-gray-900 ml-1">{{ subscription.plan.name }}</span>
                 <span class="text-gray-300 mx-2">|</span>
-                <span class="text-gray-500">Expires:</span>
+                <span class="text-gray-500">{% trans "Expires" %}:</span>
                 <span class="font-semibold text-gray-900 ml-1">{{ subscription.end_date|date:"d M Y" }}</span>
+                {% if subscription.days_remaining <= 7 %}
+                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">{{ subscription.days_remaining }} {% trans "days left" %}</span>
+                {% endif %}
             </div>
         </div>
-        <a href="/subscription/recharge/" class="text-xs text-primary-600 hover:text-primary-700 font-bold bg-primary-50 px-3 py-1.5 rounded-lg hover:bg-primary-100 transition-colors">{% trans "Renew" %}</a>
+        <a href="{% url 'subscription_recharge' %}" class="text-xs text-primary-600 hover:text-primary-700 font-bold bg-primary-50 px-3 py-1.5 rounded-lg hover:bg-primary-100 transition-colors">{% trans "Renew" %}</a>
     </div>
     {% else %}
-    <div class="bg-amber-50 rounded-xl shadow-sm border border-amber-200 p-4 flex items-center justify-between">
-        <div class="flex items-center gap-3 text-sm">
-            <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
-                <svg class="h-4 w-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+    <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl shadow-sm border border-amber-200 p-5">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+            <div class="flex items-start gap-3">
+                <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <svg class="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                </div>
+                <div>
+                    <p class="text-sm font-bold text-amber-900">{% trans "No active subscription" %}</p>
+                    <p class="text-xs text-amber-700 mt-0.5">{% trans "Some features may be limited. Choose a plan to unlock full access to all society operations." %}</p>
+                </div>
             </div>
-            <div>
-                <span class="font-semibold text-amber-800">{% trans "No active subscription" %}</span>
-                <span class="text-amber-600 ml-2">{% trans "Your access may be limited. Please renew your plan." %}</span>
-            </div>
+            <a href="{% url 'subscription_recharge' %}" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white bg-amber-600 rounded-xl hover:bg-amber-700 shadow-sm hover:shadow-md transition-all whitespace-nowrap">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                {% trans "Choose a Plan" %}
+            </a>
         </div>
-        <a href="/subscription/recharge/" class="text-xs text-white font-bold bg-amber-600 px-4 py-1.5 rounded-lg hover:bg-amber-700 transition-colors whitespace-nowrap">{% trans "Recharge Now" %}</a>
     </div>
     {% endif %}
 

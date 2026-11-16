@@ -277,8 +277,9 @@ def loan_approve(request, pk):
         except ValueError as e:
             messages.error(request, str(e))
     else:
-        for e in form.errors.values():
-            messages.error(request, e)
+        for field_errors in form.errors.values():
+            for e in field_errors:
+                messages.error(request, e)
 
     return redirect('loans:detail', pk=pk)
 
@@ -328,8 +329,9 @@ def loan_collect(request, pk):
         except ValueError as e:
             messages.error(request, str(e))
     else:
-        for e in form.errors.values():
-            messages.error(request, e)
+        for field_errors in form.errors.values():
+            for e in field_errors:
+                messages.error(request, e)
 
     return redirect('loans:detail', pk=pk)
 
