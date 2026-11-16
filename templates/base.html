@@ -50,6 +50,33 @@
         [x-cloak] { display: none !important; }
         .htmx-indicator { opacity: 0; transition: opacity 200ms ease-in; }
         .htmx-request .htmx-indicator { opacity: 1; }
+
+        /* Toast animations */
+        @keyframes toast-in { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes toast-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(120%); opacity: 0; } }
+        .toast-enter { animation: toast-in 0.3s ease-out forwards; }
+        .toast-exit { animation: toast-out 0.25s ease-in forwards; }
+
+        /* Skeleton loading shimmer */
+        @keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+        .skeleton { background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%); background-size: 800px 100%; animation: shimmer 1.5s infinite; border-radius: 4px; }
+        .dark .skeleton { background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%) !important; background-size: 800px 100%; }
+        .skeleton-row { height: 1rem; margin-bottom: 0.75rem; }
+        .skeleton-row:last-child { width: 60%; }
+        .skeleton-table { width: 100%; }
+        .skeleton-table .skeleton-header { height: 2.5rem; margin-bottom: 0.5rem; border-radius: 6px; }
+        .skeleton-table .skeleton-cell { height: 2rem; margin-bottom: 0.4rem; border-radius: 4px; }
+
+        /* Button loading spinner */
+        @keyframes btn-spin { to { transform: rotate(360deg); } }
+        .btn-spinner { display: inline-block; width: 1em; height: 1em; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: btn-spin 0.6s linear infinite; vertical-align: middle; margin-right: 0.4em; }
+        button[disabled], input[type="submit"][disabled] { opacity: 0.55; cursor: not-allowed !important; }
+
+        /* Page loading progress bar */
+        @keyframes progress-indeterminate { 0% { left: -40%; } 100% { left: 100%; } }
+        #page-loader { position: fixed; top: 0; left: 0; width: 100%; height: 3px; z-index: 99999; pointer-events: none; opacity: 0; transition: opacity 0.2s; }
+        #page-loader.active { opacity: 1; }
+        #page-loader .bar { position: absolute; top: 0; left: -40%; width: 40%; height: 100%; background: linear-gradient(90deg, transparent, #3b82f6, #60a5fa, #3b82f6, transparent); animation: progress-indeterminate 1s ease-in-out infinite; }
         @media (max-width: 1023px) {
             .desktop-sidebar { display: none !important; }
         }
@@ -310,6 +337,9 @@
     toggleDark() { this.darkMode = !this.darkMode; localStorage.setItem('darkMode', this.darkMode); document.documentElement.classList.toggle('dark'); }
 }" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
 
+    <!-- Page loading bar -->
+    <div id="page-loader"><div class="bar"></div></div>
+
     {% if user.is_authenticated %}
     <div class="min-h-full">
 
@@ -456,6 +486,115 @@
             if (!el.value) el.value = today;
         });
     });
+    </script>
+
+    <!-- Toast Notification System -->
+    <script>
+    (function() {
+        var ICONS = {
+            success: '<svg class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+            error: '<svg class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+            warning: '<svg class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>',
+            info: '<svg class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+        };
+        var STYLES = {
+            success: 'bg-green-50 text-green-800 border-green-200',
+            error: 'bg-red-50 text-red-800 border-red-200',
+            warning: 'bg-amber-50 text-amber-800 border-amber-200',
+            info: 'bg-blue-50 text-blue-800 border-blue-200'
+        };
+        var ICON_COLORS = {
+            success: 'text-green-500',
+            error: 'text-red-500',
+            warning: 'text-amber-500',
+            info: 'text-blue-500'
+        };
+
+        window.showToast = function(text, level) {
+            level = level || 'info';
+            if (level === 'debug') return;
+            var container = document.getElementById('toast-container');
+            if (!container) return;
+
+            var toast = document.createElement('div');
+            toast.className = 'pointer-events-auto flex items-start gap-3 px-4 py-3 rounded-lg border shadow-lg text-sm toast-enter ' + (STYLES[level] || STYLES.info);
+            toast.innerHTML =
+                '<span class="mt-0.5 ' + (ICON_COLORS[level] || ICON_COLORS.info) + '">' + (ICONS[level] || ICONS.info) + '</span>' +
+                '<span class="flex-1 font-medium">' + text + '</span>' +
+                '<button class="ml-2 flex-shrink-0 opacity-60 hover:opacity-100" onclick="this.parentElement.classList.replace(\'toast-enter\',\'toast-exit\');setTimeout(function(){this.remove()}.bind(this.parentElement),300)">' +
+                '<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>';
+
+            container.appendChild(toast);
+
+            var duration = level === 'error' ? 6000 : 4000;
+            setTimeout(function() {
+                if (toast.parentElement) {
+                    toast.classList.replace('toast-enter', 'toast-exit');
+                    setTimeout(function() { toast.remove(); }, 300);
+                }
+            }, duration);
+        };
+    })();
+    </script>
+
+    <!-- Global Double-Submit Protection (POST forms only, skip search/filter GET forms) -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('submit', function(e) {
+            var form = e.target;
+            if (form.tagName !== 'FORM') return;
+            if (form.method && form.method.toLowerCase() === 'get') return;
+            if (form.dataset.noGuard) return;
+            if (form.dataset.submitted === 'true') {
+                e.preventDefault();
+                return;
+            }
+            form.dataset.submitted = 'true';
+            var btns = form.querySelectorAll('button[type="submit"], input[type="submit"], button:not([type])');
+            btns.forEach(function(btn) {
+                btn.disabled = true;
+                if (btn.tagName === 'BUTTON') {
+                    btn.dataset.originalText = btn.innerHTML;
+                    btn.innerHTML = '<span class="btn-spinner"></span> Processing…';
+                }
+            });
+            setTimeout(function() {
+                form.dataset.submitted = '';
+                btns.forEach(function(btn) {
+                    btn.disabled = false;
+                    if (btn.dataset.originalText) {
+                        btn.innerHTML = btn.dataset.originalText;
+                        delete btn.dataset.originalText;
+                    }
+                });
+            }, 10000);
+        }, true);
+    });
+    </script>
+
+    <!-- Page Loading Bar + HTMX integration -->
+    <script>
+    (function() {
+        var loader = document.getElementById('page-loader');
+        if (!loader) return;
+        function show() { loader.classList.add('active'); }
+        function hide() { loader.classList.remove('active'); }
+
+        document.addEventListener('submit', function(e) {
+            if (e.target.tagName === 'FORM' && (!e.target.method || e.target.method.toLowerCase() !== 'get')) show();
+        }, true);
+
+        document.addEventListener('click', function(e) {
+            var a = e.target.closest('a[href]');
+            if (a && !a.getAttribute('href').startsWith('#') && !a.getAttribute('href').startsWith('javascript') && !a.hasAttribute('hx-get') && !a.hasAttribute('hx-post') && !a.target) show();
+        }, true);
+
+        document.addEventListener('htmx:beforeRequest', show);
+        document.addEventListener('htmx:afterRequest', hide);
+        document.addEventListener('htmx:responseError', hide);
+
+        window.addEventListener('pageshow', hide);
+    })();
     </script>
 </body>
 </html>

@@ -56,5 +56,31 @@
             <a href="/" class="mt-2 inline-block text-sm text-gray-500 hover:text-gray-700">&larr; {% trans "Back to Home" %}</a>
         </div>
     </div>
+
+    <style>
+        @keyframes btn-spin { to { transform: rotate(360deg); } }
+        .btn-spinner { display: inline-block; width: 1em; height: 1em; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: btn-spin 0.6s linear infinite; vertical-align: middle; margin-right: 0.4em; }
+        button[disabled] { opacity: 0.55; cursor: not-allowed !important; }
+    </style>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('submit', function(e) {
+            var form = e.target;
+            if (form.tagName !== 'FORM') return;
+            if (form.dataset.submitted === 'true') { e.preventDefault(); return; }
+            form.dataset.submitted = 'true';
+            var btns = form.querySelectorAll('button[type="submit"], button:not([type])');
+            btns.forEach(function(btn) {
+                btn.disabled = true;
+                btn.dataset.originalText = btn.innerHTML;
+                btn.innerHTML = '<span class="btn-spinner"></span> Redirecting…';
+            });
+            setTimeout(function() {
+                form.dataset.submitted = '';
+                btns.forEach(function(btn) { btn.disabled = false; if (btn.dataset.originalText) btn.innerHTML = btn.dataset.originalText; });
+            }, 10000);
+        }, true);
+    });
+    </script>
 </body>
 </html>
