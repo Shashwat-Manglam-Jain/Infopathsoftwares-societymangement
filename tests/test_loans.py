@@ -878,6 +878,7 @@ class StandingInstructionTests(BaseTestCase):
             self.assertEqual(si.charge_type, ct)
 
     def test_add_standing_instruction_service(self):
+        self.loan.refresh_from_db()
         original_others = self.loan.bal_others or Decimal('0')
         si = add_standing_instruction(
             loan=self.loan,
