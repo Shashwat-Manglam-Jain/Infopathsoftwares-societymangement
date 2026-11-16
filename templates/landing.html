@@ -90,28 +90,38 @@
      HERO — Main banner with headline, subtitle, CTAs
      ════════════════════════════════════════════════════════════════ -->
 <section class="hero-bg pt-28 pb-20 md:pt-36 md:pb-28">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight">
-            Banking Software for<br>Cooperative Societies
-        </h1>
-        <p class="mt-6 text-lg sm:text-xl text-indigo-100 max-w-3xl mx-auto">
-            Manage members, deposits, loans, and accounting — all in one cloud platform. No installation needed.
-        </p>
-        <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
-            <a href="/signup/" class="bg-white text-indigo-700 px-8 py-4 rounded-lg text-lg font-bold hover:bg-indigo-50 transition shadow-lg">
-                Start Free Trial
-            </a>
-            <a href="#how-it-works" class="border-2 border-white text-white px-8 py-4 rounded-lg text-lg font-bold hover:bg-white/10 transition">
-                See How It Works
-            </a>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col items-center gap-10 lg:flex-row lg:gap-16">
+            <div class="text-center lg:text-left lg:flex-1">
+                <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight">
+                    Banking Software for<br>Cooperative Societies
+                </h1>
+                <p class="mt-6 text-lg sm:text-xl text-indigo-100 max-w-3xl">
+                    Manage members, deposits, loans, and accounting — all in one cloud platform. No installation needed.
+                </p>
+                <div class="mt-10 flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
+                    <a href="/signup/" class="bg-white text-indigo-700 px-8 py-4 rounded-lg text-lg font-bold hover:bg-indigo-50 transition shadow-lg">
+                        Start Free Trial
+                    </a>
+                    <a href="#how-it-works" class="border-2 border-white text-white px-8 py-4 rounded-lg text-lg font-bold hover:bg-white/10 transition">
+                        See How It Works
+                    </a>
+                </div>
+                <p class="mt-4 text-indigo-200 text-sm">90 days free. No credit card required.</p>
+            </div>
+            <div class="relative flex shrink-0 justify-center">
+                <div class="absolute -inset-6 rounded-full bg-white/5 blur-3xl"></div>
+                <img src="{% static 'img/phone_mockup.svg' %}"
+                     alt="InfoSociety dashboard on mobile"
+                     width="320" height="640"
+                     class="relative z-10 w-full max-w-[220px] drop-shadow-2xl sm:max-w-[260px] md:max-w-[280px]">
+            </div>
         </div>
-        <p class="mt-4 text-indigo-200 text-sm">90 days free. No credit card required.</p>
     </div>
 </section>
 
 <!-- ════════════════════════════════════════════════════════════════
-     WHY INFOSOCIETY — Phone mockup + 3 key selling points
-     Inspired by ADDA.io layout: phone on left, benefit cards right
+     WHY INFOSOCIETY — 3 key selling points
      ════════════════════════════════════════════════════════════════ -->
 <section class="relative overflow-hidden bg-surface py-12 md:py-[70px] lg:py-20">
     <!-- Decorative blurred blobs for depth -->
@@ -122,16 +132,7 @@
     </div>
 
     <div class="relative z-10 mx-auto w-full max-w-7xl px-6 lg:px-10">
-        <div class="flex flex-col items-center gap-12 lg:flex-row lg:items-center lg:justify-center lg:gap-20">
-
-            <!-- Phone mockup with dashboard preview -->
-            <div class="relative flex shrink-0 justify-center">
-                <div class="absolute -inset-6 rounded-full bg-indigo-500/5 blur-3xl"></div>
-                <img src="{% static 'img/phone_mockup.svg' %}"
-                     alt="InfoSociety dashboard on mobile — society banking at your fingertips"
-                     class="relative z-10 w-full max-w-[260px] drop-shadow-2xl transition-transform duration-700 hover:scale-[1.02] md:max-w-[300px] lg:max-w-[340px]"
-                     loading="lazy" decoding="async">
-            </div>
+        <div class="flex flex-col items-center">
 
             <!-- Benefit cards — why choose InfoSociety -->
             <div class="flex w-full max-w-[540px] flex-col">
