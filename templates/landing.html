@@ -14,7 +14,7 @@
                     brand: '#4f46e5',
                     ink: '#1e293b',
                     surface: '#f8fafc',
-                    lime: '#84cc16',
+                    accent: '#818cf8',
                 },
                 boxShadow: {
                     card: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)',
@@ -159,15 +159,24 @@
     <!-- Decorative blurred blobs for depth -->
     <div class="pointer-events-none absolute inset-0 z-0 overflow-hidden">
         <div class="absolute -left-24 top-1/4 h-80 w-80 rounded-full bg-indigo-500/20 blur-[90px] md:h-[28rem] md:w-[28rem]"></div>
-        <div class="absolute -right-10 top-8 h-72 w-72 rounded-full bg-lime/20 blur-[80px] md:h-96 md:w-96"></div>
+        <div class="absolute -right-10 top-8 h-72 w-72 rounded-full bg-accent/20 blur-[80px] md:h-96 md:w-96"></div>
         <div class="absolute bottom-6 left-1/3 h-72 w-72 rounded-full bg-violet-500/15 blur-[80px] md:h-96 md:w-96"></div>
     </div>
 
     <div class="relative z-10 mx-auto w-full max-w-7xl px-6 lg:px-10">
-        <div class="flex flex-col items-center gap-12 lg:flex-row lg:items-center lg:gap-16">
+        <div class="flex flex-col items-center gap-12 lg:flex-row lg:items-center lg:justify-center lg:gap-20">
+
+            <!-- Phone mockup with dashboard preview -->
+            <div class="relative flex shrink-0 justify-center">
+                <div class="absolute -inset-6 rounded-full bg-indigo-500/5 blur-3xl"></div>
+                <img src="{% static 'img/phone_mockup.svg' %}"
+                     alt="InfoSociety dashboard on mobile — society banking at your fingertips"
+                     class="relative z-10 w-full max-w-[260px] drop-shadow-2xl transition-transform duration-700 hover:scale-[1.02] md:max-w-[300px] lg:max-w-[340px]"
+                     loading="lazy" decoding="async">
+            </div>
 
             <!-- Benefit cards — why choose InfoSociety -->
-            <div class="flex w-full flex-col lg:flex-1">
+            <div class="flex w-full max-w-[540px] flex-col">
                 <div class="mb-8 md:mb-10">
                     <h2 class="flex flex-wrap items-center gap-x-3 gap-y-2 text-[32px] font-extrabold tracking-tight text-ink md:text-[42px]">
                         <span>Why</span>
@@ -218,15 +227,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Phone mockup -->
-            <div class="relative flex shrink-0 justify-center lg:w-auto">
-                <div class="absolute -inset-6 rounded-full bg-indigo-500/10 blur-3xl"></div>
-                <img src="{% static 'img/phone_mockup.svg' %}"
-                     alt="InfoSociety dashboard on mobile"
-                     width="320" height="640"
-                     class="relative z-10 w-full max-w-[220px] drop-shadow-2xl sm:max-w-[260px] md:max-w-[280px]">
             </div>
         </div>
     </div>
@@ -291,7 +291,7 @@
                     <p class="mt-3 text-base leading-relaxed text-white/90">Complete banking with savings, loans, FD/RD, shares, pigmy collection, and RCS-compliant reports.</p>
                     <span class="mt-5 inline-block border-b-2 border-white pb-0.5 text-sm font-bold text-white">Start free trial</span>
                 </div>
-                <span class="absolute bottom-5 right-5 flex h-10 w-10 items-center justify-center rounded-full bg-lime text-ink transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-12">
+                <span class="absolute bottom-5 right-5 flex h-10 w-10 items-center justify-center rounded-full bg-accent text-white transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-12">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 -rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-7-7 7 7-7 7"/></svg>
                 </span>
             </a>
@@ -305,7 +305,7 @@
                     <p class="mt-3 text-base leading-relaxed text-white/90">Salary deduction integration, provident fund loans, and automated EMI recovery for PSU and corporate staff.</p>
                     <span class="mt-5 inline-block border-b-2 border-white pb-0.5 text-sm font-bold text-white">Start free trial</span>
                 </div>
-                <span class="absolute bottom-5 right-5 flex h-10 w-10 items-center justify-center rounded-full bg-lime text-ink transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-12">
+                <span class="absolute bottom-5 right-5 flex h-10 w-10 items-center justify-center rounded-full bg-accent text-white transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-12">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 -rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-7-7 7 7-7 7"/></svg>
                 </span>
             </a>
@@ -319,7 +319,7 @@
                     <p class="mt-3 text-base leading-relaxed text-white/90">Mutual benefit company management with deposit acceptance, loan disbursement, and MCA compliance built in.</p>
                     <span class="mt-5 inline-block border-b-2 border-white pb-0.5 text-sm font-bold text-white">Start free trial</span>
                 </div>
-                <span class="absolute bottom-5 right-5 flex h-10 w-10 items-center justify-center rounded-full bg-lime text-ink transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-12">
+                <span class="absolute bottom-5 right-5 flex h-10 w-10 items-center justify-center rounded-full bg-accent text-white transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-12">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 -rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-7-7 7 7-7 7"/></svg>
                 </span>
             </a>
@@ -333,7 +333,7 @@
                     <p class="mt-3 text-base leading-relaxed text-white/90">Daily deposit (pigmy) collection, agent management, recurring savings, and dividend distribution.</p>
                     <span class="mt-5 inline-block border-b-2 border-white pb-0.5 text-sm font-bold text-white">Start free trial</span>
                 </div>
-                <span class="absolute bottom-5 right-5 flex h-10 w-10 items-center justify-center rounded-full bg-lime text-ink transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-12">
+                <span class="absolute bottom-5 right-5 flex h-10 w-10 items-center justify-center rounded-full bg-accent text-white transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-12">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 -rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-7-7 7 7-7 7"/></svg>
                 </span>
             </a>
@@ -347,7 +347,7 @@
                     <p class="mt-3 text-base leading-relaxed text-white/90">Multi-branch operations across states with centralized reporting, head-office accounting, and branch-level controls.</p>
                     <span class="mt-5 inline-block border-b-2 border-white pb-0.5 text-sm font-bold text-white">Start free trial</span>
                 </div>
-                <span class="absolute bottom-5 right-5 flex h-10 w-10 items-center justify-center rounded-full bg-lime text-ink transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-12">
+                <span class="absolute bottom-5 right-5 flex h-10 w-10 items-center justify-center rounded-full bg-accent text-white transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-12">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 -rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-7-7 7 7-7 7"/></svg>
                 </span>
             </a>
@@ -513,14 +513,14 @@
 
                 <!-- Slide counter (01 / 08) -->
                 <div class="flex items-center gap-3 text-white/80">
-                    <span class="h-px w-10 bg-lime"></span>
+                    <span class="h-px w-10 bg-accent"></span>
                     <span id="carousel-counter" class="text-[11px] font-extrabold uppercase tracking-[0.22em]">01 / 08</span>
                 </div>
 
                 <!-- Slide text content -->
                 <div id="carousel-text" class="max-w-xl">
                     <div class="animate-fade-in">
-                        <span id="carousel-badge" class="inline-block rounded-full bg-lime/95 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.16em] text-ink shadow-md">CREDIT COOPERATIVE SOCIETY</span>
+                        <span id="carousel-badge" class="inline-block rounded-full bg-accent/95 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.16em] text-ink shadow-md">CREDIT COOPERATIVE SOCIETY</span>
                     </div>
                     <h4 id="carousel-title" class="mt-5 animate-fade-in text-3xl font-extrabold leading-[1.05] text-white md:text-5xl lg:text-6xl">Katol Nagri Credit Society</h4>
                     <p id="carousel-location" class="mt-3 animate-fade-in text-sm font-semibold uppercase tracking-[0.22em] text-white/80">— Katol, Maharashtra</p>
@@ -939,14 +939,14 @@ function selectPlan(el) {
         btn.setAttribute('aria-label', d.title);
         btn.className = 'group relative shrink-0 overflow-hidden rounded-2xl ring-1 ring-white/15 transition-all duration-700 ease-[cubic-bezier(0.7,0,0.2,1)] cursor-pointer '
             + (i === 0
-                ? 'h-44 w-36 ring-2 ring-lime md:h-52 md:w-44'
+                ? 'h-44 w-36 ring-2 ring-accent md:h-52 md:w-44'
                 : 'h-32 w-24 opacity-80 hover:opacity-100 md:h-40 md:w-28');
 
         btn.innerHTML =
             '<img src="' + d.img + '" alt="' + d.title + '" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ' + (i === 0 ? 'scale-110' : 'scale-100 group-hover:scale-105') + '">'
             + '<div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent"></div>'
             + '<div class="absolute inset-x-0 bottom-0 p-2"><p class="line-clamp-2 text-left text-[10px] font-extrabold uppercase tracking-[0.12em] text-white">' + d.title + '</p></div>'
-            + (i === 0 ? '<div class="thumb-progress absolute inset-x-0 bottom-0 h-[3px] origin-left bg-lime" style="animation: ' + INTERVAL + 'ms linear 0s 1 normal none running grow;"></div>' : '');
+            + (i === 0 ? '<div class="thumb-progress absolute inset-x-0 bottom-0 h-[3px] origin-left bg-accent" style="animation: ' + INTERVAL + 'ms linear 0s 1 normal none running grow;"></div>' : '');
 
         btn.addEventListener('click', function() { goTo(i); });
         thumbContainer.appendChild(btn);
@@ -979,11 +979,11 @@ function selectPlan(el) {
             if (progressEl) progressEl.remove();
 
             if (i === idx) {
-                t.className = 'group relative shrink-0 overflow-hidden rounded-2xl ring-1 ring-white/15 transition-all duration-700 ease-[cubic-bezier(0.7,0,0.2,1)] cursor-pointer h-44 w-36 ring-2 ring-lime md:h-52 md:w-44';
+                t.className = 'group relative shrink-0 overflow-hidden rounded-2xl ring-1 ring-white/15 transition-all duration-700 ease-[cubic-bezier(0.7,0,0.2,1)] cursor-pointer h-44 w-36 ring-2 ring-accent md:h-52 md:w-44';
                 t.querySelector('img').classList.replace('scale-100', 'scale-110');
                 t.querySelector('img').classList.remove('group-hover:scale-105');
                 var bar = document.createElement('div');
-                bar.className = 'thumb-progress absolute inset-x-0 bottom-0 h-[3px] origin-left bg-lime';
+                bar.className = 'thumb-progress absolute inset-x-0 bottom-0 h-[3px] origin-left bg-accent';
                 bar.style.animation = INTERVAL + 'ms linear 0s 1 normal none running grow';
                 t.appendChild(bar);
             } else {
