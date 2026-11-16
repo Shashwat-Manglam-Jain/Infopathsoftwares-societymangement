@@ -312,6 +312,8 @@ def collection_list(request):
 @cashier_required
 @day_open_required
 def collection_create(request):
+    from apps.dayend.models import WorkingDay
+
     branch = request.current_branch
     if branch is None:
         messages.warning(request, 'Please select a specific branch before recording a collection.')
@@ -360,14 +362,10 @@ def collection_create(request):
                 initial['agent'] = int(agent_id)
             except (ValueError, TypeError):
                 pass
-        from apps.dayend.models import WorkingDay
-
         working_day = WorkingDay.objects.filter(branch=branch, is_day_open=True).first()
         if working_day:
             initial['collection_date'] = working_day.current_date
         form = CollectionForm(branch=branch, initial=initial)
-
-    from apps.dayend.models import WorkingDay
 
     working_day = WorkingDay.objects.filter(branch=branch, is_day_open=True).first()
     return render(request, 'agents/collection_create.html', {

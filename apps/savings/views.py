@@ -22,6 +22,18 @@ from . import services
 from .forms import DepositForm, SavingsAccountEditForm, SavingsAccountForm, WithdrawalForm
 from .models import AccountTransaction, SavingsAccount
 
+_ACCOUNT_TYPE_MAP = {'savings': 'saving', 'current': 'current', 'security': 'security'}
+
+
+def _apply_interest_rate(account):
+    related = _ACCOUNT_TYPE_MAP.get(account.account_type, '')
+    if related:
+        head = ChartOfAccounts.objects.filter(related_table_name=related, is_active=True).first()
+        if head:
+            slab = InterestMaster.objects.filter(account_head=head, is_active=True).first()
+            if slab:
+                account.interest_rate = slab.interest_rate
+
 
 @auditor_or_above
 def savings_list(request):
@@ -62,20 +74,7 @@ def savings_create(request):
             account.created_by = request.user
             if not account.branch_id and request.current_branch:
                 account.branch = request.current_branch
-            type_map = {'savings': 'saving', 'current': 'current', 'security': 'security'}
-            related = type_map.get(account.account_type, '')
-            if related:
-                head = ChartOfAccounts.objects.filter(
-                    related_table_name=related,
-                    is_active=True,
-                ).first()
-                if head:
-                    slab = InterestMaster.objects.filter(
-                        account_head=head,
-                        is_active=True,
-                    ).first()
-                    if slab:
-                        account.interest_rate = slab.interest_rate
+            _apply_interest_rate(account)
             account.save()
             messages.success(request, f'Savings account {account.account_no} created successfully.')
             return redirect('savings:detail', pk=account.pk)
@@ -111,21 +110,7 @@ def savings_edit(request, pk):
         form = SavingsAccountEditForm(request.POST, instance=account)
         if form.is_valid():
             acct = form.save(commit=False)
-            # Server-side enforce interest_rate from InterestMaster slab
-            type_map = {'savings': 'saving', 'current': 'current', 'security': 'security'}
-            related = type_map.get(acct.account_type, '')
-            if related:
-                head = ChartOfAccounts.objects.filter(
-                    related_table_name=related,
-                    is_active=True,
-                ).first()
-                if head:
-                    slab = InterestMaster.objects.filter(
-                        account_head=head,
-                        is_active=True,
-                    ).first()
-                    if slab:
-                        acct.interest_rate = slab.interest_rate
+            _apply_interest_rate(acct)
             acct.save()
             messages.success(request, f'Account {account.account_no} updated successfully.')
             return redirect('savings:detail', pk=pk)

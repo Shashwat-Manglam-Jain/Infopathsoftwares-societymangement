@@ -62,7 +62,7 @@ class ChartOfAccounts(models.Model):
     debit_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     current_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     sub_group = models.CharField(max_length=10, blank=True, help_text='Sub-group classification for reporting')
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True, db_index=True)
 
     related_table_name = models.CharField(
         max_length=25,
@@ -121,7 +121,7 @@ class JournalEntry(models.Model):
         ('contra', 'Contra'),
     ]
     entry_date = models.DateField()
-    voucher_no = models.CharField(max_length=30)
+    voucher_no = models.CharField(max_length=30, db_index=True)
     voucher_type = models.CharField(max_length=10, choices=VOUCHER_TYPE_CHOICES)
     branch = models.ForeignKey('branches.Branch', on_delete=models.PROTECT)
     narration = models.TextField(blank=True)
@@ -143,7 +143,7 @@ class JournalEntry(models.Model):
     ]
     payment_mode = models.CharField(max_length=10, choices=PAYMENT_MODE_CHOICES, default='cash')
     is_posted = models.BooleanField(default=True)
-    is_reversed = models.BooleanField(default=False)
+    is_reversed = models.BooleanField(default=False, db_index=True)
     reversal_of = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

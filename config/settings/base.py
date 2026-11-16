@@ -58,6 +58,7 @@ TENANT_APPS = [
     'django_tables2',
     'django_htmx',
     'corsheaders',
+    'storages',
     'allauth',
     'allauth.account',
 ]
@@ -88,6 +89,7 @@ MIDDLEWARE = [
     'django_htmx.middleware.HtmxMiddleware',
     'apps.branches.middleware.BranchMiddleware',
     'apps.tenants.middleware.SubscriptionMiddleware',
+    'apps.audit.middleware.AuditMiddleware',
     'allauth.account.middleware.AccountMiddleware',
 ]
 

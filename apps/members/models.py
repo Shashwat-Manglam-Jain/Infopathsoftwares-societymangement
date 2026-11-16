@@ -35,7 +35,7 @@ class Member(models.Model):
     occupation = models.CharField(max_length=100, blank=True)
     monthly_income = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     join_date = models.DateField()
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active', db_index=True)
     exit_date = models.DateField(null=True, blank=True, help_text='Date when member left/deceased/expelled')
     category = models.CharField(max_length=1, choices=CATEGORY_CHOICES, default='A')
     photo = models.ImageField(upload_to='members/photos/', blank=True)

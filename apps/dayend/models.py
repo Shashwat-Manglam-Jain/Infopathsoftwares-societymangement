@@ -51,7 +51,7 @@ class DayEndLog(models.Model):
     processing_date = models.DateField()
     started_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
-    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='running')
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='running', db_index=True)
     savings_interest_accrued_count = models.IntegerField(default=0)
     loan_interest_accrued_count = models.IntegerField(default=0)
     loans_marked_overdue_count = models.IntegerField(default=0)
@@ -79,7 +79,7 @@ class MonthEndLog(models.Model):
     ]
     branch = models.ForeignKey('branches.Branch', on_delete=models.PROTECT)
     month = models.DateField(help_text='First day of the month')
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='running')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='running', db_index=True)
     loan_interest_calculated_count = models.IntegerField(default=0)
     demand_generated_count = models.IntegerField(default=0)
     rd_installments_due_count = models.IntegerField(default=0)

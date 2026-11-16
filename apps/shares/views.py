@@ -239,16 +239,12 @@ class ShareReceiptView(AuditorOrAboveMixin, View):
 
 @admin_required
 def share_config_list(request):
-    from .models import ShareConfig
-
     configs = ShareConfig.objects.all()
     return render(request, 'shares/config_list.html', {'configs': configs})
 
 
 @admin_required
 def share_config_create(request):
-    from .models import ShareConfig
-
     if request.method == 'POST':
         try:
             name = request.POST.get('name', '').strip()
@@ -272,8 +268,6 @@ def share_config_create(request):
 
 @admin_required
 def share_config_edit(request, pk):
-    from .models import ShareConfig
-
     config = get_object_or_404(ShareConfig, pk=pk)
     if request.method == 'POST':
         try:
@@ -292,8 +286,6 @@ def share_config_edit(request, pk):
 
 @admin_required
 def share_config_toggle(request, pk):
-    from .models import ShareConfig
-
     config = get_object_or_404(ShareConfig, pk=pk)
     if request.method == 'POST':
         if config.is_active:

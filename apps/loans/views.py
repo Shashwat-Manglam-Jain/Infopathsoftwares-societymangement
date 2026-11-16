@@ -26,7 +26,7 @@ from .forms import (
     LoanCollateralForm,
     LoanProductForm,
 )
-from .models import EMISchedule, LoanAccount, LoanCollateral, LoanGuarantor, LoanProduct, LoanRepayment
+from .models import EMISchedule, LoanAccount, LoanCollateral, LoanGuarantor, LoanProduct, LoanRepayment, StandingInstruction
 from .services import (
     approve_loan,
     collect_emi,
@@ -76,8 +76,6 @@ def loan_detail(request, pk):
 
     from apps.shares.models import ShareHolding
 
-    from .models import LoanGuarantor
-
     guarantors = loan.guarantors.select_related('guarantor_member__branch').all()
     for g in guarantors:
         g.active_count = LoanGuarantor.active_guarantee_count(g.guarantor_member)
@@ -105,8 +103,6 @@ def loan_detail(request, pk):
         from apps.accounting.models import InterestMaster
 
         has_interest_slab = InterestMaster.objects.filter(account_head=loan.gl_head, is_active=True).exists()
-
-    from .models import StandingInstruction
 
     standing_instructions = StandingInstruction.objects.filter(loan=loan).order_by('-charge_date')
 
@@ -326,16 +322,7 @@ def loan_product_list(request):
     return render(request, 'loans/product_list.html', {'products': products})
 
 
-@admin_required
-def loan_product_create(request):
-    if request.method == 'POST':
-        form = LoanProductForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Loan product created.')
-            return redirect('loans:product_list')
-    else:
-        form = LoanProductForm()
+def _get_loan_interest_slabs():
     from apps.accounting.models import ChartOfAccounts, InterestMaster
 
     loan_head = ChartOfAccounts.objects.filter(related_table_name='loan', is_active=True).first()
@@ -346,6 +333,20 @@ def loan_product_create(request):
             .select_related('account_head')
             .order_by('min_period')
         )
+    return loan_head, slabs
+
+
+@admin_required
+def loan_product_create(request):
+    if request.method == 'POST':
+        form = LoanProductForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Loan product created.')
+            return redirect('loans:product_list')
+    else:
+        form = LoanProductForm()
+    loan_head, slabs = _get_loan_interest_slabs()
     return render(
         request,
         'loans/product_form.html',
@@ -369,16 +370,7 @@ def loan_product_edit(request, pk):
             return redirect('loans:product_list')
     else:
         form = LoanProductForm(instance=product)
-    from apps.accounting.models import ChartOfAccounts, InterestMaster
-
-    loan_head = ChartOfAccounts.objects.filter(related_table_name='loan', is_active=True).first()
-    slabs = []
-    if loan_head:
-        slabs = (
-            InterestMaster.objects.filter(account_head=loan_head, is_active=True)
-            .select_related('account_head')
-            .order_by('min_period')
-        )
+    loan_head, slabs = _get_loan_interest_slabs()
     return render(
         request,
         'loans/product_form.html',
@@ -393,8 +385,6 @@ def loan_product_edit(request, pk):
 
 @auditor_or_above
 def loan_charge_list(request):
-    from .models import StandingInstruction
-
     instructions = StandingInstruction.objects.select_related(
         'loan__member',
         'branch',
@@ -416,7 +406,6 @@ def loan_charge_list(request):
 def loan_charge_create(request):
     from decimal import Decimal, InvalidOperation
 
-    from .models import StandingInstruction
     from .services import add_standing_instruction
 
     if request.current_branch is None:
@@ -696,8 +685,6 @@ def collateral_delete(request, pk):
 def loan_ledger(request, pk):
     from decimal import Decimal
 
-    from .models import StandingInstruction
-
     loan = get_object_or_404(
         LoanAccount.objects.select_related('member', 'loan_product', 'branch'),
         pk=pk,
@@ -783,7 +770,6 @@ def loan_ledger(request, pk):
 @manager_required
 @day_open_required
 def loan_reverse_repayment(request, pk, repayment_id):
-    from .models import LoanRepayment
     from .services import reverse_repayment
 
     loan = get_object_or_404(LoanAccount, pk=pk)

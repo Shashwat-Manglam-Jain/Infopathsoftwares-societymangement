@@ -799,6 +799,40 @@ class InterestPostView(ManagerRequiredMixin, View):
         })
 
 
+def _rollback_single_interest_entry(entry, user):
+    from apps.accounting.services import reverse_journal_entry
+    from apps.deposits.models import FixedDeposit
+    from apps.savings.models import AccountTransaction
+
+    interest_amount = sum(l.debit_amount for l in entry.lines.all())
+
+    if entry.reference_id:
+        txn = AccountTransaction.objects.filter(pk=entry.reference_id).select_related('account').first()
+        if txn:
+            acct = txn.account
+            acct.current_balance -= interest_amount
+            acct.interest_charged -= interest_amount
+            acct.accrued_interest = interest_amount
+            acct.last_interest_posted_date = None
+            acct.save(update_fields=[
+                'current_balance', 'interest_charged',
+                'accrued_interest', 'last_interest_posted_date',
+            ])
+            txn.delete()
+    else:
+        narration = entry.narration
+        if 'FD ' in narration:
+            fd_no = narration.split('FD ')[-1].strip()
+            fd = FixedDeposit.objects.filter(fd_no=fd_no).first()
+            if fd:
+                fd.accrued_interest = interest_amount
+                fd.last_interest_posted_date = None
+                fd.save(update_fields=['accrued_interest', 'last_interest_posted_date'])
+
+    reverse_journal_entry(entry, user)
+    return interest_amount
+
+
 @manager_required
 @day_open_required
 def rollback_interest_posting(request, entry_id):
@@ -806,8 +840,6 @@ def rollback_interest_posting(request, entry_id):
         return redirect('dayend:interest_post')
 
     from apps.accounting.models import JournalEntry
-    from apps.accounting.services import reverse_journal_entry
-    from apps.savings.models import AccountTransaction
 
     entry = get_object_or_404(
         JournalEntry, pk=entry_id,
@@ -817,35 +849,8 @@ def rollback_interest_posting(request, entry_id):
         messages.error(request, 'Rollback is only allowed for same-day postings.')
         return redirect('dayend:interest_post')
 
-    interest_amount = sum(l.debit_amount for l in entry.lines.all())
-
     with transaction.atomic():
-        if entry.reference_id:
-            txn = AccountTransaction.objects.filter(pk=entry.reference_id).select_related('account').first()
-            if txn:
-                acct = txn.account
-                acct.current_balance -= interest_amount
-                acct.interest_charged -= interest_amount
-                acct.accrued_interest = interest_amount
-                acct.last_interest_posted_date = None
-                acct.save(update_fields=[
-                    'current_balance', 'interest_charged',
-                    'accrued_interest', 'last_interest_posted_date',
-                ])
-                txn.delete()
-        else:
-            from apps.deposits.models import FixedDeposit
-
-            narration = entry.narration
-            if 'FD ' in narration:
-                fd_no = narration.split('FD ')[-1].strip()
-                fd = FixedDeposit.objects.filter(fd_no=fd_no).first()
-                if fd:
-                    fd.accrued_interest = interest_amount
-                    fd.last_interest_posted_date = None
-                    fd.save(update_fields=['accrued_interest', 'last_interest_posted_date'])
-
-        reverse_journal_entry(entry, request.user)
+        interest_amount = _rollback_single_interest_entry(entry, request.user)
 
     messages.success(request, f'Interest posting reversed: {entry.voucher_no} (₹{interest_amount})')
     return redirect('dayend:interest_post')
@@ -858,8 +863,6 @@ def rollback_all_interest_postings(request):
         return redirect('dayend:interest_post')
 
     from apps.accounting.models import JournalEntry
-    from apps.accounting.services import reverse_journal_entry
-    from apps.savings.models import AccountTransaction
 
     today = date.today()
     entries = JournalEntry.objects.filter(
@@ -875,34 +878,7 @@ def rollback_all_interest_postings(request):
 
     with transaction.atomic():
         for entry in entries:
-            interest_amount = sum(l.debit_amount for l in entry.lines.all())
-
-            if entry.reference_id:
-                txn = AccountTransaction.objects.filter(pk=entry.reference_id).select_related('account').first()
-                if txn:
-                    acct = txn.account
-                    acct.current_balance -= interest_amount
-                    acct.interest_charged -= interest_amount
-                    acct.accrued_interest = interest_amount
-                    acct.last_interest_posted_date = None
-                    acct.save(update_fields=[
-                        'current_balance', 'interest_charged',
-                        'accrued_interest', 'last_interest_posted_date',
-                    ])
-                    txn.delete()
-            else:
-                from apps.deposits.models import FixedDeposit
-
-                narration = entry.narration
-                if 'FD ' in narration:
-                    fd_no = narration.split('FD ')[-1].strip()
-                    fd = FixedDeposit.objects.filter(fd_no=fd_no).first()
-                    if fd:
-                        fd.accrued_interest = interest_amount
-                        fd.last_interest_posted_date = None
-                        fd.save(update_fields=['accrued_interest', 'last_interest_posted_date'])
-
-            reverse_journal_entry(entry, request.user)
+            interest_amount = _rollback_single_interest_entry(entry, request.user)
             rolled_back += 1
             total_amount += interest_amount
 

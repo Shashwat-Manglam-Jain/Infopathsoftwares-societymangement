@@ -37,6 +37,7 @@ class ShareHolding(models.Model):
             ('surrendered', 'Surrendered'),
         ],
         default='active',
+        db_index=True,
     )
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now_add=True)

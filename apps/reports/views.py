@@ -596,8 +596,6 @@ def cashbook_report(request):
 def balance_reports(request):
     from datetime import timedelta
 
-    from django.db.models import Count
-
     from apps.savings.models import SavingsAccount
 
     report_type = request.GET.get('type', 'nil_balance')

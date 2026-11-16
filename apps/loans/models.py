@@ -120,7 +120,7 @@ class LoanAccount(models.Model):
     overdue_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     overdue_days = models.IntegerField(default=0)
     last_interest_calculated_date = models.DateField(null=True, blank=True)
-    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='applied')
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='applied', db_index=True)
     closure_date = models.DateField(null=True, blank=True)
     closure_type = models.CharField(max_length=15, choices=CLOSURE_TYPE_CHOICES, blank=True)
     remarks = models.TextField(blank=True)
@@ -273,7 +273,7 @@ class EMISchedule(models.Model):
     paid_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     paid_date = models.DateField(null=True, blank=True)
     penalty_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='pending')
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='pending', db_index=True)
     branch = models.ForeignKey('branches.Branch', on_delete=models.PROTECT, null=True, blank=True)
 
     class Meta:

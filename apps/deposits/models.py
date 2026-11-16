@@ -89,7 +89,7 @@ class FixedDeposit(models.Model):
     last_interest_posted_date = models.DateField(null=True, blank=True)
     is_auto_renew = models.BooleanField(default=False)
     compounding_type = models.CharField(max_length=20, default='quarterly')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', db_index=True)
     premature_closure_date = models.DateField(null=True, blank=True)
     premature_amount = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
     linked_savings_account = models.ForeignKey(
@@ -154,7 +154,7 @@ class RecurringDeposit(models.Model):
     maturity_date = models.DateField()
     tenure_months = models.IntegerField()
     maturity_amount = models.DecimalField(max_digits=15, decimal_places=2)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active', db_index=True)
     default_count = models.IntegerField(default=0)
     max_defaults_allowed = models.IntegerField(default=3)
     linked_savings_account = models.ForeignKey(
@@ -207,6 +207,7 @@ class RDInstallment(models.Model):
             ('defaulted', 'Defaulted'),
         ],
         default='pending',
+        db_index=True,
     )
     branch = models.ForeignKey('branches.Branch', on_delete=models.PROTECT, null=True, blank=True)
 

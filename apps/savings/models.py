@@ -18,7 +18,7 @@ class SavingsAccount(models.Model):
         ('current', 'Current Account'),
         ('security', 'Security Deposit'),
     ]
-    account_type = models.CharField(max_length=10, choices=ACCOUNT_TYPE_CHOICES, default='savings')
+    account_type = models.CharField(max_length=10, choices=ACCOUNT_TYPE_CHOICES, default='savings', db_index=True)
     gl_head = models.ForeignKey(
         'accounting.ChartOfAccounts',
         on_delete=models.PROTECT,
@@ -31,7 +31,7 @@ class SavingsAccount(models.Model):
     folio_number = models.CharField(max_length=10, blank=True)
     opening_date = models.DateField()
     closing_date = models.DateField(null=True, blank=True)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active', db_index=True)
     current_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     overdue_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     interest_charged = models.DecimalField(max_digits=15, decimal_places=2, default=0)
@@ -118,7 +118,7 @@ class AccountTransaction(models.Model):
 
     account = models.ForeignKey(SavingsAccount, on_delete=models.PROTECT, related_name='transactions')
     branch = models.ForeignKey('branches.Branch', on_delete=models.PROTECT)
-    txn_date = models.DateField()
+    txn_date = models.DateField(db_index=True)
     value_date = models.DateField()
     txn_type = models.CharField(max_length=20, choices=TXN_TYPE_CHOICES)
     amount = models.DecimalField(max_digits=15, decimal_places=2)

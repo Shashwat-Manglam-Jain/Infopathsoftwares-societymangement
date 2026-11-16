@@ -50,7 +50,7 @@ class Agent(models.Model):
     joining_date = models.DateField()
     phone = models.CharField(max_length=15)
     area = models.CharField(max_length=200, blank=True, help_text='Collection area/route')
-    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='active')
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='active', db_index=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -144,7 +144,7 @@ class PigmmyAccount(models.Model):
     total_installments = models.IntegerField(default=0)
     paid_installments = models.IntegerField(default=0)
     missed_installments = models.IntegerField(default=0)
-    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='active')
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='active', db_index=True)
     meeting_no = models.CharField(max_length=20, blank=True, help_text='Board Meeting Number')
     meeting_date = models.DateField(null=True, blank=True, help_text='Board Meeting Date')
     sign = models.IntegerField(default=0, help_text='1=debit nature, -1=credit nature, 0=default')
@@ -228,7 +228,7 @@ class AgentCollection(models.Model):
         decimal_places=2,
         default=Decimal('0.00'),
     )
-    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='open')
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='open', db_index=True)
     reconciled_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,

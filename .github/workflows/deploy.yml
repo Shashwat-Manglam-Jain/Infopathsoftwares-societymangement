@@ -1,15 +1,20 @@
 name: Deploy to Production
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
 
 jobs:
   deploy:
     name: Deploy to EC2
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: >
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_dispatch' ||
+       github.event.workflow_run.conclusion == 'success')
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
@@ -21,7 +26,7 @@ jobs:
             cd /opt/society_software
             git pull origin main
             source venv/bin/activate
-            export $(cat .env | xargs)
+            set -a; source .env; set +a
             pip install -r requirements.txt
             python manage.py migrate_schemas --shared
             python manage.py migrate_schemas --tenant
