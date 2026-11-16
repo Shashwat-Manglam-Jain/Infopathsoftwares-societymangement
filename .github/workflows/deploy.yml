@@ -31,6 +31,12 @@ jobs:
             python manage.py migrate_schemas --shared
             python manage.py migrate_schemas --tenant
             python manage.py collectstatic --clear --noinput
+            # Update nginx config if changed, test before reload
+            if ! diff -q infrastructure/nginx.conf /etc/nginx/sites-available/society 2>/dev/null; then
+              sudo cp infrastructure/nginx.conf /etc/nginx/sites-available/society
+              sudo ln -sf /etc/nginx/sites-available/society /etc/nginx/sites-enabled/society
+              sudo nginx -t && sudo systemctl reload nginx || echo "WARNING: nginx config test failed, skipping reload"
+            fi
             sudo systemctl restart gunicorn
             sudo systemctl restart celery
             sudo systemctl restart celerybeat
