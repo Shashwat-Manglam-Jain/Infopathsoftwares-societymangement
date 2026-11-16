@@ -49,6 +49,12 @@ class SocietySignupView(View):
         plans = SubscriptionPlan.objects.filter(is_active=True).order_by('price_monthly')
         return render(request, 'signup.html', {'form': form, 'plans': plans})
 
+    def _get_parent_domain(self, request):
+        host = request.get_host().split(':')[0]
+        if host in ('localhost', '127.0.0.1'):
+            return 'localhost'
+        return host
+
     def post(self, request):
         form = SocietySignupForm(request.POST)
         if not form.is_valid():
@@ -64,6 +70,10 @@ class SocietySignupView(View):
             schema_name = f'{base_schema}_{counter}'
             counter += 1
 
+        parent_domain = self._get_parent_domain(request)
+        subdomain = schema_name.replace('_', '-')
+        domain_name = f'{subdomain}.{parent_domain}'
+
         with transaction.atomic():
             society = Society.objects.create(
                 schema_name=schema_name,
@@ -78,8 +88,6 @@ class SocietySignupView(View):
                 society_type=form.cleaned_data.get('society_type', 'credit_cooperative'),
             )
 
-            subdomain = schema_name.replace('_', '-')
-            domain_name = f'{subdomain}.localhost'
             Domain.objects.create(
                 domain=domain_name,
                 tenant=society,
@@ -89,6 +97,12 @@ class SocietySignupView(View):
         with tenant_context(society):
             self._setup_tenant(form, society)
 
+        scheme = 'https' if request.is_secure() else 'http'
+        port = request.META.get('SERVER_PORT', '')
+        port_suffix = ''
+        if port and port not in ('80', '443'):
+            port_suffix = f':{port}'
+
         return render(
             request,
             'signup_success.html',
@@ -96,7 +110,8 @@ class SocietySignupView(View):
                 'society_name': society_name,
                 'domain': domain_name,
                 'username': form.cleaned_data['admin_username'],
-                'port': ':8000' if 'localhost' in domain_name else '',
+                'scheme': scheme,
+                'port': port_suffix,
             },
         )
 

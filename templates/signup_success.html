@@ -42,7 +42,7 @@
                 <div class="flex flex-col sm:flex-row sm:items-center">
                     <span class="text-sm text-indigo-600 font-medium w-32">{% trans "Login URL" %}:</span>
                     <code class="bg-white px-3 py-1.5 rounded border border-indigo-200 text-sm text-gray-800 break-all">
-                        http://{{ domain }}{{ port }}
+                        {{ scheme }}://{{ domain }}{{ port }}
                     </code>
                 </div>
                 <div class="flex flex-col sm:flex-row sm:items-center">
@@ -59,7 +59,7 @@
         </div>
 
         <!-- Login Button -->
-        <a href="http://{{ domain }}{{ port }}/accounts/login/"
+        <a href="{{ scheme }}://{{ domain }}{{ port }}/accounts/login/"
            class="mt-8 inline-block bg-indigo-600 text-white px-10 py-4 rounded-lg text-lg font-bold hover:bg-indigo-700 transition shadow-lg">
             {% trans "Login Now" %}
         </a>
