@@ -11,6 +11,8 @@ def calculate_emi(principal, annual_rate, tenure_months, interest_type='reducing
     principal = Decimal(str(principal))
     annual_rate = Decimal(str(annual_rate))
     tenure_months = int(tenure_months)
+    if tenure_months <= 0:
+        raise ValueError('tenure_months must be positive')
 
     if interest_type == 'flat':
         total_interest = principal * annual_rate * Decimal(str(tenure_months)) / (Decimal('12') * Decimal('100'))

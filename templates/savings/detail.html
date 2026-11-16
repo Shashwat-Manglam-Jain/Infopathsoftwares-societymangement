@@ -53,7 +53,7 @@
                 <div class="flex justify-between"><dt class="text-gray-500">Min Balance</dt><dd class="font-medium">&#8377;{{ account.minimum_balance|floatformat:2 }}</dd></div>
                 {% if account.member.phone %}<div class="flex justify-between"><dt class="text-gray-500">{% trans "Phone" %}</dt><dd class="font-medium">{{ account.member.phone }}</dd></div>{% endif %}
                 {% if account.member.aadhar_no %}<div class="flex justify-between"><dt class="text-gray-500">Aadhar</dt><dd class="font-medium">XXXX-XXXX-{{ account.member.aadhar_no|slice:"-4" }}</dd></div>{% endif %}
-                <div class="flex justify-between"><dt class="text-gray-500">KYC</dt><dd>{% if account.member.is_kyc_verified %}<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">{% trans "Verified" %}</span>{% else %}<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Pending</span>{% endif %}</dd></div>
+                <div class="flex justify-between"><dt class="text-gray-500">KYC</dt><dd>{% if account.member.kyc_verified %}<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">{% trans "Verified" %}</span>{% else %}<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Pending</span>{% endif %}</dd></div>
             </dl>
         </div>
 

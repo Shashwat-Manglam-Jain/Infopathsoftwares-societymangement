@@ -73,7 +73,31 @@
                 </div>
             </div>
 
-            <template x-if="requires{% trans "Collateral" %}">
+            <!-- Optional fields -->
+            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 border-t border-gray-100">
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Loan Form No" %}</label>
+                    {{ form.loan_form_no }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Meeting No" %}</label>
+                    {{ form.meeting_no }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Meeting Date" %}</label>
+                    {{ form.meeting_date }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Mortgage Account No" %}</label>
+                    {{ form.mortgage_account_no }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Mortgage Value" %}</label>
+                    {{ form.mortgage_value }}
+                </div>
+            </div>
+
+            <template x-if="requiresCollateral">
                 <div class="mx-5 mb-3 bg-blue-50 border border-blue-200 rounded p-2">
                     <p class="text-xs text-blue-800 font-medium">This loan product requires collateral. You will add collateral after submission.</p>
                 </div>
@@ -87,7 +111,7 @@
                     <label class="text-xs font-medium text-gray-500">{% trans "Guarantors" %}</label>
                     <template x-if="requiresGuarantor">
                         <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-700">
-                            Min <span x-text="min{% trans "Guarantors" %}"></span> required
+                            Min <span x-text="minGuarantors"></span> required
                         </span>
                     </template>
                 </div>
@@ -147,9 +171,9 @@ function loanForm() {
         maxAmount: null,
         maxTenure: null,
         requiresGuarantor: false,
-        requires{% trans "Collateral" %}: false,
-        min{% trans "Guarantors" %}: 0,
-        max{% trans "Guarantors" %}: 0,
+        requiresCollateral: false,
+        minGuarantors: 0,
+        maxGuarantors: 0,
         init() { this.updateRates(); },
         updateRates() {
             this.interestRate = null;
@@ -157,9 +181,9 @@ function loanForm() {
             this.maxAmount = null;
             this.maxTenure = null;
             this.requiresGuarantor = false;
-            this.requires{% trans "Collateral" %} = false;
-            this.min{% trans "Guarantors" %} = 0;
-            this.max{% trans "Guarantors" %} = 0;
+            this.requiresCollateral = false;
+            this.minGuarantors = 0;
+            this.maxGuarantors = 0;
             if (!this.selectedProduct) return;
             const product = this.products.find(p => p.id == this.selectedProduct);
             if (!product) return;
@@ -168,9 +192,9 @@ function loanForm() {
             this.maxAmount = product.max_amount;
             this.maxTenure = product.max_tenure_months;
             this.requiresGuarantor = product.requires_guarantor;
-            this.requires{% trans "Collateral" %} = product.requires_collateral;
-            this.min{% trans "Guarantors" %} = product.min_guarantors;
-            this.max{% trans "Guarantors" %} = product.max_guarantors;
+            this.requiresCollateral = product.requires_collateral;
+            this.minGuarantors = product.min_guarantors;
+            this.maxGuarantors = product.max_guarantors;
         }
     };
 }
