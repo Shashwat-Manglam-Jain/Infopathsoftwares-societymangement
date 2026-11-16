@@ -13,6 +13,7 @@ from apps.accounts.permissions import (
     auditor_or_above,
     cashier_required,
     day_open_required,
+    has_branch_access,
     manager_required,
 )
 from apps.core.account_utils import amount_to_words as _amount_to_words
@@ -43,7 +44,8 @@ def share_list(request):
             messages.error(request, 'Enter a valid dividend rate (0-100).')
             return render(request, 'shares/list.html', {'holdings': holdings})
 
-        dividend_results = services.calculate_dividend(rate, financial_year)
+        branch = request.current_branch if not request.user.can_access_all_branches else None
+        dividend_results = services.calculate_dividend(rate, financial_year, branch=branch)
         total_dividend = sum(r['dividend'] for r in dividend_results)
         dividend_count = len(dividend_results)
 
@@ -198,6 +200,9 @@ def share_detail(request, pk):
         ShareHolding.objects.select_related('member', 'branch'),
         pk=pk,
     )
+    if not has_branch_access(request, holding.branch):
+        messages.error(request, 'You do not have access to this holding.')
+        return redirect('shares:list')
     transactions = ShareTransaction.objects.filter(member=holding.member).order_by('-txn_date')[:20]
     dividends = ShareTransaction.objects.filter(member=holding.member, txn_type='dividend').order_by('-txn_date')
     config = ShareConfig.objects.filter(is_active=True).first()
@@ -250,14 +255,15 @@ def share_config_create(request):
             name = request.POST.get('name', '').strip()
             if not name:
                 raise ValueError('Name is required.')
-            ShareConfig.objects.filter(is_active=True).update(is_active=False)
-            ShareConfig.objects.create(
-                name=name,
-                face_value_per_share=Decimal(request.POST.get('face_value_per_share', '10')),
-                max_shares_per_member=int(request.POST.get('max_shares_per_member', '100')),
-                min_shares_required=int(request.POST.get('min_shares_required', '1')),
-                is_active=True,
-            )
+            with db_transaction.atomic():
+                ShareConfig.objects.filter(is_active=True).update(is_active=False)
+                ShareConfig.objects.create(
+                    name=name,
+                    face_value_per_share=Decimal(request.POST.get('face_value_per_share', '10')),
+                    max_shares_per_member=int(request.POST.get('max_shares_per_member', '100')),
+                    min_shares_required=int(request.POST.get('min_shares_required', '1')),
+                    is_active=True,
+                )
             messages.success(request, 'Share configuration created and set as active.')
         except (ValueError, InvalidOperation) as e:
             messages.error(request, str(e))
@@ -293,8 +299,9 @@ def share_config_toggle(request, pk):
             config.save(update_fields=['is_active'])
             messages.success(request, f'"{config.name}" disabled.')
         else:
-            ShareConfig.objects.filter(is_active=True).update(is_active=False)
-            config.is_active = True
-            config.save(update_fields=['is_active'])
+            with db_transaction.atomic():
+                ShareConfig.objects.filter(is_active=True).update(is_active=False)
+                config.is_active = True
+                config.save(update_fields=['is_active'])
             messages.success(request, f'"{config.name}" is now the active configuration.')
     return redirect('shares:config_list')

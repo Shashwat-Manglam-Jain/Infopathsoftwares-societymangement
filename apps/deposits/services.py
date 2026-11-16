@@ -115,7 +115,8 @@ def create_fd(
 def mature_fd(fd, user):
     if fd.status != 'active':
         raise ValueError('FD is not active')
-    if date.today() < fd.maturity_date:
+    txn_date = get_transaction_date(fd.branch)
+    if txn_date < fd.maturity_date:
         raise ValueError('FD has not matured yet')
 
     with transaction.atomic():
@@ -146,7 +147,7 @@ def premature_close_fd(fd, user):
         raise ValueError('FD is not active')
 
     with transaction.atomic():
-        held_days = (date.today() - fd.start_date).days
+        held_days = (get_transaction_date(fd.branch) - fd.start_date).days
         penalty_rate = getattr(fd, 'premature_penalty_percent', Decimal('1.0'))
         effective_rate = fd.interest_rate - penalty_rate
         if effective_rate < 0:
@@ -170,17 +171,23 @@ def premature_close_fd(fd, user):
 
 
 def renew_fd(fd, user):
-    return create_fd(
-        member=fd.member,
-        amount=fd.maturity_amount,
-        tenure_days=fd.tenure_days,
-        branch=fd.branch,
-        user=user,
-        product=fd.fd_product,
-        is_auto_renew=fd.is_auto_renew,
-        linked_savings_account=fd.linked_savings_account,
-        compounding=fd.compounding_type,
-    )
+    if fd.status not in ('active', 'matured'):
+        raise ValueError(f'FD {fd.fd_no} cannot be renewed (status: {fd.status}).')
+    with transaction.atomic():
+        new_fd = create_fd(
+            member=fd.member,
+            amount=fd.maturity_amount,
+            tenure_days=fd.tenure_days,
+            branch=fd.branch,
+            user=user,
+            product=fd.fd_product,
+            is_auto_renew=fd.is_auto_renew,
+            linked_savings_account=fd.linked_savings_account,
+            compounding=fd.compounding_type,
+        )
+        fd.status = 'renewed'
+        fd.save(update_fields=['status'])
+        return new_fd
 
 
 def create_rd(

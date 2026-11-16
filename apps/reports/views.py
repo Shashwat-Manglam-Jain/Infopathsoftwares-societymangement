@@ -122,7 +122,9 @@ def personal_ledger(request):
                 {
                     'type': 'Share Capital',
                     'account_no': holding.certificate_no if holding else 'N/A',
+                    'opening_balance': 0,
                     'current_balance': holding.total_amount if holding else 0,
+                    'closing_balance': holding.total_amount if holding else 0,
                     'rows': rows,
                 }
             )
@@ -154,7 +156,9 @@ def personal_ledger(request):
                     {
                         'type': f'Loan ({la.loan_product.name})',
                         'account_no': la.loan_no,
+                        'opening_balance': 0,
                         'current_balance': la.outstanding_principal,
+                        'closing_balance': la.outstanding_principal,
                         'rows': rows,
                     }
                 )
@@ -187,7 +191,9 @@ def personal_ledger(request):
                     {
                         'type': 'Fixed Deposit',
                         'account_no': fd.fd_no,
+                        'opening_balance': fd.deposit_amount,
                         'current_balance': fd.deposit_amount if fd.status == 'active' else 0,
+                        'closing_balance': fd.deposit_amount if fd.status == 'active' else 0,
                         'rows': rows,
                     }
                 )
@@ -224,7 +230,9 @@ def personal_ledger(request):
                     {
                         'type': 'Recurring Deposit',
                         'account_no': rd.rd_no,
+                        'opening_balance': 0,
                         'current_balance': paid_total,
+                        'closing_balance': paid_total,
                         'rows': rows,
                     }
                 )
@@ -1055,6 +1063,8 @@ def deposit_reports(request):
                     }
                 )
         context['groups'] = groups
+        context['total_count'] = sum(g['count'] for g in groups)
+        context['total_amount'] = sum(g['total'] for g in groups)
 
     elif report_type == 'amount_wise':
         groups = []
@@ -1089,6 +1099,8 @@ def deposit_reports(request):
                     }
                 )
         context['groups'] = groups
+        context['total_count'] = sum(g['count'] for g in groups)
+        context['total_amount'] = sum(g['total'] for g in groups)
 
     elif report_type == 'maturity_wise':
         if from_date and to_date:
@@ -1169,6 +1181,8 @@ def deposit_reports(request):
                     }
                 )
         context['groups'] = groups
+        context['total_count'] = sum(g['count'] for g in groups)
+        context['total_amount'] = sum(g['total'] for g in groups)
 
     elif report_type == 'matured_not_paid':
         fds = _branch_filter(
@@ -1713,7 +1727,10 @@ def notices(request):
     elif notice_type == 'fd_maturity':
         from datetime import timedelta
 
-        days = int(request.GET.get('days', 30))
+        try:
+            days = int(request.GET.get('days', 30))
+        except (ValueError, TypeError):
+            days = 30
         context['days'] = days
         cutoff = date.today() + timedelta(days=days)
         fds = (

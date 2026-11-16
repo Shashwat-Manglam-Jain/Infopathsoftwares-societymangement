@@ -31,7 +31,7 @@
                 <input type="date" name="to_date" x-model="toDate" :min="fromDate" :max="today" required class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
             </div>
             <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">{% trans "Generate" %}</button>
-            {% include "includes/export_csv.html" %}
+            {% if income_items or expense_items %}{% include "includes/export_csv.html" %}{% endif %}
         </div>
         <div class="flex flex-wrap gap-2 mt-3">
             <span class="text-xs text-gray-400 self-center mr-1">{% trans "Quick:" %}</span>

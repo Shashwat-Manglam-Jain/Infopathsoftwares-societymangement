@@ -137,25 +137,25 @@ def reject_loan(loan, remarks, user):
 
 
 def disburse_loan(loan, branch, user):
-    if loan.status != 'approved':
-        raise ValueError('Loan is not in approved status')
-    if loan.approved_amount <= Decimal('0'):
-        raise ValueError('Approved amount must be greater than zero')
-
-    product = loan.loan_product
-    if loan.approved_amount > product.max_amount:
-        raise ValueError(f'Approved amount ₹{loan.approved_amount} exceeds product limit ₹{product.max_amount}')
-    if product.requires_guarantor:
-        from apps.loans.models import LoanGuarantor
-
-        count = LoanGuarantor.objects.filter(loan=loan).count()
-        if count < product.min_guarantors:
-            raise ValueError(
-                f'This loan requires at least {product.min_guarantors} guarantor(s). '
-                f'Only {count} assigned. Add guarantors before disbursing.'
-            )
-
     with transaction.atomic():
+        loan = LoanAccount.objects.select_for_update().get(pk=loan.pk)
+        if loan.status != 'approved':
+            raise ValueError('Loan is not in approved status')
+        if loan.approved_amount <= Decimal('0'):
+            raise ValueError('Approved amount must be greater than zero')
+
+        product = loan.loan_product
+        if loan.approved_amount > product.max_amount:
+            raise ValueError(f'Approved amount ₹{loan.approved_amount} exceeds product limit ₹{product.max_amount}')
+        if product.requires_guarantor:
+            from apps.loans.models import LoanGuarantor
+
+            count = LoanGuarantor.objects.filter(loan=loan).count()
+            if count < product.min_guarantors:
+                raise ValueError(
+                    f'This loan requires at least {product.min_guarantors} guarantor(s). '
+                    f'Only {count} assigned. Add guarantors before disbursing.'
+                )
         import calendar
 
         txn_date = get_transaction_date(branch)
@@ -469,46 +469,46 @@ def validate_loan_application(member, loan_product, amount):
 
 
 def add_standing_instruction(loan, charge_type, amount, branch, narration, created_by):
-    """Add a standing instruction (fee/charge) to a loan account."""
     from apps.loans.models import StandingInstruction
 
     amount = Decimal(str(amount))
     txn_date = get_transaction_date(branch)
 
-    si = StandingInstruction.objects.create(
-        loan=loan,
-        branch=branch,
-        charge_type=charge_type,
-        amount=amount,
-        charge_date=txn_date,
-        narration=narration,
-        created_by=created_by,
-    )
-
-    loan.outstanding_principal += amount
-    loan.save(update_fields=['outstanding_principal', 'updated_at'])
-
-    from apps.accounting.models import ChartOfAccounts
-    from apps.accounting.services import create_journal_entry
-    from apps.core.gl_utils import get_account_gl_code, get_gl_code
-
-    loan_code = get_account_gl_code(loan, 'loan', '1003')
-    fee_income_code = get_gl_code('interest_received', '4004')
-
-    if ChartOfAccounts.objects.filter(code__in=[loan_code, fee_income_code]).count() == 2:
-        create_journal_entry(
-            entry_date=txn_date,
-            voucher_type='journal',
+    with transaction.atomic():
+        si = StandingInstruction.objects.create(
+            loan=loan,
             branch=branch,
+            charge_type=charge_type,
+            amount=amount,
+            charge_date=txn_date,
             narration=narration,
-            lines=[
-                {'account_code': loan_code, 'debit': amount, 'credit': Decimal('0')},
-                {'account_code': fee_income_code, 'debit': Decimal('0'), 'credit': amount},
-            ],
-            user=created_by,
-            reference_type='standing_instruction',
-            reference_id=si.pk,
+            created_by=created_by,
         )
+
+        loan.bal_others = (loan.bal_others or Decimal('0')) + amount
+        loan.save(update_fields=['bal_others', 'updated_at'])
+
+        from apps.accounting.models import ChartOfAccounts
+        from apps.accounting.services import create_journal_entry
+        from apps.core.gl_utils import get_account_gl_code, get_gl_code
+
+        loan_code = get_account_gl_code(loan, 'loan', '1003')
+        fee_income_code = get_gl_code('interest_received', '4004')
+
+        if ChartOfAccounts.objects.filter(code__in=[loan_code, fee_income_code]).count() == 2:
+            create_journal_entry(
+                entry_date=txn_date,
+                voucher_type='journal',
+                branch=branch,
+                narration=narration,
+                lines=[
+                    {'account_code': loan_code, 'debit': amount, 'credit': Decimal('0')},
+                    {'account_code': fee_income_code, 'debit': Decimal('0'), 'credit': amount},
+                ],
+                user=created_by,
+                reference_type='standing_instruction',
+                reference_id=si.pk,
+            )
 
     return si
 
@@ -545,7 +545,7 @@ def reverse_repayment(repayment, user):
             emi.save()
 
         original_journal = JournalEntry.objects.filter(
-            reference_type='emi_collection',
+            reference_type='emi_payment',
             reference_id=repayment.pk,
             is_reversed=False,
         ).first()

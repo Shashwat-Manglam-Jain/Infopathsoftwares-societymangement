@@ -18,9 +18,6 @@
 {% block content %}
 <div class="space-y-4">
 
-        <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-    </a>
-
     <!-- Filter Form -->
     <form method="get" class="bg-white rounded-lg shadow-sm border border-gray-200 p-5 no-print"
           x-data="{ fromDate: '{{ from_date|default:'' }}', toDate: '{{ to_date|default:'' }}', today: new Date().toISOString().split('T')[0] }">
@@ -103,7 +100,7 @@
                     {% endif %}
                     {% for row in acct.rows %}
                     <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-2 text-sm text-gray-900 whitespace-nowrap">{{ row.date }}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900 whitespace-nowrap">{{ row.date|date:"d M Y" }}</td>
                         <td class="px-4 py-2 text-sm text-gray-700">{{ row.description }}</td>
                         <td class="px-4 py-2 text-sm text-right font-medium {% if row.debit %}text-red-600{% else %}text-gray-300{% endif %}">{% if row.debit %}&#8377;{{ row.debit|floatformat:2 }}{% else %}—{% endif %}</td>
                         <td class="px-4 py-2 text-sm text-right font-medium {% if row.credit %}text-green-600{% else %}text-gray-300{% endif %}">{% if row.credit %}&#8377;{{ row.credit|floatformat:2 }}{% else %}—{% endif %}</td>

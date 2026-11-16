@@ -12,6 +12,7 @@ from apps.accounts.permissions import (
     auditor_or_above,
     cashier_required,
     day_open_required,
+    has_branch_access,
     manager_required,
 )
 from apps.core.account_utils import amount_to_words as _amount_to_words
@@ -255,6 +256,9 @@ def loan_apply(request):
 @manager_required
 def loan_approve(request, pk):
     loan = get_object_or_404(LoanAccount, pk=pk)
+    if not has_branch_access(request, loan.branch):
+        messages.error(request, 'You do not have access to this loan.')
+        return redirect('loans:list')
     if request.method != 'POST':
         return redirect('loans:detail', pk=pk)
 
@@ -283,6 +287,9 @@ def loan_approve(request, pk):
 @day_open_required
 def loan_disburse(request, pk):
     loan = get_object_or_404(LoanAccount, pk=pk)
+    if not has_branch_access(request, loan.branch):
+        messages.error(request, 'You do not have access to this loan.')
+        return redirect('loans:list')
     if request.current_branch is None:
         messages.warning(request, 'Please select a specific branch before disbursing loans.')
         return redirect('loans:detail', pk=pk)
@@ -302,6 +309,9 @@ def loan_disburse(request, pk):
 @day_open_required
 def loan_collect(request, pk):
     loan = get_object_or_404(LoanAccount, pk=pk)
+    if not has_branch_access(request, loan.branch):
+        messages.error(request, 'You do not have access to this loan.')
+        return redirect('loans:list')
     if request.current_branch is None:
         messages.warning(request, 'Please select a specific branch before collecting payments.')
         return redirect('loans:detail', pk=pk)
@@ -434,6 +444,9 @@ def loan_charge_create(request):
 
         try:
             loan = LoanAccount.objects.get(pk=loan_id, status__in=['disbursed', 'npa'])
+            if not has_branch_access(request, loan.branch):
+                messages.error(request, 'You do not have access to this loan.')
+                return redirect('loans:loan_charge_list')
             amount = Decimal(amount_str)
             if amount <= 0:
                 raise ValueError('Amount must be positive.')
@@ -596,6 +609,9 @@ class EMIReceiptView(AuditorOrAboveMixin, View):
             ),
             id=repayment_id,
         )
+        if not has_branch_access(request, repayment.branch):
+            messages.error(request, 'You do not have access to this receipt.')
+            return redirect('loans:list')
         return render(
             request,
             'receipts/emi_receipt.html',
@@ -781,6 +797,9 @@ def loan_reverse_repayment(request, pk, repayment_id):
     from .services import reverse_repayment
 
     loan = get_object_or_404(LoanAccount, pk=pk)
+    if not has_branch_access(request, loan.branch):
+        messages.error(request, 'You do not have access to this loan.')
+        return redirect('loans:list')
     repayment = get_object_or_404(LoanRepayment, pk=repayment_id, loan=loan)
 
     from apps.accounts.permissions import is_date_locked

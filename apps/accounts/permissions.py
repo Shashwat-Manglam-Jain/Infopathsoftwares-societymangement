@@ -214,6 +214,15 @@ def day_open_required(view_func):
     return wrapper
 
 
+def has_branch_access(request, obj_branch):
+    if request.user.can_access_all_branches:
+        return True
+    branch = getattr(request, 'current_branch', None)
+    if branch is None:
+        return True
+    return obj_branch == branch
+
+
 def branch_required(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):

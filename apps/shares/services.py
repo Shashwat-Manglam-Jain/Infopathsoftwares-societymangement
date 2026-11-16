@@ -257,10 +257,12 @@ def surrender_shares(member, count, user):
     return amount
 
 
-def calculate_dividend(rate, financial_year=None):
+def calculate_dividend(rate, financial_year=None, branch=None):
     results = []
-    holdings = ShareHolding.objects.filter(status='active').select_related('member')
-    for holding in holdings:
+    qs = ShareHolding.objects.filter(status='active').select_related('member')
+    if branch:
+        qs = qs.filter(branch=branch)
+    for holding in qs:
         dividend = holding.total_amount * Decimal(str(rate)) / Decimal('100')
         results.append(
             {

@@ -89,8 +89,8 @@
                 <tfoot class="bg-gray-50 font-semibold">
                     <tr>
                         <td colspan="2" class="px-4 py-3 text-sm text-gray-700">{% trans "Total" %}</td>
-                        <td class="px-4 py-3 text-sm text-right text-gray-900">{% for g in groups %}{% if forloop.last %}{% widthratio 0 1 0 as x %}{% endif %}{% endfor %}</td>
-                        <td class="px-4 py-3 text-sm text-right text-gray-900"></td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-900">{{ total_count }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-900">{{ total_amount|floatformat:2 }}</td>
                     </tr>
                 </tfoot>
             </table>

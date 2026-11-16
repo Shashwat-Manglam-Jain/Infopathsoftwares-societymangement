@@ -4,12 +4,19 @@ from decimal import Decimal, InvalidOperation
 
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.db.models import Max
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from apps.accounting.models import ChartOfAccounts, InterestMaster
-from apps.accounts.permissions import auditor_or_above, cashier_required, day_open_required, manager_required
+from apps.accounts.permissions import (
+    auditor_or_above,
+    cashier_required,
+    day_open_required,
+    has_branch_access,
+    manager_required,
+)
 from apps.savings.models import SavingsAccount
 
 from .forms import AgentForm, CollectionForm, PigmmyAccountForm, PigmmyEditForm
@@ -66,6 +73,9 @@ def agent_create(request):
 @auditor_or_above
 def agent_detail(request, pk):
     agent = get_object_or_404(Agent.objects.select_related('member', 'branch', 'savings_account'), pk=pk)
+    if not has_branch_access(request, agent.branch):
+        messages.error(request, 'You do not have access to this agent.')
+        return redirect('agents:agent_list')
     client_accounts = PigmmyAccount.objects.filter(agent=agent).select_related('member')
     recent_collections = AgentCollection.objects.filter(agent=agent).order_by('-collection_date')[:20]
     return render(
@@ -172,6 +182,7 @@ def pigmmy_create(request):
                     interest_rate=interest_rate,
                     deposit_type=form.cleaned_data['deposit_type'],
                     created_by=request.user,
+                    linked_savings=form.cleaned_data.get('linked_savings_account'),
                 )
                 messages.success(request, f'Pigmmy account {account.account_no} created.')
                 return redirect('agents:pigmmy_detail', pk=account.pk)
@@ -210,6 +221,9 @@ def pigmmy_detail(request, pk):
         PigmmyAccount.objects.select_related('member', 'agent__member', 'branch'),
         pk=pk,
     )
+    if not has_branch_access(request, account.branch):
+        messages.error(request, 'You do not have access to this account.')
+        return redirect('agents:pigmmy_list')
     transactions = PigmmyTransaction.objects.filter(account=account).order_by('-txn_date', '-created_at')[:50]
     return render(
         request,
@@ -383,6 +397,8 @@ def collection_create(request):
 @cashier_required
 def agent_clients_api(request, agent_id):
     agent = get_object_or_404(Agent, pk=agent_id, status='active')
+    if not has_branch_access(request, agent.branch):
+        return JsonResponse({'clients': []})
     accounts = (
         PigmmyAccount.objects.filter(
             agent=agent,
@@ -413,6 +429,9 @@ def collection_detail(request, pk):
         AgentCollection.objects.select_related('agent__member', 'branch', 'reconciled_by'),
         pk=pk,
     )
+    if not has_branch_access(request, collection.branch):
+        messages.error(request, 'You do not have access to this collection.')
+        return redirect('agents:collection_list')
     transactions = (
         PigmmyTransaction.objects.filter(
             collected_by=collection.agent,
@@ -530,31 +549,32 @@ def collection_reject(request, pk):
         if collection.status != 'submitted':
             messages.warning(request, 'Only submitted collections can be rejected.')
         else:
-            txns = PigmmyTransaction.objects.filter(
-                collected_by=collection.agent,
-                txn_date=collection.collection_date,
-                is_reversed=False,
-            ).select_related('account')
-            for txn in txns:
-                acct = txn.account
-                acct.current_balance -= txn.amount
-                acct.total_deposited -= txn.amount
-                acct.paid_installments -= 1
-                acct.save()
-                txn.is_reversed = True
-                txn.save(update_fields=['is_reversed'])
-            from apps.accounting.models import JournalEntry
+            with transaction.atomic():
+                txns = PigmmyTransaction.objects.filter(
+                    collected_by=collection.agent,
+                    txn_date=collection.collection_date,
+                    is_reversed=False,
+                ).select_related('account')
+                for txn in txns:
+                    acct = txn.account
+                    acct.current_balance -= txn.amount
+                    acct.total_deposited -= txn.amount
+                    acct.paid_installments -= 1
+                    acct.save(update_fields=['current_balance', 'total_deposited', 'paid_installments', 'updated_at'])
+                    txn.is_reversed = True
+                    txn.save(update_fields=['is_reversed'])
+                from apps.accounting.models import JournalEntry
 
-            JournalEntry.objects.filter(
-                reference_type='pigmmy_collection',
-                entry_date=collection.collection_date,
-                narration__contains=collection.agent.agent_code,
-                is_reversed=False,
-            ).update(is_reversed=True)
+                JournalEntry.objects.filter(
+                    reference_type='pigmmy_collection',
+                    entry_date=collection.collection_date,
+                    narration__contains=collection.agent.agent_code,
+                    is_reversed=False,
+                ).update(is_reversed=True)
 
-            collection.status = 'discrepancy'
-            collection.remarks = request.POST.get('remarks', '')
-            collection.save(update_fields=['status', 'remarks'])
+                collection.status = 'discrepancy'
+                collection.remarks = request.POST.get('remarks', '')
+                collection.save(update_fields=['status', 'remarks'])
             messages.success(
                 request,
                 f'Collection for {collection.agent.agent_code} on {collection.collection_date} rejected and transactions reversed.',

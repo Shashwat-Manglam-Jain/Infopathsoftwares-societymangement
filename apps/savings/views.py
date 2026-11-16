@@ -13,6 +13,7 @@ from apps.accounts.permissions import (
     auditor_or_above,
     cashier_required,
     day_open_required,
+    has_branch_access,
     manager_required,
 )
 from apps.core.account_utils import amount_to_words as _amount_to_words
@@ -131,18 +132,14 @@ def savings_detail(request, pk):
         return redirect('savings:list')
 
     transactions = account.transactions.order_by('-txn_date', '-created_at')[:20]
-    deposit_form = DepositForm(initial={'account_id': account.pk})
-    withdrawal_form = WithdrawalForm(initial={'account_id': account.pk})
-    return render(
-        request,
-        'savings/detail.html',
-        {
-            'account': account,
-            'transactions': transactions,
-            'deposit_form': deposit_form,
-            'withdrawal_form': withdrawal_form,
-        },
-    )
+    context = {
+        'account': account,
+        'transactions': transactions,
+    }
+    if account.status == 'active':
+        context['deposit_form'] = DepositForm(initial={'account_id': account.pk})
+        context['withdrawal_form'] = WithdrawalForm(initial={'account_id': account.pk})
+    return render(request, 'savings/detail.html', context)
 
 
 @cashier_required
@@ -241,6 +238,7 @@ def savings_statement(request, pk):
                 account.transactions.filter(
                     txn_date__gte=fd,
                     txn_date__lte=td,
+                    is_reversed=False,
                 ).order_by('txn_date', 'created_at')
             )
         except ValueError:
@@ -269,11 +267,14 @@ def savings_change_status(request, pk):
         new_status = request.POST.get('status')
         valid = [c[0] for c in SavingsAccount.STATUS_CHOICES]
         if new_status in valid:
+            if new_status == 'closed' and account.current_balance != 0:
+                messages.error(request, 'Cannot close account with non-zero balance.')
+                return redirect('savings:detail', pk=pk)
             old_status = account.status
             account.status = new_status
             if new_status == 'closed':
                 account.closing_date = date.today()
-            account.save()
+            account.save(update_fields=['status', 'closing_date', 'updated_at'])
             messages.success(request, f'Account status changed from {old_status} to {new_status}.')
     return redirect('savings:detail', pk=pk)
 
@@ -288,6 +289,9 @@ class DepositReceiptView(AuditorOrAboveMixin, View):
             ),
             id=txn_id,
         )
+        if not has_branch_access(request, txn.branch):
+            messages.error(request, 'You do not have access to this receipt.')
+            return redirect('savings:list')
         template = 'receipts/deposit_receipt.html'
         if txn.txn_type == 'withdrawal':
             template = 'receipts/withdrawal_receipt.html'
@@ -307,6 +311,9 @@ class PassbookPrintView(AuditorOrAboveMixin, View):
             SavingsAccount.objects.select_related('member', 'branch'),
             id=account_id,
         )
+        if not has_branch_access(request, account.branch):
+            messages.error(request, 'You do not have access to this account.')
+            return redirect('savings:list')
         transactions = account.transactions.order_by('txn_date', 'created_at')
 
         from_date = request.GET.get('from')
@@ -372,6 +379,9 @@ def account_type_rate_api(request):
 @day_open_required
 def savings_reverse_txn(request, pk, txn_id):
     account = get_object_or_404(SavingsAccount, pk=pk)
+    if not has_branch_access(request, account.branch):
+        messages.error(request, 'You do not have access to this account.')
+        return redirect('savings:list')
     txn = get_object_or_404(AccountTransaction, pk=txn_id, account=account)
 
     from apps.accounts.permissions import is_date_locked

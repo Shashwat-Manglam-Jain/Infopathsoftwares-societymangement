@@ -449,7 +449,7 @@ class LoanLifecycleTests(BaseTestCase):
         """Cannot close a loan that still has outstanding balance."""
         loan = self._create_loan()
         approve_loan(loan, Decimal('100000.00'), self.manager_user)
-        disburse_loan(loan, self.head_office, self.cashier_user)
+        loan = disburse_loan(loan, self.head_office, self.cashier_user)
 
         with self.assertRaises(ValueError):
             close_loan(loan, self.admin_user)
@@ -878,7 +878,7 @@ class StandingInstructionTests(BaseTestCase):
             self.assertEqual(si.charge_type, ct)
 
     def test_add_standing_instruction_service(self):
-        original_principal = self.loan.outstanding_principal
+        original_others = self.loan.bal_others or Decimal('0')
         si = add_standing_instruction(
             loan=self.loan,
             charge_type='legal_fees',
@@ -890,8 +890,8 @@ class StandingInstructionTests(BaseTestCase):
         self.loan.refresh_from_db()
         self.assertEqual(si.amount, Decimal('2000.00'))
         self.assertEqual(
-            self.loan.outstanding_principal,
-            original_principal + Decimal('2000.00'),
+            self.loan.bal_others,
+            original_others + Decimal('2000.00'),
         )
 
 

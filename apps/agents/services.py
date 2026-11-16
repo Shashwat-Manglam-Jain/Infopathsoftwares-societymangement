@@ -67,7 +67,9 @@ def create_pigmmy_account(
         maturity_amount += installment_amount * (Decimal('1') + monthly_rate) ** remaining_months
     maturity_amount = maturity_amount.quantize(Decimal('0.01'))
 
-    today = date.today()
+    from apps.core.date_utils import get_transaction_date
+
+    today = get_transaction_date(branch)
     mat_month = today.month + deposit_period_months
     mat_year = today.year + (mat_month - 1) // 12
     mat_month = (mat_month - 1) % 12 + 1
@@ -190,6 +192,8 @@ def post_collection(collection, posted_by):
         is_reversed=False,
     ).select_related('account', 'account__linked_savings_account')
 
+    from apps.savings.models import AccountTransaction
+
     posted_count = 0
     for txn in transactions:
         pigmmy_acct = txn.account
@@ -197,6 +201,18 @@ def post_collection(collection, posted_by):
         if savings_acct:
             savings_acct.current_balance += txn.amount
             savings_acct.save()
+            AccountTransaction.objects.create(
+                account=savings_acct,
+                txn_type='deposit',
+                amount=txn.amount,
+                running_balance=savings_acct.current_balance,
+                branch=collection.branch,
+                narration=f'Pigmmy deposit - Agent {collection.agent.agent_code}',
+                voucher_no=f'PGM-{pigmmy_acct.account_no}-{collection.collection_date}',
+                txn_date=collection.collection_date,
+                value_date=collection.collection_date,
+                created_by=posted_by,
+            )
             posted_count += 1
 
     collection.status = 'reconciled'
@@ -259,11 +275,25 @@ def rollback_collection(collection, user):
         is_reversed=False,
     ).select_related('account__linked_savings_account')
 
+    from apps.savings.models import AccountTransaction
+
     for txn in transactions:
         savings_acct = txn.account.linked_savings_account
         if savings_acct:
             savings_acct.current_balance -= txn.amount
             savings_acct.save(update_fields=['current_balance'])
+            AccountTransaction.objects.create(
+                account=savings_acct,
+                txn_type='withdrawal',
+                amount=txn.amount,
+                running_balance=savings_acct.current_balance,
+                branch=collection.branch,
+                narration=f'Pigmmy rollback - Agent {collection.agent.agent_code}',
+                voucher_no=f'PGM-RB-{txn.account.account_no}-{collection.collection_date}',
+                txn_date=collection.collection_date,
+                value_date=collection.collection_date,
+                created_by=user,
+            )
 
     from apps.accounting.models import JournalEntry
     from apps.accounting.services import reverse_journal_entry, update_cashbook
@@ -297,12 +327,12 @@ def calculate_agent_commission(agent, month_start, month_end):
         is_reversed=False,
     ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
 
-    commission = total * agent.commission_rate / 100
+    commission = (total * agent.commission_rate / 100).quantize(Decimal('0.01'))
 
     tds = Decimal('0.00')
     yearly_commission = commission * 12
     if yearly_commission > Decimal('15000'):
-        tds = commission * Decimal('0.10')
+        tds = (commission * Decimal('0.10')).quantize(Decimal('0.01'))
 
     return {
         'total_collection': total,

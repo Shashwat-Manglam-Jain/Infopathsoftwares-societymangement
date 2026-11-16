@@ -241,18 +241,30 @@ def get_trial_balance(from_date=None, to_date=None, branch=None, as_of_date=None
         if ob == 0 and p_dr == 0 and p_cr == 0:
             continue
 
+        is_debit_normal = account.account_group in ('asset', 'expense')
+        if is_debit_normal:
+            ob_dr = ob if ob > 0 else Decimal('0')
+            ob_cr = abs(ob) if ob < 0 else Decimal('0')
+            cl_dr = closing if closing > 0 else Decimal('0')
+            cl_cr = abs(closing) if closing < 0 else Decimal('0')
+        else:
+            ob_cr = ob if ob > 0 else Decimal('0')
+            ob_dr = abs(ob) if ob < 0 else Decimal('0')
+            cl_cr = closing if closing > 0 else Decimal('0')
+            cl_dr = abs(closing) if closing < 0 else Decimal('0')
+
         entry = {
             'code': account.code,
             'name': account.name,
             'group': account.account_group,
             'opening_balance': ob,
-            'opening_debit': ob if ob > 0 else Decimal('0'),
-            'opening_credit': abs(ob) if ob < 0 else Decimal('0'),
+            'opening_debit': ob_dr,
+            'opening_credit': ob_cr,
             'period_debit': p_dr,
             'period_credit': p_cr,
             'closing_balance': closing,
-            'closing_debit': closing if closing > 0 else Decimal('0'),
-            'closing_credit': abs(closing) if closing < 0 else Decimal('0'),
+            'closing_debit': cl_dr,
+            'closing_credit': cl_cr,
             'debit': p_dr,
             'credit': p_cr,
         }
@@ -278,11 +290,14 @@ def get_trial_balance(from_date=None, to_date=None, branch=None, as_of_date=None
 
 def get_ledger(account_code, from_date, to_date, branch=None):
     account = ChartOfAccounts.objects.get(code=account_code)
+    is_debit_normal = account.account_group in ('asset', 'expense')
+
     lines_qs = JournalLine.objects.filter(
         gl_account=account,
         journal_entry__entry_date__gte=from_date,
         journal_entry__entry_date__lte=to_date,
         journal_entry__is_posted=True,
+        journal_entry__is_reversed=False,
     ).select_related('journal_entry', 'journal_entry__branch')
 
     if branch:
@@ -296,6 +311,7 @@ def get_ledger(account_code, from_date, to_date, branch=None):
         gl_account=account,
         journal_entry__entry_date__lt=from_date,
         journal_entry__is_posted=True,
+        journal_entry__is_reversed=False,
     )
     if branch:
         opening_lines = opening_lines.filter(journal_entry__branch=branch)
@@ -303,12 +319,22 @@ def get_ledger(account_code, from_date, to_date, branch=None):
         dr=Sum('debit_amount'),
         cr=Sum('credit_amount'),
     )
-    opening_balance = (opening['dr'] or Decimal('0')) - (opening['cr'] or Decimal('0'))
+    pre_dr = opening['dr'] or Decimal('0')
+    pre_cr = opening['cr'] or Decimal('0')
+
+    ob = account.opening_balance or Decimal('0')
+    if is_debit_normal:
+        opening_balance = ob + pre_dr - pre_cr
+    else:
+        opening_balance = ob + pre_cr - pre_dr
 
     entries = []
     running = opening_balance
     for line in lines_qs:
-        running += line.debit_amount - line.credit_amount
+        if is_debit_normal:
+            running += line.debit_amount - line.credit_amount
+        else:
+            running += line.credit_amount - line.debit_amount
         entries.append(
             {
                 'date': line.journal_entry.entry_date,

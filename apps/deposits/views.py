@@ -5,7 +5,13 @@ from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 
 from apps.accounting.models import ChartOfAccounts, InterestMaster
-from apps.accounts.permissions import auditor_or_above, cashier_required, day_open_required, manager_required
+from apps.accounts.permissions import (
+    auditor_or_above,
+    cashier_required,
+    day_open_required,
+    has_branch_access,
+    manager_required,
+)
 
 from .models import FixedDeposit, RDInstallment, RecurringDeposit
 
@@ -102,6 +108,9 @@ def fd_detail(request, pk):
         FixedDeposit.objects.select_related('member', 'branch', 'fd_product', 'linked_savings_account', 'created_by'),
         pk=pk,
     )
+    if not has_branch_access(request, fd.branch):
+        messages.error(request, 'You do not have access to this FD.')
+        return redirect('deposits:fd_list')
     return render(request, 'deposits/fd_detail.html', {'fd': fd})
 
 
@@ -114,6 +123,9 @@ def fd_premature_close(request, pk):
     from apps.deposits.services import premature_close_fd
 
     fd = get_object_or_404(FixedDeposit, pk=pk)
+    if not request.user.can_access_all_branches and fd.branch != request.current_branch:
+        messages.error(request, 'You do not have access to this FD.')
+        return redirect('deposits:fd_list')
     if request.method == 'POST':
         try:
             premature_close_fd(fd, request.user)
@@ -132,11 +144,12 @@ def fd_renew(request, pk):
     from apps.deposits.services import renew_fd
 
     fd = get_object_or_404(FixedDeposit, pk=pk)
+    if not has_branch_access(request, fd.branch):
+        messages.error(request, 'You do not have access to this FD.')
+        return redirect('deposits:fd_list')
     if request.method == 'POST':
         try:
             new_fd = renew_fd(fd, request.user)
-            fd.status = 'renewed'
-            fd.save(update_fields=['status'])
             messages.success(request, f'FD renewed. New FD: {new_fd.fd_no}')
             return redirect('deposits:fd_detail', pk=new_fd.pk)
         except (ValueError, Exception) as e:
@@ -234,6 +247,9 @@ def rd_detail(request, pk):
         RecurringDeposit.objects.select_related('member', 'branch', 'linked_savings_account', 'created_by'),
         pk=pk,
     )
+    if not has_branch_access(request, rd.branch):
+        messages.error(request, 'You do not have access to this RD.')
+        return redirect('deposits:rd_list')
     installments = RDInstallment.objects.filter(rd=rd).order_by('installment_no')
     paid_count = installments.filter(status='paid').count()
     total_deposited = sum(i.paid_amount for i in installments if i.status == 'paid')
@@ -255,6 +271,9 @@ def rd_collect(request, pk):
     from apps.deposits.services import collect_rd_installment
 
     rd = get_object_or_404(RecurringDeposit, pk=pk)
+    if not has_branch_access(request, rd.branch):
+        messages.error(request, 'You do not have access to this RD.')
+        return redirect('deposits:rd_list')
     if request.current_branch is None:
         messages.warning(request, 'Please select a specific branch before collecting installments.')
         return redirect('deposits:rd_detail', pk=pk)
