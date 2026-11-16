@@ -1,11 +1,12 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 
 from apps.tenants.views import SocietySignupView, landing_page, public_login
 
 urlpatterns = [
+    path('i18n/', include('django.conf.urls.i18n')),
     path('', landing_page, name='landing'),
     path('accounts/login/', public_login, name='public_login'),
     path('signup/', SocietySignupView.as_view(), name='signup'),

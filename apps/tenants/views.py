@@ -27,10 +27,12 @@ def public_login(request):
         domain_obj = Domain.objects.filter(pk=domain_id, is_primary=True).first()
         if domain_obj:
             scheme = 'https' if request.is_secure() else 'http'
-            port = request.META.get('SERVER_PORT', '80')
+            is_proxied = request.META.get('HTTP_X_FORWARDED_PROTO') or request.META.get('HTTP_X_FORWARDED_FOR')
             host = domain_obj.domain
-            if port not in ('80', '443'):
-                host = f'{host}:{port}'
+            if not is_proxied:
+                port = request.META.get('SERVER_PORT', '80')
+                if port not in ('80', '443'):
+                    host = f'{host}:{port}'
             return redirect(f'{scheme}://{host}/accounts/login/')
         error = 'Please select a valid society.'
     return render(
@@ -98,10 +100,12 @@ class SocietySignupView(View):
             self._setup_tenant(form, society)
 
         scheme = 'https' if request.is_secure() else 'http'
-        port = request.META.get('SERVER_PORT', '')
+        is_proxied = request.META.get('HTTP_X_FORWARDED_PROTO') or request.META.get('HTTP_X_FORWARDED_FOR')
         port_suffix = ''
-        if port and port not in ('80', '443'):
-            port_suffix = f':{port}'
+        if not is_proxied:
+            port = request.META.get('SERVER_PORT', '')
+            if port and port not in ('80', '443'):
+                port_suffix = f':{port}'
 
         return render(
             request,
