@@ -81,11 +81,11 @@
                     {% if loan.approved_amount %}<div class="flex justify-between"><dt class="text-gray-500">{% trans "Approved Amount" %}</dt><dd class="font-medium text-green-700">{{ loan.approved_amount|floatformat:2 }}</dd></div>{% endif %}
                     {% if loan.approved_date %}<div class="flex justify-between"><dt class="text-gray-500">{% trans "Approved Date" %}</dt><dd>{{ loan.approved_date|date:"d M Y" }}</dd></div>{% endif %}
                     {% if loan.disbursed_amount %}<div class="flex justify-between"><dt class="text-gray-500">{% trans "Disbursed Amount" %}</dt><dd class="font-medium">{{ loan.disbursed_amount|floatformat:2 }}</dd></div>{% endif %}
-                    {% if loan.disbursed_date %}<div class="flex justify-between"><dt class="text-gray-500">Disbursed Date</dt><dd>{{ loan.disbursed_date|date:"d M Y" }}</dd></div>{% endif %}
+                    {% if loan.disbursed_date %}<div class="flex justify-between"><dt class="text-gray-500">{% trans "Disbursed Date" %}</dt><dd>{{ loan.disbursed_date|date:"d M Y" }}</dd></div>{% endif %}
                     {% if loan.emi_amount %}<div class="flex justify-between"><dt class="text-gray-500">{% trans "EMI Amount" %}</dt><dd class="font-medium text-primary-700">{{ loan.emi_amount|floatformat:2 }}</dd></div>{% endif %}
-                    {% if loan.total_interest_payable %}<div class="flex justify-between"><dt class="text-gray-500">Total Interest</dt><dd>{{ loan.total_interest_payable|floatformat:2 }}</dd></div>{% endif %}
+                    {% if loan.total_interest_payable %}<div class="flex justify-between"><dt class="text-gray-500">{% trans "Total Interest" %}</dt><dd>{{ loan.total_interest_payable|floatformat:2 }}</dd></div>{% endif %}
                     <div class="flex justify-between border-t pt-1.5 mt-1.5">
-                        <dt class="text-gray-700 font-medium">Outstanding Principal</dt>
+                        <dt class="text-gray-700 font-medium">{% trans "Outstanding Principal" %}</dt>
                         <dd class="font-bold text-lg">{{ loan.outstanding_principal|floatformat:2 }}</dd>
                     </div>
                     {% if loan.outstanding_interest %}<div class="flex justify-between"><dt class="text-gray-500">Outstanding Interest</dt><dd class="text-red-600">{{ loan.outstanding_interest|floatformat:2 }}</dd></div>{% endif %}
