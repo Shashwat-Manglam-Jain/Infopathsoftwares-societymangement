@@ -88,16 +88,17 @@ class SavingsAccount(models.Model):
         super().save(*args, **kwargs)
 
     def clean(self):
-        if self.account_type == 'savings' and self.status == 'active':
+        if self.account_type and self.status == 'active':
             qs = SavingsAccount.objects.filter(
                 member=self.member,
-                account_type='savings',
+                account_type=self.account_type,
                 status='active',
             )
             if self.pk:
                 qs = qs.exclude(pk=self.pk)
             if qs.exists():
-                raise ValidationError('Member already has an active savings account.')
+                label = dict(self.ACCOUNT_TYPE_CHOICES).get(self.account_type, self.account_type)
+                raise ValidationError(f'Member already has an active {label}.')
 
 
 class AccountTransaction(models.Model):

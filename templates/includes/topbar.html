@@ -42,12 +42,23 @@
                     <span class="hidden sm:inline text-sm">{% if LANGUAGE_CODE == 'hi' %}HI{% elif LANGUAGE_CODE == 'mr' %}MR{% else %}EN{% endif %}</span>
                 </button>
                 <div x-show="langOpen" @click.away="langOpen = false" x-cloak class="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
-                    <form method="post" action="{% url 'set_language' %}">
+                    <form method="post" action="{% url 'set_language' %}" data-no-guard>
                         {% csrf_token %}
                         <input type="hidden" name="next" value="{{ request.path }}">
-                        <button type="submit" name="language" value="en" class="w-full text-left px-4 py-2 text-sm {% if LANGUAGE_CODE == 'en' %}text-primary-700 font-medium bg-primary-50 dark:bg-primary-900/30 dark:text-primary-300{% else %}text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700{% endif %}">English</button>
-                        <button type="submit" name="language" value="hi" class="w-full text-left px-4 py-2 text-sm {% if LANGUAGE_CODE == 'hi' %}text-primary-700 font-medium bg-primary-50 dark:bg-primary-900/30 dark:text-primary-300{% else %}text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700{% endif %}">हिंदी (Hindi)</button>
-                        <button type="submit" name="language" value="mr" class="w-full text-left px-4 py-2 text-sm {% if LANGUAGE_CODE == 'mr' %}text-primary-700 font-medium bg-primary-50 dark:bg-primary-900/30 dark:text-primary-300{% else %}text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700{% endif %}">मराठी (Marathi)</button>
+                        <input type="hidden" name="language" value="en">
+                        <button type="submit" class="w-full text-left px-4 py-2 text-sm {% if LANGUAGE_CODE == 'en' %}text-primary-700 font-medium bg-primary-50 dark:bg-primary-900/30 dark:text-primary-300{% else %}text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700{% endif %}">English</button>
+                    </form>
+                    <form method="post" action="{% url 'set_language' %}" data-no-guard>
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.path }}">
+                        <input type="hidden" name="language" value="hi">
+                        <button type="submit" class="w-full text-left px-4 py-2 text-sm {% if LANGUAGE_CODE == 'hi' %}text-primary-700 font-medium bg-primary-50 dark:bg-primary-900/30 dark:text-primary-300{% else %}text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700{% endif %}">हिंदी (Hindi)</button>
+                    </form>
+                    <form method="post" action="{% url 'set_language' %}" data-no-guard>
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.path }}">
+                        <input type="hidden" name="language" value="mr">
+                        <button type="submit" class="w-full text-left px-4 py-2 text-sm {% if LANGUAGE_CODE == 'mr' %}text-primary-700 font-medium bg-primary-50 dark:bg-primary-900/30 dark:text-primary-300{% else %}text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700{% endif %}">मराठी (Marathi)</button>
                     </form>
                 </div>
             </div>
