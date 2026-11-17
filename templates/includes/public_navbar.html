@@ -1,15 +1,15 @@
 {% load i18n static %}
 {% get_current_language as LANGUAGE_CODE %}
 {% get_available_languages as LANGUAGES %}
-<nav class="fixed top-0 w-full bg-white/95 backdrop-blur shadow-sm z-50">
+<nav id="public-navbar" class="fixed top-0 w-full bg-white/95 backdrop-blur shadow-sm z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
-            <a href="/" class="flex items-center space-x-2">
+            <a href="/" class="flex items-center space-x-2" data-main-link>
                 <img src="{% static 'img/logo.png' %}" alt="InfoSociety" class="h-10">
             </a>
             <div class="hidden md:flex items-center space-x-6">
-                <a href="/#features" class="text-gray-600 hover:text-indigo-600 font-medium transition">{% trans "Features" %}</a>
-                <a href="/#pricing" class="text-gray-600 hover:text-indigo-600 font-medium transition">{% trans "Pricing" %}</a>
+                <a href="/#features" data-main-link class="text-gray-600 hover:text-indigo-600 font-medium transition">{% trans "Features" %}</a>
+                <a href="/#pricing" data-main-link class="text-gray-600 hover:text-indigo-600 font-medium transition">{% trans "Pricing" %}</a>
 
                 <!-- Language switcher -->
                 <div class="relative" id="lang-dropdown">
@@ -35,16 +35,8 @@
                     </div>
                 </div>
 
-                {% if active_page == 'signup' %}
-                <a href="/accounts/login/" class="text-gray-600 hover:text-indigo-600 font-medium transition">{% trans "Login" %}</a>
-                <a href="/signup/" class="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 font-medium transition shadow-sm">{% trans "Start Free Trial" %}</a>
-                {% elif active_page == 'login' %}
-                <a href="/accounts/login/" class="text-gray-600 hover:text-indigo-600 font-medium transition">{% trans "Login" %}</a>
-                <a href="/signup/" class="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 font-medium transition shadow-sm">{% trans "Start Free Trial" %}</a>
-                {% else %}
-                <a href="/accounts/login/" class="text-gray-600 hover:text-indigo-600 font-medium transition">{% trans "Login" %}</a>
-                <a href="/signup/" class="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 font-medium transition shadow-sm">{% trans "Start Free Trial" %}</a>
-                {% endif %}
+                <a href="/accounts/login/" data-main-link class="text-gray-600 hover:text-indigo-600 font-medium transition">{% trans "Login" %}</a>
+                <a href="/signup/" data-main-link class="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 font-medium transition shadow-sm">{% trans "Start Free Trial" %}</a>
             </div>
             <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-gray-100" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -52,9 +44,9 @@
         </div>
     </div>
     <div id="mobile-menu" class="hidden md:hidden border-t bg-white px-4 pb-4">
-        <a href="/#features" class="block py-2 text-gray-600 hover:text-indigo-600">{% trans "Features" %}</a>
-        <a href="/#pricing" class="block py-2 text-gray-600 hover:text-indigo-600">{% trans "Pricing" %}</a>
-        <a href="/accounts/login/" class="block py-2 text-gray-600 hover:text-indigo-600">{% trans "Login" %}</a>
+        <a href="/#features" data-main-link class="block py-2 text-gray-600 hover:text-indigo-600">{% trans "Features" %}</a>
+        <a href="/#pricing" data-main-link class="block py-2 text-gray-600 hover:text-indigo-600">{% trans "Pricing" %}</a>
+        <a href="/accounts/login/" data-main-link class="block py-2 text-gray-600 hover:text-indigo-600">{% trans "Login" %}</a>
         <!-- Mobile language switcher -->
         <div class="border-t mt-2 pt-2">
             <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">{% trans "Language" %}</p>
@@ -71,7 +63,7 @@
                 {% endfor %}
             </div>
         </div>
-        <a href="/signup/" class="block mt-3 text-center bg-indigo-600 text-white px-5 py-2.5 rounded-lg font-medium">{% trans "Start Free Trial" %}</a>
+        <a href="/signup/" data-main-link class="block mt-3 text-center bg-indigo-600 text-white px-5 py-2.5 rounded-lg font-medium">{% trans "Start Free Trial" %}</a>
     </div>
 </nav>
 <script>
@@ -80,4 +72,14 @@ document.addEventListener('click', function(e) {
     var menu = document.getElementById('lang-menu');
     if (dd && menu && !dd.contains(e.target)) menu.classList.add('hidden');
 });
+(function() {
+    var parts = location.hostname.split('.');
+    if (parts.length > 2) {
+        var main = parts.slice(1).join('.');
+        var base = location.protocol + '//' + main;
+        document.querySelectorAll('[data-main-link]').forEach(function(a) {
+            a.href = base + a.getAttribute('href');
+        });
+    }
+})();
 </script>
