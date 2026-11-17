@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Pigmmy Accounts" %} — InfoSociety{% endblock %}
-{% block page_title %}{% trans "Pigmmy Module" %}{% endblock %}
+{% block title %}{% trans "Pigmy Accounts" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Pigmy Module" %}{% endblock %}
 
 {% block content %}
 <div class="max-w-full space-y-4">
@@ -10,7 +10,7 @@
 
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-            <h2 class="text-lg font-semibold text-gray-900">{% trans "Pigmmy Accounts" %}</h2>
+            <h2 class="text-lg font-semibold text-gray-900">{% trans "Pigmy Accounts" %}</h2>
             <p class="text-sm text-gray-500">{{ paginator.count }} active account{{ paginator.count|pluralize:"s" }}</p>
         </div>
         <div class="flex items-center gap-2">
@@ -55,8 +55,8 @@
                         <td class="px-4 py-2 hidden md:table-cell">
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if acct.deposit_type == 'daily' %}bg-blue-100 text-blue-700{% elif acct.deposit_type == 'weekly' %}bg-amber-100 text-amber-700{% elif acct.deposit_type == 'monthly' %}bg-purple-100 text-purple-700{% else %}bg-gray-100 text-gray-600{% endif %}">{{ acct.get_deposit_type_display }}</span>
                         </td>
-                        <td class="px-4 py-2 text-right text-gray-900">{{ acct.installment_amount|floatformat:2 }}</td>
-                        <td class="px-4 py-2 text-right font-medium text-gray-900">{{ acct.current_balance|floatformat:2 }}</td>
+                        <td class="px-4 py-2 text-right text-gray-900">&#8377;{{ acct.installment_amount|floatformat:2 }}</td>
+                        <td class="px-4 py-2 text-right font-medium text-gray-900">&#8377;{{ acct.current_balance|floatformat:2 }}</td>
                         <td class="px-4 py-2 text-right text-gray-600 hidden lg:table-cell">{{ acct.paid_installments }}/{{ acct.total_installments }}</td>
                         <td class="px-4 py-2">
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if acct.status == 'active' %}bg-green-100 text-green-800{% elif acct.status == 'matured' %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-600{% endif %}">{{ acct.get_status_display }}</span>
@@ -78,7 +78,7 @@
                         </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="9" class="px-4 py-6 text-center text-sm text-gray-400">{% trans "No pigmmy accounts found." %}</td></tr>
+                    <tr><td colspan="9" class="px-4 py-6 text-center text-sm text-gray-400">{% trans "No pigmy accounts found." %}</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

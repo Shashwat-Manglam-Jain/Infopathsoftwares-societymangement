@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Pigmmy Details" %} — InfoSociety{% endblock %}
-{% block page_title %}{% trans "Pigmmy Details" %}{% endblock %}
+{% block title %}{% trans "Pigmy Details" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Pigmy Details" %}{% endblock %}
 
 {% block content %}
 <div class="max-w-full space-y-4">
@@ -10,7 +10,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
             <h2 class="text-lg font-semibold text-gray-900"><a href="{% url 'members:detail' account.member.pk %}" class="text-primary-600 hover:underline">{{ account.member.name }}</a></h2>
-            <p class="text-sm text-gray-500">{% trans "Pigmmy A/C" %}: <span class="font-mono">{{ account.account_no }}</span> &middot; {% trans "Agent" %}: {{ account.agent.agent_code }}</p>
+            <p class="text-sm text-gray-500">{% trans "Pigmy A/C" %}: <span class="font-mono">{{ account.account_no }}</span> &middot; {% trans "Agent" %}: {{ account.agent.agent_code }}</p>
         </div>
         <div class="flex items-center gap-2">
             {% if account.status == 'active' %}

@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Pigmmy Reports" %} — InfoSociety{% endblock %}
-{% block page_title %}{% trans "Pigmmy Reports" %}{% endblock %}
+{% block title %}{% trans "Pigmy Reports" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Pigmy Reports" %}{% endblock %}
 
 {% block content %}
 <div class="space-y-4">
@@ -135,7 +135,7 @@
     {% if report_type == 'date_daybook' and transactions is not None %}
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
-            <h3 class="text-base font-semibold text-gray-900">{% trans "Pigmmy Daybook" %} — {{ report_date }}</h3>
+            <h3 class="text-base font-semibold text-gray-900">{% trans "Pigmy Daybook" %} — {{ report_date }}</h3>
             <span class="text-sm font-medium text-gray-700">{% trans "Total" %}: {{ total_amount|floatformat:2 }}</span>
         </div>
         {% if transactions %}
@@ -200,7 +200,7 @@
     {% if report_type == 'matured' and accounts %}
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
-            <h3 class="text-base font-semibold text-gray-900">{% trans "Matured Pigmmy Accounts (still active)" %}</h3>
+            <h3 class="text-base font-semibold text-gray-900">{% trans "Matured Pigmy Accounts (still active)" %}</h3>
             <span class="text-sm text-gray-500">{{ accounts|length }} account{{ accounts|length|pluralize }}</span>
         </div>
         <div class="overflow-x-auto">

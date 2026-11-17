@@ -10,12 +10,12 @@
 
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-            <h2 class="text-xl font-bold text-gray-900">Staff Users</h2>
+            <h2 class="text-xl font-bold text-gray-900">{% trans "Staff Users" %}</h2>
             <p class="text-sm text-gray-500 mt-1">{{ users|length }} user{{ users|length|pluralize }}{% if not request.user.can_access_all_branches %} in {{ request.current_branch.branch_name }}{% endif %}</p>
         </div>
         <a href="{% url 'accounts:staff_create' %}" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">
             <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            Add User
+            {% trans "Add User" %}
         </a>
     </div>
 
@@ -111,7 +111,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="7" class="px-4 py-8 text-center text-sm text-gray-400">No staff users found.</td>
+                        <td colspan="7" class="px-4 py-8 text-center text-sm text-gray-400">{% trans "No staff users found." %}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

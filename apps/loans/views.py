@@ -422,11 +422,16 @@ def loan_charge_list(request):
     ).order_by('-charge_date')
     if not request.user.can_access_all_branches:
         instructions = instructions.filter(branch=request.current_branch)
+    paginator = Paginator(instructions, 25)
+    page_obj = paginator.get_page(request.GET.get('page'))
     return render(
         request,
         'loans/loan_charge_list.html',
         {
-            'instructions': instructions[:100],
+            'instructions': page_obj,
+            'page_obj': page_obj,
+            'is_paginated': page_obj.has_other_pages(),
+            'paginator': paginator,
         },
     )
 

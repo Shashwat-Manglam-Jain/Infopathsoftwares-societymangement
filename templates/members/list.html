@@ -10,22 +10,22 @@
     <!-- Header + Actions -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-            <h2 class="text-xl font-bold text-gray-900">Members</h2>
+            <h2 class="text-xl font-bold text-gray-900">{% trans "Members" %}</h2>
             <p class="text-sm text-gray-500 mt-1">{{ paginator.count }} member{{ paginator.count|pluralize }} found</p>
         </div>
         <div class="flex items-center gap-2">
             <a href="{% url 'members:import' %}" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">
                 <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                Import
+                {% trans "Import" %}
             </a>
             <a href="{% url 'members:export' %}" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">
                 <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                Export
+                {% trans "Export" %}
             </a>
             {% if request.user.is_staff_role %}
             <a href="{% url 'members:create' %}" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">
                 <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                New Member
+                {% trans "New Member" %}
             </a>
             {% endif %}
         </div>
@@ -42,7 +42,7 @@
             </div>
             <button type="button" @click="showFilters = !showFilters" class="sm:hidden inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-600">
                 <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
-                Filters
+                {% trans "Filters" %}
             </button>
             <div class="flex gap-2" :class="{ 'hidden sm:flex': !showFilters }">
                 <select name="status" @change="$refs.searchForm.submit()" class="border border-gray-300 rounded-lg text-sm py-2 px-3 focus:ring-primary-500 focus:border-primary-500">
@@ -57,7 +57,7 @@
                     <option value="B" {% if request.GET.category == 'B' %}selected{% endif %}>{% trans "Category" %} B</option>
                     <option value="C" {% if request.GET.category == 'C' %}selected{% endif %}>{% trans "Category" %} C</option>
                 </select>
-                <button type="submit" class="px-4 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700">Search</button>
+                <button type="submit" class="px-4 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700">{% trans "Search" %}</button>
             </div>
         </form>
     </div>
