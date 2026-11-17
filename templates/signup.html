@@ -163,12 +163,15 @@
 
             <!-- Submit -->
             <div class="text-center">
+                <label class="flex items-start gap-2 justify-center mb-4 max-w-md mx-auto text-left cursor-pointer">
+                    <input type="checkbox" name="agree_terms" required class="mt-0.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                    <span class="text-xs text-gray-500">{% trans "I agree to the" %} <a href="/terms/" class="text-indigo-600 hover:underline">{% trans "Terms of Service" %}</a> {% trans "and" %} <a href="/privacy/" class="text-indigo-600 hover:underline">{% trans "Privacy Policy" %}</a>.</span>
+                </label>
                 <button type="submit" data-loading-text="{% trans 'Creating your society…' %}"
                         class="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-10 py-3.5 rounded-xl text-sm font-bold hover:from-indigo-700 hover:to-purple-700 active:scale-[0.98] transition shadow-lg shadow-indigo-600/25 disabled:opacity-50 disabled:cursor-not-allowed">
                     {% trans "Create My Society — Start Free Trial" %}
                     <svg class="inline w-4 h-4 ml-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
                 </button>
-                <p class="mt-3 text-xs text-gray-400">{% trans "By signing up, you agree to our" %} <a href="#" class="text-indigo-600 hover:underline">{% trans "Terms of Service" %}</a> {% trans "and" %} <a href="#" class="text-indigo-600 hover:underline">{% trans "Privacy Policy" %}</a>.</p>
                 <p class="mt-2 text-sm text-gray-500">{% trans "Already have an account?" %} <a href="/accounts/login/" class="text-indigo-600 font-medium hover:underline">{% trans "Log in" %}</a></p>
             </div>
         </form>
