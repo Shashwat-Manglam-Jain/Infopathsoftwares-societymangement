@@ -81,11 +81,22 @@ class LoanApplicationForm(forms.ModelForm):
         from apps.members.models import Member
         from apps.shares.models import ShareHolding
 
+        # Only shareholders can apply for loans
+        shareholder_member_ids = (
+            ShareHolding.objects.filter(status='active', share_count__gt=0)
+            .values_list('member_id', flat=True)
+            .distinct()
+        )
+        self.fields['member'].queryset = Member.objects.filter(
+            id__in=shareholder_member_ids,
+            status='active',
+        )
+
         director_ids = Member.objects.filter(
             is_director=True,
             status='active',
         ).values_list('id', flat=True)
-        shareholder_ids = (
+        director_shareholder_ids = (
             ShareHolding.objects.filter(
                 status='active',
                 share_count__gt=0,
@@ -95,7 +106,7 @@ class LoanApplicationForm(forms.ModelForm):
             .distinct()
         )
         self.fields['director_recommendation'].queryset = Member.objects.filter(
-            id__in=shareholder_ids,
+            id__in=director_shareholder_ids,
         )
         self.fields['director_recommendation'].required = False
         self.fields['loan_form_no'].required = False
@@ -103,6 +114,15 @@ class LoanApplicationForm(forms.ModelForm):
         self.fields['meeting_date'].required = False
         self.fields['mortgage_account_no'].required = False
         self.fields['mortgage_value'].required = False
+
+    def clean_member(self):
+        member = self.cleaned_data.get('member')
+        if member:
+            from apps.shares.models import ShareHolding
+
+            if not ShareHolding.objects.filter(member=member, status='active', share_count__gt=0).exists():
+                raise forms.ValidationError('Member must have active shares to apply for a loan.')
+        return member
 
     def clean_applied_amount(self):
         amount = self.cleaned_data.get('applied_amount')
