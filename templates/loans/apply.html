@@ -9,9 +9,9 @@
 
     {% if not form.loan_product.field.queryset.exists %}
     <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
-        <h3 class="text-sm font-semibold text-amber-800">No Loan Products Configured</h3>
-        <p class="text-sm text-amber-700 mt-1">Create at least one loan product before applying for loans.
-            <a href="{% url 'loans:product_create' %}" class="underline font-medium">Create Loan Product &rarr;</a>
+        <h3 class="text-sm font-semibold text-amber-800">{% trans "No Loan Products Configured" %}</h3>
+        <p class="text-sm text-amber-700 mt-1">{% trans "Create at least one loan product before applying for loans." %}
+            <a href="{% url 'loans:product_create' %}" class="underline font-medium">{% trans "Create Loan Product" %} &rarr;</a>
         </p>
     </div>
     {% endif %}
@@ -43,7 +43,7 @@
                     {% if form.loan_product.errors %}<p class="text-red-600 text-xs mt-0.5">{{ form.loan_product.errors.0 }}</p>{% endif %}
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">Applied Amount <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Applied Amount" %} <span class="text-red-500">*</span></label>
                     {{ form.applied_amount }}
                     <template x-if="maxAmount">
                         <p class="text-xs text-gray-400 mt-0.5">Max: &#8377;<span x-text="maxAmount"></span></p>
@@ -51,7 +51,7 @@
                     {% if form.applied_amount.errors %}<p class="text-red-600 text-xs mt-0.5">{{ form.applied_amount.errors.0 }}</p>{% endif %}
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Tenure" %} (Months) <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Tenure (Months)" %} <span class="text-red-500">*</span></label>
                     {{ form.tenure_months }}
                     <template x-if="maxTenure">
                         <p class="text-xs text-gray-400 mt-0.5">Max: <span x-text="maxTenure"></span> months</p>
@@ -63,16 +63,16 @@
                     <input type="text" readonly class="w-full rounded border border-gray-200 bg-gray-50 text-gray-600 px-2.5 py-1.5 text-sm" :value="interestRate || '—'">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">Penal Interest Rate (%)</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Penal Interest Rate" %} (%)</label>
                     <input type="text" readonly class="w-full rounded border border-gray-200 bg-gray-50 text-gray-600 px-2.5 py-1.5 text-sm" :value="penalRate || '—'">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Director" %} Recommendation</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Director Recommendation" %}</label>
                     {{ form.director_recommendation }}
                     {% if form.director_recommendation.errors %}<p class="text-red-600 text-xs mt-0.5">{{ form.director_recommendation.errors.0 }}</p>{% endif %}
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">Remarks</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Remarks" %}</label>
                     {{ form.remarks }}
                 </div>
             </div>
@@ -103,7 +103,7 @@
 
             <template x-if="requiresCollateral">
                 <div class="mx-5 mb-3 bg-blue-50 border border-blue-200 rounded p-2">
-                    <p class="text-xs text-blue-800 font-medium">This loan product requires collateral. You will add collateral after submission.</p>
+                    <p class="text-xs text-blue-800 font-medium">{% trans "This loan product requires collateral. You will add collateral after submission." %}</p>
                 </div>
             </template>
 
@@ -156,8 +156,8 @@
 
             <!-- Action Buttons -->
             <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-end gap-3">
-                <a href="{% url 'loans:list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
-                <button type="submit" class="px-5 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">Save</button>
+                <a href="{% url 'loans:list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
+                <button type="submit" class="px-5 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "Save" %}</button>
             </div>
 
         </div>

@@ -37,7 +37,7 @@
         </div>
         <div class="flex items-center gap-2">
             {% if request.user.is_staff_role %}
-            <a href="{% url 'members:edit' member.pk %}" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">Edit</a>
+            <a href="{% url 'members:edit' member.pk %}" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "Edit" %}</a>
             {% endif %}
             <button onclick="window.print()" class="px-4 py-1.5 border border-gray-300 text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50">{% trans "Print" %}</button>
         </div>
@@ -45,34 +45,34 @@
 
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-3 py-2 text-center">
-            <p class="text-xs text-gray-500 font-medium">Shares</p>
+            <p class="text-xs text-gray-500 font-medium">{% trans "Shares" %}</p>
             <p class="text-lg font-bold text-gray-900">{{ shares|length }}</p>
-            <p class="text-xs text-gray-500">Rs. {{ total_shares_amount|floatformat:2 }}</p>
+            <p class="text-xs text-gray-500">&#8377; {{ total_shares_amount|floatformat:2 }}</p>
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-3 py-2 text-center">
-            <p class="text-xs text-gray-500 font-medium">Savings</p>
+            <p class="text-xs text-gray-500 font-medium">{% trans "Savings" %}</p>
             <p class="text-lg font-bold text-gray-900">{{ savings|length }}</p>
-            <p class="text-xs text-gray-500">Rs. {{ total_savings_balance|floatformat:2 }}</p>
+            <p class="text-xs text-gray-500">&#8377; {{ total_savings_balance|floatformat:2 }}</p>
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-3 py-2 text-center">
-            <p class="text-xs text-gray-500 font-medium">Fixed Deposits</p>
+            <p class="text-xs text-gray-500 font-medium">{% trans "Fixed Deposits" %}</p>
             <p class="text-lg font-bold text-gray-900">{{ fds|length }}</p>
-            <p class="text-xs text-gray-500">Rs. {{ total_fd_amount|floatformat:2 }}</p>
+            <p class="text-xs text-gray-500">&#8377; {{ total_fd_amount|floatformat:2 }}</p>
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-3 py-2 text-center">
-            <p class="text-xs text-gray-500 font-medium">Recurring</p>
+            <p class="text-xs text-gray-500 font-medium">{% trans "Recurring" %}</p>
             <p class="text-lg font-bold text-gray-900">{{ rds|length }}</p>
-            <p class="text-xs text-gray-500">Rs. {{ total_rd_installment|floatformat:2 }}</p>
+            <p class="text-xs text-gray-500">&#8377; {{ total_rd_installment|floatformat:2 }}</p>
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-3 py-2 text-center">
-            <p class="text-xs text-gray-500 font-medium">Loans</p>
+            <p class="text-xs text-gray-500 font-medium">{% trans "Loans" %}</p>
             <p class="text-lg font-bold text-gray-900">{{ loans|length }}</p>
-            <p class="text-xs text-gray-500">Rs. {{ total_loan_outstanding|floatformat:2 }}</p>
+            <p class="text-xs text-gray-500">&#8377; {{ total_loan_outstanding|floatformat:2 }}</p>
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-3 py-2 text-center">
-            <p class="text-xs text-gray-500 font-medium">Pigmy</p>
+            <p class="text-xs text-gray-500 font-medium">{% trans "Pigmy" %}</p>
             <p class="text-lg font-bold text-gray-900">{{ pigmmy|length }}</p>
-            <p class="text-xs text-gray-500">Rs. {{ total_pigmmy_balance|floatformat:2 }}</p>
+            <p class="text-xs text-gray-500">&#8377; {{ total_pigmmy_balance|floatformat:2 }}</p>
         </div>
     </div>
 
@@ -103,12 +103,12 @@
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 px-5 py-2"><dt class="text-xs text-gray-500">{% trans "Category" %}</dt><dd class="text-sm text-gray-900 col-span-2">{{ member.get_category_display|default:"—" }}</dd></div>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 px-5 py-2"><dt class="text-xs text-gray-500">{% trans "Join Date" %}</dt><dd class="text-sm text-gray-900 col-span-2">{{ member.join_date|date:"d M Y"|default:"—" }}</dd></div>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 px-5 py-2"><dt class="text-xs text-gray-500">{% trans "Occupation" %}</dt><dd class="text-sm text-gray-900 col-span-2">{{ member.occupation|default:"—" }}</dd></div>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 px-5 py-2"><dt class="text-xs text-gray-500">{% trans "Monthly Income" %}</dt><dd class="text-sm text-gray-900 col-span-2">{% if member.monthly_income %}Rs. {{ member.monthly_income|floatformat:0 }}{% else %}—{% endif %}</dd></div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 px-5 py-2"><dt class="text-xs text-gray-500">{% trans "Monthly Income" %}</dt><dd class="text-sm text-gray-900 col-span-2">{% if member.monthly_income %}&#8377; {{ member.monthly_income|floatformat:0 }}{% else %}—{% endif %}</dd></div>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 px-5 py-2"><dt class="text-xs text-gray-500">{% trans "Education" %}</dt><dd class="text-sm text-gray-900 col-span-2">{{ member.education|default:"—" }}</dd></div>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 px-5 py-2"><dt class="text-xs text-gray-500">{% trans "KYC Status" %}</dt><dd class="text-sm text-gray-900 col-span-2">{% if member.kyc_verified %}<span class="px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-800">{% trans "Verified" %}</span>{% if member.kyc_date %} <span class="text-xs text-gray-400">{{ member.kyc_date|date:"d M Y" }}</span>{% endif %}{% else %}<span class="px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-800">{% trans "Not Verified" %}</span>{% endif %}</dd></div>
                         {% if member.is_minor %}
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 px-5 py-2"><dt class="text-xs text-gray-500">Guardian Name</dt><dd class="text-sm text-gray-900 col-span-2">{{ member.guardian_name|default:"—" }}</dd></div>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 px-5 py-2"><dt class="text-xs text-gray-500">Guardian Address</dt><dd class="text-sm text-gray-900 col-span-2">{{ member.guardian_address|default:"—" }}</dd></div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 px-5 py-2"><dt class="text-xs text-gray-500">{% trans "Guardian Name" %}</dt><dd class="text-sm text-gray-900 col-span-2">{{ member.guardian_name|default:"—" }}</dd></div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 px-5 py-2"><dt class="text-xs text-gray-500">{% trans "Guardian Address" %}</dt><dd class="text-sm text-gray-900 col-span-2">{{ member.guardian_address|default:"—" }}</dd></div>
                         {% endif %}
                     </dl>
                 </div>
@@ -129,8 +129,8 @@
                             <h4 class="text-xs font-semibold text-gray-500 uppercase">{% trans "Identity" %}</h4>
                         </div>
                         <dl class="divide-y divide-gray-100">
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 px-5 py-2"><dt class="text-xs text-gray-500">Aadhaar</dt><dd class="text-sm text-gray-900 col-span-2 font-mono">{{ member.aadhar_no|default:"—" }}</dd></div>
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 px-5 py-2"><dt class="text-xs text-gray-500">PAN</dt><dd class="text-sm text-gray-900 col-span-2 font-mono">{{ member.pan_no|default:"—" }}</dd></div>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 px-5 py-2"><dt class="text-xs text-gray-500">{% trans "Aadhaar" %}</dt><dd class="text-sm text-gray-900 col-span-2 font-mono">{{ member.aadhar_no|default:"—" }}</dd></div>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 px-5 py-2"><dt class="text-xs text-gray-500">{% trans "PAN" %}</dt><dd class="text-sm text-gray-900 col-span-2 font-mono">{{ member.pan_no|default:"—" }}</dd></div>
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 px-5 py-2"><dt class="text-xs text-gray-500">{% trans "Voter ID" %}</dt><dd class="text-sm text-gray-900 col-span-2 font-mono">{{ member.voter_id|default:"—" }}</dd></div>
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 px-5 py-2"><dt class="text-xs text-gray-500">{% trans "Driving Licence" %}</dt><dd class="text-sm text-gray-900 col-span-2 font-mono">{{ member.driving_licence_no|default:"—" }}</dd></div>
                         </dl>
@@ -159,7 +159,7 @@
         <div x-show="tab === 'accounts'" x-cloak class="mt-4 space-y-3">
             {% if savings %}
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <div class="px-5 py-2.5 bg-gray-50 border-b border-gray-200"><h4 class="text-xs font-semibold text-gray-500 uppercase">Savings {% trans "Accounts" %}</h4></div>
+                <div class="px-5 py-2.5 bg-gray-50 border-b border-gray-200"><h4 class="text-xs font-semibold text-gray-500 uppercase">{% trans "Savings Accounts" %}</h4></div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
                         <thead><tr class="text-left text-xs font-semibold text-gray-500 uppercase border-b"><th class="px-4 py-2">{% trans "Account No" %}</th><th class="px-4 py-2">{% trans "Type" %}</th><th class="px-4 py-2 text-right">{% trans "Balance" %}</th><th class="px-4 py-2">{% trans "Status" %}</th></tr></thead>
@@ -170,7 +170,7 @@
             {% endif %}
             {% if fds %}
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <div class="px-5 py-2.5 bg-gray-50 border-b border-gray-200"><h4 class="text-xs font-semibold text-gray-500 uppercase">Fixed Deposits</h4></div>
+                <div class="px-5 py-2.5 bg-gray-50 border-b border-gray-200"><h4 class="text-xs font-semibold text-gray-500 uppercase">{% trans "Fixed Deposits" %}</h4></div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
                         <thead><tr class="text-left text-xs font-semibold text-gray-500 uppercase border-b"><th class="px-4 py-2">{% trans "FD No" %}</th><th class="px-4 py-2 text-right">{% trans "Amount" %}</th><th class="px-4 py-2">{% trans "Rate" %}</th><th class="px-4 py-2">{% trans "Maturity" %}</th></tr></thead>
@@ -181,7 +181,7 @@
             {% endif %}
             {% if rds %}
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <div class="px-5 py-2.5 bg-gray-50 border-b border-gray-200"><h4 class="text-xs font-semibold text-gray-500 uppercase">Recurring Deposits</h4></div>
+                <div class="px-5 py-2.5 bg-gray-50 border-b border-gray-200"><h4 class="text-xs font-semibold text-gray-500 uppercase">{% trans "Recurring Deposits" %}</h4></div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
                         <thead><tr class="text-left text-xs font-semibold text-gray-500 uppercase border-b"><th class="px-4 py-2">{% trans "RD No" %}</th><th class="px-4 py-2 text-right">{% trans "Monthly Installment" %}</th><th class="px-4 py-2">{% trans "Rate" %}</th><th class="px-4 py-2">{% trans "Maturity" %}</th><th class="px-4 py-2">{% trans "Status" %}</th></tr></thead>
@@ -192,7 +192,7 @@
             {% endif %}
             {% if loans %}
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <div class="px-5 py-2.5 bg-gray-50 border-b border-gray-200"><h4 class="text-xs font-semibold text-gray-500 uppercase">Loan {% trans "Accounts" %}</h4></div>
+                <div class="px-5 py-2.5 bg-gray-50 border-b border-gray-200"><h4 class="text-xs font-semibold text-gray-500 uppercase">{% trans "Loan Accounts" %}</h4></div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
                         <thead><tr class="text-left text-xs font-semibold text-gray-500 uppercase border-b"><th class="px-4 py-2">{% trans "Loan No" %}</th><th class="px-4 py-2">{% trans "Product" %}</th><th class="px-4 py-2 text-right">{% trans "Outstanding" %}</th><th class="px-4 py-2">{% trans "Status" %}</th></tr></thead>
@@ -203,7 +203,7 @@
             {% endif %}
             {% if shares %}
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <div class="px-5 py-2.5 bg-gray-50 border-b border-gray-200"><h4 class="text-xs font-semibold text-gray-500 uppercase">Share Holdings</h4></div>
+                <div class="px-5 py-2.5 bg-gray-50 border-b border-gray-200"><h4 class="text-xs font-semibold text-gray-500 uppercase">{% trans "Share Holdings" %}</h4></div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
                         <thead><tr class="text-left text-xs font-semibold text-gray-500 uppercase border-b"><th class="px-4 py-2">{% trans "Certificate No" %}</th><th class="px-4 py-2 text-right">{% trans "Shares" %}</th><th class="px-4 py-2 text-right">{% trans "Amount" %}</th><th class="px-4 py-2">{% trans "Issue Date" %}</th></tr></thead>
@@ -214,7 +214,7 @@
             {% endif %}
             {% if pigmmy %}
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <div class="px-5 py-2.5 bg-gray-50 border-b border-gray-200"><h4 class="text-xs font-semibold text-gray-500 uppercase">Pigmy {% trans "Accounts" %}</h4></div>
+                <div class="px-5 py-2.5 bg-gray-50 border-b border-gray-200"><h4 class="text-xs font-semibold text-gray-500 uppercase">{% trans "Pigmy Accounts" %}</h4></div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
                         <thead><tr class="text-left text-xs font-semibold text-gray-500 uppercase border-b"><th class="px-4 py-2">{% trans "Account No" %}</th><th class="px-4 py-2">{% trans "Folio" %}</th><th class="px-4 py-2 text-right">{% trans "Installment" %}</th><th class="px-4 py-2 text-right">{% trans "Balance" %}</th><th class="px-4 py-2">{% trans "Status" %}</th></tr></thead>
@@ -225,7 +225,7 @@
             {% endif %}
             {% if guaranteed_loans %}
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <div class="px-5 py-2.5 bg-gray-50 border-b border-gray-200"><h4 class="text-xs font-semibold text-gray-500 uppercase">Loans Guaranteed</h4></div>
+                <div class="px-5 py-2.5 bg-gray-50 border-b border-gray-200"><h4 class="text-xs font-semibold text-gray-500 uppercase">{% trans "Loans Guaranteed" %}</h4></div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
                         <thead><tr class="text-left text-xs font-semibold text-gray-500 uppercase border-b"><th class="px-4 py-2">{% trans "Loan No" %}</th><th class="px-4 py-2">{% trans "Borrower" %}</th><th class="px-4 py-2 text-right">{% trans "Guarantee Amount" %}</th><th class="px-4 py-2">{% trans "Loan Status" %}</th></tr></thead>
@@ -267,12 +267,12 @@
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Document Type" %}</label>
                         <select name="document_type" required class="rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
-                            <option value="aadhar">Aadhaar Card</option>
-                            <option value="pan">PAN Card</option>
+                            <option value="aadhar">{% trans "Aadhaar Card" %}</option>
+                            <option value="pan">{% trans "PAN Card" %}</option>
                             <option value="photo">{% trans "Photograph" %}</option>
                             <option value="signature">{% trans "Signature" %}</option>
-                            <option value="address_proof">Address Proof</option>
-                            <option value="other">Other</option>
+                            <option value="address_proof">{% trans "Address Proof" %}</option>
+                            <option value="other">{% trans "Other" %}</option>
                         </select>
                     </div>
                     <div>
@@ -284,7 +284,7 @@
             </div>
 
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <div class="px-5 py-2.5 bg-gray-50 border-b border-gray-200"><h4 class="text-xs font-semibold text-gray-500 uppercase">Uploaded {% trans "Documents" %}</h4></div>
+                <div class="px-5 py-2.5 bg-gray-50 border-b border-gray-200"><h4 class="text-xs font-semibold text-gray-500 uppercase">{% trans "Uploaded Documents" %}</h4></div>
                 {% if documents %}
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 p-4">
                     {% for doc in documents %}

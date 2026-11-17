@@ -68,7 +68,7 @@
             <div class="watermark">DEPOSIT</div>
 
             <div class="header">
-                <div class="society-name">{{ txn.account.member.branch.branch_name|default:"Society Name" }}</div>
+                <div class="society-name">{{ request.tenant.name|default:"Society Name" }}</div>
                 <div class="branch-name">{% trans "Branch" %}: {{ txn.branch.branch_name }}</div>
                 <div class="receipt-title">{% trans "Deposit Receipt" %}</div>
                 <div class="copy-label">{% if forloop.first %}Original{% else %}Society Copy{% endif %}</div>

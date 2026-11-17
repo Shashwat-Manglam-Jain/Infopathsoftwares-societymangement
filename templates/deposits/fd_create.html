@@ -8,9 +8,9 @@
 
     {% if not slabs_json or slabs_json == "[]" %}
     <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
-        <h3 class="text-sm font-semibold text-amber-800">No FD Interest Slabs Configured</h3>
-        <p class="text-sm text-amber-700 mt-1">Configure interest rate slabs in the Interest Master before opening a Fixed Deposit.
-            <a href="{% url 'accounting:interest_master_create' %}{% if head_id %}?head={{ head_id }}{% endif %}" class="underline font-medium">Configure Interest Master &rarr;</a>
+        <h3 class="text-sm font-semibold text-amber-800">{% trans "No FD Interest Slabs Configured" %}</h3>
+        <p class="text-sm text-amber-700 mt-1">{% trans "Configure interest rate slabs in the Interest Master before opening a Fixed Deposit." %}
+            <a href="{% url 'accounting:interest_master_create' %}{% if head_id %}?head={{ head_id }}{% endif %}" class="underline font-medium">{% trans "Configure Interest Master" %} &rarr;</a>
         </p>
     </div>
     {% endif %}
@@ -37,7 +37,7 @@
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Member" %} <span class="text-red-500">*</span></label>
                     <select name="member" required class="searchable w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
-                        <option value="">Select Member</option>
+                        <option value="">{% trans "Select Member" %}</option>
                         {% for m in members %}
                         <option value="{{ m.pk }}">{{ m.member_no }} — {{ m.name }}</option>
                         {% endfor %}
@@ -52,7 +52,7 @@
                     <input type="number" name="tenure_days" min="1" required class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500" x-model="tenureDays" @input="calcRate()">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">Compounding</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Compounding" %}</label>
                     {{ form.compounding }}
                 </div>
                 <div>

@@ -29,23 +29,23 @@
     </div>
 
     <div class="flex flex-wrap gap-1.5">
-        <a href="?{% if account_type %}type={{ account_type }}&{% endif %}status="
+        <a href="?{% if account_type %}type={{ account_type }}&{% endif %}{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}status="
            class="px-3 py-1 rounded-full text-xs font-medium {% if not status_filter %}bg-primary-100 text-primary-700{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
             {% trans "All" %}
         </a>
-        <a href="?{% if account_type %}type={{ account_type }}&{% endif %}status=active"
+        <a href="?{% if account_type %}type={{ account_type }}&{% endif %}{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}status=active"
            class="px-3 py-1 rounded-full text-xs font-medium {% if status_filter == 'active' %}bg-primary-100 text-primary-700{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
             {% trans "Active" %}
         </a>
-        <a href="?{% if account_type %}type={{ account_type }}&{% endif %}status=dormant"
+        <a href="?{% if account_type %}type={{ account_type }}&{% endif %}{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}status=dormant"
            class="px-3 py-1 rounded-full text-xs font-medium {% if status_filter == 'dormant' %}bg-primary-100 text-primary-700{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
             {% trans "Dormant" %}
         </a>
-        <a href="?{% if account_type %}type={{ account_type }}&{% endif %}status=frozen"
+        <a href="?{% if account_type %}type={{ account_type }}&{% endif %}{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}status=frozen"
            class="px-3 py-1 rounded-full text-xs font-medium {% if status_filter == 'frozen' %}bg-primary-100 text-primary-700{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
             {% trans "Frozen" %}
         </a>
-        <a href="?{% if account_type %}type={{ account_type }}&{% endif %}status=closed"
+        <a href="?{% if account_type %}type={{ account_type }}&{% endif %}{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}status=closed"
            class="px-3 py-1 rounded-full text-xs font-medium {% if status_filter == 'closed' %}bg-primary-100 text-primary-700{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
             {% trans "Closed" %}
         </a>

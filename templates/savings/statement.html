@@ -18,11 +18,11 @@
                 <p class="text-sm font-medium text-gray-900">{{ account.member.name }}</p>
             </div>
             <div>
-                <span class="text-xs text-gray-500">Type</span>
+                <span class="text-xs text-gray-500">{% trans "Type" %}</span>
                 <p class="text-sm font-medium text-gray-900">{{ account.get_account_type_display }}</p>
             </div>
             <div>
-                <span class="text-xs text-gray-500">Balance</span>
+                <span class="text-xs text-gray-500">{% trans "Balance" %}</span>
                 <p class="text-sm font-bold text-gray-900">&#8377;{{ account.current_balance|floatformat:2 }}</p>
             </div>
         </div>
@@ -38,8 +38,9 @@
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "To Date" %}</label>
                 <input type="date" name="to_date" value="{{ to_date }}" required class="rounded border border-gray-300 px-2.5 py-1.5 text-sm">
             </div>
-            <button type="submit" class="px-5 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">View Statement</button>
-            <a href="{% url 'savings:detail' pk=account.pk %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">&larr; Back</a>
+            <button type="submit" class="px-5 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "View Statement" %}</button>
+            {% if transactions %}<button type="button" onclick="window.print()" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Print" %}</button>{% endif %}
+            <a href="{% url 'savings:detail' pk=account.pk %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">&larr; {% trans "Back" %}</a>
         </form>
     </div>
 

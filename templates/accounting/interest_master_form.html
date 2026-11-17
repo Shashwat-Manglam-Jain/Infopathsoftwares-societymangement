@@ -30,24 +30,24 @@
             <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-xl">
                 <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
                     <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/></svg>
-                    Rate Configuration
+                    {% trans "Rate Configuration" %}
                 </h3>
             </div>
             <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                 <div class="md:col-span-2">
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Account Head <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Account Head" %} <span class="text-red-500">*</span></label>
                     {{ form.account_head }}
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Min Period <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Min Period" %} <span class="text-red-500">*</span></label>
                     {{ form.min_period }}
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Max Period <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Max Period" %} <span class="text-red-500">*</span></label>
                     {{ form.max_period }}
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Period Unit <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Period Unit" %} <span class="text-red-500">*</span></label>
                     {{ form.period_unit }}
                 </div>
                 <div>
@@ -55,7 +55,7 @@
                     {{ form.interest_rate }}
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Penal Rate %</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Penal Rate %" %}</label>
                     {{ form.penal_rate }}
                 </div>
             </div>
@@ -64,7 +64,7 @@
             <div class="px-5 py-3 border-b border-t border-gray-200 bg-gray-50/50">
                 <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
                     <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                    Special Category Rates
+                    {% trans "Special Category Rates" %}
                 </h3>
             </div>
             <div class="px-5 py-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4">
@@ -81,7 +81,7 @@
                     {{ form.ex_military_extra }}
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Disabled Extra %</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Disabled Extra %" %}</label>
                     {{ form.disabled_extra }}
                 </div>
                 <div>
@@ -98,7 +98,7 @@
             <div class="px-5 py-3 border-b border-t border-gray-200 bg-gray-50/50">
                 <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
                     <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    Status
+                    {% trans "Status" %}
                 </h3>
             </div>
             <div class="px-5 py-4">
@@ -109,8 +109,8 @@
             </div>
 
             <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex items-center justify-end gap-3">
-                <a href="{% url 'accounting:interest_master' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
-                <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm">Save</button>
+                <a href="{% url 'accounting:interest_master' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
+                <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm">{% trans "Save" %}</button>
             </div>
         </div>
     </form>

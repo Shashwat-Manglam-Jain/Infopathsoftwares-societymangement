@@ -10,12 +10,12 @@
 
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-            <h2 class="text-xl font-bold text-gray-900">Loan Products / Interest Rates</h2>
-            <p class="text-sm text-gray-500 mt-1">Define loan types with interest rates, tenure limits, and guarantor requirements.</p>
+            <h2 class="text-xl font-bold text-gray-900">{% trans "Loan Products / Interest Rates" %}</h2>
+            <p class="text-sm text-gray-500 mt-1">{% trans "Define loan types with interest rates, tenure limits, and guarantor requirements." %}</p>
         </div>
         <a href="{% url 'loans:product_create' %}" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">
             <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            New Product
+            {% trans "New Product" %}
         </a>
     </div>
 
@@ -49,11 +49,11 @@
                             {% if p.is_active %}<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">{% trans "Active" %}</span>{% else %}<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">{% trans "Inactive" %}</span>{% endif %}
                         </td>
                         <td class="px-4 py-3 text-sm text-right">
-                            <a href="{% url 'loans:product_edit' pk=p.pk %}" class="text-primary-600 hover:text-primary-800 font-medium">Edit</a>
+                            <a href="{% url 'loans:product_edit' pk=p.pk %}" class="text-primary-600 hover:text-primary-800 font-medium">{% trans "Edit" %}</a>
                         </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="9" class="px-4 py-8 text-center text-sm text-gray-400">No loan products defined.</td></tr>
+                    <tr><td colspan="9" class="px-4 py-8 text-center text-sm text-gray-400">{% trans "No loan products defined." %}</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

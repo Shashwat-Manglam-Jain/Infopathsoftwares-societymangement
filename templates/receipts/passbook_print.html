@@ -58,8 +58,8 @@
 
         {% if forloop.first %}
         <div class="passbook-header">
-            <div class="society">{{ account.branch.branch_name|default:"Society Name" }}</div>
-            <div class="branch">{{ account.branch.address|default:"" }}</div>
+            <div class="society">{{ request.tenant.name|default:"Society Name" }}</div>
+            <div class="branch">{{ account.branch.branch_name }} — {{ account.branch.address|default:"" }}</div>
         </div>
 
         <div class="account-info">

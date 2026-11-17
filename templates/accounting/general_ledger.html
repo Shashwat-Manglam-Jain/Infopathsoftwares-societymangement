@@ -10,9 +10,9 @@
     <form method="get" class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
         <div class="px-5 py-4 grid grid-cols-1 sm:grid-cols-4 gap-x-6 gap-y-3 items-end">
             <div>
-                <label class="block text-xs font-medium text-gray-500 mb-0.5">Account Head</label>
+                <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Account Head" %}</label>
                 <select name="account" required class="searchable w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
-                    <option value="">Select Head</option>
+                    <option value="">{% trans "Select Head" %}</option>
                     {% for h in heads %}
                     <option value="{{ h.code }}" {% if selected_account == h.code %}selected{% endif %}>{{ h.code }} — {{ h.name }}</option>
                     {% endfor %}
@@ -27,7 +27,7 @@
                 <input type="date" name="to_date" value="{{ to_date|default:'' }}" required class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
             </div>
             <div class="flex items-end gap-2">
-                <button type="submit" class="w-full px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">View Ledger</button>
+                <button type="submit" class="w-full px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "View Ledger" %}</button>
                 {% if result %}{% include "includes/export_csv.html" %}{% endif %}
             </div>
         </div>
@@ -41,7 +41,7 @@
                 <p class="text-xs text-gray-500 font-mono">{{ result.account.code }} &middot; {{ result.account.get_account_group_display }}</p>
             </div>
             <div class="text-right">
-                <p class="text-xs text-gray-500">Opening Balance</p>
+                <p class="text-xs text-gray-500">{% trans "Opening Balance" %}</p>
                 <p class="text-sm font-bold {% if result.opening_balance < 0 %}text-red-600{% else %}text-gray-900{% endif %}">{{ result.opening_balance|floatformat:2 }}</p>
             </div>
         </div>
@@ -68,12 +68,12 @@
                         <td class="px-4 py-2 text-right font-medium {% if entry.balance < 0 %}text-red-600{% else %}text-gray-900{% endif %}">{{ entry.balance|floatformat:2 }}</td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="6" class="px-4 py-4 text-center text-gray-400">No transactions in this period.</td></tr>
+                    <tr><td colspan="6" class="px-4 py-4 text-center text-gray-400">{% trans "No transactions in this period." %}</td></tr>
                     {% endfor %}
                 </tbody>
                 <tfoot>
                     <tr class="bg-gray-50 border-t-2 border-gray-200">
-                        <td colspan="5" class="px-4 py-2 text-right text-sm font-semibold text-gray-700">Closing Balance</td>
+                        <td colspan="5" class="px-4 py-2 text-right text-sm font-semibold text-gray-700">{% trans "Closing Balance" %}</td>
                         <td class="px-4 py-2 text-right font-bold {% if result.closing_balance < 0 %}text-red-600{% else %}text-gray-900{% endif %}">{{ result.closing_balance|floatformat:2 }}</td>
                     </tr>
                 </tfoot>

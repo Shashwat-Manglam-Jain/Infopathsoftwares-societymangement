@@ -51,9 +51,13 @@
                 <div class="flex justify-between"><dt class="text-gray-500">{% trans "Opening Date" %}</dt><dd class="font-medium">{{ fd.start_date|date:"d M Y" }}</dd></div>
                 <div class="flex justify-between"><dt class="text-gray-500">{% trans "Maturity Date" %}</dt><dd class="font-medium">{{ fd.maturity_date|date:"d M Y" }}</dd></div>
                 <div class="flex justify-between"><dt class="text-gray-500">{% trans "Tenure" %}</dt><dd class="font-medium">{{ fd.tenure_days }} days</dd></div>
+                <div class="flex justify-between"><dt class="text-gray-500">{% trans "Compounding" %}</dt><dd class="font-medium">{{ fd.get_compounding_display|default:"-" }}</dd></div>
                 <div class="flex justify-between"><dt class="text-gray-500">{% trans "Auto Renew" %}</dt><dd class="font-medium">{% if fd.is_auto_renew %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}</dd></div>
+                {% if fd.certificate_no %}<div class="flex justify-between"><dt class="text-gray-500">{% trans "Certificate No" %}</dt><dd class="font-medium">{{ fd.certificate_no }}</dd></div>{% endif %}
+                <div class="flex justify-between"><dt class="text-gray-500">{% trans "TDS Applicable" %}</dt><dd class="font-medium">{% if fd.tds_applicable %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}</dd></div>
                 {% if fd.fd_product %}<div class="flex justify-between"><dt class="text-gray-500">{% trans "Product" %}</dt><dd class="font-medium">{{ fd.fd_product.name }}</dd></div>{% endif %}
                 {% if fd.linked_savings_account %}<div class="flex justify-between"><dt class="text-gray-500">{% trans "Linked Savings" %}</dt><dd class="font-medium">{{ fd.linked_savings_account.account_no }}</dd></div>{% endif %}
+                {% if fd.created_by %}<div class="flex justify-between"><dt class="text-gray-500">{% trans "Created By" %}</dt><dd class="font-medium">{{ fd.created_by.get_full_name|default:fd.created_by.username }}</dd></div>{% endif %}
             </dl>
         </div>
 

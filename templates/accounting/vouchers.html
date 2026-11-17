@@ -10,24 +10,24 @@
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-            <h2 class="text-xl font-bold text-gray-900">Voucher Entry</h2>
-            <p class="text-sm text-gray-500 mt-1">Journal, contra and other manual vouchers</p>
+            <h2 class="text-xl font-bold text-gray-900">{% trans "Voucher Entry" %}</h2>
+            <p class="text-sm text-gray-500 mt-1">{% trans "Journal, contra and other manual vouchers" %}</p>
         </div>
         <div class="flex items-center gap-2">
             <a href="{% url 'accounting:voucher_create' %}" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">
                 <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                New Voucher
+                {% trans "New Voucher" %}
             </a>
-            <a href="{% url 'accounting:receipt' %}" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">Receipt</a>
-            <a href="{% url 'accounting:payment' %}" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">Payment</a>
-            <a href="{% url 'accounting:cashbook' %}" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">Cashbook</a>
+            <a href="{% url 'accounting:receipt' %}" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">{% trans "Receipt" %}</a>
+            <a href="{% url 'accounting:payment' %}" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">{% trans "Payment" %}</a>
+            <a href="{% url 'accounting:cashbook' %}" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">{% trans "Cashbook" %}</a>
         </div>
     </div>
 
     <!-- Recent Entries -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-200">
-            <h3 class="text-sm font-semibold text-gray-700">Recent Vouchers</h3>
+            <h3 class="text-sm font-semibold text-gray-700">{% trans "Recent Vouchers" %}</h3>
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
@@ -50,13 +50,13 @@
                         <td class="px-4 py-3 text-sm text-gray-600">{{ entry.entry_date|date:"d M Y" }}</td>
                         <td class="px-4 py-3">
                             {% if entry.voucher_type == 'receipt' %}
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Receipt</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{% trans "Receipt" %}</span>
                             {% elif entry.voucher_type == 'payment' %}
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Payment</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">{% trans "Payment" %}</span>
                             {% elif entry.voucher_type == 'journal' %}
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Journal</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{% trans "Journal" %}</span>
                             {% else %}
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">Contra</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">{% trans "Contra" %}</span>
                             {% endif %}
                         </td>
                         <td class="px-4 py-3 text-sm text-gray-600 hidden md:table-cell max-w-xs truncate">{{ entry.narration|default:"—" }}</td>
@@ -64,11 +64,11 @@
                         <td class="px-4 py-3 text-sm text-gray-600 hidden lg:table-cell">{{ entry.created_by.get_short_name }}</td>
                         <td class="px-4 py-3 text-center">
                             {% if entry.is_reversed %}
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">Reversed</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">{% trans "Reversed" %}</span>
                             {% elif entry.is_posted %}
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Posted</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{% trans "Posted" %}</span>
                             {% else %}
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Draft</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{% trans "Draft" %}</span>
                             {% endif %}
                         </td>
                         <td class="px-4 py-3 text-right" onclick="event.stopPropagation()">
@@ -77,7 +77,7 @@
                                 {% if request.user.is_accountant %}
                                 <a href="{% url 'accounting:voucher_edit' entry.pk %}" class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 rounded hover:bg-blue-100" title="Modify">
                                     <svg class="h-3.5 w-3.5 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                    Edit
+                                    {% trans "Edit" %}
                                 </a>
                                 {% endif %}
                             </div>
@@ -88,7 +88,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="8" class="px-4 py-8 text-center text-sm text-gray-400">No voucher entries found.</td>
+                        <td colspan="8" class="px-4 py-8 text-center text-sm text-gray-400">{% trans "No voucher entries found." %}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
