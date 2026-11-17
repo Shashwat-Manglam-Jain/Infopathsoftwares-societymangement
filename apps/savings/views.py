@@ -143,6 +143,11 @@ def savings_detail(request, pk):
         'transactions': transactions,
     }
     if account.status == 'active':
+        from apps.dayend.models import WorkingDay
+
+        branch = getattr(request, 'current_branch', None)
+        wd = WorkingDay.objects.filter(branch=branch).order_by('-current_date').first() if branch else None
+        context['is_day_open'] = bool(wd and wd.is_day_open)
         context['deposit_form'] = DepositForm(initial={'account_id': account.pk})
         context['withdrawal_form'] = WithdrawalForm(initial={'account_id': account.pk})
     return render(request, 'savings/detail.html', context)
