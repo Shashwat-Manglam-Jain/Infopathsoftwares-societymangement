@@ -74,7 +74,7 @@
                 <div class="md:col-span-2 flex items-center gap-4">
                     <label class="flex items-center gap-1.5 cursor-pointer">
                         <input type="checkbox" name="is_auto_renew" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
-                        <span class="text-sm text-gray-700">Auto Renew</span>
+                        <span class="text-sm text-gray-700">{% trans "Auto Renew" %}</span>
                     </label>
                     <label class="flex items-center gap-1.5 cursor-pointer">
                         <input type="checkbox" name="is_senior" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500" x-model="isSenior" @change="calcRate()">
@@ -103,8 +103,8 @@
             </template>
 
             <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-end gap-3">
-                <a href="{% url 'deposits:fd_list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
-                <button type="submit" class="px-5 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">Create FD</button>
+                <a href="{% url 'deposits:fd_list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
+                <button type="submit" class="px-5 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "Create FD" %}</button>
             </div>
         </div>
     </form>

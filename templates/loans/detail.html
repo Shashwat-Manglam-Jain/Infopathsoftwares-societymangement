@@ -64,10 +64,10 @@
                     <div class="flex justify-between"><dt class="text-gray-500">{% trans "Product" %}</dt><dd>{{ loan.loan_product.name }}</dd></div>
                     <div class="flex justify-between"><dt class="text-gray-500">{% trans "Category" %}</dt><dd>{{ loan.loan_product.get_loan_category_display }}</dd></div>
                     <div class="flex justify-between"><dt class="text-gray-500">{% trans "Applied Amount" %}</dt><dd class="font-medium">{{ loan.applied_amount|floatformat:2 }}</dd></div>
-                    <div class="flex justify-between"><dt class="text-gray-500">Applied Date</dt><dd>{{ loan.applied_date|date:"d M Y" }}</dd></div>
-                    <div class="flex justify-between"><dt class="text-gray-500">{% trans "Tenure" %}</dt><dd>{{ loan.tenure_months }} months</dd></div>
+                    <div class="flex justify-between"><dt class="text-gray-500">{% trans "Applied Date" %}</dt><dd>{{ loan.applied_date|date:"d M Y" }}</dd></div>
+                    <div class="flex justify-between"><dt class="text-gray-500">{% trans "Tenure" %}</dt><dd>{{ loan.tenure_months }} {% trans "months" %}</dd></div>
                     <div class="flex justify-between"><dt class="text-gray-500">{% trans "Interest Rate" %}</dt><dd>{{ loan.interest_rate }}% p.a.</dd></div>
-                    <div class="flex justify-between"><dt class="text-gray-500">Interest Type</dt><dd>{{ loan.loan_product.get_interest_type_display }}</dd></div>
+                    <div class="flex justify-between"><dt class="text-gray-500">{% trans "Interest Type" %}</dt><dd>{{ loan.loan_product.get_interest_type_display }}</dd></div>
                     <div class="flex justify-between"><dt class="text-gray-500">{% trans "Branch" %}</dt><dd>{{ loan.branch.branch_name }}</dd></div>
                     {% if loan.loan_form_no %}<div class="flex justify-between"><dt class="text-gray-500">Loan Form No</dt><dd>{{ loan.loan_form_no }}</dd></div>{% endif %}
                     {% if loan.meeting_no %}<div class="flex justify-between"><dt class="text-gray-500">Meeting No</dt><dd>{{ loan.meeting_no }}</dd></div>{% endif %}
