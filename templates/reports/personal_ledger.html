@@ -18,6 +18,13 @@
 {% block content %}
 <div class="space-y-4">
 
+    <div class="no-print">
+        <a href="{% url 'reports:index' %}" class="inline-flex items-center text-sm text-primary-600 hover:text-primary-800 font-medium">
+            <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            {% trans "All Reports" %}
+        </a>
+    </div>
+
     <!-- Filter Form -->
     <form method="get" class="bg-white rounded-lg shadow-sm border border-gray-200 p-5 no-print"
           x-data="{ fromDate: '{{ from_date|default:'' }}', toDate: '{{ to_date|default:'' }}', today: new Date().toISOString().split('T')[0] }">

@@ -11,7 +11,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
             <h2 class="text-xl font-bold text-gray-900">{{ page_title|default:"All Accounts" }}</h2>
-            <p class="text-sm text-gray-500 mt-1">{{ accounts|length }} account{{ accounts|length|pluralize }}</p>
+            <p class="text-sm text-gray-500 mt-1">{{ paginator.count }} account{{ paginator.count|pluralize }}</p>
         </div>
         <a href="{% url 'savings:create' %}{% if account_type %}?type={{ account_type }}{% endif %}" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">
             <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
@@ -19,11 +19,13 @@
         </a>
     </div>
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4" x-data="{ q: '' }">
-        <div class="relative">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <form method="get" class="relative">
+            {% if account_type %}<input type="hidden" name="type" value="{{ account_type }}">{% endif %}
+            {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
             <svg class="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            <input type="text" x-model="q" placeholder="Search by account no, member name..." class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-primary-500 focus:border-primary-500">
-        </div>
+            <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search by account no, member name..." class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-primary-500 focus:border-primary-500">
+        </form>
     </div>
 
     <div class="flex flex-wrap gap-1.5">

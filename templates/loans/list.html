@@ -11,7 +11,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
             <h2 class="text-xl font-bold text-gray-900">Loan {% trans "Accounts" %}</h2>
-            <p class="text-sm text-gray-500 mt-1">{{ loans|length }} loan{{ loans|length|pluralize }}</p>
+            <p class="text-sm text-gray-500 mt-1">{{ paginator.count }} loan{{ paginator.count|pluralize }}</p>
         </div>
         <div class="flex items-center gap-3">
             <select onchange="window.location='?status='+this.value" class="text-sm border border-gray-300 rounded-lg px-3 py-2">

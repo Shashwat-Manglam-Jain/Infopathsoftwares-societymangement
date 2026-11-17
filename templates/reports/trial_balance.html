@@ -18,6 +18,13 @@
 {% block content %}
 <div class="space-y-4">
 
+    <div class="no-print">
+        <a href="{% url 'reports:index' %}" class="inline-flex items-center text-sm text-primary-600 hover:text-primary-800 font-medium">
+            <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            {% trans "All Reports" %}
+        </a>
+    </div>
+
     <!-- Date Filter -->
     <form method="get" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 no-print"
           x-data="{ fromDate: '{{ from_date|default:'' }}', toDate: '{{ to_date|default:'' }}', today: new Date().toISOString().split('T')[0] }">
@@ -31,7 +38,11 @@
                 <input type="date" name="to_date" x-model="toDate" :min="fromDate" :max="today" required class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
             </div>
             <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">{% trans "Generate" %}</button>
-            {% if result %}{% include "includes/export_csv.html" %}{% endif %}
+            {% if result %}{% include "includes/export_csv.html" %}
+            <button onclick="window.print()" type="button" class="inline-flex items-center px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                <svg class="h-4 w-4 mr-1.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                {% trans "Print" %}
+            </button>{% endif %}
         </div>
         <div class="flex flex-wrap gap-2 mt-3">
             <span class="text-xs text-gray-400 self-center mr-1">{% trans "Quick:" %}</span>

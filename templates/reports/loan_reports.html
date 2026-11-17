@@ -7,6 +7,13 @@
 {% block content %}
 <div class="space-y-4">
 
+    <div>
+        <a href="{% url 'reports:index' %}" class="inline-flex items-center text-sm text-primary-600 hover:text-primary-800 font-medium">
+            <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            {% trans "All Reports" %}
+        </a>
+    </div>
+
 <!-- Filter Bar -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-4">
         <form method="get" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

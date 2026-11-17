@@ -11,7 +11,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
             <h2 class="text-lg font-semibold text-gray-900">{% trans "Pigmmy Accounts" %}</h2>
-            <p class="text-sm text-gray-500">{{ accounts|length }} active account{{ accounts|length|pluralize:"s" }}</p>
+            <p class="text-sm text-gray-500">{{ paginator.count }} active account{{ paginator.count|pluralize:"s" }}</p>
         </div>
         <div class="flex items-center gap-2">
             <form method="get" class="flex items-center gap-2">

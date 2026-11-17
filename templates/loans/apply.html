@@ -16,6 +16,10 @@
     </div>
     {% endif %}
 
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+        <p class="text-sm text-blue-800"><svg class="h-4 w-4 inline mr-1 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{% trans "Members must hold active shares before applying for a loan." %}</p>
+    </div>
+
     <form method="post">
         {% csrf_token %}
 

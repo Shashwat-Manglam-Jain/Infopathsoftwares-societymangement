@@ -11,7 +11,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
             <h2 class="text-xl font-bold text-gray-900">Members</h2>
-            <p class="text-sm text-gray-500 mt-1">{{ members|length }} member{{ members|length|pluralize }} found</p>
+            <p class="text-sm text-gray-500 mt-1">{{ paginator.count }} member{{ paginator.count|pluralize }} found</p>
         </div>
         <div class="flex items-center gap-2">
             <a href="{% url 'members:import' %}" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">
