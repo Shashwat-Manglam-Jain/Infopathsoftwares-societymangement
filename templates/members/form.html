@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% if member %}Edit {{ member.name }}{% else %}New Member{% endif %} — InfoSociety{% endblock %}
-{% block page_title %}{% if member %}Edit Member{% else %}Customer Details Entry{% endif %}{% endblock %}
+{% block title %}{% if member %}{% trans "Edit" %} {{ member.name }}{% else %}{% trans "New Member" %}{% endif %} — InfoSociety{% endblock %}
+{% block page_title %}{% if member %}{% trans "Edit Member" %}{% else %}{% trans "Customer Details Entry" %}{% endif %}{% endblock %}
 
 {% block content %}
 <form method="post" enctype="multipart/form-data" x-data="{ isMinor: {% if form.instance.is_minor %}true{% else %}false{% endif %} }" class="max-w-full">
