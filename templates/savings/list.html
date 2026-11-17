@@ -29,6 +29,10 @@
     </div>
 
     <div class="flex flex-wrap gap-1.5">
+        <a href="?{% if account_type %}type={{ account_type }}&{% endif %}status="
+           class="px-3 py-1 rounded-full text-xs font-medium {% if not status_filter %}bg-primary-100 text-primary-700{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
+            {% trans "All" %}
+        </a>
         <a href="?{% if account_type %}type={{ account_type }}&{% endif %}status=active"
            class="px-3 py-1 rounded-full text-xs font-medium {% if status_filter == 'active' %}bg-primary-100 text-primary-700{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
             {% trans "Active" %}
