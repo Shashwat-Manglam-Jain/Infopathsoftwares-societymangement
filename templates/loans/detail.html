@@ -134,7 +134,7 @@
         {% if loan.status == 'approved' and request.user.is_manager %}
         <div class="bg-white rounded-lg shadow-sm border border-green-200 px-5 py-4">
             <h3 class="text-xs font-semibold text-green-800 uppercase mb-2">{% trans "Disburse Loan" %}</h3>
-            <p class="text-sm text-gray-600 mb-3">Approved amount: <strong>{{ loan.approved_amount|floatformat:2 }}</strong>. Disbursing will generate the EMI schedule and create the disbursement journal entry.</p>
+            <p class="text-sm text-gray-600 mb-3">{% trans "Approved amount:" %} <strong>{{ loan.approved_amount|floatformat:2 }}</strong>. {% trans "Disbursing will generate the EMI schedule and create the disbursement journal entry." %}</p>
             {% if loan.loan_product.requires_collateral and not collateral_ok %}
             <div class="bg-amber-50 border border-amber-200 rounded p-3 mb-3">
                 <p class="text-sm text-amber-800 font-medium">{% trans "Collateral Required" %}</p>
@@ -145,11 +145,11 @@
             <form method="post" action="{% url 'loans:disburse' pk=loan.pk %}">
                 {% csrf_token %}
                 <button type="submit" class="px-4 py-1.5 bg-green-600 text-white rounded text-sm font-medium hover:bg-green-700"
-                        onclick="return confirm('Disburse loan of {{ loan.approved_amount|floatformat:2 }} to {{ loan.member.name }}?')">Disburse Now</button>
+                        onclick="return confirm('Disburse loan of {{ loan.approved_amount|floatformat:2 }} to {{ loan.member.name }}?')">{% trans "Disburse Now" %}</button>
             </form>
             {% else %}
             <div class="rounded bg-yellow-50 border border-yellow-200 px-4 py-2">
-                <p class="text-sm text-yellow-800">Cannot disburse: requires at least {{ min_guarantors }} guarantor{{ min_guarantors|pluralize }}. <a href="{% url 'loans:guarantor_add' loan_pk=loan.pk %}" class="underline font-medium">Add guarantors</a></p>
+                <p class="text-sm text-yellow-800">{% trans "Cannot disburse: requires at least" %} {{ min_guarantors }} {% trans "guarantor" %}{{ min_guarantors|pluralize }}. <a href="{% url 'loans:guarantor_add' loan_pk=loan.pk %}" class="underline font-medium">{% trans "Add guarantors" %}</a></p>
             </div>
             {% endif %}
         </div>
@@ -157,19 +157,19 @@
 
         {% if emi_form %}
         <div class="bg-white rounded-lg shadow-sm border border-primary-200 px-5 py-4">
-            <h3 class="text-xs font-semibold text-primary-800 uppercase mb-2">Collect EMI / Repayment</h3>
+            <h3 class="text-xs font-semibold text-primary-800 uppercase mb-2">{% trans "Collect EMI / Repayment" %}</h3>
             <form method="post" action="{% url 'loans:collect' pk=loan.pk %}" class="flex flex-wrap items-end gap-3">
                 {% csrf_token %}
                 {{ emi_form.loan_id }}
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">Amount</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Amount" %}</label>
                     {{ emi_form.amount }}
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">Payment Mode</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Payment Mode" %}</label>
                     {{ emi_form.payment_mode }}
                 </div>
-                <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white rounded text-sm font-medium hover:bg-primary-700">Collect Payment</button>
+                <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white rounded text-sm font-medium hover:bg-primary-700">{% trans "Collect Payment" %}</button>
             </form>
         </div>
         {% endif %}
@@ -184,25 +184,25 @@
                 <h3 class="text-xs font-semibold text-gray-500 uppercase">
                     {% trans "Guarantors" %}
                     {% if min_guarantors %}
-                    <span class="text-xs font-normal text-gray-400 ml-1">({{ guarantor_count }}/{{ min_guarantors }} required)</span>
+                    <span class="text-xs font-normal text-gray-400 ml-1">({{ guarantor_count }}/{{ min_guarantors }} {% trans "required" %})</span>
                     {% endif %}
                 </h3>
                 {% if request.user.is_manager and loan.status not in 'closed,rejected,written_off' %}
-                <a href="{% url 'loans:guarantor_add' loan_pk=loan.pk %}" class="px-3 py-1 bg-primary-600 text-white text-xs font-medium rounded hover:bg-primary-700">+ Add Guarantor</a>
+                <a href="{% url 'loans:guarantor_add' loan_pk=loan.pk %}" class="px-3 py-1 bg-primary-600 text-white text-xs font-medium rounded hover:bg-primary-700">{% trans "+ Add Guarantor" %}</a>
                 {% endif %}
             </div>
 
             {% if loan.loan_product.requires_guarantor and guarantor_count == 0 and loan.status in 'applied,approved' %}
             <div class="mb-3 rounded bg-amber-50 border border-amber-200 px-4 py-2">
-                <p class="text-sm font-semibold text-amber-800">No {% trans "Guarantors" %} Added</p>
-                <p class="text-sm text-amber-700 mt-0.5">This loan product requires at least {{ min_guarantors }} guarantor{{ min_guarantors|pluralize }}.</p>
+                <p class="text-sm font-semibold text-amber-800">{% trans "No Guarantors Added" %}</p>
+                <p class="text-sm text-amber-700 mt-0.5">{% trans "This loan product requires at least" %} {{ min_guarantors }} {% trans "guarantor" %}{{ min_guarantors|pluralize }}.</p>
                 {% if request.user.is_manager %}
-                <a href="{% url 'loans:guarantor_add' loan_pk=loan.pk %}" class="text-sm font-medium text-amber-800 hover:text-amber-900 underline">Add Guarantor &rarr;</a>
+                <a href="{% url 'loans:guarantor_add' loan_pk=loan.pk %}" class="text-sm font-medium text-amber-800 hover:text-amber-900 underline">{% trans "Add Guarantor" %} &rarr;</a>
                 {% endif %}
             </div>
             {% elif not guarantor_ok and loan.status in 'applied,approved' %}
             <div class="mb-3 rounded bg-red-50 border border-red-200 px-4 py-2">
-                <p class="text-sm text-red-700 font-medium">This loan requires at least {{ min_guarantors }} guarantor{{ min_guarantors|pluralize }} but only {{ guarantor_count }} {{ guarantor_count|pluralize:"is,are" }} assigned.</p>
+                <p class="text-sm text-red-700 font-medium">{% trans "This loan requires at least" %} {{ min_guarantors }} {% trans "guarantor" %}{{ min_guarantors|pluralize }} {% trans "but only" %} {{ guarantor_count }} {{ guarantor_count|pluralize:"is,are" }} {% trans "assigned." %}</p>
             </div>
             {% endif %}
 
@@ -215,26 +215,26 @@
                     </div>
                     {% if request.user.is_manager and loan.status not in 'closed,rejected,written_off' %}
                     <div class="flex gap-2">
-                        <a href="{% url 'loans:guarantor_edit' pk=g.pk %}" class="text-primary-600 hover:text-primary-800 text-xs font-medium">Edit</a>
+                        <a href="{% url 'loans:guarantor_edit' pk=g.pk %}" class="text-primary-600 hover:text-primary-800 text-xs font-medium">{% trans "Edit" %}</a>
                         <form method="post" action="{% url 'loans:guarantor_delete' pk=g.pk %}" class="inline" onsubmit="return confirm('Remove guarantor {{ g.guarantor_member.name }}?')">
                             {% csrf_token %}
-                            <button type="submit" class="text-red-600 hover:text-red-800 text-xs font-medium">Remove</button>
+                            <button type="submit" class="text-red-600 hover:text-red-800 text-xs font-medium">{% trans "Remove" %}</button>
                         </form>
                     </div>
                     {% endif %}
                 </div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
                     <div><span class="text-xs text-gray-500">{% trans "Phone" %}</span><p class="text-sm text-gray-700">{{ g.guarantor_member.phone|default:"—" }}</p></div>
-                    <div><span class="text-xs text-gray-500">Guarantee Amount</span><p class="text-sm font-medium text-gray-900">{{ g.guarantee_amount|floatformat:2 }}</p></div>
-                    <div><span class="text-xs text-gray-500">Shares Held</span><p class="text-sm text-gray-700">{{ g.share_count }} shares ({{ g.share_value|floatformat:2 }})</p></div>
-                    <div><span class="text-xs text-gray-500">{% trans "Active" %} Guarantees</span><p class="text-sm {% if g.active_count > 1 %}text-amber-600 font-medium{% else %}text-gray-700{% endif %}">{{ g.active_count }} loan{{ g.active_count|pluralize }}</p></div>
+                    <div><span class="text-xs text-gray-500">{% trans "Guarantee Amount" %}</span><p class="text-sm font-medium text-gray-900">{{ g.guarantee_amount|floatformat:2 }}</p></div>
+                    <div><span class="text-xs text-gray-500">{% trans "Shares Held" %}</span><p class="text-sm text-gray-700">{{ g.share_count }} {% trans "shares" %} ({{ g.share_value|floatformat:2 }})</p></div>
+                    <div><span class="text-xs text-gray-500">{% trans "Active Guarantees" %}</span><p class="text-sm {% if g.active_count > 1 %}text-amber-600 font-medium{% else %}text-gray-700{% endif %}">{{ g.active_count }} loan{{ g.active_count|pluralize }}</p></div>
                 </div>
                 {% if g.guarantor_member.address %}
                 <p class="text-xs text-gray-500 mt-1">{{ g.guarantor_member.address|truncatewords:20 }}</p>
                 {% endif %}
             </div>
             {% empty %}
-            <p class="py-4 text-center text-sm text-gray-400">No guarantors assigned yet.</p>
+            <p class="py-4 text-center text-sm text-gray-400">{% trans "No guarantors assigned yet." %}</p>
             {% endfor %}
         </div>
 
@@ -272,13 +272,13 @@
                             <td class="px-3 py-1.5 text-right">{{ emi.paid_amount|floatformat:2 }}</td>
                             <td class="px-3 py-1.5">
                                 {% if emi.status == 'paid' %}
-                                <span class="px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">Paid</span>
+                                <span class="px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">{% trans "Paid" %}</span>
                                 {% elif emi.status == 'overdue' %}
-                                <span class="px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-700">Overdue</span>
+                                <span class="px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-700">{% trans "Overdue" %}</span>
                                 {% elif emi.status == 'partially_paid' %}
-                                <span class="px-2 py-0.5 rounded-full text-xs bg-yellow-100 text-yellow-700">Partial</span>
+                                <span class="px-2 py-0.5 rounded-full text-xs bg-yellow-100 text-yellow-700">{% trans "Partial" %}</span>
                                 {% else %}
-                                <span class="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600">Pending</span>
+                                <span class="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600">{% trans "Pending" %}</span>
                                 {% endif %}
                             </td>
                         </tr>
@@ -289,14 +289,14 @@
         </div>
         {% else %}
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-6">
-            <p class="text-center text-sm text-gray-400">No EMI schedule generated yet. The schedule is created upon loan disbursement.</p>
+            <p class="text-center text-sm text-gray-400">{% trans "No EMI schedule generated yet. The schedule is created upon loan disbursement." %}</p>
         </div>
         {% endif %}
 
         {% if repayments %}
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-5 py-3 border-b bg-gray-50">
-                <h3 class="text-xs font-semibold text-gray-500 uppercase">Recent Repayments</h3>
+                <h3 class="text-xs font-semibold text-gray-500 uppercase">{% trans "Recent Repayments" %}</h3>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm divide-y divide-gray-200">
@@ -326,7 +326,7 @@
                             <td class="px-3 py-1.5 text-gray-500">{{ r.payment_mode|title }}</td>
                             <td class="px-3 py-1.5">
                                 {% if request.user.is_manager %}
-                                <a href="{% url 'loans:reverse_repayment' pk=loan.pk repayment_id=r.pk %}" class="text-red-600 hover:underline text-xs">Cancel</a>
+                                <a href="{% url 'loans:reverse_repayment' pk=loan.pk repayment_id=r.pk %}" class="text-red-600 hover:underline text-xs">{% trans "Cancel" %}</a>
                                 {% endif %}
                             </td>
                         </tr>
@@ -338,7 +338,7 @@
         {% else %}
         {% if emi_schedule %}
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-6">
-            <p class="text-center text-sm text-gray-400">No repayments recorded yet.</p>
+            <p class="text-center text-sm text-gray-400">{% trans "No repayments recorded yet." %}</p>
         </div>
         {% endif %}
         {% endif %}
@@ -350,9 +350,9 @@
 
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-4">
             <div class="flex items-center justify-between mb-2">
-                <h3 class="text-xs font-semibold text-gray-500 uppercase">{% trans "Collateral" %} / Mortgage</h3>
+                <h3 class="text-xs font-semibold text-gray-500 uppercase">{% trans "Collateral / Mortgage" %}</h3>
                 {% if request.user.is_manager and loan.status not in 'closed,rejected,written_off' %}
-                <a href="{% url 'loans:collateral_add' loan_pk=loan.pk %}" class="px-3 py-1 bg-primary-600 text-white text-xs font-medium rounded hover:bg-primary-700">+ Add {% trans "Collateral" %}</a>
+                <a href="{% url 'loans:collateral_add' loan_pk=loan.pk %}" class="px-3 py-1 bg-primary-600 text-white text-xs font-medium rounded hover:bg-primary-700">{% trans "+ Add Collateral" %}</a>
                 {% endif %}
             </div>
 
@@ -382,10 +382,10 @@
                         {% if request.user.is_manager and loan.status not in 'closed,rejected,written_off' %}
                         <td class="py-1.5 text-right">
                             <div class="flex gap-2 justify-end">
-                                <a href="{% url 'loans:collateral_edit' pk=c.pk %}" class="text-primary-600 hover:text-primary-800 text-xs font-medium">Edit</a>
+                                <a href="{% url 'loans:collateral_edit' pk=c.pk %}" class="text-primary-600 hover:text-primary-800 text-xs font-medium">{% trans "Edit" %}</a>
                                 <form method="post" action="{% url 'loans:collateral_delete' pk=c.pk %}" class="inline" onsubmit="return confirm('Remove this collateral?')">
                                     {% csrf_token %}
-                                    <button type="submit" class="text-red-600 hover:text-red-800 text-xs font-medium">Remove</button>
+                                    <button type="submit" class="text-red-600 hover:text-red-800 text-xs font-medium">{% trans "Remove" %}</button>
                                 </form>
                             </div>
                         </td>
@@ -396,13 +396,13 @@
             </table>
             </div>
             {% else %}
-            <p class="text-center text-sm text-gray-400 py-4">No collateral or mortgage recorded for this loan.</p>
+            <p class="text-center text-sm text-gray-400 py-4">{% trans "No collateral or mortgage recorded for this loan." %}</p>
             {% endif %}
         </div>
 
         {% if standing_instructions %}
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-4">
-            <h3 class="text-xs font-semibold text-gray-500 uppercase mb-2">Standing Instructions / Charges</h3>
+            <h3 class="text-xs font-semibold text-gray-500 uppercase mb-2">{% trans "Standing Instructions / Charges" %}</h3>
             <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead>
