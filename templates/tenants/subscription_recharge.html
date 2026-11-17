@@ -5,7 +5,7 @@
 {% block page_title %}{% trans "Subscription" %}{% endblock %}
 
 {% block content %}
-<div class="max-w-full" x-data="{ selectedPlan: '{{ subscription.plan.pk|default:"" }}' }">
+<div class="max-w-full pt-4" x-data="{ selectedPlan: '', currentPlan: '{{ subscription.plan.pk|default:"" }}' }">
 
     {% if subscription %}
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-8">
@@ -32,91 +32,108 @@
     {% if plans %}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
         {% for plan in plans %}
-        <div @click="selectedPlan = '{{ plan.pk }}'"
-             class="relative rounded-2xl cursor-pointer transition-all duration-300"
-             :class="selectedPlan == '{{ plan.pk }}'
+        <div @click="if ('{{ plan.pk }}' !== currentPlan) selectedPlan = '{{ plan.pk }}'"
+             class="relative rounded-2xl transition-all duration-300"
+             :class="'{{ plan.pk }}' === currentPlan
                  ? 'bg-primary-600 text-white shadow-xl shadow-primary-200 scale-[1.02] -mt-2 mb-2'
-                 : 'bg-white border border-gray-200 shadow-sm hover:shadow-lg'">
+                 : selectedPlan === '{{ plan.pk }}'
+                     ? 'bg-white border-2 border-primary-500 shadow-lg ring-2 ring-primary-200 cursor-pointer'
+                     : 'bg-white border border-gray-200 shadow-sm hover:shadow-lg cursor-pointer'">
 
-            <div x-show="selectedPlan == '{{ plan.pk }}'" x-transition class="flex justify-center -mt-3.5">
-                <span class="inline-flex items-center px-4 py-1 rounded-full text-xs font-bold bg-amber-400 text-amber-900 shadow-sm">
-                    {% if plan.name == 'Professional' %}Most Popular{% else %}Selected{% endif %}
-                </span>
-            </div>
+            <!-- Active plan badge -->
+            <template x-if="'{{ plan.pk }}' === currentPlan">
+                <div class="flex justify-center -mt-3.5">
+                    <span class="inline-flex items-center gap-1.5 px-4 py-1 rounded-full text-xs font-bold bg-green-400 text-green-900 shadow-sm">
+                        <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                        Active Plan
+                    </span>
+                </div>
+            </template>
 
-            <div class="p-6" :class="selectedPlan == '{{ plan.pk }}' ? 'pt-4' : ''">
-                <h3 class="text-xl font-bold" :class="selectedPlan == '{{ plan.pk }}' ? 'text-white' : 'text-gray-900'">{{ plan.name }}</h3>
-                <p class="text-sm mt-0.5" :class="selectedPlan == '{{ plan.pk }}' ? 'text-primary-100' : 'text-gray-500'">
+            <!-- Selected plan badge (non-active) -->
+            <template x-if="selectedPlan === '{{ plan.pk }}' && '{{ plan.pk }}' !== currentPlan">
+                <div class="flex justify-center -mt-3.5">
+                    <span class="inline-flex items-center px-4 py-1 rounded-full text-xs font-bold bg-amber-400 text-amber-900 shadow-sm">
+                        Selected
+                    </span>
+                </div>
+            </template>
+
+            <div class="p-6" :class="'{{ plan.pk }}' === currentPlan || selectedPlan === '{{ plan.pk }}' ? 'pt-4' : ''">
+                <h3 class="text-xl font-bold" :class="'{{ plan.pk }}' === currentPlan ? 'text-white' : 'text-gray-900'">{{ plan.name }}</h3>
+                <p class="text-sm mt-0.5" :class="'{{ plan.pk }}' === currentPlan ? 'text-primary-100' : 'text-gray-500'">
                     {% if plan.name == 'Starter' %}For small societies{% elif plan.name == 'Professional' %}For growing societies{% else %}For large societies{% endif %}
                 </p>
 
                 <div class="mt-5 mb-6">
-                    <span class="text-4xl font-extrabold" :class="selectedPlan == '{{ plan.pk }}' ? 'text-white' : 'text-gray-900'">₹{{ plan.price_monthly|floatformat:0 }}</span>
-                    <span class="text-sm" :class="selectedPlan == '{{ plan.pk }}' ? 'text-primary-200' : 'text-gray-500'">/month</span>
+                    <span class="text-4xl font-extrabold" :class="'{{ plan.pk }}' === currentPlan ? 'text-white' : 'text-gray-900'">₹{{ plan.price_monthly|floatformat:0 }}</span>
+                    <span class="text-sm" :class="'{{ plan.pk }}' === currentPlan ? 'text-primary-200' : 'text-gray-500'">/month</span>
                 </div>
 
                 <div class="space-y-3 mb-6">
                     <div class="flex items-center gap-2.5">
-                        <svg class="h-5 w-5 flex-shrink-0" :class="selectedPlan == '{{ plan.pk }}' ? 'text-green-300' : 'text-green-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        <span class="text-sm" :class="selectedPlan == '{{ plan.pk }}' ? 'text-primary-50' : 'text-gray-700'">
+                        <svg class="h-5 w-5 flex-shrink-0" :class="'{{ plan.pk }}' === currentPlan ? 'text-green-300' : 'text-green-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <span class="text-sm" :class="'{{ plan.pk }}' === currentPlan ? 'text-primary-50' : 'text-gray-700'">
                             {% if plan.max_members >= 99999 %}Unlimited members{% else %}Up to {{ plan.max_members|floatformat:0 }} members{% endif %}
                         </span>
                     </div>
                     <div class="flex items-center gap-2.5">
-                        <svg class="h-5 w-5 flex-shrink-0" :class="selectedPlan == '{{ plan.pk }}' ? 'text-green-300' : 'text-green-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        <span class="text-sm" :class="selectedPlan == '{{ plan.pk }}' ? 'text-primary-50' : 'text-gray-700'">
+                        <svg class="h-5 w-5 flex-shrink-0" :class="'{{ plan.pk }}' === currentPlan ? 'text-green-300' : 'text-green-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <span class="text-sm" :class="'{{ plan.pk }}' === currentPlan ? 'text-primary-50' : 'text-gray-700'">
                             {% if plan.max_branches >= 20 %}Unlimited branches{% else %}{{ plan.max_branches }} branch{{ plan.max_branches|pluralize:"es" }}{% endif %}
                         </span>
                     </div>
                     <div class="flex items-center gap-2.5">
-                        <svg class="h-5 w-5 flex-shrink-0" :class="selectedPlan == '{{ plan.pk }}' ? 'text-green-300' : 'text-green-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        <span class="text-sm" :class="selectedPlan == '{{ plan.pk }}' ? 'text-primary-50' : 'text-gray-700'">
+                        <svg class="h-5 w-5 flex-shrink-0" :class="'{{ plan.pk }}' === currentPlan ? 'text-green-300' : 'text-green-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <span class="text-sm" :class="'{{ plan.pk }}' === currentPlan ? 'text-primary-50' : 'text-gray-700'">
                             {% if plan.max_users >= 50 %}Unlimited users{% else %}{{ plan.max_users }} user accounts{% endif %}
                         </span>
                     </div>
                     {% if plan.features %}
                     {% for key, val in plan.features.items %}
                     <div class="flex items-center gap-2.5">
-                        <svg class="h-5 w-5 flex-shrink-0" :class="selectedPlan == '{{ plan.pk }}' ? 'text-green-300' : 'text-green-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        <span class="text-sm" :class="selectedPlan == '{{ plan.pk }}' ? 'text-primary-50' : 'text-gray-700'">{{ val }}</span>
+                        <svg class="h-5 w-5 flex-shrink-0" :class="'{{ plan.pk }}' === currentPlan ? 'text-green-300' : 'text-green-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <span class="text-sm" :class="'{{ plan.pk }}' === currentPlan ? 'text-primary-50' : 'text-gray-700'">{{ val }}</span>
                     </div>
                     {% endfor %}
                     {% endif %}
                 </div>
 
-                <button type="button"
-                        class="w-full py-2.5 rounded-xl text-sm font-semibold transition-colors"
-                        :class="selectedPlan == '{{ plan.pk }}'
-                            ? 'bg-white text-primary-700 hover:bg-primary-50'
-                            : 'border-2 border-gray-300 text-gray-700 hover:border-primary-400 hover:text-primary-700'"
-                        @click.stop="selectedPlan = '{{ plan.pk }}'">
-                    {% if subscription and subscription.plan.pk == plan.pk %}
-                        Current Plan
-                    {% else %}
-                        Select Plan
-                    {% endif %}
-                </button>
+                <template x-if="'{{ plan.pk }}' === currentPlan">
+                    <div class="w-full py-2.5 rounded-xl text-sm font-semibold text-center bg-white/20 text-white">
+                        Your Current Plan
+                    </div>
+                </template>
+                <template x-if="'{{ plan.pk }}' !== currentPlan">
+                    <button type="button"
+                            class="w-full py-2.5 rounded-xl text-sm font-semibold transition-colors"
+                            :class="selectedPlan === '{{ plan.pk }}'
+                                ? 'bg-primary-600 text-white hover:bg-primary-700'
+                                : 'border-2 border-gray-300 text-gray-700 hover:border-primary-400 hover:text-primary-700'"
+                            @click.stop="selectedPlan = '{{ plan.pk }}'">
+                        <span x-text="selectedPlan === '{{ plan.pk }}' ? 'Selected' : 'Upgrade'"></span>
+                    </button>
+                </template>
             </div>
         </div>
         {% endfor %}
     </div>
 
-    {% if subscription %}
-    <form method="post" class="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        {% csrf_token %}
-        <input type="hidden" name="plan_id" :value="selectedPlan">
+    <!-- Pay button — visible only when a different plan is selected -->
+    <div x-show="selectedPlan && selectedPlan !== currentPlan" x-transition x-cloak
+         class="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div class="flex items-center justify-between flex-wrap gap-4">
             <div>
-                <p class="text-sm text-gray-600">Select a plan above, then click renew to activate for 30 days.</p>
+                <p class="text-sm font-medium text-gray-700">Upgrade to the selected plan</p>
                 <p class="text-xs text-gray-400 mt-1">Payment gateway integration coming soon.</p>
             </div>
-            <button type="submit" :disabled="!selectedPlan"
-                    class="px-8 py-3 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed">
-                Pay &amp; Renew Now
+            <button type="button" disabled
+                    class="px-8 py-3 bg-primary-600 text-white font-semibold rounded-xl shadow-sm transition opacity-90 cursor-not-allowed flex items-center gap-2">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                Pay &amp; Upgrade
             </button>
         </div>
-    </form>
-    {% endif %}
+    </div>
 
     {% else %}
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center">
