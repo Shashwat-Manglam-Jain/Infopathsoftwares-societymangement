@@ -106,7 +106,7 @@
                             {% endif %}
                         </td>
                         <td class="px-4 py-3 text-sm text-right" onclick="event.stopPropagation()">
-                            <a href="{% url 'accounts:staff_edit' pk=u.pk %}" class="text-primary-600 hover:text-primary-800 font-medium">Edit</a>
+                            <a href="{% url 'accounts:staff_edit' pk=u.pk %}" class="text-primary-600 hover:text-primary-800 font-medium">{% trans "Edit" %}</a>
                         </td>
                     </tr>
                     {% empty %}
