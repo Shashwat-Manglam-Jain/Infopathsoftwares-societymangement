@@ -68,10 +68,7 @@ def staff_list(request):
     q = request.GET.get('q', '').strip()
     if q:
         users = users.filter(
-            Q(username__icontains=q)
-            | Q(first_name__icontains=q)
-            | Q(last_name__icontains=q)
-            | Q(email__icontains=q)
+            Q(username__icontains=q) | Q(first_name__icontains=q) | Q(last_name__icontains=q) | Q(email__icontains=q)
         )
     role_filter = request.GET.get('role', '')
     if role_filter:

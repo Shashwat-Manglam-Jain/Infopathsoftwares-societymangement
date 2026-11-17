@@ -36,7 +36,8 @@ class ShareTransferForm(forms.Form):
             .distinct()
         )
         self.fields['from_member'].queryset = Member.objects.filter(
-            id__in=shareholder_ids, status='active',
+            id__in=shareholder_ids,
+            status='active',
         )
 
     def clean(self):
@@ -63,5 +64,6 @@ class ShareSurrenderForm(forms.Form):
             .distinct()
         )
         self.fields['member'].queryset = Member.objects.filter(
-            id__in=shareholder_ids, status='active',
+            id__in=shareholder_ids,
+            status='active',
         )
