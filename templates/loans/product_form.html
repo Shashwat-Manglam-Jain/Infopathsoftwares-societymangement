@@ -30,28 +30,28 @@
             <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-xl">
                 <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
                     <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    Product Details
+                    {% trans "Product Details" %}
                 </h3>
             </div>
             <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Product Name <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Product Name" %} <span class="text-red-500">*</span></label>
                     <input type="text" name="name" value="{{ form.name.value|default:'' }}" required class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Loan Category <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Loan Category" %} <span class="text-red-500">*</span></label>
                     {{ form.loan_category }}
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Mortgage Type <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Mortgage Type" %} <span class="text-red-500">*</span></label>
                     {{ form.mortgage_type }}
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Max Loan Amount</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Max Loan Amount" %}</label>
                     <input type="number" name="max_amount" value="{{ form.max_amount.value|default:'' }}" step="0.01" min="1" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Max Tenure (Months)</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Max Tenure (Months)" %}</label>
                     <input type="number" name="max_tenure_months" value="{{ form.max_tenure_months.value|default:'' }}" min="1" max="999" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                 </div>
                 <div>
