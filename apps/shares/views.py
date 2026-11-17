@@ -28,6 +28,15 @@ def share_list(request):
     holdings = ShareHolding.objects.filter(status='active').select_related('member', 'branch')
     if not request.user.can_access_all_branches:
         holdings = holdings.filter(branch=request.current_branch)
+    q = request.GET.get('q', '').strip()
+    if q:
+        from django.db import models as db_models
+
+        holdings = holdings.filter(
+            db_models.Q(member__name__icontains=q)
+            | db_models.Q(member__member_no__icontains=q)
+            | db_models.Q(certificate_no__icontains=q)
+        )
 
     dividend_results = None
     total_dividend = Decimal('0')

@@ -10,7 +10,7 @@
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
         <div class="px-5 py-4 grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-3">
             <div>
-                <span class="text-xs text-gray-500">FD No</span>
+                <span class="text-xs text-gray-500">{% trans "FD No" %}</span>
                 <p class="text-sm font-semibold font-mono text-gray-900">{{ fd.fd_no }}</p>
             </div>
             <div>
@@ -51,27 +51,35 @@
                 <div class="flex justify-between"><dt class="text-gray-500">{% trans "Opening Date" %}</dt><dd class="font-medium">{{ fd.start_date|date:"d M Y" }}</dd></div>
                 <div class="flex justify-between"><dt class="text-gray-500">{% trans "Maturity Date" %}</dt><dd class="font-medium">{{ fd.maturity_date|date:"d M Y" }}</dd></div>
                 <div class="flex justify-between"><dt class="text-gray-500">{% trans "Tenure" %}</dt><dd class="font-medium">{{ fd.tenure_days }} days</dd></div>
-                <div class="flex justify-between"><dt class="text-gray-500">Auto Renew</dt><dd class="font-medium">{% if fd.is_auto_renew %}Yes{% else %}No{% endif %}</dd></div>
-                {% if fd.fd_product %}<div class="flex justify-between"><dt class="text-gray-500">Product</dt><dd class="font-medium">{{ fd.fd_product.name }}</dd></div>{% endif %}
-                {% if fd.linked_savings_account %}<div class="flex justify-between"><dt class="text-gray-500">Linked Savings</dt><dd class="font-medium">{{ fd.linked_savings_account.account_no }}</dd></div>{% endif %}
+                <div class="flex justify-between"><dt class="text-gray-500">{% trans "Auto Renew" %}</dt><dd class="font-medium">{% if fd.is_auto_renew %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}</dd></div>
+                {% if fd.fd_product %}<div class="flex justify-between"><dt class="text-gray-500">{% trans "Product" %}</dt><dd class="font-medium">{{ fd.fd_product.name }}</dd></div>{% endif %}
+                {% if fd.linked_savings_account %}<div class="flex justify-between"><dt class="text-gray-500">{% trans "Linked Savings" %}</dt><dd class="font-medium">{{ fd.linked_savings_account.account_no }}</dd></div>{% endif %}
             </dl>
         </div>
 
         {% if fd.status == 'active' and request.user.is_manager %}
         <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-end gap-3">
-            <a href="{% url 'deposits:fd_list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">&larr; Back</a>
+            <a href="{% url 'deposits:fd_list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">&larr; {% trans "Back" %}</a>
             <form method="post" action="{% url 'deposits:fd_renew' pk=fd.pk %}" class="inline">
                 {% csrf_token %}
-                <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">Renew FD</button>
+                <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "Renew FD" %}</button>
             </form>
-            <form method="post" action="{% url 'deposits:fd_premature_close' pk=fd.pk %}" class="inline" onsubmit="return confirm('Are you sure you want to prematurely close this FD?');">
+            <form method="post" action="{% url 'deposits:fd_premature_close' pk=fd.pk %}" class="inline" onsubmit="return confirm('{% trans "Are you sure you want to prematurely close this FD?" %}');">
                 {% csrf_token %}
-                <button type="submit" class="px-4 py-1.5 bg-red-600 text-white text-sm font-medium rounded hover:bg-red-700">Premature Close</button>
+                <button type="submit" class="px-4 py-1.5 bg-red-600 text-white text-sm font-medium rounded hover:bg-red-700">{% trans "Premature Close" %}</button>
+            </form>
+        </div>
+        {% elif fd.status == 'matured' and request.user.is_manager %}
+        <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-end gap-3">
+            <a href="{% url 'deposits:fd_list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">&larr; {% trans "Back" %}</a>
+            <form method="post" action="{% url 'deposits:fd_renew' pk=fd.pk %}" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "Renew FD" %}</button>
             </form>
         </div>
         {% else %}
         <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-end">
-            <a href="{% url 'deposits:fd_list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">&larr; Back</a>
+            <a href="{% url 'deposits:fd_list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">&larr; {% trans "Back" %}</a>
         </div>
         {% endif %}
     </div>

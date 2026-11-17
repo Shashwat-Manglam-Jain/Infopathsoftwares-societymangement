@@ -145,7 +145,7 @@
 
     {% elif report_date %}
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-        <p class="text-gray-400 text-sm">No cashbook record found for {{ report_date }}. Day End may not have been run yet.</p>
+        <p class="text-gray-400 text-sm">{% trans "No cashbook record found for this date. Day End may not have been run yet." %}</p>
     </div>
     {% endif %}
 </div>

@@ -57,6 +57,16 @@ def loan_list(request):
     else:
         loans = loans.exclude(status__in=['rejected', 'written_off'])
 
+    q = request.GET.get('q', '').strip()
+    if q:
+        from django.db import models as db_models
+
+        loans = loans.filter(
+            db_models.Q(loan_no__icontains=q)
+            | db_models.Q(member__name__icontains=q)
+            | db_models.Q(member__member_no__icontains=q)
+        )
+
     loans = loans.order_by('-applied_date')
     paginator = Paginator(loans, 25)
     page_obj = paginator.get_page(request.GET.get('page'))

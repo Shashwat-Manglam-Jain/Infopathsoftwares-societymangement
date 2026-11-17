@@ -135,8 +135,8 @@
     {% if report_type == 'date_daybook' and transactions is not None %}
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
-            <h3 class="text-base font-semibold text-gray-900">Pigmmy Daybook — {{ report_date }}</h3>
-            <span class="text-sm font-medium text-gray-700">Total: {{ total_amount|floatformat:2 }}</span>
+            <h3 class="text-base font-semibold text-gray-900">{% trans "Pigmmy Daybook" %} — {{ report_date }}</h3>
+            <span class="text-sm font-medium text-gray-700">{% trans "Total" %}: {{ total_amount|floatformat:2 }}</span>
         </div>
         {% if transactions %}
         <div class="overflow-x-auto">

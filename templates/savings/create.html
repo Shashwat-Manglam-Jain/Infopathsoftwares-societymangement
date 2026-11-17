@@ -55,7 +55,7 @@
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Minimum Balance</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Minimum Balance" %}</label>
                     {{ form.minimum_balance }}
                 </div>
                 <div>
@@ -73,8 +73,8 @@
             </div>
 
             <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex items-center justify-end gap-3">
-                <a href="{% url 'savings:list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
-                <button id="submit-btn" type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm">Save</button>
+                <a href="{% url 'savings:list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
+                <button id="submit-btn" type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm">{% trans "Save" %}</button>
             </div>
         </div>
     </form>

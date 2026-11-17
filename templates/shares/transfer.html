@@ -11,7 +11,7 @@
         <h3 class="text-sm font-medium text-red-800">{% trans "Please correct the errors below" %}</h3>
         <ul class="mt-1 text-sm text-red-700 list-disc list-inside">
             {% for field, errors in form.errors.items %}
-                {% for e in errors %}<p class="text-sm text-red-600">{{ e }}</p>{% endfor %}
+                {% for e in errors %}<li>{{ e }}</li>{% endfor %}
             {% endfor %}
         </ul>
     </div>

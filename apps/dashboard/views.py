@@ -1,18 +1,21 @@
 from datetime import date, timedelta
 from decimal import Decimal
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Sum
 from django.views.generic import TemplateView
 
-from apps.accounts.permissions import AuditorOrAboveMixin
 
-
-class DashboardView(AuditorOrAboveMixin, TemplateView):
+class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'dashboard/dashboard.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        user = self.request.user
+        context['is_member_only'] = getattr(user, 'is_member_only', False)
+        if context['is_member_only']:
+            return context
         branch = getattr(self.request, 'current_branch', None)
         today = date.today()
 

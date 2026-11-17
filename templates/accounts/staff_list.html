@@ -19,6 +19,25 @@
         </a>
     </div>
 
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <form method="get" class="flex flex-col sm:flex-row gap-3">
+            <div class="relative flex-1">
+                <svg class="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <input type="text" name="q" value="{{ request.GET.q }}" placeholder="{% trans 'Search by username, name, email...' %}" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-primary-500 focus:border-primary-500">
+            </div>
+            <select name="role" onchange="this.form.submit()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
+                <option value="">{% trans "All Roles" %}</option>
+                <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>Admin</option>
+                <option value="branch_manager" {% if role_filter == 'branch_manager' %}selected{% endif %}>Branch Manager</option>
+                <option value="accountant" {% if role_filter == 'accountant' %}selected{% endif %}>Accountant</option>
+                <option value="cashier" {% if role_filter == 'cashier' %}selected{% endif %}>Cashier</option>
+                <option value="clerk" {% if role_filter == 'clerk' %}selected{% endif %}>Clerk</option>
+                <option value="auditor" {% if role_filter == 'auditor' %}selected{% endif %}>Auditor</option>
+                <option value="director" {% if role_filter == 'director' %}selected{% endif %}>{% trans "Director" %}</option>
+            </select>
+        </form>
+    </div>
+
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden" x-data="{ showGuide: false }">
         <button @click="showGuide = !showGuide" class="w-full px-4 py-2.5 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
             <span class="text-xs font-medium text-gray-500 flex items-center gap-1.5">

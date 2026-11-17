@@ -7,6 +7,20 @@
 {% block content %}
 <div class="space-y-5">
 
+    {% if is_member_only %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+        <div class="w-16 h-16 bg-primary-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg class="h-8 w-8 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+        </div>
+        <h2 class="text-xl font-bold text-gray-900 mb-2">{% trans "Welcome" %}, {{ request.user.get_full_name|default:request.user.username }}</h2>
+        <p class="text-sm text-gray-500 mb-6">{% trans "Contact your society office for account details and transactions." %}</p>
+        <div class="flex justify-center gap-3">
+            <a href="{% url 'accounts:profile' %}" class="px-4 py-2 text-sm font-medium text-primary-700 bg-primary-50 rounded-lg hover:bg-primary-100">{% trans "My Profile" %}</a>
+            <a href="{% url 'accounts:change_password' %}" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">{% trans "Change Password" %}</a>
+        </div>
+    </div>
+    {% else %}
+
     {% if working_day %}
     <div class="flex items-center justify-between bg-white rounded-lg border border-gray-200 shadow-sm p-4">
         <div class="flex items-center gap-3">
@@ -311,6 +325,8 @@
             </a>
         </div>
     </div>
+    {% endif %}
+
     {% endif %}
 
 </div>

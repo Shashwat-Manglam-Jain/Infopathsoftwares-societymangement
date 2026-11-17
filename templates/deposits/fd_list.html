@@ -10,7 +10,7 @@
 
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-            <h2 class="text-xl font-bold text-gray-900">Fixed Deposits</h2>
+            <h2 class="text-xl font-bold text-gray-900">{% trans "Fixed Deposits" %}</h2>
             <p class="text-sm text-gray-500 mt-1">{{ paginator.count }} deposit{{ paginator.count|pluralize }}</p>
         </div>
         <div class="flex items-center gap-3">
@@ -21,9 +21,25 @@
             </div>
             <a href="{% url 'deposits:fd_create' %}" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">
                 <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                New FD
+                {% trans "New FD" %}
             </a>
         </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <form method="get" class="relative">
+            {% if current_status %}<input type="hidden" name="status" value="{{ current_status }}">{% endif %}
+            <svg class="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" name="q" value="{{ request.GET.q }}" placeholder="{% trans 'Search by FD no, member name...' %}" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-primary-500 focus:border-primary-500">
+        </form>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <form method="get" class="relative">
+            {% if current_status %}<input type="hidden" name="status" value="{{ current_status }}">{% endif %}
+            <svg class="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" name="q" value="{{ request.GET.q }}" placeholder="{% trans 'Search by FD no, member name...' %}" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-primary-500 focus:border-primary-500">
+        </form>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -46,7 +62,7 @@
                     <tr class="hover:bg-gray-50 transition-colors cursor-pointer" onclick="window.location='{% url 'deposits:fd_detail' pk=fd.pk %}'">
                         <td class="px-4 py-3 text-sm font-mono text-primary-600 font-medium"><a href="{% url 'deposits:fd_detail' pk=fd.pk %}" class="hover:underline">{{ fd.fd_no }}</a></td>
                         <td class="px-4 py-3 text-sm text-gray-900">{{ fd.member.name }}<a href="{% url 'members:detail' fd.member.pk %}" class="ml-1 text-gray-300 hover:text-primary-500" title="View Member" onclick="event.stopPropagation()"><svg class="h-3.5 w-3.5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></a></td>
-                        <td class="px-4 py-3 text-sm text-right font-medium text-gray-900">{{ fd.deposit_amount|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-right font-medium text-gray-900">&#8377;{{ fd.deposit_amount|floatformat:2 }}</td>
                         <td class="px-4 py-3 text-sm text-right text-gray-600 hidden md:table-cell">{{ fd.interest_rate }}%</td>
                         <td class="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">{{ fd.start_date|date:"d M Y" }}</td>
                         <td class="px-4 py-3 text-sm text-gray-500 hidden lg:table-cell">{{ fd.maturity_date|date:"d M Y" }}</td>
@@ -61,7 +77,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="8" class="px-4 py-8 text-center text-sm text-gray-400">No fixed deposits found.</td>
+                        <td colspan="8" class="px-4 py-8 text-center text-sm text-gray-400">{% trans "No fixed deposits found." %}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

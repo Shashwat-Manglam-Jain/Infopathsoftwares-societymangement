@@ -32,6 +32,14 @@
         </div>
     </div>
 
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <form method="get" class="relative">
+            {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+            <svg class="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search by loan no, member name..." class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-primary-500 focus:border-primary-500">
+        </form>
+    </div>
+
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
@@ -56,9 +64,9 @@
                         </td>
                         <td class="px-4 py-3 text-sm text-gray-900">{{ l.member.name }}<a href="{% url 'members:detail' l.member.pk %}" class="ml-1 text-gray-300 hover:text-primary-500" title="View Member"><svg class="h-3.5 w-3.5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></a></td>
                         <td class="px-4 py-3 text-sm text-gray-600 hidden md:table-cell">{{ l.loan_product.name }}</td>
-                        <td class="px-4 py-3 text-sm text-right font-medium text-gray-900">{{ l.disbursed_amount|default:l.applied_amount|floatformat:2 }}</td>
-                        <td class="px-4 py-3 text-sm text-right text-gray-900 hidden lg:table-cell">{{ l.outstanding_principal|floatformat:2 }}</td>
-                        <td class="px-4 py-3 text-sm text-right text-gray-600 hidden lg:table-cell">{{ l.emi_amount|floatformat:2|default:"—" }}</td>
+                        <td class="px-4 py-3 text-sm text-right font-medium text-gray-900">&#8377;{{ l.disbursed_amount|default:l.applied_amount|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-900 hidden lg:table-cell">&#8377;{{ l.outstanding_principal|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-600 hidden lg:table-cell">{% if l.emi_amount %}&#8377;{{ l.emi_amount|floatformat:2 }}{% else %}—{% endif %}</td>
                         <td class="px-4 py-3 text-sm text-gray-500 hidden lg:table-cell">{{ l.applied_date|date:"d M Y" }}</td>
                         <td class="px-4 py-3">
                             {% if l.status == 'disbursed' %}

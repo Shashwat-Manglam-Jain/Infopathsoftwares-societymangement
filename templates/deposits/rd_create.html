@@ -15,6 +15,20 @@
     </div>
     {% endif %}
 
+    {% if form.errors %}
+    <div class="rounded-xl bg-red-50 border border-red-200 p-4 mb-4">
+        <h3 class="text-sm font-medium text-red-800 flex items-center gap-2">
+            <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+            {% trans "Please correct the errors below" %}
+        </h3>
+        <ul class="mt-1 text-sm text-red-700 list-disc list-inside">
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}<li>{{ field|title }}: {{ error }}</li>{% endfor %}
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
     <form method="post">
         {% csrf_token %}
 
@@ -51,6 +65,18 @@
                             <a href="{% url 'accounting:interest_master_create' %}{% if head_id %}?head={{ head_id }}{% endif %}" class="underline ml-1">Configure Interest Master</a>
                         </p>
                     </template>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Linked Savings Account" %}</label>
+                    {{ form.linked_savings_account }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Meeting No" %}</label>
+                    {{ form.meeting_no }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Meeting Date" %}</label>
+                    {{ form.meeting_date }}
                 </div>
             </div>
 

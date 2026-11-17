@@ -60,10 +60,23 @@ def change_password_view(request):
 
 @manager_required
 def staff_list(request):
+    from django.db.models import Q
+
     users = CustomUser.objects.select_related('branch').order_by('username')
     if not request.user.can_access_all_branches:
         users = users.filter(branch=request.current_branch)
-    return render(request, 'accounts/staff_list.html', {'users': users})
+    q = request.GET.get('q', '').strip()
+    if q:
+        users = users.filter(
+            Q(username__icontains=q)
+            | Q(first_name__icontains=q)
+            | Q(last_name__icontains=q)
+            | Q(email__icontains=q)
+        )
+    role_filter = request.GET.get('role', '')
+    if role_filter:
+        users = users.filter(role=role_filter)
+    return render(request, 'accounts/staff_list.html', {'users': users, 'role_filter': role_filter})
 
 
 @admin_required

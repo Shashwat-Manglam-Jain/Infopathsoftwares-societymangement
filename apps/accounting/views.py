@@ -25,11 +25,24 @@ CUSTOMER_ACCOUNT_TYPES = ('saving', 'current', 'recurring', 'fixed', 'security',
 
 @auditor_or_above
 def voucher_list(request):
+    from django.core.paginator import Paginator
+
     entries = JournalEntry.objects.select_related('branch', 'created_by')
     if not request.user.can_access_all_branches:
         entries = entries.filter(branch=request.current_branch)
-    entries = entries.order_by('-entry_date', '-created_at')[:50]
-    return render(request, 'accounting/vouchers.html', {'entries': entries})
+    entries = entries.order_by('-entry_date', '-created_at')
+    paginator = Paginator(entries, 25)
+    page_obj = paginator.get_page(request.GET.get('page'))
+    return render(
+        request,
+        'accounting/vouchers.html',
+        {
+            'entries': page_obj,
+            'page_obj': page_obj,
+            'is_paginated': page_obj.has_other_pages(),
+            'paginator': paginator,
+        },
+    )
 
 
 @cashier_required
