@@ -130,6 +130,25 @@ class LoanApplicationForm(forms.ModelForm):
             raise forms.ValidationError('Amount must be at least 1.')
         return amount
 
+    def clean(self):
+        cleaned = super().clean()
+        loan_product = cleaned.get('loan_product')
+        amount = cleaned.get('applied_amount')
+        if loan_product and amount:
+            if loan_product.max_amount and amount > loan_product.max_amount:
+                self.add_error(
+                    'applied_amount',
+                    f'Amount exceeds maximum ₹{loan_product.max_amount:,.2f} for {loan_product.name}.',
+                )
+            if loan_product.max_tenure_months:
+                tenure = cleaned.get('tenure_months')
+                if tenure and tenure > loan_product.max_tenure_months:
+                    self.add_error(
+                        'tenure_months',
+                        f'Tenure exceeds maximum {loan_product.max_tenure_months} months for {loan_product.name}.',
+                    )
+        return cleaned
+
     def clean_director_recommendation(self):
         director = self.cleaned_data.get('director_recommendation')
         loan_product = self.cleaned_data.get('loan_product')

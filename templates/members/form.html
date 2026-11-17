@@ -112,8 +112,24 @@
                 <textarea name="address" rows="2" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">{{ form.address.value|default:'' }}</textarea>
             </div>
             <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "State" %}</label>
-                {{ form.state }}
+                <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Post" %}</label>
+                <input type="text" name="post" value="{{ form.instance.post|default:'' }}" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Area" %}</label>
+                <input type="text" name="area" value="{{ form.instance.area|default:'' }}" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Sub Area" %}</label>
+                <input type="text" name="sub_area" value="{{ form.instance.sub_area|default:'' }}" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "City / Village" %}</label>
+                <input type="text" name="city_village" value="{{ form.instance.city_village|default:'' }}" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "City" %}</label>
+                <input type="text" name="city" value="{{ form.city.value|default:'' }}" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "District" %}</label>
@@ -124,8 +140,8 @@
                 <input type="text" name="tahsil" value="{{ form.instance.tahsil|default:'' }}" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
             </div>
             <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "City" %}</label>
-                <input type="text" name="city" value="{{ form.city.value|default:'' }}" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "State" %}</label>
+                {{ form.state }}
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Pincode" %}</label>
@@ -260,6 +276,10 @@
                     <input type="checkbox" name="is_ex_military" {% if form.instance.is_ex_military %}checked{% endif %} class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
                     <span class="text-sm text-gray-700">{% trans "Ex-Military" %}</span>
                 </label>
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                    <input type="checkbox" name="is_nominal_member" {% if form.instance.is_nominal_member %}checked{% endif %} class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                    <span class="text-sm text-gray-700">{% trans "Nominal Member" %}</span>
+                </label>
             </div>
         </div>
 
@@ -293,11 +313,7 @@
         <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Branch" %} <span class="text-red-500">*</span></label>
-                <select name="branch" required class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
-                    {% for branch in branches %}
-                    <option value="{{ branch.pk }}" {% if form.branch.value|stringformat:"s" == branch.pk|stringformat:"s" %}selected{% endif %}>{{ branch.branch_name }}</option>
-                    {% endfor %}
-                </select>
+                {{ form.branch }}
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Join Date" %} <span class="text-red-500">*</span></label>
@@ -325,6 +341,28 @@
                 {% if form.instance.signature %}
                 <img src="{{ form.instance.signature.url }}" alt="Signature" class="mt-1 h-10 w-20 object-contain border border-gray-200 rounded bg-white">
                 {% endif %}
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Introducer" %}</label>
+                {{ form.introducer }}
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Exit Date" %}</label>
+                {{ form.exit_date }}
+            </div>
+            <div>
+                <label class="flex items-center gap-1.5 cursor-pointer mt-5">
+                    <input type="checkbox" name="kyc_verified" {% if form.instance.kyc_verified %}checked{% endif %} class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                    <span class="text-sm text-gray-700">{% trans "KYC Verified" %}</span>
+                </label>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "KYC Date" %}</label>
+                {{ form.kyc_date }}
+            </div>
+            <div class="md:col-span-2 lg:col-span-3">
+                <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Additional Info" %}</label>
+                <textarea name="info" rows="2" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">{{ form.info.value|default:'' }}</textarea>
             </div>
         </div>
 
@@ -382,6 +420,12 @@
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Share %" %}</label>
                             <input type="number" name="{{ nf.share_percentage.html_name }}" value="{{ nf.share_percentage.value|default:'100' }}" step="0.01" min="0" max="100" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                        </div>
+                        <div class="flex items-end pb-1">
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input type="checkbox" name="{{ nf.is_primary.html_name }}" {% if nf.is_primary.value %}checked{% endif %} class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                                <span class="text-xs text-gray-600">{% trans "Primary" %}</span>
+                            </label>
                         </div>
                     </div>
                 </div>

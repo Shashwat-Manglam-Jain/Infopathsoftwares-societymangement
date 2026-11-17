@@ -1,13 +1,14 @@
 from datetime import date, timedelta
 from decimal import Decimal
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Sum
 from django.views.generic import TemplateView
 
+from apps.accounts.permissions import AuditorOrAboveMixin
 
-class DashboardView(LoginRequiredMixin, TemplateView):
+
+class DashboardView(AuditorOrAboveMixin, TemplateView):
     template_name = 'dashboard/dashboard.html'
 
     def get_context_data(self, **kwargs):

@@ -57,6 +57,7 @@ def share_list(request):
             with db_transaction.atomic():
                 for r in dividend_results:
                     member = r['member']
+                    holding = r.get('holding')
                     savings = SavingsAccount.objects.filter(
                         member=member,
                         status='active',
@@ -76,6 +77,17 @@ def share_list(request):
                             payment_mode='transfer',
                             created_by=request.user,
                         )
+                        if holding:
+                            ShareTransaction.objects.create(
+                                member=member,
+                                branch=holding.branch,
+                                txn_type='dividend',
+                                shares_count=0,
+                                amount=r['dividend'],
+                                txn_date=today,
+                                narration=f'Dividend @ {rate}% for FY {financial_year}',
+                                created_by=request.user,
+                            )
                         posted += 1
 
             messages.success(request, f'Dividend posted to {posted} accounts. Total: ₹{total_dividend:,.2f}')

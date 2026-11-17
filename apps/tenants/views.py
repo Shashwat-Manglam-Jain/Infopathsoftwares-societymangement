@@ -2,7 +2,6 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.shortcuts import redirect, render
@@ -248,7 +247,7 @@ def subscription_expired_view(request):
     )
 
 
-@login_required
+@admin_required
 def subscription_recharge_view(request):
     tenant = getattr(request, 'tenant', None)
     sub = None

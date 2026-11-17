@@ -114,6 +114,15 @@ def transfer_shares(from_member, to_member, count, user):
                 f'below minimum required ({config.min_shares_required}).'
             )
 
+    existing_to = ShareHolding.objects.filter(member=to_member, status='active').first()
+    if config and config.max_shares_per_member:
+        total_after = (existing_to.share_count if existing_to else 0) + count
+        if total_after > config.max_shares_per_member:
+            raise ValueError(
+                f'Transfer would give {to_member.name} {total_after} shares, '
+                f'exceeding maximum ({config.max_shares_per_member}).'
+            )
+
     today = timezone.now().date()
 
     remaining = count
@@ -142,15 +151,6 @@ def transfer_shares(from_member, to_member, count, user):
         transfer_to_member=to_member,
         created_by=user,
     )
-
-    existing_to = ShareHolding.objects.filter(member=to_member, status='active').first()
-    if config and config.max_shares_per_member:
-        total_after = (existing_to.share_count if existing_to else 0) + count
-        if total_after > config.max_shares_per_member:
-            raise ValueError(
-                f'Transfer would give {to_member.name} {total_after} shares, '
-                f'exceeding maximum ({config.max_shares_per_member}).'
-            )
 
     if existing_to:
         existing_to.share_count += count
@@ -267,6 +267,7 @@ def calculate_dividend(rate, financial_year=None, branch=None):
         results.append(
             {
                 'member': holding.member,
+                'holding': holding,
                 'shares': holding.share_count,
                 'amount': holding.total_amount,
                 'dividend': dividend,
