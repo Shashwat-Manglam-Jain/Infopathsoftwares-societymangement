@@ -1766,4 +1766,11 @@ def notices(request):
 
 @auditor_or_above
 def calculator(request):
-    return render(request, 'reports/calculator.html')
+    from apps.accounting.models import InterestMaster
+
+    rates = (
+        InterestMaster.objects.filter(is_active=True)
+        .select_related('account_head')
+        .order_by('account_head__code', 'min_period')
+    )
+    return render(request, 'reports/calculator.html', {'interest_rates': rates})
