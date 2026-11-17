@@ -20,14 +20,14 @@
         <div x-show="hover" x-cloak x-transition class="absolute left-0 top-full pt-1 z-50">
             <div class="w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
                 {% if request.user.is_manager %}
-                <a href="{% url 'branches:list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Branches" %}</a>
-                <a href="{% url 'accounts:staff_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Staff & Users" %}</a>
+                <a href="{% url 'branches:list' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.app_name == 'branches' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Branches" %}</a>
+                <a href="{% url 'accounts:staff_list' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if 'staff' in request.path %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Staff & Users" %}</a>
                 {% endif %}
-                <a href="{% url 'members:list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Members" %}</a>
-                <a href="{% url 'accounting:heads' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Head Master" %}</a>
-                <a href="{% url 'accounting:interest_master' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Interest Master" %}</a>
+                <a href="{% url 'members:list' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.app_name == 'members' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Members" %}</a>
+                <a href="{% url 'accounting:heads' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'heads' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Head Master" %}</a>
+                <a href="{% url 'accounting:interest_master' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if 'interest-master' in request.path %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Interest Master" %}</a>
                 <div class="border-t border-gray-100 my-1"></div>
-                <a href="{% url 'loans:product_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Loan Products" %}</a>
+                <a href="{% url 'loans:product_list' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if 'products' in request.path and request.resolver_match.app_name == 'loans' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Loan Products" %}</a>
             </div>
         </div>
     </div>
@@ -41,19 +41,19 @@
         </button>
         <div x-show="hover" x-cloak x-transition class="absolute left-0 top-full pt-1 z-50">
             <div class="w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
-                <a href="{% url 'savings:list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Savings Accounts" %}</a>
-                <a href="{% url 'savings:list' %}?type=current" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Current Accounts" %}</a>
-                <a href="{% url 'savings:list' %}?type=security" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Security Deposits" %}</a>
+                <a href="{% url 'savings:list' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.app_name == 'savings' and request.GET.type != 'current' and request.GET.type != 'security' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Savings Accounts" %}</a>
+                <a href="{% url 'savings:list' %}?type=current" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.app_name == 'savings' and request.GET.type == 'current' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Current Accounts" %}</a>
+                <a href="{% url 'savings:list' %}?type=security" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.app_name == 'savings' and request.GET.type == 'security' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Security Deposits" %}</a>
                 <div class="border-t border-gray-100 my-1"></div>
-                <a href="{% url 'deposits:fd_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Fixed Deposits" %}</a>
-                <a href="{% url 'deposits:rd_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Recurring Deposits" %}</a>
+                <a href="{% url 'deposits:fd_list' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.app_name == 'deposits' and 'fd' in request.resolver_match.url_name %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Fixed Deposits" %}</a>
+                <a href="{% url 'deposits:rd_list' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.app_name == 'deposits' and 'rd' in request.resolver_match.url_name %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Recurring Deposits" %}</a>
                 <div class="border-t border-gray-100 my-1"></div>
-                <a href="{% url 'loans:list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Loan Accounts" %}</a>
+                <a href="{% url 'loans:list' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.app_name == 'loans' and 'products' not in request.path %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Loan Accounts" %}</a>
                 <div class="border-t border-gray-100 my-1"></div>
-                <a href="{% url 'shares:list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Share Holdings" %}</a>
+                <a href="{% url 'shares:list' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.app_name == 'shares' and 'config' not in request.path %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Share Holdings" %}</a>
                 <div class="border-t border-gray-100 my-1"></div>
-                <a href="{% url 'agents:list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Agents" %}</a>
-                <a href="{% url 'agents:pigmmy_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Pigmy Accounts" %}</a>
+                <a href="{% url 'agents:list' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.app_name == 'agents' and 'pigmmy' not in request.path and 'collection' not in request.path %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Agents" %}</a>
+                <a href="{% url 'agents:pigmmy_list' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if 'pigmmy' in request.path and request.resolver_match.app_name == 'agents' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Pigmy Accounts" %}</a>
             </div>
         </div>
     </div>
@@ -70,18 +70,18 @@
         <div x-show="hover" x-cloak x-transition class="absolute left-0 top-full pt-1 z-50">
             <div class="w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
                 {% if request.user.is_cashier %}
-                <a href="{% url 'accounting:receipt' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Receipt" %}</a>
-                <a href="{% url 'accounting:payment' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Payment" %}</a>
+                <a href="{% url 'accounting:receipt' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'receipt' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Receipt" %}</a>
+                <a href="{% url 'accounting:payment' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'payment' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Payment" %}</a>
                 {% endif %}
                 {% if request.user.is_accountant %}
-                <a href="{% url 'accounting:voucher_create' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Voucher Entry" %}</a>
+                <a href="{% url 'accounting:voucher_create' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'voucher_create' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Voucher Entry" %}</a>
                 {% endif %}
                 <div class="border-t border-gray-100 my-1"></div>
-                <a href="{% url 'agents:collection_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Agent Collections" %}</a>
-                <a href="{% url 'agents:collection_posting' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Collection Posting" %}</a>
+                <a href="{% url 'agents:collection_list' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'collection_list' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Agent Collections" %}</a>
+                <a href="{% url 'agents:collection_posting' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'collection_posting' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Collection Posting" %}</a>
                 {% if request.user.is_manager %}
                 <div class="border-t border-gray-100 my-1"></div>
-                <a href="{% url 'accounting:inter_branch_transfer' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Inter-Branch Transfer" %}</a>
+                <a href="{% url 'accounting:inter_branch_transfer' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'inter_branch_transfer' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Inter-Branch Transfer" %}</a>
                 {% endif %}
             </div>
         </div>
@@ -96,13 +96,13 @@
         </button>
         <div x-show="hover" x-cloak x-transition class="absolute left-0 top-full pt-1 z-50">
             <div class="w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
-                <a href="{% url 'accounting:cashbook' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Cash Book" %}</a>
-                <a href="{% url 'accounting:general_ledger' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "General Ledger" %}</a>
-                <a href="{% url 'accounting:day_book' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Day Book" %}</a>
-                <a href="{% url 'accounting:cashbook_report' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Cashbook Summary" %}</a>
+                <a href="{% url 'accounting:cashbook' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'cashbook' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Cash Book" %}</a>
+                <a href="{% url 'accounting:general_ledger' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'general_ledger' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "General Ledger" %}</a>
+                <a href="{% url 'accounting:day_book' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'day_book' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Day Book" %}</a>
+                <a href="{% url 'accounting:cashbook_report' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'cashbook_report' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Cashbook Summary" %}</a>
                 {% if request.user.is_accountant %}
                 <div class="border-t border-gray-100 my-1"></div>
-                <a href="{% url 'accounting:vouchers' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "All Vouchers" %}</a>
+                <a href="{% url 'accounting:vouchers' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'vouchers' or request.resolver_match.url_name == 'voucher_edit' or request.resolver_match.url_name == 'voucher_cancel' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "All Vouchers" %}</a>
                 {% endif %}
             </div>
         </div>
@@ -119,21 +119,21 @@
         </button>
         <div x-show="hover" x-cloak x-transition class="absolute left-0 top-full pt-1 z-50">
             <div class="w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
-                <a href="{% url 'reports:personal_ledger' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Account Statement" %}</a>
-                <a href="{% url 'reports:enquiry' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Enquiry" %}</a>
-                <a href="{% url 'reports:deposit_reports' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Deposit Reports" %}</a>
-                <a href="{% url 'reports:loan_reports' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Loan Reports" %}</a>
-                <a href="{% url 'reports:balance_reports' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Current Balance" %}</a>
-                <a href="{% url 'reports:pigmmy_reports' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Pigmy Reports" %}</a>
+                <a href="{% url 'reports:personal_ledger' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'personal_ledger' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Account Statement" %}</a>
+                <a href="{% url 'reports:enquiry' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'enquiry' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Enquiry" %}</a>
+                <a href="{% url 'reports:deposit_reports' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'deposit_reports' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Deposit Reports" %}</a>
+                <a href="{% url 'reports:loan_reports' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'loan_reports' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Loan Reports" %}</a>
+                <a href="{% url 'reports:balance_reports' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'balance_reports' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Current Balance" %}</a>
+                <a href="{% url 'reports:pigmmy_reports' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'pigmmy_reports' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Pigmy Reports" %}</a>
                 <div class="border-t border-gray-100 my-1"></div>
-                <a href="{% url 'reports:trial_balance' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Trial Balance" %}</a>
-                <a href="{% url 'reports:profit_loss' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Profit & Loss" %}</a>
-                <a href="{% url 'reports:balance_sheet' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Balance Sheet" %}</a>
+                <a href="{% url 'reports:trial_balance' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'trial_balance' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Trial Balance" %}</a>
+                <a href="{% url 'reports:profit_loss' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'profit_loss' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Profit & Loss" %}</a>
+                <a href="{% url 'reports:balance_sheet' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'balance_sheet' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Balance Sheet" %}</a>
                 <div class="border-t border-gray-100 my-1"></div>
-                <a href="{% url 'reports:notices' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Notice Printing" %}</a>
-                <a href="{% url 'reports:calculator' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Ready Reckoner" %}</a>
+                <a href="{% url 'reports:notices' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'notices' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Notice Printing" %}</a>
+                <a href="{% url 'reports:calculator' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'calculator' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Ready Reckoner" %}</a>
                 <div class="border-t border-gray-100 my-1"></div>
-                <a href="{% url 'reports:index' %}" class="block px-4 py-2 text-sm font-medium text-primary-700 hover:bg-primary-50">{% trans "All Reports" %}</a>
+                <a href="{% url 'reports:index' %}" class="block px-4 py-2 text-sm font-medium hover:bg-primary-50 {% if request.resolver_match.url_name == 'index' and request.resolver_match.app_name == 'reports' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-primary-700{% endif %}">{% trans "All Reports" %}</a>
             </div>
         </div>
     </div>
@@ -149,19 +149,19 @@
         </button>
         <div x-show="hover" x-cloak x-transition class="absolute left-0 top-full pt-1 z-50">
             <div class="w-52 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
-                <a href="{% url 'dayend:index' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Day Operations" %}</a>
-                <a href="{% url 'dayend:interest_calculate' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Interest Calculate" %}</a>
-                <a href="{% url 'dayend:interest_post' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Interest Post" %}</a>
+                <a href="{% url 'dayend:index' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'index' and request.resolver_match.app_name == 'dayend' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Day Operations" %}</a>
+                <a href="{% url 'dayend:interest_calculate' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'interest_calculate' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Interest Calculate" %}</a>
+                <a href="{% url 'dayend:interest_post' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'interest_post' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Interest Post" %}</a>
                 {% if request.user.is_admin %}
                 <div class="border-t border-gray-100 my-1"></div>
-                <a href="{% url 'accounting:opening_balance' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Opening Balance" %}</a>
-                <a href="{% url 'dayend:reupdate_balance' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Reupdate A/c Balance" %}</a>
-                <a href="{% url 'dayend:reupdate_gl_balance' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Reupdate GL Balance" %}</a>
+                <a href="{% url 'accounting:opening_balance' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'opening_balance' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Opening Balance" %}</a>
+                <a href="{% url 'dayend:reupdate_balance' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'reupdate_balance' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Reupdate A/c Balance" %}</a>
+                <a href="{% url 'dayend:reupdate_gl_balance' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.url_name == 'reupdate_gl_balance' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Reupdate GL Balance" %}</a>
                 {% endif %}
                 <div class="border-t border-gray-100 my-1"></div>
-                <a href="{% url 'audit:log' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Audit Trail" %}</a>
+                <a href="{% url 'audit:log' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.app_name == 'audit' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Audit Trail" %}</a>
                 {% if request.user.is_manager %}
-                <a href="{% url 'notifications:send_bulk' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">{% trans "Notifications" %}</a>
+                <a href="{% url 'notifications:send_bulk' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.app_name == 'notifications' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Notifications" %}</a>
                 {% endif %}
             </div>
         </div>
