@@ -17,12 +17,12 @@
             {% if request.user.is_cashier %}
             <a href="{% url 'shares:purchase' %}" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">
                 <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                Purchase
+                {% trans "Purchase" %}
             </a>
             {% endif %}
             {% if request.user.is_manager %}
-            <a href="{% url 'shares:transfer' %}" class="inline-flex items-center px-3 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200">Transfer</a>
-            <a href="{% url 'shares:surrender' %}" class="inline-flex items-center px-3 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200">Surrender</a>
+            <a href="{% url 'shares:transfer' %}" class="inline-flex items-center px-3 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200">{% trans "Transfer" %}</a>
+            <a href="{% url 'shares:surrender' %}" class="inline-flex items-center px-3 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200">{% trans "Surrender" %}</a>
             {% endif %}
         </div>
     </div>
@@ -83,29 +83,29 @@
         <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 flex items-center justify-between">
             <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
                 <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-                Dividend Calculator
+                {% trans "Dividend Calculator" %}
             </h3>
-            <button type="button" @click="showDividend = !showDividend" class="text-xs text-primary-600 hover:text-primary-800 font-medium" x-text="showDividend ? 'Collapse' : 'Expand'"></button>
+            <button type="button" @click="showDividend = !showDividend" class="text-xs text-primary-600 hover:text-primary-800 font-medium" x-text="showDividend ? '{% trans "Collapse" %}' : '{% trans "Expand" %}'"></button>
         </div>
         <div x-show="showDividend" x-collapse>
             <div class="px-5 py-4">
                 <form method="post" class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end mb-4">
                     {% csrf_token %}
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Financial Year</label>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Financial Year" %}</label>
                         <input type="text" name="financial_year" placeholder="e.g. 2025-26" required
                                value="{{ request.POST.financial_year|default:'' }}"
                                class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Dividend Rate (%)</label>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Dividend Rate" %} (%)</label>
                         <input type="number" name="dividend_rate" step="0.01" min="0.01" max="100" required
                                value="{{ request.POST.dividend_rate|default:'' }}"
                                class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                     </div>
                     <div>
                         <button type="submit" class="w-full px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">
-                            Calculate
+                            {% trans "Calculate" %}
                         </button>
                     </div>
                 </form>
@@ -155,7 +155,7 @@
                     <input type="hidden" name="confirm" value="1">
                     <button type="submit" class="px-6 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700"
                             onclick="return confirm('Post dividend to all {{ dividend_count }} shareholders? This credits their savings accounts.')">
-                        Confirm &amp; Post Dividend
+                        {% trans "Confirm & Post Dividend" %}
                     </button>
                 </form>
             </div>
