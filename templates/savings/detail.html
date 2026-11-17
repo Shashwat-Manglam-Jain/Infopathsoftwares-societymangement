@@ -135,14 +135,21 @@
                         <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Amount" %}</label>
                         <input type="number" name="amount" step="0.01" min="1" required class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm">
                     </div>
-                    <div>
+                    <div x-data="{ wMode: 'cash' }">
                         <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Mode" %}</label>
-                        <select name="payment_mode" class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm">
+                        <select name="payment_mode" x-model="wMode" class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm">
                             <option value="cash">{% trans "Cash" %}</option>
                             <option value="cheque">{% trans "Cheque" %}</option>
                             <option value="transfer">{% trans "Transfer" %}</option>
                             <option value="upi">{% trans "UPI" %}</option>
                         </select>
+                        <template x-if="wMode === 'cheque'">
+                            <div class="mt-2 space-y-2">
+                                <input type="text" name="cheque_no" placeholder="{% trans 'Cheque No' %}" class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm">
+                                <input type="date" name="cheque_date" class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm">
+                                <input type="text" name="bank_name" placeholder="{% trans 'Bank Name' %}" class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm">
+                            </div>
+                        </template>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Narration" %}</label>
