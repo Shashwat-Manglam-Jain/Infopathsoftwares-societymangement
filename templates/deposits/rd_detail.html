@@ -60,15 +60,15 @@
 
         {% if rd.status == 'active' and request.user.is_cashier %}
         <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-between">
-            <a href="{% url 'deposits:rd_list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">&larr; Back</a>
+            <a href="{% url 'deposits:rd_list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">&larr; {% trans "Back" %}</a>
             <form method="post" action="{% url 'deposits:rd_collect' pk=rd.pk %}">
                 {% csrf_token %}
-                <button type="submit" class="px-5 py-1.5 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700">Collect &#8377;{{ rd.monthly_installment|floatformat:2 }}</button>
+                <button type="submit" class="px-5 py-1.5 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700">{% trans "Collect" %} &#8377;{{ rd.monthly_installment|floatformat:2 }}</button>
             </form>
         </div>
         {% else %}
         <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-end">
-            <a href="{% url 'deposits:rd_list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">&larr; Back</a>
+            <a href="{% url 'deposits:rd_list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">&larr; {% trans "Back" %}</a>
         </div>
         {% endif %}
     </div>
@@ -101,7 +101,7 @@
                         <td class="px-4 py-2 text-gray-600">{{ inst.paid_date|default:"—" }}</td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="5" class="px-4 py-6 text-center text-gray-400">No installments scheduled.</td></tr>
+                    <tr><td colspan="5" class="px-4 py-6 text-center text-gray-400">{% trans "No installments scheduled." %}</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

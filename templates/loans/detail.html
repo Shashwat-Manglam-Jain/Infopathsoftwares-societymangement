@@ -88,9 +88,9 @@
                         <dt class="text-gray-700 font-medium">{% trans "Outstanding Principal" %}</dt>
                         <dd class="font-bold text-lg">{{ loan.outstanding_principal|floatformat:2 }}</dd>
                     </div>
-                    {% if loan.outstanding_interest %}<div class="flex justify-between"><dt class="text-gray-500">Outstanding Interest</dt><dd class="text-red-600">{{ loan.outstanding_interest|floatformat:2 }}</dd></div>{% endif %}
-                    {% if loan.overdue_amount %}<div class="flex justify-between"><dt class="text-gray-500">Overdue Amount</dt><dd class="text-red-600 font-medium">{{ loan.overdue_amount|floatformat:2 }}</dd></div>{% endif %}
-                    {% if loan.overdue_days %}<div class="flex justify-between"><dt class="text-gray-500">Overdue Days</dt><dd class="text-red-600">{{ loan.overdue_days }} days</dd></div>{% endif %}
+                    {% if loan.outstanding_interest %}<div class="flex justify-between"><dt class="text-gray-500">{% trans "Outstanding Interest" %}</dt><dd class="text-red-600">{{ loan.outstanding_interest|floatformat:2 }}</dd></div>{% endif %}
+                    {% if loan.overdue_amount %}<div class="flex justify-between"><dt class="text-gray-500">{% trans "Overdue Amount" %}</dt><dd class="text-red-600 font-medium">{{ loan.overdue_amount|floatformat:2 }}</dd></div>{% endif %}
+                    {% if loan.overdue_days %}<div class="flex justify-between"><dt class="text-gray-500">{% trans "Overdue Days" %}</dt><dd class="text-red-600">{{ loan.overdue_days }} {% trans "days" %}</dd></div>{% endif %}
                 </dl>
                 {% if loan.remarks %}<p class="mt-2 text-sm text-gray-500 border-t pt-1.5">{{ loan.remarks }}</p>{% endif %}
             </div>
@@ -98,10 +98,10 @@
 
         {% if approval_form %}
         <div class="bg-white rounded-lg shadow-sm border border-yellow-200 px-5 py-4">
-            <h3 class="text-xs font-semibold text-yellow-800 uppercase mb-2">Approve / Reject Loan</h3>
+            <h3 class="text-xs font-semibold text-yellow-800 uppercase mb-2">{% trans "Approve / Reject Loan" %}</h3>
             {% if not guarantor_ok %}
             <div class="mb-3 rounded bg-yellow-50 border border-yellow-200 px-4 py-2">
-                <p class="text-sm text-yellow-800">Approval will fail: this loan requires {{ min_guarantors }} guarantor{{ min_guarantors|pluralize }} but only {{ guarantor_count }} {{ guarantor_count|pluralize:"is,are" }} assigned.</p>
+                <p class="text-sm text-yellow-800">{% trans "Approval will fail: this loan requires" %} {{ min_guarantors }} {% trans "guarantor" %}{{ min_guarantors|pluralize }} {% trans "but only" %} {{ guarantor_count }} {{ guarantor_count|pluralize:"is,are" }} {% trans "assigned." %}</p>
             </div>
             {% endif %}
             {% if loan.loan_product.requires_collateral and not collateral_ok %}
