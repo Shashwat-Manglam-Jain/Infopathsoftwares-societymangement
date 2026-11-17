@@ -20,7 +20,7 @@
             <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-xl">
                 <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
                     <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/></svg>
-                    Voucher Entry
+                    {% trans "Voucher Entry" %}
                 </h3>
             </div>
             <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
@@ -29,15 +29,15 @@
                     {{ form.voucher_type }}
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Amount <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Amount" %} <span class="text-red-500">*</span></label>
                     {{ form.amount }}
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Debit (DR) Account <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Debit (DR) Account" %} <span class="text-red-500">*</span></label>
                     {{ form.debit_account }}
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Credit (CR) Account <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Credit (CR) Account" %} <span class="text-red-500">*</span></label>
                     {{ form.credit_account }}
                 </div>
                 <div class="md:col-span-2">
@@ -47,8 +47,8 @@
             </div>
 
             <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex items-center justify-end gap-3">
-                <a href="{% url 'accounting:vouchers' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
-                <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm">Save Voucher</button>
+                <a href="{% url 'accounting:vouchers' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
+                <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm">{% trans "Save Voucher" %}</button>
             </div>
         </div>
     </form>

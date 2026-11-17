@@ -82,19 +82,19 @@
                 <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Gender" %}</label>
                 <select name="gender" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                     <option value="">—</option>
-                    <option value="male" {% if form.gender.value == 'male' %}selected{% endif %}>Male</option>
-                    <option value="female" {% if form.gender.value == 'female' %}selected{% endif %}>Female</option>
-                    <option value="other" {% if form.gender.value == 'other' %}selected{% endif %}>Other</option>
+                    <option value="male" {% if form.gender.value == 'male' %}selected{% endif %}>{% trans "Male" %}</option>
+                    <option value="female" {% if form.gender.value == 'female' %}selected{% endif %}>{% trans "Female" %}</option>
+                    <option value="other" {% if form.gender.value == 'other' %}selected{% endif %}>{% trans "Other" %}</option>
                 </select>
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Marital Status" %}</label>
                 <select name="marital_status" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                     <option value="">—</option>
-                    <option value="single" {% if form.instance.marital_status == 'single' %}selected{% endif %}>Single</option>
-                    <option value="married" {% if form.instance.marital_status == 'married' %}selected{% endif %}>Married</option>
-                    <option value="widowed" {% if form.instance.marital_status == 'widowed' %}selected{% endif %}>Widowed</option>
-                    <option value="divorced" {% if form.instance.marital_status == 'divorced' %}selected{% endif %}>Divorced</option>
+                    <option value="single" {% if form.instance.marital_status == 'single' %}selected{% endif %}>{% trans "Single" %}</option>
+                    <option value="married" {% if form.instance.marital_status == 'married' %}selected{% endif %}>{% trans "Married" %}</option>
+                    <option value="widowed" {% if form.instance.marital_status == 'widowed' %}selected{% endif %}>{% trans "Widowed" %}</option>
+                    <option value="divorced" {% if form.instance.marital_status == 'divorced' %}selected{% endif %}>{% trans "Divorced" %}</option>
                 </select>
             </div>
         </div>
@@ -232,9 +232,9 @@
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Category" %}</label>
                 <select name="category" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
-                    <option value="A" {% if form.category.value == 'A' %}selected{% endif %}>Category A</option>
-                    <option value="B" {% if form.category.value == 'B' %}selected{% endif %}>Category B</option>
-                    <option value="C" {% if form.category.value == 'C' %}selected{% endif %}>Category C</option>
+                    <option value="A" {% if form.category.value == 'A' %}selected{% endif %}>{% trans "Category A" %}</option>
+                    <option value="B" {% if form.category.value == 'B' %}selected{% endif %}>{% trans "Category B" %}</option>
+                    <option value="C" {% if form.category.value == 'C' %}selected{% endif %}>{% trans "Category C" %}</option>
                 </select>
             </div>
         </div>
@@ -325,7 +325,7 @@
                     <option value="active" {% if form.status.value == 'active' %}selected{% endif %}>{% trans "Active" %}</option>
                     <option value="inactive" {% if form.status.value == 'inactive' %}selected{% endif %}>{% trans "Inactive" %}</option>
                     <option value="deceased" {% if form.status.value == 'deceased' %}selected{% endif %}>{% trans "Deceased" %}</option>
-                    <option value="expelled" {% if form.status.value == 'expelled' %}selected{% endif %}>Expelled</option>
+                    <option value="expelled" {% if form.status.value == 'expelled' %}selected{% endif %}>{% trans "Expelled" %}</option>
                 </select>
             </div>
             <div>
@@ -458,9 +458,9 @@
 
         <!-- Action Buttons -->
         <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex items-center justify-end gap-3">
-            <a href="{% url 'members:list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
+            <a href="{% url 'members:list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
             <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm">
-                {% if member %}Save{% else %}Save{% endif %}
+                {% trans "Save" %}
             </button>
         </div>
 
