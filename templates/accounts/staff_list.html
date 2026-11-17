@@ -27,12 +27,12 @@
             </div>
             <select name="role" onchange="this.form.submit()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
                 <option value="">{% trans "All Roles" %}</option>
-                <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>Admin</option>
-                <option value="branch_manager" {% if role_filter == 'branch_manager' %}selected{% endif %}>Branch Manager</option>
-                <option value="accountant" {% if role_filter == 'accountant' %}selected{% endif %}>Accountant</option>
-                <option value="cashier" {% if role_filter == 'cashier' %}selected{% endif %}>Cashier</option>
-                <option value="clerk" {% if role_filter == 'clerk' %}selected{% endif %}>Clerk</option>
-                <option value="auditor" {% if role_filter == 'auditor' %}selected{% endif %}>Auditor</option>
+                <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>{% trans "Admin" %}</option>
+                <option value="branch_manager" {% if role_filter == 'branch_manager' %}selected{% endif %}>{% trans "Branch Manager" %}</option>
+                <option value="accountant" {% if role_filter == 'accountant' %}selected{% endif %}>{% trans "Accountant" %}</option>
+                <option value="cashier" {% if role_filter == 'cashier' %}selected{% endif %}>{% trans "Cashier" %}</option>
+                <option value="clerk" {% if role_filter == 'clerk' %}selected{% endif %}>{% trans "Clerk" %}</option>
+                <option value="auditor" {% if role_filter == 'auditor' %}selected{% endif %}>{% trans "Auditor" %}</option>
                 <option value="director" {% if role_filter == 'director' %}selected{% endif %}>{% trans "Director" %}</option>
             </select>
         </form>
@@ -42,18 +42,18 @@
         <button @click="showGuide = !showGuide" class="w-full px-4 py-2.5 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
             <span class="text-xs font-medium text-gray-500 flex items-center gap-1.5">
                 <svg class="h-3.5 w-3.5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                Role Guide
+                {% trans "Role Guide" %}
             </span>
             <svg class="h-3.5 w-3.5 text-gray-400 transition-transform duration-200" :class="showGuide ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </button>
         <div x-show="showGuide" x-collapse x-cloak class="px-4 pb-3 border-t border-gray-100">
             <div class="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-1 text-xs text-gray-600 pt-2.5">
-                <div><span class="font-semibold text-gray-700">Admin</span> &mdash; Society-level administrator</div>
-                <div><span class="font-semibold text-gray-700">Branch Manager</span> &mdash; Approves loans, oversees branch</div>
-                <div><span class="font-semibold text-gray-700">Accountant</span> &mdash; Vouchers, day-end, GL</div>
-                <div><span class="font-semibold text-gray-700">Cashier</span> &mdash; Deposits/withdrawals/EMI</div>
-                <div><span class="font-semibold text-gray-700">Clerk</span> &mdash; Data entry, assists cashier</div>
-                <div><span class="font-semibold text-gray-700">Auditor</span> &mdash; Read-only audit access</div>
+                <div><span class="font-semibold text-gray-700">{% trans "Admin" %}</span> &mdash; {% trans "Society-level administrator" %}</div>
+                <div><span class="font-semibold text-gray-700">{% trans "Branch Manager" %}</span> &mdash; {% trans "Approves loans, oversees branch" %}</div>
+                <div><span class="font-semibold text-gray-700">{% trans "Accountant" %}</span> &mdash; {% trans "Vouchers, day-end, GL" %}</div>
+                <div><span class="font-semibold text-gray-700">{% trans "Cashier" %}</span> &mdash; {% trans "Deposits/withdrawals/EMI" %}</div>
+                <div><span class="font-semibold text-gray-700">{% trans "Clerk" %}</span> &mdash; {% trans "Data entry, assists cashier" %}</div>
+                <div><span class="font-semibold text-gray-700">{% trans "Auditor" %}</span> &mdash; {% trans "Read-only audit access" %}</div>
                 <div><span class="font-semibold text-gray-700">{% trans "Director" %}</span> &mdash; Board member, read-only</div>
             </div>
         </div>
@@ -96,7 +96,7 @@
                                 {% else %}bg-gray-100 text-gray-700{% endif %}">{{ u.get_role_display }}</span>
                         </td>
                         <td class="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">
-                            {% if u.can_access_all_branches %}All Branches{% elif u.branch %}{{ u.branch.branch_name }}{% else %}—{% endif %}
+                            {% if u.can_access_all_branches %}{% trans "All Branches" %}{% elif u.branch %}{{ u.branch.branch_name }}{% else %}—{% endif %}
                         </td>
                         <td class="px-4 py-3">
                             {% if u.is_active %}
