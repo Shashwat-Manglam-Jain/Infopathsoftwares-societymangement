@@ -18,6 +18,8 @@
                 extend: {
                     fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
                     colors: {
+                        brand: '#4f46e5',
+                        ink: '#1e293b',
                         primary: {
                             50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe',
                             300: '#93c5fd', 400: '#60a5fa', 500: '#3b82f6',
@@ -44,15 +46,10 @@
     </style>
 </head>
 <body class="h-full font-sans" x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }">
-    <!-- Theme toggle -->
-    <button @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode); document.documentElement.classList.toggle('dark')"
-            class="fixed top-4 right-4 z-50 p-2 rounded-lg bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-            title="Toggle theme">
-        <svg x-show="!darkMode" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
-        <svg x-show="darkMode" x-cloak class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-    </button>
 
-    <div class="min-h-full flex">
+    {% include "includes/public_navbar.html" with active_page="login" %}
+
+    <div class="min-h-full flex pt-16">
 
         <!-- Left side: branding -->
         <div class="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary-900 via-primary-800 to-primary-950 items-center justify-center p-12">

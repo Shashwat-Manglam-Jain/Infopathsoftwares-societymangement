@@ -14,6 +14,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
+    <!-- Tom Select for searchable dropdowns -->
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/css/tom-select.css" rel="stylesheet">
+
     <!-- Tailwind CSS (CDN for dev — replace with compiled in prod) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -325,6 +328,19 @@
 
         /* --- Hover for colored table rows --- */
         .dark .hover\:bg-blue-50\/40:hover, .dark tr.hover\:bg-blue-50\/40:hover { background-color: rgba(59,130,246,0.12) !important; }
+
+        /* --- Tom Select overrides --- */
+        .ts-wrapper .ts-control { border-color: #d1d5db; border-radius: 0.5rem; padding: 0.5rem 0.75rem; font-size: 0.875rem; min-height: 2.5rem; }
+        .ts-wrapper .ts-control input { font-size: 0.875rem; }
+        .ts-wrapper.focus .ts-control { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+        .ts-dropdown { border-radius: 0.5rem; border-color: #e5e7eb; font-size: 0.875rem; }
+        .ts-dropdown .active { background-color: #eff6ff; color: #1d4ed8; }
+        .dark .ts-wrapper .ts-control { background-color: #1e293b !important; border-color: #475569 !important; color: #e2e8f0 !important; }
+        .dark .ts-wrapper.focus .ts-control { border-color: #60a5fa !important; box-shadow: 0 0 0 2px rgba(96,165,250,0.15) !important; }
+        .dark .ts-dropdown { background-color: #1e293b !important; border-color: #475569 !important; }
+        .dark .ts-dropdown .option { color: #e2e8f0 !important; }
+        .dark .ts-dropdown .active { background-color: rgba(59,130,246,0.2) !important; color: #93c5fd !important; }
+        .dark .ts-wrapper .ts-control input { color: #e2e8f0 !important; }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
@@ -594,6 +610,25 @@
         document.addEventListener('htmx:responseError', hide);
 
         window.addEventListener('pageshow', hide);
+    })();
+    </script>
+
+    <!-- Tom Select: auto-enhance selects with 8+ options -->
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/js/tom-select.complete.min.js"></script>
+    <script>
+    (function() {
+        document.querySelectorAll('select').forEach(function(el) {
+            if (el.options.length >= 8 && !el.tomselect && !el.closest('[data-no-tomselect]')) {
+                new TomSelect(el, {
+                    create: false,
+                    sortField: { field: 'text', direction: 'asc' },
+                    controlInput: '<input>',
+                    render: {
+                        no_results: function() { return '<div class="no-results" style="padding:10px;text-align:center;color:#94a3b8;">No results found</div>'; }
+                    }
+                });
+            }
+        });
     })();
     </script>
 </body>
