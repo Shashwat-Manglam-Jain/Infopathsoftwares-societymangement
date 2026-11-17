@@ -48,7 +48,7 @@ def savings_list(request):
         accounts = accounts.filter(
             Q(account_no__icontains=q) | Q(member__name__icontains=q) | Q(member__member_no__icontains=q)
         )
-    status_filter = request.GET['status'] if 'status' in request.GET else 'active'
+    status_filter = request.GET.get('status', 'active')
     if status_filter:
         accounts = accounts.filter(status=status_filter)
     if not request.user.can_access_all_branches:
