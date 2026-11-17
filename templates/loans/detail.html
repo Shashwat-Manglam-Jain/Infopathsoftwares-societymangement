@@ -69,18 +69,18 @@
                     <div class="flex justify-between"><dt class="text-gray-500">{% trans "Interest Rate" %}</dt><dd>{{ loan.interest_rate }}% p.a.</dd></div>
                     <div class="flex justify-between"><dt class="text-gray-500">{% trans "Interest Type" %}</dt><dd>{{ loan.loan_product.get_interest_type_display }}</dd></div>
                     <div class="flex justify-between"><dt class="text-gray-500">{% trans "Branch" %}</dt><dd>{{ loan.branch.branch_name }}</dd></div>
-                    {% if loan.loan_form_no %}<div class="flex justify-between"><dt class="text-gray-500">Loan Form No</dt><dd>{{ loan.loan_form_no }}</dd></div>{% endif %}
-                    {% if loan.meeting_no %}<div class="flex justify-between"><dt class="text-gray-500">Meeting No</dt><dd>{{ loan.meeting_no }}</dd></div>{% endif %}
+                    {% if loan.loan_form_no %}<div class="flex justify-between"><dt class="text-gray-500">{% trans "Loan Form No" %}</dt><dd>{{ loan.loan_form_no }}</dd></div>{% endif %}
+                    {% if loan.meeting_no %}<div class="flex justify-between"><dt class="text-gray-500">{% trans "Meeting No" %}</dt><dd>{{ loan.meeting_no }}</dd></div>{% endif %}
                     {% if loan.director_recommendation %}<div class="flex justify-between"><dt class="text-gray-500">{% trans "Director" %}</dt><dd>{{ loan.director_recommendation.name }}</dd></div>{% endif %}
                 </dl>
             </div>
 
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-4">
-                <h3 class="text-xs font-semibold text-gray-500 uppercase mb-2">Financial Summary</h3>
+                <h3 class="text-xs font-semibold text-gray-500 uppercase mb-2">{% trans "Financial Summary" %}</h3>
                 <dl class="space-y-1.5 text-sm">
-                    {% if loan.approved_amount %}<div class="flex justify-between"><dt class="text-gray-500">Approved Amount</dt><dd class="font-medium text-green-700">{{ loan.approved_amount|floatformat:2 }}</dd></div>{% endif %}
-                    {% if loan.approved_date %}<div class="flex justify-between"><dt class="text-gray-500">Approved Date</dt><dd>{{ loan.approved_date|date:"d M Y" }}</dd></div>{% endif %}
-                    {% if loan.disbursed_amount %}<div class="flex justify-between"><dt class="text-gray-500">Disbursed Amount</dt><dd class="font-medium">{{ loan.disbursed_amount|floatformat:2 }}</dd></div>{% endif %}
+                    {% if loan.approved_amount %}<div class="flex justify-between"><dt class="text-gray-500">{% trans "Approved Amount" %}</dt><dd class="font-medium text-green-700">{{ loan.approved_amount|floatformat:2 }}</dd></div>{% endif %}
+                    {% if loan.approved_date %}<div class="flex justify-between"><dt class="text-gray-500">{% trans "Approved Date" %}</dt><dd>{{ loan.approved_date|date:"d M Y" }}</dd></div>{% endif %}
+                    {% if loan.disbursed_amount %}<div class="flex justify-between"><dt class="text-gray-500">{% trans "Disbursed Amount" %}</dt><dd class="font-medium">{{ loan.disbursed_amount|floatformat:2 }}</dd></div>{% endif %}
                     {% if loan.disbursed_date %}<div class="flex justify-between"><dt class="text-gray-500">Disbursed Date</dt><dd>{{ loan.disbursed_date|date:"d M Y" }}</dd></div>{% endif %}
                     {% if loan.emi_amount %}<div class="flex justify-between"><dt class="text-gray-500">{% trans "EMI Amount" %}</dt><dd class="font-medium text-primary-700">{{ loan.emi_amount|floatformat:2 }}</dd></div>{% endif %}
                     {% if loan.total_interest_payable %}<div class="flex justify-between"><dt class="text-gray-500">Total Interest</dt><dd>{{ loan.total_interest_payable|floatformat:2 }}</dd></div>{% endif %}
