@@ -114,8 +114,6 @@ class PigmmyAccountForm(forms.Form):
         required=False,
         widget=forms.Select(attrs={'class': 'searchable ' + tw}),
     )
-    meeting_no = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': tw}))
-    meeting_date = forms.DateField(required=False, widget=forms.DateInput(attrs={'class': tw, 'type': 'date'}))
 
     def __init__(self, *args, **kwargs):
         branch = kwargs.pop('branch', None)

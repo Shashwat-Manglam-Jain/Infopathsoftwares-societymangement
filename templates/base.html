@@ -348,7 +348,7 @@
 <body class="h-full font-sans" x-data="{
     sidebarOpen: false,
     darkMode: localStorage.getItem('darkMode') === 'true',
-    desktopSidebar: localStorage.getItem('desktopSidebar') !== 'false',
+    desktopSidebar: localStorage.getItem('desktopSidebar') === 'true',
     toggleSidebar() { this.desktopSidebar = !this.desktopSidebar; localStorage.setItem('desktopSidebar', this.desktopSidebar); },
     toggleDark() { this.darkMode = !this.darkMode; localStorage.setItem('darkMode', this.darkMode); document.documentElement.classList.toggle('dark'); }
 }" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>

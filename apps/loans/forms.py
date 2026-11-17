@@ -57,8 +57,6 @@ class LoanApplicationForm(forms.ModelForm):
             'director_recommendation',
             'remarks',
             'loan_form_no',
-            'meeting_no',
-            'meeting_date',
             'mortgage_account_no',
             'mortgage_value',
         ]
@@ -70,8 +68,6 @@ class LoanApplicationForm(forms.ModelForm):
             'director_recommendation': forms.Select(attrs={'class': 'searchable ' + tw}),
             'remarks': forms.Textarea(attrs={'class': tw, 'rows': 3}),
             'loan_form_no': forms.TextInput(attrs={'class': tw}),
-            'meeting_no': forms.TextInput(attrs={'class': tw}),
-            'meeting_date': forms.DateInput(attrs={'class': tw, 'type': 'date'}),
             'mortgage_account_no': forms.TextInput(attrs={'class': tw}),
             'mortgage_value': forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '0'}),
         }
@@ -110,8 +106,6 @@ class LoanApplicationForm(forms.ModelForm):
         )
         self.fields['director_recommendation'].required = False
         self.fields['loan_form_no'].required = False
-        self.fields['meeting_no'].required = False
-        self.fields['meeting_date'].required = False
         self.fields['mortgage_account_no'].required = False
         self.fields['mortgage_value'].required = False
 
