@@ -150,7 +150,13 @@
                             <label for="id_password" class="block text-sm font-semibold text-gray-700 mb-1">{% trans "Password" %} <span class="text-red-500">*</span></label>
                             {{ form.password }}
                             {% if form.password.errors %}<p class="mt-1 text-sm text-red-600">{{ form.password.errors.0 }}</p>{% endif %}
-                            <p class="mt-1 text-xs text-gray-400">{% trans "Must be at least 8 characters with letters and numbers" %}</p>
+                            <div class="mt-1.5 flex gap-1" id="pw-strength">
+                                <div class="h-1 flex-1 rounded-full bg-gray-200"></div>
+                                <div class="h-1 flex-1 rounded-full bg-gray-200"></div>
+                                <div class="h-1 flex-1 rounded-full bg-gray-200"></div>
+                                <div class="h-1 flex-1 rounded-full bg-gray-200"></div>
+                            </div>
+                            <p class="mt-1 text-xs text-gray-400" id="pw-hint">{% trans "Must be at least 8 characters with letters and numbers" %}</p>
                         </div>
                         <div>
                             <label for="id_confirm_password" class="block text-sm font-semibold text-gray-700 mb-1">{% trans "Confirm Password" %} <span class="text-red-500">*</span></label>
@@ -197,6 +203,26 @@ document.querySelectorAll('select').forEach(function(el) {
         }
     });
 });
+
+var pwInput = document.getElementById('id_password');
+if (pwInput) {
+    pwInput.addEventListener('input', function() {
+        var pw = this.value;
+        var bars = document.querySelectorAll('#pw-strength > div');
+        var hint = document.getElementById('pw-hint');
+        var score = 0;
+        if (pw.length >= 8) score++;
+        if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++;
+        if (/\d/.test(pw)) score++;
+        if (/[^a-zA-Z0-9]/.test(pw)) score++;
+        var colors = ['bg-red-400', 'bg-orange-400', 'bg-yellow-400', 'bg-green-500'];
+        var labels = ['{% trans "Weak" %}', '{% trans "Fair" %}', '{% trans "Good" %}', '{% trans "Strong" %}'];
+        bars.forEach(function(bar, i) {
+            bar.className = 'h-1 flex-1 rounded-full ' + (i < score ? colors[Math.min(score - 1, 3)] : 'bg-gray-200');
+        });
+        hint.textContent = pw.length > 0 ? labels[Math.min(score, 3)] : '{% trans "Must be at least 8 characters with letters and numbers" %}';
+    });
+}
 </script>
 </body>
 </html>
