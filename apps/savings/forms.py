@@ -64,9 +64,7 @@ class SavingsAccountForm(forms.ModelForm):
                 qs = qs.exclude(pk=self.instance.pk)
             if qs.exists():
                 label = dict(SavingsAccount.ACCOUNT_TYPE_CHOICES).get(account_type, account_type)
-                raise forms.ValidationError(
-                    f'Member already has an active {label}. Only one per member is allowed.'
-                )
+                raise forms.ValidationError(f'Member already has an active {label}. Only one per member is allowed.')
         return cleaned_data
 
 
