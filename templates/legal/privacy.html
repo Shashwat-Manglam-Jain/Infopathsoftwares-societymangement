@@ -1,0 +1,63 @@
+{% load i18n static %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% trans "Privacy Policy" %} — InfoSociety</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+{% include "includes/public_navbar.html" %}
+
+<div class="pt-24 pb-12 px-4">
+    <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-100 p-8 sm:p-12">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">{% trans "Privacy Policy" %}</h1>
+        <p class="text-sm text-gray-500 mb-8">{% trans "Last updated" %}: {% now "d M Y" %}</p>
+
+        <div class="prose prose-sm prose-gray max-w-none space-y-6">
+            <section>
+                <h2 class="text-lg font-semibold text-gray-800">1. {% trans "Information We Collect" %}</h2>
+                <p class="text-gray-600">{% trans "We collect information you provide when registering a society, including society details, administrator contact information, and member data entered into the system by your authorized users." %}</p>
+            </section>
+
+            <section>
+                <h2 class="text-lg font-semibold text-gray-800">2. {% trans "How We Use Your Information" %}</h2>
+                <p class="text-gray-600">{% trans "Your information is used solely to provide and improve the InfoSociety service. We do not sell, rent, or share your personal information with third parties for marketing purposes." %}</p>
+            </section>
+
+            <section>
+                <h2 class="text-lg font-semibold text-gray-800">3. {% trans "Data Storage & Security" %}</h2>
+                <p class="text-gray-600">{% trans "Your data is stored on secure servers with encryption. Each society's data is isolated in a separate database schema, ensuring complete data separation between organizations." %}</p>
+            </section>
+
+            <section>
+                <h2 class="text-lg font-semibold text-gray-800">4. {% trans "Data Retention" %}</h2>
+                <p class="text-gray-600">{% trans "We retain your data for as long as your subscription is active. Upon cancellation, your data will be retained for 90 days before permanent deletion, during which you may request a data export." %}</p>
+            </section>
+
+            <section>
+                <h2 class="text-lg font-semibold text-gray-800">5. {% trans "Your Rights" %}</h2>
+                <p class="text-gray-600">{% trans "You have the right to access, correct, or delete your personal information. Society administrators can export member data at any time through the application." %}</p>
+            </section>
+
+            <section>
+                <h2 class="text-lg font-semibold text-gray-800">6. {% trans "Cookies" %}</h2>
+                <p class="text-gray-600">{% trans "We use essential cookies for session management and authentication. No third-party tracking cookies are used." %}</p>
+            </section>
+
+            <section>
+                <h2 class="text-lg font-semibold text-gray-800">7. {% trans "Contact" %}</h2>
+                <p class="text-gray-600">{% trans "For privacy-related questions, contact us at" %} infopathsolutionskatol@gmail.com.</p>
+            </section>
+        </div>
+    </div>
+</div>
+
+<footer class="border-t bg-white/50 py-5 text-center text-xs text-gray-400">
+    &copy; {% now "Y" %} InfoSociety by InfopathSolutions.
+    <a href="/" class="text-indigo-600 hover:underline font-medium ml-1">{% trans "Back to Home" %}</a>
+</footer>
+</body>
+</html>
