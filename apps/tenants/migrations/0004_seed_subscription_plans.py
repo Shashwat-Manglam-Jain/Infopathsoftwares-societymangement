@@ -48,7 +48,6 @@ def unseed_plans(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('tenants', '0003_society_fax_society_name_regional'),
     ]
