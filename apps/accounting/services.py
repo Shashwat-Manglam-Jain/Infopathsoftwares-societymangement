@@ -346,11 +346,16 @@ def get_ledger(account_code, from_date, to_date, branch=None):
             }
         )
 
+    total_debit = sum(e['debit'] for e in entries)
+    total_credit = sum(e['credit'] for e in entries)
+
     return {
         'account': account,
         'opening_balance': opening_balance,
         'entries': entries,
         'closing_balance': running,
+        'total_debit': total_debit,
+        'total_credit': total_credit,
     }
 
 

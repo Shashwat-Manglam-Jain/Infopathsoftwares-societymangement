@@ -8,20 +8,29 @@
 <div>
 
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-        <p class="text-sm text-gray-500">All journal entries for {{ book_date|date:"d M Y" }}</p>
+        <div>
+            <p class="text-sm text-gray-600 font-medium">{% trans "Day Book" %} — {{ book_date|date:"d M Y" }}</p>
+            {% if entries %}<p class="text-xs text-gray-400">{{ entries|length }} {% trans "vouchers" %}</p>{% endif %}
+        </div>
         <div class="flex items-center gap-2">
             <form method="get" class="flex items-center gap-2">
                 <input type="date" name="date" value="{{ book_date|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}"
                        class="rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
-                <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">View</button>
+                <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "View" %}</button>
             </form>
             {% if entries %}{% include "includes/export_csv.html" %}{% endif %}
+            <button type="button" onclick="window.print()" class="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded" title="Print">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+            </button>
         </div>
     </div>
 
     {% for entry in entries %}
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-3">
-        <div class="px-5 py-2.5 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+        <div class="px-5 py-2.5 border-b border-gray-200 flex items-center justify-between
+            {% if entry.voucher_type == 'receipt' %}bg-green-50
+            {% elif entry.voucher_type == 'payment' %}bg-red-50
+            {% else %}bg-gray-50{% endif %}">
             <div class="flex items-center gap-3">
                 <span class="font-mono text-sm font-semibold text-gray-900">{{ entry.voucher_no }}</span>
                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
@@ -31,7 +40,10 @@
                     {% else %}bg-purple-100 text-purple-800{% endif %}">{{ entry.get_voucher_type_display }}</span>
             </div>
             <div class="flex items-center gap-3">
-                <span class="text-sm font-medium text-gray-900">{{ entry.total_amount|floatformat:2 }}</span>
+                <span class="text-sm font-bold
+                    {% if entry.voucher_type == 'receipt' %}text-green-700
+                    {% elif entry.voucher_type == 'payment' %}text-red-700
+                    {% else %}text-gray-900{% endif %}">₹{{ entry.total_amount|floatformat:2 }}</span>
                 <span class="text-xs text-gray-500">{{ entry.branch.branch_name }} &middot; {{ entry.created_by.get_short_name }}</span>
             </div>
         </div>
@@ -44,19 +56,19 @@
                         <th class="px-5 py-1.5 text-right w-32">{% trans "Credit" %}</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
+                <tbody>
                     {% for line in entry.lines.all %}
-                    <tr class="hover:bg-gray-50">
+                    <tr class="border-b border-gray-100 {% cycle '' 'bg-gray-50/50' %}">
                         <td class="px-5 py-1.5">
-                            <span class="font-mono text-gray-500">{{ line.gl_account.code }}</span>
+                            <span class="font-mono text-xs text-gray-400">{{ line.gl_account.code }}</span>
                             <span class="ml-2 text-gray-900">{{ line.gl_account.name }}</span>
                             {% if line.narration %}<span class="ml-2 text-xs text-gray-400">({{ line.narration }})</span>{% endif %}
                         </td>
-                        <td class="px-5 py-1.5 text-right w-32">
-                            {% if line.debit_amount > 0 %}<span class="font-medium text-gray-900">{{ line.debit_amount|floatformat:2 }}</span>{% else %}<span class="text-gray-300">—</span>{% endif %}
+                        <td class="px-5 py-1.5 text-right w-32 tabular-nums">
+                            {% if line.debit_amount > 0 %}<span class="font-semibold text-red-600">{{ line.debit_amount|floatformat:2 }}</span>{% else %}<span class="text-gray-300">—</span>{% endif %}
                         </td>
-                        <td class="px-5 py-1.5 text-right w-32">
-                            {% if line.credit_amount > 0 %}<span class="font-medium text-gray-900">{{ line.credit_amount|floatformat:2 }}</span>{% else %}<span class="text-gray-300">—</span>{% endif %}
+                        <td class="px-5 py-1.5 text-right w-32 tabular-nums">
+                            {% if line.credit_amount > 0 %}<span class="font-semibold text-green-600">{{ line.credit_amount|floatformat:2 }}</span>{% else %}<span class="text-gray-300">—</span>{% endif %}
                         </td>
                     </tr>
                     {% endfor %}
@@ -68,8 +80,9 @@
         {% endif %}
     </div>
     {% empty %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-6 text-center">
-        <p class="text-gray-400 text-sm">No journal entries for {{ book_date|date:"d M Y" }}.</p>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-8 text-center">
+        <svg class="mx-auto h-10 w-10 text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <p class="text-gray-400 text-sm">{% trans "No journal entries for" %} {{ book_date|date:"d M Y" }}.</p>
     </div>
     {% endfor %}
 </div>
