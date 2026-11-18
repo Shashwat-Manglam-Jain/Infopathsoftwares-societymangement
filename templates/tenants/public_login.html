@@ -7,6 +7,14 @@
     <title>{% trans "Login" %} — InfoSociety</title>
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/css/tom-select.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .ts-wrapper .ts-control { border-radius: 0.75rem; padding: 0.625rem 0.75rem; font-size: 0.875rem; min-height: 2.75rem; border-color: #e5e7eb; background: rgba(249,250,251,0.5); }
+        .ts-wrapper .ts-control input { font-size: 0.875rem; }
+        .ts-wrapper.focus .ts-control { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99,102,241,0.2); background: #fff; }
+        .ts-dropdown { border-radius: 0.75rem; border-color: #e5e7eb; font-size: 0.875rem; }
+        .ts-dropdown .active { background-color: #eef2ff; color: #4338ca; }
+        .ts-dropdown .option { padding: 0.5rem 0.75rem; }
+    </style>
     <script>
     tailwind.config = {
         theme: {
@@ -49,16 +57,13 @@
                     {% csrf_token %}
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">{% trans "Select Your Society" %}</label>
-                        <div class="relative">
-                            <select name="domain" required
-                                    class="w-full appearance-none rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 pr-10 text-sm text-gray-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition">
-                                <option value="">-- {% trans "Choose Society" %} --</option>
-                                {% for d in domains %}
-                                <option value="{{ d.pk }}">{{ d.tenant.name }}</option>
-                                {% endfor %}
-                            </select>
-                            <svg class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                        </div>
+                        <select name="domain" required
+                                class="w-full rounded-xl border border-gray-200 bg-gray-50/50 text-sm text-gray-800">
+                            <option value="">-- {% trans "Choose Society" %} --</option>
+                            {% for d in domains %}
+                            <option value="{{ d.pk }}">{{ d.tenant.name }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                     <button type="submit" data-loading-text="{% trans 'Redirecting…' %}"
                             class="w-full bg-indigo-600 text-white py-3 rounded-xl text-sm font-bold hover:bg-indigo-700 active:scale-[0.98] transition shadow-sm shadow-indigo-600/25">

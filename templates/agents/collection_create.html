@@ -204,7 +204,6 @@ function collectionApp() {
                     }
                 };
                 agentSelect.addEventListener('change', onChange);
-                agentSelect.addEventListener('searchable-change', onChange);
                 if (agentSelect.value) {
                     this.agentId = agentSelect.value;
                     this.fetchClients(agentSelect.value);

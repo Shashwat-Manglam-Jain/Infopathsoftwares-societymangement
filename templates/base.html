@@ -437,70 +437,6 @@
     {% block extra_js %}{% endblock %}
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('select.searchable').forEach(function(sel) {
-            var wrap = document.createElement('div');
-            wrap.className = 'relative';
-            sel.parentNode.insertBefore(wrap, sel);
-
-            var input = document.createElement('input');
-            input.type = 'text';
-            input.placeholder = 'Type to search...';
-            input.className = sel.className.replace('searchable', '').trim();
-            input.autocomplete = 'off';
-
-            var list = document.createElement('div');
-            list.className = 'absolute z-50 w-full mt-1 max-h-48 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-lg hidden';
-
-            var opts = [];
-            for (var i = 0; i < sel.options.length; i++) {
-                var o = sel.options[i];
-                opts.push({value: o.value, text: o.textContent, selected: o.selected});
-                if (o.selected && o.value) input.value = o.textContent;
-            }
-
-            sel.style.display = 'none';
-            wrap.appendChild(input);
-            wrap.appendChild(list);
-            wrap.appendChild(sel);
-
-            function render(filter) {
-                list.innerHTML = '';
-                var f = filter.toLowerCase();
-                var count = 0;
-                var excludeVal = sel.dataset.excludeValue || '';
-                opts.forEach(function(o) {
-                    if (!o.value) return;
-                    if (o.value === excludeVal) return;
-                    if (f && o.text.toLowerCase().indexOf(f) === -1) return;
-                    if (count++ > 50) return;
-                    var div = document.createElement('div');
-                    div.textContent = o.text;
-                    div.className = 'px-3 py-2 text-sm cursor-pointer hover:bg-primary-50' + (o.value === sel.value ? ' bg-primary-100 font-medium' : '');
-                    div.addEventListener('mousedown', function(e) {
-                        e.preventDefault();
-                        sel.value = o.value;
-                        sel.dispatchEvent(new Event('change'));
-                        input.value = o.text;
-                        list.classList.add('hidden');
-                    });
-                    list.appendChild(div);
-                });
-                if (count === 0) {
-                    var empty = document.createElement('div');
-                    empty.textContent = 'No matches';
-                    empty.className = 'px-3 py-2 text-sm text-gray-400';
-                    list.appendChild(empty);
-                }
-            }
-
-            input.addEventListener('focus', function() { render(input.value); list.classList.remove('hidden'); });
-            input.addEventListener('input', function() { render(input.value); list.classList.remove('hidden'); });
-            input.addEventListener('blur', function() { setTimeout(function() { list.classList.add('hidden'); }, 200); });
-        });
-    });
-    </script>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
         var today = new Date().toISOString().slice(0, 10);
         document.querySelectorAll('input[type="date"]').forEach(function(el) {
             if (!el.value) el.value = today;
@@ -617,20 +553,22 @@
     })();
     </script>
 
-    <!-- Tom Select: auto-enhance selects with 8+ options -->
+    <!-- Tom Select: auto-enhance searchable selects and selects with 8+ options -->
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/js/tom-select.complete.min.js"></script>
     <script>
     (function() {
+        var tsOpts = {
+            create: false,
+            sortField: { field: 'text', direction: 'asc' },
+            controlInput: '<input>',
+            render: {
+                no_results: function() { return '<div class="no-results" style="padding:10px;text-align:center;color:#94a3b8;">No results found</div>'; }
+            }
+        };
         document.querySelectorAll('select').forEach(function(el) {
-            if (el.options.length >= 8 && !el.tomselect && !el.closest('[data-no-tomselect]')) {
-                new TomSelect(el, {
-                    create: false,
-                    sortField: { field: 'text', direction: 'asc' },
-                    controlInput: '<input>',
-                    render: {
-                        no_results: function() { return '<div class="no-results" style="padding:10px;text-align:center;color:#94a3b8;">No results found</div>'; }
-                    }
-                });
+            if (el.tomselect || el.closest('[data-no-tomselect]')) return;
+            if (el.classList.contains('searchable') || el.options.length >= 8) {
+                new TomSelect(el, tsOpts);
             }
         });
     })();
