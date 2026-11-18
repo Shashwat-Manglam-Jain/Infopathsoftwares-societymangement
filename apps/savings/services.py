@@ -170,7 +170,6 @@ def reverse_transaction(txn, user):
             narration=f'Reversal of {txn.txn_type} {txn.voucher_no}'.strip(),
             payment_mode=txn.payment_mode,
             created_by=user,
-            is_reversed=True,
             reversal_of=txn,
         )
 
