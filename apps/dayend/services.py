@@ -362,7 +362,7 @@ def _accrue_loan_interest(branch, processing_date):
     loans = LoanAccount.objects.filter(branch=branch, status__in=['disbursed', 'npa'])
     for loan in loans:
         daily_rate = loan.interest_rate / Decimal('365') / Decimal('100')
-        daily_interest = loan.outstanding_principal * daily_rate
+        daily_interest = (loan.outstanding_principal * daily_rate).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
         loan.outstanding_interest += daily_interest
         loan.last_interest_calculated_date = processing_date
         loan.save(update_fields=['outstanding_interest', 'last_interest_calculated_date'])
@@ -375,11 +375,11 @@ def _mark_overdue_loans(branch, processing_date):
 
     overdue = EMISchedule.objects.filter(
         loan__branch=branch,
-        loan__status='disbursed',
+        loan__status__in=['disbursed', 'npa'],
         due_date__lt=processing_date,
-        status='pending',
+        status__in=['pending', 'partially_paid'],
     )
-    count = overdue.update(status='overdue')
+    count = overdue.filter(status='pending').update(status='overdue')
     return count
 
 
@@ -387,18 +387,19 @@ def _mark_npa_loans(branch, processing_date):
     from apps.loans.models import LoanAccount
 
     count = 0
-    loans = LoanAccount.objects.filter(branch=branch, status='disbursed')
+    loans = LoanAccount.objects.filter(branch=branch, status__in=['disbursed', 'npa'])
     for loan in loans:
         threshold = loan.loan_product.npa_days_threshold
-        overdue_emis = loan.emi_schedule.filter(status='overdue')
+        overdue_emis = loan.emi_schedule.filter(status__in=['overdue', 'partially_paid'], due_date__lt=processing_date)
         if overdue_emis.exists():
             oldest = overdue_emis.order_by('due_date').first()
             days_overdue = (processing_date - oldest.due_date).days
             loan.overdue_days = days_overdue
+            loan.overdue_amount = sum((e.total_emi - e.paid_amount) for e in overdue_emis)
             if days_overdue >= threshold and loan.status != 'npa':
                 loan.status = 'npa'
                 count += 1
-            loan.save(update_fields=['overdue_days', 'status'])
+            loan.save(update_fields=['overdue_days', 'overdue_amount', 'status'])
     return count
 
 

@@ -407,7 +407,7 @@ class TransactionReversalTests(BaseTestCase):
         self.account.refresh_from_db()
         self.assertEqual(self.account.current_balance, Decimal('0.00'))
         self.assertEqual(reversal.txn_type, 'reversal')
-        self.assertTrue(reversal.is_reversed)
+        self.assertFalse(reversal.is_reversed)
         self.assertEqual(reversal.reversal_of, original)
 
         original.refresh_from_db()
