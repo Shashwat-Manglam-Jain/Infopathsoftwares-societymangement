@@ -560,7 +560,7 @@
         var tsOpts = {
             create: false,
             sortField: { field: 'text', direction: 'asc' },
-            plugins: ['dropdown_input'],
+            plugins: ['dropdown_input', 'no_backspace_delete'],
             render: {
                 no_results: function() { return '<div class="no-results" style="padding:10px;text-align:center;color:#94a3b8;">No results found</div>'; }
             }
