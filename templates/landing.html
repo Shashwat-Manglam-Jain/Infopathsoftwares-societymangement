@@ -96,7 +96,7 @@
                 <a href="/accounts/login/" class="text-gray-600 hover:text-indigo-600 font-medium transition">{% trans "Login" %}</a>
                 <a href="/signup/" class="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 font-medium transition shadow-sm">{% trans "Start Free Trial" %}</a>
             </div>
-            <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-gray-100" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+            <button type="button" class="md:hidden p-2 rounded-lg hover:bg-gray-100" onclick="var m=document.getElementById('mobile-menu');m.classList.toggle('hidden')">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button>
         </div>
@@ -808,11 +808,6 @@
      JAVASCRIPT — Mobile menu toggle + Carousel auto-rotation
      ════════════════════════════════════════════════════════════════ -->
 <script>
-/* ── Mobile menu toggle ── */
-document.getElementById('mobile-menu-btn').addEventListener('click', function() {
-    document.getElementById('mobile-menu').classList.toggle('hidden');
-});
-
 /* ── Close language dropdown on outside click ── */
 document.addEventListener('click', function(e) {
     var dd = document.getElementById('lang-dropdown');
@@ -1040,13 +1035,6 @@ function selectPlan(el) {
     var statsBar = document.getElementById('stats-bar');
     if (statsBar) observer.observe(statsBar);
 })();
-</script>
-<script>
-document.addEventListener('click', function(e) {
-    var dd = document.getElementById('lang-dropdown');
-    var menu = document.getElementById('lang-menu');
-    if (dd && menu && !dd.contains(e.target)) menu.classList.add('hidden');
-});
 </script>
 </body>
 </html>
