@@ -29,47 +29,49 @@
 
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200 text-sm">
+            <table class="min-w-[900px] w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase whitespace-nowrap">{% trans "Account" %}</th>
-                        <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Member" %}</th>
-                        <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase whitespace-nowrap hidden md:table-cell">{% trans "Agent" %}</th>
-                        <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600 uppercase whitespace-nowrap hidden md:table-cell">{% trans "Type" %}</th>
-                        <th class="px-3 py-2.5 text-right text-xs font-semibold text-gray-600 uppercase whitespace-nowrap">{% trans "Installment" %}</th>
-                        <th class="px-3 py-2.5 text-right text-xs font-semibold text-gray-600 uppercase whitespace-nowrap">{% trans "Balance" %}</th>
-                        <th class="px-3 py-2.5 text-right text-xs font-semibold text-gray-600 uppercase whitespace-nowrap hidden lg:table-cell">{% trans "Paid/Total" %}</th>
-                        <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600 uppercase whitespace-nowrap">{% trans "Status" %}</th>
-                        <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600 uppercase whitespace-nowrap w-20">{% trans "Actions" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">{% trans "Account" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{% trans "Member" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap hidden md:table-cell">{% trans "Agent" %}</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap hidden md:table-cell">{% trans "Type" %}</th>
+                        <th class="px-5 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">{% trans "Installment" %}</th>
+                        <th class="px-5 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">{% trans "Balance" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap hidden lg:table-cell">{% trans "Paid/Total" %}</th>
+                        <th class="px-5 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">{% trans "Status" %}</th>
+                        <th class="px-3 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap w-[80px]">{% trans "Actions" %}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     {% for acct in accounts %}
-                    <tr class="hover:bg-gray-50 transition-colors cursor-pointer" onclick="window.location='{% url 'agents:pigmmy_detail' pk=acct.pk %}'">
-                        <td class="px-3 py-2.5 font-mono whitespace-nowrap"><a href="{% url 'agents:pigmmy_detail' pk=acct.pk %}" class="text-primary-600 hover:underline font-medium">{{ acct.account_no }}</a></td>
-                        <td class="px-3 py-2.5 text-gray-900 max-w-[180px] truncate">{{ acct.member.name }}</td>
-                        <td class="px-3 py-2.5 text-gray-600 hidden md:table-cell whitespace-nowrap">
+                    <tr class="hover:bg-primary-50/40 even:bg-gray-50/50 transition-colors cursor-pointer" onclick="window.location='{% url 'agents:pigmmy_detail' pk=acct.pk %}'">
+                        <td class="px-4 py-3 font-mono whitespace-nowrap"><a href="{% url 'agents:pigmmy_detail' pk=acct.pk %}" class="text-primary-600 hover:underline font-medium">{{ acct.account_no }}</a></td>
+                        <td class="px-4 py-3 text-gray-900">
+                            <span class="truncate block max-w-[180px]">{{ acct.member.name }}</span>
+                        </td>
+                        <td class="px-4 py-3 text-gray-500 hidden md:table-cell whitespace-nowrap">
                             <a href="{% url 'agents:detail' pk=acct.agent.pk %}" class="hover:text-primary-600" onclick="event.stopPropagation()">{{ acct.agent.agent_code }}</a>
                         </td>
-                        <td class="px-3 py-2.5 text-center hidden md:table-cell whitespace-nowrap">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if acct.deposit_type == 'daily' %}bg-blue-100 text-blue-700{% elif acct.deposit_type == 'weekly' %}bg-amber-100 text-amber-700{% elif acct.deposit_type == 'monthly' %}bg-purple-100 text-purple-700{% else %}bg-gray-100 text-gray-600{% endif %}">{{ acct.get_deposit_type_display }}</span>
+                        <td class="px-4 py-3 text-center hidden md:table-cell whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if acct.deposit_type == 'daily' %}bg-blue-100 text-blue-700{% elif acct.deposit_type == 'weekly' %}bg-amber-100 text-amber-700{% elif acct.deposit_type == 'monthly' %}bg-purple-100 text-purple-700{% else %}bg-gray-100 text-gray-600{% endif %}">{{ acct.get_deposit_type_display }}</span>
                         </td>
-                        <td class="px-3 py-2.5 text-right text-gray-900 whitespace-nowrap" style="font-variant-numeric:tabular-nums">&#8377;{{ acct.installment_amount|floatformat:2 }}</td>
-                        <td class="px-3 py-2.5 text-right font-medium text-gray-900 whitespace-nowrap" style="font-variant-numeric:tabular-nums">&#8377;{{ acct.current_balance|floatformat:2 }}</td>
-                        <td class="px-3 py-2.5 text-right text-gray-600 hidden lg:table-cell whitespace-nowrap" style="font-variant-numeric:tabular-nums">{{ acct.paid_installments }}/{{ acct.total_installments }}</td>
-                        <td class="px-3 py-2.5 text-center whitespace-nowrap">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if acct.status == 'active' %}bg-green-100 text-green-800{% elif acct.status == 'matured' %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-600{% endif %}">{{ acct.get_status_display }}</span>
+                        <td class="px-5 py-3 text-right text-gray-900 whitespace-nowrap" style="font-variant-numeric:tabular-nums">&#8377;{{ acct.installment_amount|floatformat:2 }}</td>
+                        <td class="px-5 py-3 text-right font-semibold text-gray-900 whitespace-nowrap" style="font-variant-numeric:tabular-nums">&#8377;{{ acct.current_balance|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-right text-gray-500 hidden lg:table-cell whitespace-nowrap" style="font-variant-numeric:tabular-nums">{{ acct.paid_installments }}/{{ acct.total_installments }}</td>
+                        <td class="px-5 py-3 text-center whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if acct.status == 'active' %}bg-green-100 text-green-700{% elif acct.status == 'matured' %}bg-blue-100 text-blue-700{% else %}bg-gray-100 text-gray-600{% endif %}">{{ acct.get_status_display }}</span>
                         </td>
-                        <td class="px-3 py-2.5 text-center" onclick="event.stopPropagation()">
+                        <td class="px-3 py-3 text-center" onclick="event.stopPropagation()">
                             <div class="inline-flex items-center gap-1">
-                                <a href="{% url 'agents:pigmmy_detail' pk=acct.pk %}" class="p-1 text-gray-400 hover:text-primary-600 rounded" title="{% trans 'View' %}">
+                                <a href="{% url 'agents:pigmmy_detail' pk=acct.pk %}" class="p-1 text-gray-400 hover:text-primary-600 rounded-md hover:bg-gray-100" title="{% trans 'View' %}">
                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                 </a>
                                 {% if acct.status == 'active' and request.user.is_manager %}
-                                <a href="{% url 'agents:pigmmy_edit' pk=acct.pk %}" class="p-1 text-gray-400 hover:text-blue-600 rounded" title="{% trans 'Edit' %}">
+                                <a href="{% url 'agents:pigmmy_edit' pk=acct.pk %}" class="p-1 text-gray-400 hover:text-blue-600 rounded-md hover:bg-gray-100" title="{% trans 'Edit' %}">
                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                 </a>
-                                <a href="{% url 'agents:pigmmy_close' pk=acct.pk %}" class="p-1 text-gray-400 hover:text-red-600 rounded" title="{% trans 'Close' %}">
+                                <a href="{% url 'agents:pigmmy_close' pk=acct.pk %}" class="p-1 text-gray-400 hover:text-red-600 rounded-md hover:bg-gray-100" title="{% trans 'Close' %}">
                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                                 </a>
                                 {% endif %}
