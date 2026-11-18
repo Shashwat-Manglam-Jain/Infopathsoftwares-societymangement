@@ -75,7 +75,7 @@ def agent_detail(request, pk):
     agent = get_object_or_404(Agent.objects.select_related('member', 'branch', 'savings_account'), pk=pk)
     if not has_branch_access(request, agent.branch):
         messages.error(request, 'You do not have access to this agent.')
-        return redirect('agents:agent_list')
+        return redirect('agents:list')
     client_accounts = PigmmyAccount.objects.filter(agent=agent).select_related('member')
     recent_collections = AgentCollection.objects.filter(agent=agent).order_by('-collection_date')[:20]
     return render(

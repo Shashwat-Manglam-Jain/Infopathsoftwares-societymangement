@@ -192,7 +192,7 @@ class InterestMaster(models.Model):
 
     account_head = models.ForeignKey(
         ChartOfAccounts,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='interest_slabs',
         help_text='GL head this rate applies to',
     )
