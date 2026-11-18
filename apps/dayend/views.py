@@ -299,7 +299,7 @@ def reupdate_account_balance(request):
         if account_type == 'savings':
             from apps.savings.models import AccountTransaction, SavingsAccount
 
-            accounts = SavingsAccount.objects.filter(status='active')
+            accounts = SavingsAccount.objects.filter(status='active').select_related('member')
             if not request.user.can_access_all_branches:
                 accounts = accounts.filter(branch=request.current_branch)
             with transaction.atomic():
@@ -352,11 +352,11 @@ def reupdate_account_balance(request):
                     repaid_principal = LoanRepayment.objects.filter(
                         loan=loan,
                         payment_date__gte=from_date,
-                    ).aggregate(total=Sum('principal_component', default=Decimal('0')))['total']
+                    ).aggregate(total=Sum('principal_adjusted', default=Decimal('0')))['total']
                     repaid_before = LoanRepayment.objects.filter(
                         loan=loan,
                         payment_date__lt=from_date,
-                    ).aggregate(total=Sum('principal_component', default=Decimal('0')))['total']
+                    ).aggregate(total=Sum('principal_adjusted', default=Decimal('0')))['total']
                     expected = disbursed - repaid_before - repaid_principal
                     si_total = Decimal('0')
                     if hasattr(loan, 'standing_instructions'):

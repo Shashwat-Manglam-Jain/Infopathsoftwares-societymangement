@@ -34,7 +34,43 @@
         </form>
     </div>
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <!-- Mobile Card View -->
+    <div class="md:hidden space-y-3">
+        {% for rd in rds %}
+        <a href="{% url 'deposits:rd_detail' pk=rd.pk %}" class="block bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:border-primary-300 transition-colors">
+            <div class="flex items-start justify-between mb-2">
+                <div class="min-w-0">
+                    <p class="text-sm font-semibold text-gray-900 truncate">{{ rd.member.name }}</p>
+                    <p class="text-xs font-mono text-primary-600 mt-0.5">{{ rd.rd_no }}</p>
+                </div>
+                <span class="ml-2 flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if rd.status == 'active' %}bg-green-100 text-green-700{% elif rd.status == 'matured' %}bg-blue-100 text-blue-700{% elif rd.status == 'defaulted' %}bg-red-100 text-red-700{% else %}bg-gray-100 text-gray-600{% endif %}">{{ rd.get_status_display }}</span>
+            </div>
+            <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                <div>
+                    <span class="text-xs text-gray-400">{% trans "Installment" %}</span>
+                    <p class="font-semibold text-gray-900" style="font-variant-numeric:tabular-nums">&#8377;{{ rd.monthly_installment|floatformat:2 }}</p>
+                </div>
+                <div>
+                    <span class="text-xs text-gray-400">{% trans "Rate" %}</span>
+                    <p class="text-gray-600" style="font-variant-numeric:tabular-nums">{{ rd.interest_rate }}%</p>
+                </div>
+                <div>
+                    <span class="text-xs text-gray-400">{% trans "Start" %}</span>
+                    <p class="text-gray-500">{{ rd.start_date|date:"d-M-Y" }}</p>
+                </div>
+                <div>
+                    <span class="text-xs text-gray-400">{% trans "Maturity" %}</span>
+                    <p class="text-gray-500">{{ rd.maturity_date|date:"d-M-Y" }}</p>
+                </div>
+            </div>
+        </a>
+        {% empty %}
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-sm text-gray-400">{% trans "No recurring deposits found." %}</div>
+        {% endfor %}
+    </div>
+
+    <!-- Desktop Table View -->
+    <div class="hidden md:block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-[850px] w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50">
@@ -42,8 +78,8 @@
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">{% trans "RD No" %}</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{% trans "Member" %}</th>
                         <th class="px-5 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">{% trans "Installment" %}</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap hidden md:table-cell">{% trans "Rate" %}</th>
-                        <th class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap hidden md:table-cell">{% trans "Start" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">{% trans "Rate" %}</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap hidden lg:table-cell">{% trans "Start" %}</th>
                         <th class="px-5 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap hidden lg:table-cell">{% trans "Maturity" %}</th>
                         <th class="px-5 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">{% trans "Status" %}</th>
                         <th class="px-3 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap w-[70px]">{% trans "Actions" %}</th>
@@ -60,8 +96,8 @@
                             </div>
                         </td>
                         <td class="px-5 py-3 text-right font-semibold text-gray-900 whitespace-nowrap" style="font-variant-numeric:tabular-nums">&#8377;{{ rd.monthly_installment|floatformat:2 }}</td>
-                        <td class="px-4 py-3 text-right text-gray-500 hidden md:table-cell whitespace-nowrap" style="font-variant-numeric:tabular-nums">{{ rd.interest_rate }}%</td>
-                        <td class="px-5 py-3 text-gray-400 hidden md:table-cell whitespace-nowrap">{{ rd.start_date|date:"d-M-Y" }}</td>
+                        <td class="px-4 py-3 text-right text-gray-500 whitespace-nowrap" style="font-variant-numeric:tabular-nums">{{ rd.interest_rate }}%</td>
+                        <td class="px-5 py-3 text-gray-400 hidden lg:table-cell whitespace-nowrap">{{ rd.start_date|date:"d-M-Y" }}</td>
                         <td class="px-5 py-3 text-gray-400 hidden lg:table-cell whitespace-nowrap">{{ rd.maturity_date|date:"d-M-Y" }}</td>
                         <td class="px-5 py-3 text-center whitespace-nowrap">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if rd.status == 'active' %}bg-green-100 text-green-700{% elif rd.status == 'matured' %}bg-blue-100 text-blue-700{% elif rd.status == 'defaulted' %}bg-red-100 text-red-700{% else %}bg-gray-100 text-gray-600{% endif %}">{{ rd.get_status_display }}</span>

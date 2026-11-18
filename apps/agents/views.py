@@ -238,6 +238,9 @@ def pigmmy_detail(request, pk):
 @manager_required
 def pigmmy_edit(request, pk):
     account = get_object_or_404(PigmmyAccount, pk=pk)
+    if not has_branch_access(request, account.branch):
+        messages.error(request, 'You do not have access to this account.')
+        return redirect('agents:pigmmy_list')
     if request.method == 'POST':
         form = PigmmyEditForm(request.POST, instance=account)
         if form.is_valid():
@@ -252,6 +255,9 @@ def pigmmy_edit(request, pk):
 @manager_required
 def pigmmy_close(request, pk):
     account = get_object_or_404(PigmmyAccount, pk=pk)
+    if not has_branch_access(request, account.branch):
+        messages.error(request, 'You do not have access to this account.')
+        return redirect('agents:pigmmy_list')
     if account.status != 'active':
         messages.warning(request, 'Account is already closed.')
         return redirect('agents:pigmmy_detail', pk=account.pk)
@@ -527,6 +533,9 @@ def collection_posting_list(request):
 @day_open_required
 def collection_post(request, pk):
     collection = get_object_or_404(AgentCollection, pk=pk)
+    if not has_branch_access(request, collection.branch):
+        messages.error(request, 'You do not have access to this collection.')
+        return redirect('agents:collection_posting')
     if request.method == 'POST':
         from apps.agents.services import post_collection
 
@@ -545,6 +554,9 @@ def collection_post(request, pk):
 @day_open_required
 def collection_reject(request, pk):
     collection = get_object_or_404(AgentCollection, pk=pk)
+    if not has_branch_access(request, collection.branch):
+        messages.error(request, 'You do not have access to this collection.')
+        return redirect('agents:collection_posting')
     if request.method == 'POST':
         if collection.status != 'submitted':
             messages.warning(request, 'Only submitted collections can be rejected.')
@@ -589,6 +601,9 @@ def collection_reject(request, pk):
 @day_open_required
 def collection_rollback(request, pk):
     collection = get_object_or_404(AgentCollection, pk=pk)
+    if not has_branch_access(request, collection.branch):
+        messages.error(request, 'You do not have access to this collection.')
+        return redirect('agents:collection_posting')
     if request.method == 'POST':
         from apps.agents.services import rollback_collection
 
@@ -664,6 +679,9 @@ def member_accounts_api(request, member_id):
 @auditor_or_above
 def agent_client_sheet(request, pk):
     agent = get_object_or_404(Agent.objects.select_related('member', 'branch'), pk=pk)
+    if not has_branch_access(request, agent.branch):
+        messages.error(request, 'You do not have access to this agent.')
+        return redirect('agents:list')
     accounts = (
         PigmmyAccount.objects.filter(
             agent=agent,

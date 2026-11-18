@@ -1,6 +1,8 @@
 from datetime import date, timedelta
 from decimal import Decimal
 
+from django.utils import timezone
+
 from apps.accounting.models import ChartOfAccounts
 from apps.dayend.models import DayEndLog, FinancialYear, MonthEndLog, WorkingDay, YearEndLog
 from apps.dayend.services import (
@@ -327,7 +329,7 @@ class FinancialYearTests(BaseTestCase):
         fy.is_closed = True
         fy.is_current = False
         fy.closed_by = self.admin_user
-        fy.closed_at = date(2025, 4, 5)
+        fy.closed_at = timezone.make_aware(timezone.datetime(2025, 4, 5))
         fy.save()
         fy.refresh_from_db()
         self.assertTrue(fy.is_closed)

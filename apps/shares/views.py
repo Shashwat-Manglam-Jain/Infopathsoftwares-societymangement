@@ -289,6 +289,9 @@ class ShareReceiptView(AuditorOrAboveMixin, View):
             ),
             id=txn_id,
         )
+        if not has_branch_access(request, txn.branch):
+            messages.error(request, 'You do not have access to this receipt.')
+            return redirect('shares:list')
         holding = ShareHolding.objects.filter(member=txn.member, status='active').first()
         return render(
             request,

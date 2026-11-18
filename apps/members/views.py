@@ -14,6 +14,7 @@ from apps.accounts.permissions import (
     AuditorOrAboveMixin,
     ManagerRequiredMixin,
     auditor_or_above,
+    has_branch_access,
     staff_required,
 )
 from apps.branches.models import Branch
@@ -456,6 +457,9 @@ def member_create(request):
 @staff_required
 def member_edit(request, pk):
     member = get_object_or_404(Member, pk=pk)
+    if not has_branch_access(request, member.branch):
+        messages.error(request, 'You do not have access to this member.')
+        return redirect('members:list')
     from .forms import MemberForm, MemberNomineeFormSet
 
     branches = Branch.objects.filter(status='active')
@@ -486,6 +490,9 @@ def member_edit(request, pk):
 @staff_required
 def member_document_upload(request, pk):
     member = get_object_or_404(Member, pk=pk)
+    if not has_branch_access(request, member.branch):
+        messages.error(request, 'You do not have access to this member.')
+        return redirect('members:list')
     if request.method == 'POST':
         from .forms import MemberDocumentForm
 

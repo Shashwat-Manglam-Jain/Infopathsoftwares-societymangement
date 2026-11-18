@@ -14,6 +14,7 @@ from apps.accounts.permissions import (
     auditor_or_above,
     cashier_required,
     day_open_required,
+    has_branch_access,
     manager_required,
 )
 from apps.core.date_utils import get_transaction_date
@@ -158,7 +159,10 @@ def _process_transaction(request, txn_type, heads):
     narration = request.POST.get('narration', '')
     raw_mode = request.POST.get('payment_mode', 'cash')
     payment_mode = 'cash' if raw_mode == 'cash' else 'transfer'
-    total_forms = int(request.POST.get('lines-TOTAL_FORMS', 0))
+    try:
+        total_forms = int(request.POST.get('lines-TOTAL_FORMS', 0))
+    except (ValueError, TypeError):
+        total_forms = 0
 
     try:
         entry_date = date.fromisoformat(entry_date_str)
@@ -771,6 +775,9 @@ def voucher_edit(request, pk):
         JournalEntry.objects.prefetch_related('lines__gl_account'),
         pk=pk,
     )
+    if not has_branch_access(request, entry.branch):
+        messages.error(request, 'You do not have access to this voucher.')
+        return redirect('accounting:vouchers')
     if entry.is_reversed:
         messages.error(request, 'Cannot edit a reversed voucher.')
         return redirect('accounting:vouchers')
@@ -868,6 +875,9 @@ def voucher_cancel(request, pk):
         JournalEntry.objects.prefetch_related('lines__gl_account'),
         pk=pk,
     )
+    if not has_branch_access(request, entry.branch):
+        messages.error(request, 'You do not have access to this voucher.')
+        return redirect('accounting:vouchers')
 
     from apps.accounts.permissions import is_date_locked
 

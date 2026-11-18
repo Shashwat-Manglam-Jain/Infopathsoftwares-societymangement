@@ -2,6 +2,7 @@ from datetime import date
 from decimal import Decimal
 
 from django.db import IntegrityError
+from django.utils import timezone
 
 from apps.members.models import Member, MemberDocument, MemberNominee
 
@@ -225,7 +226,7 @@ class MemberKYCTests(BaseTestCase):
             file='documents/member1_pan.pdf',
         )
         doc.verified_by = self.admin_user
-        doc.verified_at = date(2024, 2, 15)
+        doc.verified_at = timezone.make_aware(timezone.datetime(2024, 2, 15))
         doc.save()
         doc.refresh_from_db()
         self.assertEqual(doc.verified_by, self.admin_user)

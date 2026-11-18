@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('accounting', '0007_add_performance_indexes'),
     ]
@@ -14,6 +13,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='interestmaster',
             name='account_head',
-            field=models.ForeignKey(help_text='GL head this rate applies to', on_delete=django.db.models.deletion.PROTECT, related_name='interest_slabs', to='accounting.chartofaccounts'),
+            field=models.ForeignKey(
+                help_text='GL head this rate applies to',
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name='interest_slabs',
+                to='accounting.chartofaccounts',
+            ),
         ),
     ]

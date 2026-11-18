@@ -219,7 +219,7 @@ def has_branch_access(request, obj_branch):
         return True
     branch = getattr(request, 'current_branch', None)
     if branch is None:
-        return True
+        return False
     return obj_branch == branch
 
 

@@ -62,55 +62,92 @@
         </form>
     </div>
 
-    <!-- Table -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <!-- Mobile Card View -->
+    <div class="md:hidden space-y-3">
+        {% for m in members %}
+        <a href="{% url 'members:detail' m.pk %}" class="block bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:border-primary-300 transition-colors">
+            <div class="flex items-center gap-3">
+                <div class="flex-shrink-0">{% avatar m 40 "" %}</div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-start justify-between">
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-gray-900 truncate">{% if LANGUAGE_CODE != 'en' and m.name_regional %}{{ m.name_regional }}{% else %}{{ m.name }}{% endif %}</p>
+                            <p class="text-xs font-mono text-gray-500 mt-0.5">{{ m.member_no }}</p>
+                        </div>
+                        {% if m.status == 'active' %}
+                        <span class="ml-2 flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{% trans "Active" %}</span>
+                        {% elif m.status == 'inactive' %}
+                        <span class="ml-2 flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">{% trans "Inactive" %}</span>
+                        {% elif m.status == 'deceased' %}
+                        <span class="ml-2 flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">{% trans "Deceased" %}</span>
+                        {% else %}
+                        <span class="ml-2 flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{{ m.get_status_display }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="flex items-center gap-4 mt-1 text-xs text-gray-500">
+                        <span>{{ m.phone }}</span>
+                        {% if m.city %}<span>{{ m.city }}</span>{% endif %}
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% empty %}
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+            <svg class="mx-auto h-10 w-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <p class="mt-2 text-sm text-gray-500">{% trans "No members found" %}</p>
+            <a href="{% url 'members:create' %}" class="mt-3 inline-flex items-center px-3 py-1.5 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700">{% trans "Add First Member" %}</a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Desktop Table View -->
+    <div class="hidden md:block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase whitespace-nowrap">{% trans "Member No" %}</th>
-                        <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Name" %}</th>
-                        <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase whitespace-nowrap hidden md:table-cell">{% trans "Phone" %}</th>
-                        <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase whitespace-nowrap hidden lg:table-cell">{% trans "City" %}</th>
-                        <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase whitespace-nowrap hidden lg:table-cell">{% trans "Join Date" %}</th>
-                        <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600 uppercase whitespace-nowrap">{% trans "Status" %}</th>
-                        <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600 uppercase whitespace-nowrap w-20">{% trans "Actions" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">{% trans "Member No" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{% trans "Name" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">{% trans "Phone" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap hidden lg:table-cell">{% trans "City" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap hidden lg:table-cell">{% trans "Join Date" %}</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">{% trans "Status" %}</th>
+                        <th class="px-3 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap w-20">{% trans "Actions" %}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     {% for m in members %}
-                    <tr class="hover:bg-gray-50 transition-colors cursor-pointer" onclick="window.location.href='{% url 'members:detail' m.pk %}'">
-                        <td class="px-3 py-2.5 font-mono text-gray-900 whitespace-nowrap">{{ m.member_no }}</td>
-                        <td class="px-3 py-2.5">
+                    <tr class="hover:bg-primary-50/40 even:bg-gray-50/50 transition-colors cursor-pointer" onclick="window.location.href='{% url 'members:detail' m.pk %}'">
+                        <td class="px-4 py-3 font-mono text-gray-900 whitespace-nowrap">{{ m.member_no }}</td>
+                        <td class="px-4 py-3">
                             <div class="flex items-center">
                                 <div class="mr-3 flex-shrink-0">{% avatar m 32 "" %}</div>
                                 <div class="min-w-0">
                                     <div class="font-medium text-gray-900 truncate max-w-[200px]">{% if LANGUAGE_CODE != 'en' and m.name_regional %}{{ m.name_regional }}{% else %}{{ m.name }}{% endif %}</div>
-                                    <div class="text-xs text-gray-500 md:hidden">{{ m.phone }}</div>
                                 </div>
                             </div>
                         </td>
-                        <td class="px-3 py-2.5 text-gray-600 hidden md:table-cell whitespace-nowrap">{{ m.phone }}</td>
-                        <td class="px-3 py-2.5 text-gray-600 hidden lg:table-cell">{{ m.city|default:"—" }}</td>
-                        <td class="px-3 py-2.5 text-gray-600 hidden lg:table-cell whitespace-nowrap">{{ m.join_date|date:"d M Y" }}</td>
-                        <td class="px-3 py-2.5 text-center whitespace-nowrap">
+                        <td class="px-4 py-3 text-gray-600 whitespace-nowrap">{{ m.phone }}</td>
+                        <td class="px-4 py-3 text-gray-600 hidden lg:table-cell">{{ m.city|default:"—" }}</td>
+                        <td class="px-4 py-3 text-gray-400 hidden lg:table-cell whitespace-nowrap">{{ m.join_date|date:"d-M-Y" }}</td>
+                        <td class="px-4 py-3 text-center whitespace-nowrap">
                             {% if m.status == 'active' %}
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{% trans "Active" %}</span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{% trans "Active" %}</span>
                             {% elif m.status == 'inactive' %}
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">{% trans "Inactive" %}</span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">{% trans "Inactive" %}</span>
                             {% elif m.status == 'deceased' %}
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">{% trans "Deceased" %}</span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">{% trans "Deceased" %}</span>
                             {% else %}
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{{ m.get_status_display }}</span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{{ m.get_status_display }}</span>
                             {% endif %}
                         </td>
-                        <td class="px-3 py-2.5 text-center" onclick="event.stopPropagation()">
+                        <td class="px-3 py-3 text-center" onclick="event.stopPropagation()">
                             <div class="inline-flex items-center gap-1">
-                                <a href="{% url 'members:detail' m.pk %}" class="p-1 text-gray-400 hover:text-primary-600 rounded" title="View">
+                                <a href="{% url 'members:detail' m.pk %}" class="p-1 text-gray-400 hover:text-primary-600 rounded-md hover:bg-gray-100" title="View">
                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                 </a>
                                 {% if request.user.is_staff_role %}
-                                <a href="{% url 'members:edit' m.pk %}" class="p-1 text-gray-400 hover:text-primary-600 rounded" title="Edit">
+                                <a href="{% url 'members:edit' m.pk %}" class="p-1 text-gray-400 hover:text-primary-600 rounded-md hover:bg-gray-100" title="Edit">
                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                 </a>
                                 {% endif %}
