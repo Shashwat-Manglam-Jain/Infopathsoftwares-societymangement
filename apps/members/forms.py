@@ -179,6 +179,26 @@ class MemberForm(forms.ModelForm):
         if self.instance.pk:
             self.fields['introducer'].queryset = self.fields['introducer'].queryset.exclude(pk=self.instance.pk)
 
+    def clean_aadhar_no(self):
+        val = self.cleaned_data.get('aadhar_no', '').strip()
+        if val:
+            qs = Member.objects.filter(aadhar_no=val)
+            if self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise forms.ValidationError('A member with this Aadhaar number already exists.')
+        return val
+
+    def clean_pan_no(self):
+        val = self.cleaned_data.get('pan_no', '').strip()
+        if val:
+            qs = Member.objects.filter(pan_no=val)
+            if self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise forms.ValidationError('A member with this PAN number already exists.')
+        return val
+
 
 class MemberNomineeForm(forms.ModelForm):
     class Meta:

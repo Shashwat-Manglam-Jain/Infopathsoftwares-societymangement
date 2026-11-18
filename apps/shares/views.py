@@ -61,16 +61,32 @@ def share_list(request):
         if 'confirm' in request.POST:
             from apps.savings.models import AccountTransaction, SavingsAccount
 
+            existing_dividend = ShareTransaction.objects.filter(
+                txn_type='dividend',
+                narration__contains=f'FY {financial_year}',
+            ).exists()
+            if existing_dividend:
+                messages.error(request, f'Dividend for FY {financial_year} has already been posted.')
+                return redirect('shares:list')
+
             posted = 0
             today = timezone.now().date()
             with db_transaction.atomic():
+                total_dividend_posted = Decimal('0')
+                dividend_branch = request.current_branch or (
+                    dividend_results[0]['holding'].branch if dividend_results else None
+                )
                 for r in dividend_results:
                     member = r['member']
                     holding = r.get('holding')
-                    savings = SavingsAccount.objects.filter(
-                        member=member,
-                        status='active',
-                    ).first()
+                    savings = (
+                        SavingsAccount.objects.select_for_update()
+                        .filter(
+                            member=member,
+                            status='active',
+                        )
+                        .first()
+                    )
                     if savings:
                         savings.current_balance += r['dividend']
                         savings.save(update_fields=['current_balance'])
@@ -97,7 +113,27 @@ def share_list(request):
                                 narration=f'Dividend @ {rate}% for FY {financial_year}',
                                 created_by=request.user,
                             )
+                        total_dividend_posted += r['dividend']
                         posted += 1
+
+                if total_dividend_posted > 0 and dividend_branch:
+                    from apps.accounting.services import create_journal_entry
+                    from apps.core.gl_utils import get_gl_code
+
+                    savings_code = get_gl_code('saving', '2001')
+                    share_code = get_gl_code('shares', '2501')
+                    create_journal_entry(
+                        entry_date=today,
+                        voucher_type='journal',
+                        branch=dividend_branch,
+                        narration=f'Dividend @ {rate}% for FY {financial_year}',
+                        lines=[
+                            {'account_code': share_code, 'debit': total_dividend_posted, 'credit': Decimal('0')},
+                            {'account_code': savings_code, 'debit': Decimal('0'), 'credit': total_dividend_posted},
+                        ],
+                        user=request.user,
+                        reference_type='dividend',
+                    )
 
             messages.success(request, f'Dividend posted to {posted} accounts. Total: ₹{total_dividend:,.2f}')
             return redirect('shares:list')

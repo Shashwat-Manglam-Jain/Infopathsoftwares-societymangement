@@ -286,6 +286,27 @@ def rd_detail(request, pk):
     )
 
 
+@manager_required
+@day_open_required
+def rd_mature(request, pk):
+    from apps.deposits.services import mature_rd
+
+    rd = get_object_or_404(RecurringDeposit, pk=pk)
+    if not has_branch_access(request, rd.branch):
+        messages.error(request, 'You do not have access to this RD.')
+        return redirect('deposits:rd_list')
+    if request.current_branch is None:
+        messages.warning(request, 'Please select a specific branch first.')
+        return redirect('deposits:rd_detail', pk=pk)
+    if request.method == 'POST':
+        try:
+            mature_rd(rd, request.user)
+            messages.success(request, f'RD {rd.rd_no} matured. Payout: {rd.maturity_amount}')
+        except (ValueError, Exception) as e:
+            messages.error(request, str(e))
+    return redirect('deposits:rd_detail', pk=pk)
+
+
 @cashier_required
 @day_open_required
 def rd_collect(request, pk):

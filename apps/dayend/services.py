@@ -1,4 +1,3 @@
-from datetime import date, timedelta
 from decimal import ROUND_HALF_UP, Decimal
 
 from django.db import transaction
@@ -150,22 +149,14 @@ def run_month_end(branch, month_date, user):
     )
 
     try:
-        loan_count = 0
         demand_count = 0
 
         loans = LoanAccount.objects.filter(branch=branch, status__in=['disbursed', 'npa'])
-        last_day = date(
-            month_date.year + (1 if month_date.month == 12 else 0), (month_date.month % 12) + 1, 1
-        ) - timedelta(days=1)
 
+        # Loan interest accrual is handled daily by run_day_end →
+        # _accrue_loan_interest.  Month-end only tallies demand EMIs and
+        # RD installments so interest is never double-counted.
         for loan in loans:
-            daily_rate = loan.interest_rate / Decimal('365') / Decimal('100')
-            days_in_month = last_day.day
-            monthly_interest = loan.outstanding_principal * daily_rate * days_in_month
-            loan.outstanding_interest += monthly_interest
-            loan.save(update_fields=['outstanding_interest'])
-            loan_count += 1
-
             due_emis = EMISchedule.objects.filter(
                 loan=loan,
                 due_date__month=month_date.month,
@@ -174,7 +165,6 @@ def run_month_end(branch, month_date, user):
             )
             demand_count += due_emis.count()
 
-        # Check RD installments due
         from apps.deposits.models import RDInstallment
 
         rd_count = RDInstallment.objects.filter(
@@ -185,7 +175,7 @@ def run_month_end(branch, month_date, user):
             status='pending',
         ).count()
 
-        log.loan_interest_calculated_count = loan_count
+        log.loan_interest_calculated_count = loans.count()
         log.demand_generated_count = demand_count
         log.rd_installments_due_count = rd_count
         log.status = 'completed'
@@ -369,7 +359,7 @@ def _accrue_loan_interest(branch, processing_date):
     from apps.loans.models import LoanAccount
 
     count = 0
-    loans = LoanAccount.objects.filter(branch=branch, status='disbursed')
+    loans = LoanAccount.objects.filter(branch=branch, status__in=['disbursed', 'npa'])
     for loan in loans:
         daily_rate = loan.interest_rate / Decimal('365') / Decimal('100')
         daily_interest = loan.outstanding_principal * daily_rate

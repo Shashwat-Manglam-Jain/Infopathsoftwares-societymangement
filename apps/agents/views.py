@@ -564,13 +564,16 @@ def collection_reject(request, pk):
                     txn.is_reversed = True
                     txn.save(update_fields=['is_reversed'])
                 from apps.accounting.models import JournalEntry
+                from apps.accounting.services import reverse_journal_entry
 
-                JournalEntry.objects.filter(
+                journals = JournalEntry.objects.filter(
                     reference_type='pigmmy_collection',
                     entry_date=collection.collection_date,
                     narration__contains=collection.agent.agent_code,
                     is_reversed=False,
-                ).update(is_reversed=True)
+                )
+                for je in journals:
+                    reverse_journal_entry(je, request.user)
 
                 collection.status = 'discrepancy'
                 collection.remarks = request.POST.get('remarks', '')

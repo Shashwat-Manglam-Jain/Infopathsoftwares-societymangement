@@ -14,4 +14,5 @@ urlpatterns = [
     path('rd/create/', views.rd_create, name='rd_create'),
     path('rd/<int:pk>/', views.rd_detail, name='rd_detail'),
     path('rd/<int:pk>/collect/', views.rd_collect, name='rd_collect'),
+    path('rd/<int:pk>/mature/', views.rd_mature, name='rd_mature'),
 ]

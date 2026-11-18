@@ -16,6 +16,7 @@ from apps.accounts.permissions import (
     day_open_required,
     manager_required,
 )
+from apps.core.date_utils import get_transaction_date
 
 from .forms import ChartOfAccountsForm, InterestMasterForm, VoucherForm
 from .models import ChartOfAccounts, InterestMaster, JournalEntry
@@ -270,6 +271,12 @@ def _process_transaction(request, txn_type, heads):
                         user=request.user,
                         journal_entry=entry,
                     )
+            from apps.accounting.services import update_cashbook
+
+            if txn_type == 'receipt':
+                update_cashbook(branch, entry_date, receipt_amount=total_amount, payment_mode=payment_mode)
+            else:
+                update_cashbook(branch, entry_date, payment_amount=total_amount, payment_mode=payment_mode)
         messages.success(request, f'{txn_type.title()} {entry.voucher_no} saved.')
         return redirect('accounting:cashbook')
     except ValueError as e:
@@ -414,7 +421,7 @@ def voucher_create(request):
             try:
                 branch = request.current_branch
                 entry = create_journal_entry(
-                    entry_date=date.today(),
+                    entry_date=get_transaction_date(branch),
                     voucher_type=form.cleaned_data['voucher_type'],
                     branch=branch,
                     narration=form.cleaned_data['narration'],
@@ -767,8 +774,8 @@ def voucher_edit(request, pk):
     if entry.is_reversed:
         messages.error(request, 'Cannot edit a reversed voucher.')
         return redirect('accounting:vouchers')
-    if entry.entry_date != date.today():
-        messages.error(request, 'Can only edit vouchers created today.')
+    if entry.entry_date != get_transaction_date(request.current_branch):
+        messages.error(request, 'Can only edit vouchers from the current working day.')
         return redirect('accounting:vouchers')
 
     from apps.accounts.permissions import is_date_locked
@@ -793,7 +800,7 @@ def voucher_edit(request, pk):
                 reverse_journal_entry(entry, request.user)
                 new_amount = form.cleaned_data['amount']
                 new_entry = create_journal_entry(
-                    entry_date=date.today(),
+                    entry_date=get_transaction_date(request.current_branch),
                     voucher_type=form.cleaned_data['voucher_type'],
                     branch=request.current_branch,
                     narration=form.cleaned_data['narration'],
@@ -975,7 +982,11 @@ def inter_branch_transfer(request):
             from_branch = Branch.objects.get(pk=from_branch_id)
             to_branch = Branch.objects.get(pk=to_branch_id)
             amount = Decimal(amount_str)
-            transfer_date = date.fromisoformat(transfer_date_str) if transfer_date_str else date.today()
+            transfer_date = (
+                date.fromisoformat(transfer_date_str)
+                if transfer_date_str
+                else get_transaction_date(request.current_branch)
+            )
         except (Branch.DoesNotExist, Exception) as e:
             messages.error(request, f'Invalid input: {e}')
             return redirect('accounting:inter_branch_transfer')

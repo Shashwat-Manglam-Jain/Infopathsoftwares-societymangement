@@ -1,11 +1,11 @@
 import calendar
-from datetime import date, timedelta
+from datetime import timedelta
 from decimal import ROUND_HALF_UP, Decimal
 
 from django.db import transaction
 
 from apps.core.date_utils import get_transaction_date
-from apps.savings.models import AccountTransaction
+from apps.savings.models import AccountTransaction, SavingsAccount
 
 
 def deposit(
@@ -18,6 +18,7 @@ def deposit(
         raise ValueError('Amount must be positive')
 
     with transaction.atomic():
+        account = SavingsAccount.objects.select_for_update().get(pk=account.pk)
         account.current_balance += amount
         account.save(update_fields=['current_balance', 'updated_at'])
 
@@ -50,10 +51,11 @@ def withdraw(account, amount, branch, user, payment_mode='cash', narration=''):
         raise ValueError('Account is not active')
     if amount <= 0:
         raise ValueError('Amount must be positive')
-    if account.current_balance - amount < account.minimum_balance:
-        raise ValueError(f'Insufficient balance. Minimum balance: {account.minimum_balance}')
 
     with transaction.atomic():
+        account = SavingsAccount.objects.select_for_update().get(pk=account.pk)
+        if account.current_balance - amount < account.minimum_balance:
+            raise ValueError(f'Insufficient balance. Minimum balance: {account.minimum_balance}')
         account.current_balance -= amount
         account.save(update_fields=['current_balance', 'updated_at'])
 
@@ -106,6 +108,7 @@ def post_interest(account, from_date, to_date, user):
         return None
 
     with transaction.atomic():
+        account = SavingsAccount.objects.select_for_update().get(pk=account.pk)
         account.current_balance += total_interest
         account.last_interest_posted_date = to_date
         account.save(update_fields=['current_balance', 'last_interest_posted_date', 'updated_at'])
@@ -132,39 +135,41 @@ def reverse_transaction(txn, user):
         raise ValueError('Transaction is already reversed')
 
     with transaction.atomic():
+        account = SavingsAccount.objects.select_for_update().get(pk=txn.account.pk)
         if txn.txn_type == 'deposit':
-            if txn.account.current_balance - txn.amount < 0:
+            if account.current_balance - txn.amount < 0:
                 raise ValueError(
                     f'Cannot reverse: would result in negative balance '
-                    f'(current: ₹{txn.account.current_balance}, reversal: ₹{txn.amount})'
+                    f'(current: ₹{account.current_balance}, reversal: ₹{txn.amount})'
                 )
-            txn.account.current_balance -= txn.amount
+            account.current_balance -= txn.amount
         elif txn.txn_type == 'withdrawal':
-            txn.account.current_balance += txn.amount
+            account.current_balance += txn.amount
         elif txn.txn_type == 'interest_credit':
-            if txn.account.current_balance - txn.amount < 0:
+            if account.current_balance - txn.amount < 0:
                 raise ValueError(
                     f'Cannot reverse: would result in negative balance '
-                    f'(current: ₹{txn.account.current_balance}, reversal: ₹{txn.amount})'
+                    f'(current: ₹{account.current_balance}, reversal: ₹{txn.amount})'
                 )
-            txn.account.current_balance -= txn.amount
-        txn.account.save(update_fields=['current_balance', 'updated_at'])
+            account.current_balance -= txn.amount
+        account.save(update_fields=['current_balance', 'updated_at'])
+        txn.account = account
 
         txn.is_reversed = True
         txn.save(update_fields=['is_reversed', 'updated_at'])
 
+        reversal_date = get_transaction_date(txn.branch)
         reversal = AccountTransaction.objects.create(
             account=txn.account,
             branch=txn.branch,
-            txn_date=date.today(),
-            value_date=date.today(),
+            txn_date=reversal_date,
+            value_date=reversal_date,
             txn_type='reversal',
             amount=txn.amount,
             running_balance=txn.account.current_balance,
-            narration=f'Reversal of {txn.txn_type} {txn.voucher_no}',
+            narration=f'Reversal of {txn.txn_type} {txn.voucher_no}'.strip(),
             payment_mode=txn.payment_mode,
             created_by=user,
-            is_reversed=True,
             reversal_of=txn,
         )
 
@@ -253,7 +258,8 @@ def _create_interest_journal(account, amount, branch, user, txn):
 def _generate_receipt_no(branch, txn_type):
     prefix = 'RCT' if txn_type == 'deposit' else 'PMT'
     last = (
-        AccountTransaction.objects.filter(
+        AccountTransaction.objects.select_for_update()
+        .filter(
             branch=branch,
             receipt_no__startswith=prefix,
         )

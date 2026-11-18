@@ -43,7 +43,7 @@ def create_journal_entry(
         )
 
         for line_data in lines:
-            account = ChartOfAccounts.objects.get(code=line_data['account_code'])
+            account = ChartOfAccounts.objects.select_for_update().get(code=line_data['account_code'])
             debit = Decimal(str(line_data.get('debit', 0)))
             credit = Decimal(str(line_data.get('credit', 0)))
 
@@ -134,6 +134,8 @@ def reverse_journal_entry(entry, user):
 
 
 def update_cashbook(branch, txn_date, receipt_amount=Decimal('0'), payment_amount=Decimal('0'), payment_mode='cash'):
+    from django.db.models import F
+
     from apps.core.gl_utils import get_cash_code
 
     cb, created = CashbookMaster.objects.get_or_create(
@@ -156,17 +158,24 @@ def update_cashbook(branch, txn_date, receipt_amount=Decimal('0'), payment_amoun
             cash_code = get_cash_code(branch)
             cash_head = ChartOfAccounts.objects.filter(code=cash_code).first()
             cb.opening_balance = cash_head.opening_balance if cash_head else Decimal('0')
+        cb.save(update_fields=['opening_balance'])
 
-    cb.total_receipts += receipt_amount
-    cb.total_payments += payment_amount
+    update_fields = {
+        'total_receipts': F('total_receipts') + receipt_amount,
+        'total_payments': F('total_payments') + payment_amount,
+    }
     if payment_mode == 'cash':
-        cb.receipt_cash += receipt_amount
-        cb.payment_cash += payment_amount
+        update_fields['receipt_cash'] = F('receipt_cash') + receipt_amount
+        update_fields['payment_cash'] = F('payment_cash') + payment_amount
     else:
-        cb.receipt_transfer += receipt_amount
-        cb.payment_transfer += payment_amount
-    cb.closing_balance = cb.opening_balance + cb.total_receipts - cb.total_payments
-    cb.save()
+        update_fields['receipt_transfer'] = F('receipt_transfer') + receipt_amount
+        update_fields['payment_transfer'] = F('payment_transfer') + payment_amount
+
+    CashbookMaster.objects.filter(pk=cb.pk).update(**update_fields)
+    CashbookMaster.objects.filter(pk=cb.pk).update(
+        closing_balance=F('opening_balance') + F('total_receipts') - F('total_payments'),
+    )
+    cb.refresh_from_db()
     return cb
 
 
@@ -368,30 +377,24 @@ def generate_voucher_no(voucher_type, branch):
     }
     prefix = prefix_map.get(voucher_type, 'V')
 
-    from django.db.models import Max
-    from django.db.models.functions import Cast
-
-    max_seq = (
-        JournalEntry.objects.filter(
+    last = (
+        JournalEntry.objects.select_for_update()
+        .filter(
             voucher_type=voucher_type,
             branch=branch,
             voucher_no__startswith=f'{prefix}/',
         )
-        .annotate(
-            seq_num=Cast(
-                models.Func(
-                    models.F('voucher_no'),
-                    models.Value(f'{prefix}/'),
-                    models.Value(''),
-                    function='REPLACE',
-                ),
-                output_field=models.IntegerField(),
-            )
-        )
-        .aggregate(max_val=Max('seq_num'))
-    )['max_val']
+        .order_by('-id')
+        .first()
+    )
 
-    seq = (max_seq or 0) + 1
+    if last and last.voucher_no:
+        try:
+            seq = int(last.voucher_no.split('/')[-1]) + 1
+        except (ValueError, IndexError):
+            seq = 1
+    else:
+        seq = 1
     return f'{prefix}/{seq:06d}'
 
 

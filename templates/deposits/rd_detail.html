@@ -58,13 +58,23 @@
             </dl>
         </div>
 
-        {% if rd.status == 'active' and request.user.is_cashier %}
+        {% if rd.status == 'active' %}
         <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-between">
             <a href="{% url 'deposits:rd_list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">&larr; {% trans "Back" %}</a>
-            <form method="post" action="{% url 'deposits:rd_collect' pk=rd.pk %}">
-                {% csrf_token %}
-                <button type="submit" class="px-5 py-1.5 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700">{% trans "Collect" %} &#8377;{{ rd.monthly_installment|floatformat:2 }}</button>
-            </form>
+            <div class="flex items-center gap-2">
+                {% if request.user.is_cashier %}
+                <form method="post" action="{% url 'deposits:rd_collect' pk=rd.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="px-5 py-1.5 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700">{% trans "Collect" %} &#8377;{{ rd.monthly_installment|floatformat:2 }}</button>
+                </form>
+                {% endif %}
+                {% if request.user.is_manager and paid_count == rd.tenure_months %}
+                <form method="post" action="{% url 'deposits:rd_mature' pk=rd.pk %}" onsubmit="return confirm('Mature this RD and pay out ₹{{ rd.maturity_amount|floatformat:2 }}?')">
+                    {% csrf_token %}
+                    <button type="submit" class="px-5 py-1.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700">{% trans "Mature RD" %}</button>
+                </form>
+                {% endif %}
+            </div>
         </div>
         {% else %}
         <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-end">

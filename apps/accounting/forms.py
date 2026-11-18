@@ -84,6 +84,14 @@ class VoucherForm(forms.Form):
         widget=forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
     )
 
+    def clean(self):
+        cleaned_data = super().clean()
+        dr = cleaned_data.get('debit_account')
+        cr = cleaned_data.get('credit_account')
+        if dr and cr and dr == cr:
+            raise forms.ValidationError('Debit and Credit accounts cannot be the same.')
+        return cleaned_data
+
 
 class InterestMasterForm(forms.ModelForm):
     class Meta:

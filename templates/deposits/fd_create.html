@@ -63,6 +63,14 @@
                     <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Certificate No" %}</label>
                     {{ form.certificate_no }}
                 </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Meeting No" %}</label>
+                    {{ form.meeting_no }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Meeting Date" %}</label>
+                    {{ form.meeting_date }}
+                </div>
                 <div class="md:col-span-2 flex items-center gap-4">
                     <label class="flex items-center gap-1.5 cursor-pointer">
                         <input type="checkbox" name="is_auto_renew" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">

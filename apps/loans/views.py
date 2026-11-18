@@ -1,5 +1,3 @@
-from datetime import date
-
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import transaction
@@ -192,7 +190,9 @@ def loan_apply(request):
                     with transaction.atomic():
                         loan = form.save(commit=False)
                         loan.branch = request.current_branch
-                        loan.applied_date = date.today()
+                        from apps.core.date_utils import get_transaction_date
+
+                        loan.applied_date = get_transaction_date(request.current_branch)
                         loan.status = 'applied'
                         loan.interest_rate = product.interest_rate
                         loan.penal_interest_rate = product.penal_interest_rate

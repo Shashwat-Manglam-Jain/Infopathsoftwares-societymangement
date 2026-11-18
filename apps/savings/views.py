@@ -18,6 +18,7 @@ from apps.accounts.permissions import (
     manager_required,
 )
 from apps.core.account_utils import amount_to_words as _amount_to_words
+from apps.core.date_utils import get_transaction_date
 from apps.members.models import Member
 
 from . import services
@@ -284,7 +285,7 @@ def savings_change_status(request, pk):
             old_status = account.status
             account.status = new_status
             if new_status == 'closed':
-                account.closing_date = date.today()
+                account.closing_date = get_transaction_date(request.current_branch)
             account.save(update_fields=['status', 'closing_date', 'updated_at'])
             messages.success(request, f'Account status changed from {old_status} to {new_status}.')
     return redirect('savings:detail', pk=pk)

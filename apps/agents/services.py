@@ -192,15 +192,16 @@ def post_collection(collection, posted_by):
         is_reversed=False,
     ).select_related('account', 'account__linked_savings_account')
 
-    from apps.savings.models import AccountTransaction
+    from apps.savings.models import AccountTransaction, SavingsAccount
 
     posted_count = 0
     for txn in transactions:
         pigmmy_acct = txn.account
         savings_acct = pigmmy_acct.linked_savings_account
         if savings_acct:
+            savings_acct = SavingsAccount.objects.select_for_update().get(pk=savings_acct.pk)
             savings_acct.current_balance += txn.amount
-            savings_acct.save()
+            savings_acct.save(update_fields=['current_balance', 'updated_at'])
             AccountTransaction.objects.create(
                 account=savings_acct,
                 txn_type='deposit',
@@ -264,9 +265,12 @@ def post_collection(collection, posted_by):
 
 @transaction.atomic
 def rollback_collection(collection, user):
+    from apps.core.date_utils import get_transaction_date
+
     if collection.status != 'reconciled':
         raise ValueError('Only reconciled collections can be rolled back.')
-    if collection.collection_date != date.today():
+    current_date = get_transaction_date(collection.branch)
+    if collection.collection_date != current_date:
         raise ValueError('Rollback is only allowed for same-day postings.')
 
     transactions = PigmmyTransaction.objects.filter(
@@ -275,13 +279,14 @@ def rollback_collection(collection, user):
         is_reversed=False,
     ).select_related('account__linked_savings_account')
 
-    from apps.savings.models import AccountTransaction
+    from apps.savings.models import AccountTransaction, SavingsAccount
 
     for txn in transactions:
         savings_acct = txn.account.linked_savings_account
         if savings_acct:
+            savings_acct = SavingsAccount.objects.select_for_update().get(pk=savings_acct.pk)
             savings_acct.current_balance -= txn.amount
-            savings_acct.save(update_fields=['current_balance'])
+            savings_acct.save(update_fields=['current_balance', 'updated_at'])
             AccountTransaction.objects.create(
                 account=savings_acct,
                 txn_type='withdrawal',

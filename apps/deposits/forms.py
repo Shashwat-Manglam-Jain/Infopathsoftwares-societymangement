@@ -33,6 +33,11 @@ class FDCreateForm(forms.Form):
     )
     certificate_no = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': tw}))
     tds_applicable = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={'class': 'rounded'}))
+    meeting_no = forms.CharField(required=False, max_length=20, widget=forms.TextInput(attrs={'class': tw}))
+    meeting_date = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={'class': tw, 'type': 'date'}),
+    )
 
     def clean_member(self):
         from apps.members.models import Member
@@ -80,6 +85,11 @@ class RDCreateForm(forms.Form):
         ),
     )
     linked_savings_account = forms.IntegerField(required=False, widget=forms.Select(attrs={'class': tw}))
+    meeting_no = forms.CharField(required=False, max_length=20, widget=forms.TextInput(attrs={'class': tw}))
+    meeting_date = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={'class': tw, 'type': 'date'}),
+    )
 
     def clean_member(self):
         from apps.members.models import Member

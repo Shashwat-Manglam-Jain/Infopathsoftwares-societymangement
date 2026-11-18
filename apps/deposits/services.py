@@ -1,7 +1,9 @@
+import calendar
 from datetime import date, timedelta
 from decimal import ROUND_HALF_UP, Decimal
 
 from django.db import transaction
+from django.db.models import Sum as models_Sum
 
 from apps.core.date_utils import get_transaction_date
 from apps.deposits.models import FixedDeposit, RDInstallment, RecurringDeposit
@@ -173,6 +175,17 @@ def premature_close_fd(fd, user):
         fd.accrued_interest = premature_amount - fd.deposit_amount
         fd.save()
 
+        if fd.linked_savings_account:
+            from apps.savings.services import deposit as savings_deposit
+
+            savings_deposit(
+                fd.linked_savings_account,
+                premature_amount,
+                fd.branch,
+                user,
+                payment_mode='transfer',
+                narration=f'FD premature closure {fd.fd_no}',
+            )
         _create_fd_maturity_journal(fd, fd.branch, user, amount=premature_amount)
         return fd
 
@@ -230,11 +243,10 @@ def create_rd(
 
     maturity_amount = _calculate_rd_maturity(monthly_installment, interest_rate, tenure_months)
     start = get_transaction_date(branch)
-    maturity_date = date(
-        start.year + (start.month + tenure_months - 1) // 12,
-        (start.month + tenure_months - 1) % 12 + 1,
-        min(start.day, 28),
-    )
+    mat_year = start.year + (start.month + tenure_months - 1) // 12
+    mat_month = (start.month + tenure_months - 1) % 12 + 1
+    max_day = calendar.monthrange(mat_year, mat_month)[1]
+    maturity_date = date(mat_year, mat_month, min(start.day, max_day))
 
     with transaction.atomic():
         rd_no = _generate_rd_no(branch)
@@ -258,7 +270,7 @@ def create_rd(
         for i in range(1, tenure_months + 1):
             m = (start.month + i - 1) % 12 + 1
             y = start.year + (start.month + i - 1) // 12
-            due = date(y, m, min(start.day, 28))
+            due = date(y, m, min(start.day, calendar.monthrange(y, m)[1]))
             RDInstallment.objects.create(
                 rd=rd,
                 installment_no=i,
@@ -273,19 +285,21 @@ def collect_rd_installment(rd, amount, branch, user):
     if rd.status != 'active':
         raise ValueError('RD is not active')
     amount = Decimal(str(amount))
-    installment = (
-        RDInstallment.objects.filter(
-            rd=rd,
-            status__in=('pending', 'overdue'),
-        )
-        .order_by('installment_no')
-        .first()
-    )
-
-    if not installment:
-        raise ValueError('No pending installment found')
 
     with transaction.atomic():
+        installment = (
+            RDInstallment.objects.select_for_update()
+            .filter(
+                rd=rd,
+                status__in=('pending', 'overdue'),
+            )
+            .order_by('installment_no')
+            .first()
+        )
+
+        if not installment:
+            raise ValueError('No pending installment found')
+
         txn_date = get_transaction_date(branch)
         installment.paid_amount = amount
         installment.paid_date = txn_date
@@ -320,6 +334,7 @@ def mature_rd(rd, user):
                 payment_mode='transfer',
                 narration=f'RD maturity credit {rd.rd_no}',
             )
+        _create_rd_maturity_journal(rd, rd.branch, user)
         return rd
 
 
@@ -335,7 +350,12 @@ def _calculate_rd_maturity(installment, annual_rate, tenure_months):
 
 
 def _generate_fd_no(branch):
-    last = FixedDeposit.objects.filter(fd_no__startswith=f'FD-{branch.branch_code}').order_by('-fd_no').first()
+    last = (
+        FixedDeposit.objects.select_for_update()
+        .filter(fd_no__startswith=f'FD-{branch.branch_code}')
+        .order_by('-fd_no')
+        .first()
+    )
     if last:
         seq = int(last.fd_no.split('-')[-1]) + 1
     else:
@@ -344,7 +364,12 @@ def _generate_fd_no(branch):
 
 
 def _generate_rd_no(branch):
-    last = RecurringDeposit.objects.filter(rd_no__startswith=f'RD-{branch.branch_code}').order_by('-rd_no').first()
+    last = (
+        RecurringDeposit.objects.select_for_update()
+        .filter(rd_no__startswith=f'RD-{branch.branch_code}')
+        .order_by('-rd_no')
+        .first()
+    )
     if last:
         seq = int(last.rd_no.split('-')[-1]) + 1
     else:
@@ -420,4 +445,37 @@ def _create_rd_journal(rd, amount, branch, user, installment):
         user=user,
         reference_type='rd_installment',
         reference_id=installment.pk,
+    )
+
+
+def _create_rd_maturity_journal(rd, branch, user):
+    from apps.accounting.services import create_journal_entry
+    from apps.core.gl_utils import get_account_gl_code, get_gl_code, get_interest_head_code
+    from apps.savings.services import _get_cash_code
+
+    rd_code = get_account_gl_code(rd, 'recurring', '2003')
+    gl_head = rd.gl_head if hasattr(rd, 'gl_head') and rd.gl_head_id else None
+    interest_expense_code = get_interest_head_code(gl_head, get_gl_code('interest_paid', '4002'))
+
+    total_deposited = RDInstallment.objects.filter(rd=rd, status='paid').aggregate(total=models_Sum('paid_amount'))[
+        'total'
+    ] or Decimal('0')
+    interest = rd.maturity_amount - total_deposited
+    payout = rd.maturity_amount
+
+    lines = [
+        {'account_code': rd_code, 'debit': total_deposited, 'credit': Decimal('0')},
+    ]
+    if interest > 0:
+        lines.append({'account_code': interest_expense_code, 'debit': interest, 'credit': Decimal('0')})
+    lines.append({'account_code': _get_cash_code(branch), 'debit': Decimal('0'), 'credit': payout})
+    create_journal_entry(
+        entry_date=get_transaction_date(branch),
+        voucher_type='payment',
+        branch=branch,
+        narration=f'RD maturity {rd.rd_no}',
+        lines=lines,
+        user=user,
+        reference_type='rd_maturity',
+        reference_id=rd.pk,
     )

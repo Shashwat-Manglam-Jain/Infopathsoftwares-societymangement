@@ -210,18 +210,24 @@ def disburse_loan(loan, branch, user):
 
 def collect_emi(loan, amount, branch, user, payment_mode='cash'):
     amount = Decimal(str(amount))
-    if loan.status not in ('disbursed', 'npa'):
-        raise ValueError('Loan is not in disbursed status')
     if amount <= 0:
         raise ValueError('Amount must be positive')
-    total_outstanding = loan.outstanding_principal + loan.outstanding_interest + loan.overdue_amount
-    if amount > total_outstanding and total_outstanding > 0:
-        raise ValueError(
-            f'Payment ₹{amount} exceeds total outstanding ₹{total_outstanding}. '
-            f'Maximum collectible: ₹{total_outstanding}'
-        )
 
     with transaction.atomic():
+        loan = LoanAccount.objects.select_for_update().get(pk=loan.pk)
+        if loan.status not in ('disbursed', 'npa'):
+            raise ValueError('Loan is not in disbursed status')
+        total_outstanding = (
+            loan.outstanding_principal
+            + loan.outstanding_interest
+            + loan.overdue_amount
+            + (loan.bal_others or Decimal('0'))
+        )
+        if amount > total_outstanding and total_outstanding > 0:
+            raise ValueError(
+                f'Payment ₹{amount} exceeds total outstanding ₹{total_outstanding}. '
+                f'Maximum collectible: ₹{total_outstanding}'
+            )
         txn_date = get_transaction_date(branch)
         penalty_adjusted = Decimal('0')
         interest_adjusted = Decimal('0')
@@ -317,17 +323,17 @@ def close_loan(loan, user):
 
 
 def mark_overdue(loan):
-    today = date.today()
+    processing_date = get_transaction_date(loan.branch)
     overdue_emis = EMISchedule.objects.filter(
         loan=loan,
-        due_date__lt=today,
+        due_date__lt=processing_date,
         status__in=('pending', 'partially_paid'),
     )
     if not overdue_emis.exists():
         return
 
     oldest_overdue = overdue_emis.order_by('due_date').first()
-    loan.overdue_days = (today - oldest_overdue.due_date).days
+    loan.overdue_days = (processing_date - oldest_overdue.due_date).days
     loan.overdue_amount = sum((e.total_emi - e.paid_amount) for e in overdue_emis)
     loan.save(update_fields=['overdue_days', 'overdue_amount', 'updated_at'])
 
