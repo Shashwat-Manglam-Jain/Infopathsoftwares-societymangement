@@ -229,14 +229,16 @@ def run_year_end(branch, financial_year, user):
             }
             for account in income_accounts:
                 agg = JournalLine.objects.filter(gl_account=account, **fy_filter).aggregate(
-                    dr=Sum('debit_amount'), cr=Sum('credit_amount'),
+                    dr=Sum('debit_amount'),
+                    cr=Sum('credit_amount'),
                 )
                 balance = (agg['cr'] or Decimal('0')) - (agg['dr'] or Decimal('0'))
                 total_income += balance
 
             for account in expense_accounts:
                 agg = JournalLine.objects.filter(gl_account=account, **fy_filter).aggregate(
-                    dr=Sum('debit_amount'), cr=Sum('credit_amount'),
+                    dr=Sum('debit_amount'),
+                    cr=Sum('credit_amount'),
                 )
                 balance = (agg['dr'] or Decimal('0')) - (agg['cr'] or Decimal('0'))
                 total_expense += balance
@@ -260,14 +262,16 @@ def run_year_end(branch, financial_year, user):
                 closing_lines = []
                 for account in income_accounts:
                     bal = JournalLine.objects.filter(gl_account=account, **fy_filter).aggregate(
-                        dr=Sum('debit_amount'), cr=Sum('credit_amount'),
+                        dr=Sum('debit_amount'),
+                        cr=Sum('credit_amount'),
                     )
                     net = (bal['cr'] or Decimal('0')) - (bal['dr'] or Decimal('0'))
                     if net > 0:
                         closing_lines.append({'account_code': account.code, 'debit': net, 'credit': Decimal('0')})
                 for account in expense_accounts:
                     bal = JournalLine.objects.filter(gl_account=account, **fy_filter).aggregate(
-                        dr=Sum('debit_amount'), cr=Sum('credit_amount'),
+                        dr=Sum('debit_amount'),
+                        cr=Sum('credit_amount'),
                     )
                     net = (bal['dr'] or Decimal('0')) - (bal['cr'] or Decimal('0'))
                     if net > 0:
@@ -360,13 +364,13 @@ def _accrue_loan_interest(branch, processing_date):
 def _mark_overdue_loans(branch, processing_date):
     from apps.loans.models import EMISchedule
 
-    overdue = EMISchedule.objects.filter(
+    past_due = EMISchedule.objects.filter(
         loan__branch=branch,
         loan__status__in=['disbursed', 'npa'],
         due_date__lt=processing_date,
         status__in=['pending', 'partially_paid'],
     )
-    count = overdue.filter(status='pending').update(status='overdue')
+    count = past_due.update(status='overdue')
     return count
 
 
@@ -374,7 +378,10 @@ def _mark_npa_loans(branch, processing_date):
     from apps.loans.models import LoanAccount
 
     count = 0
-    loans = LoanAccount.objects.filter(branch=branch, status__in=['disbursed', 'npa'])
+    loans = LoanAccount.objects.filter(
+        branch=branch,
+        status__in=['disbursed', 'npa'],
+    ).select_related('loan_product')
     for loan in loans:
         threshold = loan.loan_product.npa_days_threshold
         overdue_emis = loan.emi_schedule.filter(status__in=['overdue', 'partially_paid'], due_date__lt=processing_date)
@@ -382,7 +389,11 @@ def _mark_npa_loans(branch, processing_date):
             oldest = overdue_emis.order_by('due_date').first()
             days_overdue = (processing_date - oldest.due_date).days
             loan.overdue_days = days_overdue
-            loan.overdue_amount = sum((e.total_emi - e.paid_amount) for e in overdue_emis)
+            overdue_agg = overdue_emis.aggregate(
+                total=Sum('total_emi', default=Decimal('0')),
+                paid=Sum('paid_amount', default=Decimal('0')),
+            )
+            loan.overdue_amount = overdue_agg['total'] - overdue_agg['paid']
             if days_overdue >= threshold and loan.status != 'npa':
                 loan.status = 'npa'
                 count += 1

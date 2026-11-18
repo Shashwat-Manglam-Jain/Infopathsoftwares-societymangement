@@ -129,6 +129,11 @@ def mature_fd(fd, user):
         raise ValueError('FD has not matured yet')
 
     with transaction.atomic():
+        from apps.deposits.models import FixedDeposit
+
+        fd = FixedDeposit.objects.select_for_update().get(pk=fd.pk)
+        if fd.status != 'active':
+            raise ValueError('FD is not active')
         fd.status = 'matured'
         fd.accrued_interest = fd.maturity_amount - fd.deposit_amount
         fd.save(update_fields=['status', 'accrued_interest'])
@@ -156,6 +161,11 @@ def premature_close_fd(fd, user):
         raise ValueError('FD is not active')
 
     with transaction.atomic():
+        from apps.deposits.models import FixedDeposit
+
+        fd = FixedDeposit.objects.select_for_update().get(pk=fd.pk)
+        if fd.status != 'active':
+            raise ValueError('FD is not active')
         held_days = (get_transaction_date(fd.branch) - fd.start_date).days
         penalty_rate = getattr(fd, 'premature_penalty_percent', Decimal('1.0'))
         effective_rate = fd.interest_rate - penalty_rate

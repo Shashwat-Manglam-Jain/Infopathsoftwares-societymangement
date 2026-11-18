@@ -54,14 +54,17 @@ def personal_ledger(request):
 
         savings_accounts = SavingsAccount.objects.filter(member=member)
         for sa in savings_accounts:
-            pre_txns = AccountTransaction.objects.filter(
+            pre_agg = AccountTransaction.objects.filter(
                 account=sa,
                 txn_date__lt=from_date,
                 is_reversed=False,
+            ).aggregate(
+                debit=Sum('amount', filter=Q(txn_type__in=['withdrawal', 'charge']), default=Decimal('0')),
+                credit=Sum(
+                    'amount', filter=Q(txn_type__in=['deposit', 'interest_credit', 'transfer']), default=Decimal('0')
+                ),
             )
-            pre_debit = sum(t.amount for t in pre_txns if t.txn_type in ('withdrawal', 'charge'))
-            pre_credit = sum(t.amount for t in pre_txns if t.txn_type in ('deposit', 'interest_credit', 'transfer'))
-            opening = pre_credit - pre_debit
+            opening = pre_agg['credit'] - pre_agg['debit']
 
             txns = AccountTransaction.objects.filter(
                 account=sa,
@@ -351,69 +354,61 @@ def profit_loss(request):
         from apps.accounting.models import ChartOfAccounts, JournalLine
 
         branch = None if request.user.can_access_all_branches else request.current_branch
-        income_heads = ChartOfAccounts.objects.filter(account_group='income', allow_transactions=True, is_active=True)
-        expense_heads = ChartOfAccounts.objects.filter(account_group='expense', allow_transactions=True, is_active=True)
+        pl_heads = ChartOfAccounts.objects.filter(
+            account_group__in=['income', 'expense'],
+            allow_transactions=True,
+            is_active=True,
+        )
+
+        base_filter = Q(
+            journal_entry__is_reversed=False,
+            journal_entry__is_posted=True,
+            gl_account__in=pl_heads,
+        )
+        if branch:
+            base_filter &= Q(journal_entry__branch=branch)
+
+        pre_aggs = (
+            JournalLine.objects.filter(base_filter, journal_entry__entry_date__lt=from_date)
+            .values('gl_account_id')
+            .annotate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
+        )
+        pre_map = {row['gl_account_id']: row for row in pre_aggs}
+
+        period_aggs = (
+            JournalLine.objects.filter(
+                base_filter,
+                journal_entry__entry_date__gte=from_date,
+                journal_entry__entry_date__lte=to_date,
+            )
+            .values('gl_account_id')
+            .annotate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
+        )
+        period_map = {row['gl_account_id']: row for row in period_aggs}
+
         income_items = []
         total_income = 0
-        for head in income_heads:
-            ob = head.opening_balance or 0
-            pre_qs = JournalLine.objects.filter(
-                gl_account=head,
-                journal_entry__entry_date__lt=from_date,
-                journal_entry__is_reversed=False,
-                journal_entry__is_posted=True,
-            )
-            if branch:
-                pre_qs = pre_qs.filter(journal_entry__branch=branch)
-            pre = pre_qs.aggregate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
-            ob += (pre['cr'] or 0) - (pre['dr'] or 0)
-
-            qs = JournalLine.objects.filter(
-                gl_account=head,
-                journal_entry__entry_date__gte=from_date,
-                journal_entry__entry_date__lte=to_date,
-                journal_entry__is_reversed=False,
-                journal_entry__is_posted=True,
-            )
-            if branch:
-                qs = qs.filter(journal_entry__branch=branch)
-            agg = qs.aggregate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
-            period = (agg['cr'] or 0) - (agg['dr'] or 0)
-            closing = ob + period
-            if closing != 0:
-                income_items.append({'name': head.name, 'code': head.code, 'amount': closing})
-                total_income += closing
-
         expense_items = []
         total_expense = 0
-        for head in expense_heads:
-            ob = head.opening_balance or 0
-            pre_qs = JournalLine.objects.filter(
-                gl_account=head,
-                journal_entry__entry_date__lt=from_date,
-                journal_entry__is_reversed=False,
-                journal_entry__is_posted=True,
-            )
-            if branch:
-                pre_qs = pre_qs.filter(journal_entry__branch=branch)
-            pre = pre_qs.aggregate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
-            ob += (pre['dr'] or 0) - (pre['cr'] or 0)
 
-            qs = JournalLine.objects.filter(
-                gl_account=head,
-                journal_entry__entry_date__gte=from_date,
-                journal_entry__entry_date__lte=to_date,
-                journal_entry__is_reversed=False,
-                journal_entry__is_posted=True,
-            )
-            if branch:
-                qs = qs.filter(journal_entry__branch=branch)
-            agg = qs.aggregate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
-            period = (agg['dr'] or 0) - (agg['cr'] or 0)
-            closing = ob + period
-            if closing != 0:
-                expense_items.append({'name': head.name, 'code': head.code, 'amount': closing})
-                total_expense += closing
+        for head in pl_heads:
+            ob = head.opening_balance or 0
+            pre = pre_map.get(head.pk, {})
+            prd = period_map.get(head.pk, {})
+            if head.account_group == 'income':
+                ob += (pre.get('cr') or 0) - (pre.get('dr') or 0)
+                period = (prd.get('cr') or 0) - (prd.get('dr') or 0)
+                closing = ob + period
+                if closing != 0:
+                    income_items.append({'name': head.name, 'code': head.code, 'amount': closing})
+                    total_income += closing
+            else:
+                ob += (pre.get('dr') or 0) - (pre.get('cr') or 0)
+                period = (prd.get('dr') or 0) - (prd.get('cr') or 0)
+                closing = ob + period
+                if closing != 0:
+                    expense_items.append({'name': head.name, 'code': head.code, 'amount': closing})
+                    total_expense += closing
 
         context.update(
             {
@@ -450,50 +445,63 @@ def balance_sheet(request):
 
         branch = None if request.user.can_access_all_branches else request.current_branch
 
-        def _head_balance(head, is_debit_normal):
-            ob = head.opening_balance or 0
-            qs = JournalLine.objects.filter(
-                gl_account=head,
-                journal_entry__entry_date__lte=as_on_date,
-                journal_entry__is_reversed=False,
-                journal_entry__is_posted=True,
-            )
-            if branch:
-                qs = qs.filter(journal_entry__branch=branch)
-            agg = qs.aggregate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
-            if is_debit_normal:
-                return ob + (agg['dr'] or 0) - (agg['cr'] or 0)
-            return ob + (agg['cr'] or 0) - (agg['dr'] or 0)
-
-        liability_heads = ChartOfAccounts.objects.filter(
-            account_group__in=['liability', 'equity'], allow_transactions=True, is_active=True
+        all_heads = ChartOfAccounts.objects.filter(
+            account_group__in=['asset', 'liability', 'equity', 'income', 'expense'],
+            allow_transactions=True,
+            is_active=True,
         )
-        asset_heads = ChartOfAccounts.objects.filter(account_group='asset', allow_transactions=True, is_active=True)
+
+        base_filter = Q(
+            journal_entry__entry_date__lte=as_on_date,
+            journal_entry__is_reversed=False,
+            journal_entry__is_posted=True,
+            gl_account__in=all_heads,
+        )
+        if branch:
+            base_filter &= Q(journal_entry__branch=branch)
+
+        aggs = (
+            JournalLine.objects.filter(base_filter)
+            .values('gl_account_id')
+            .annotate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
+        )
+        agg_map = {row['gl_account_id']: row for row in aggs}
 
         liabilities = []
         total_liability = 0
-        for head in liability_heads:
-            balance = _head_balance(head, is_debit_normal=False)
-            if balance != 0:
+        assets = []
+        total_asset = 0
+        total_income = 0
+        total_expense = 0
+
+        for head in all_heads:
+            ob = head.opening_balance or 0
+            row = agg_map.get(head.pk, {})
+            dr = row.get('dr') or 0
+            cr = row.get('cr') or 0
+            if head.account_group in ('asset', 'expense'):
+                balance = ob + dr - cr
+            else:
+                balance = ob + cr - dr
+
+            if balance == 0:
+                continue
+
+            if head.account_group in ('liability', 'equity'):
                 liabilities.append({'name': head.name, 'code': head.code, 'amount': balance})
                 total_liability += balance
+            elif head.account_group == 'asset':
+                assets.append({'name': head.name, 'code': head.code, 'amount': balance})
+                total_asset += balance
+            elif head.account_group == 'income':
+                total_income += balance
+            elif head.account_group == 'expense':
+                total_expense += balance
 
-        income_heads = ChartOfAccounts.objects.filter(account_group='income', allow_transactions=True, is_active=True)
-        expense_heads = ChartOfAccounts.objects.filter(account_group='expense', allow_transactions=True, is_active=True)
-        total_income = sum(_head_balance(h, is_debit_normal=False) for h in income_heads)
-        total_expense = sum(_head_balance(h, is_debit_normal=True) for h in expense_heads)
         net_profit = total_income - total_expense
         if net_profit != 0:
             liabilities.append({'name': 'Net Profit / (Loss)', 'code': '—', 'amount': net_profit})
             total_liability += net_profit
-
-        assets = []
-        total_asset = 0
-        for head in asset_heads:
-            balance = _head_balance(head, is_debit_normal=True)
-            if balance != 0:
-                assets.append({'name': head.name, 'code': head.code, 'amount': balance})
-                total_asset += balance
 
         context.update(
             {
@@ -723,7 +731,7 @@ def enquiry(request):
             context['member'] = member
 
             from apps.agents.models import PigmmyAccount
-            from apps.deposits.models import FixedDeposit, RDInstallment, RecurringDeposit
+            from apps.deposits.models import FixedDeposit, RecurringDeposit
             from apps.loans.models import LoanAccount
             from apps.savings.models import SavingsAccount
             from apps.shares.models import ShareHolding
@@ -736,12 +744,10 @@ def enquiry(request):
                 .select_related('loan_product')
             )
             context['fds'] = FixedDeposit.objects.filter(member=member).exclude(status='renewed')
-            rds = RecurringDeposit.objects.filter(member=member)
-            rd_list = []
-            for rd in rds:
-                paid = RDInstallment.objects.filter(rd=rd, status='paid').count()
-                rd_list.append({'rd': rd, 'paid_count': paid})
-            context['rds'] = rd_list
+            rds = RecurringDeposit.objects.filter(member=member).annotate(
+                paid_count=Count('installments', filter=Q(installments__status='paid')),
+            )
+            context['rds'] = [{'rd': rd, 'paid_count': rd.paid_count} for rd in rds]
             context['pigmmy'] = PigmmyAccount.objects.filter(member=member).select_related('agent')
 
     elif report_type == 'opening_register':

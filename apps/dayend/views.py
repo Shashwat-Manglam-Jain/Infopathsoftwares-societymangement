@@ -65,11 +65,29 @@ def dayend_index(request):
         from apps.branches.models import Branch
 
         branches = Branch.objects.filter(status='active').order_by('-is_head_office', 'branch_name')
+        wd_map = {wd.branch_id: wd for wd in WorkingDay.objects.filter(branch__in=branches)}
+        me_set = set(
+            MonthEndLog.objects.filter(
+                branch__in=branches,
+                month=current_month,
+                status='completed',
+            ).values_list('branch_id', flat=True)
+        )
+        from django.db.models import Max
+
+        last_dayends = dict(
+            DayEndLog.objects.filter(
+                branch__in=branches,
+                status='completed',
+            )
+            .values_list('branch_id')
+            .annotate(last_date=Max('processing_date'))
+            .values_list('branch_id', 'last_date')
+        )
+
         statuses = []
         for b in branches:
-            wd = WorkingDay.objects.filter(branch=b).first()
-            me_done = MonthEndLog.objects.filter(branch=b, month=current_month, status='completed').exists()
-            last_dayend = DayEndLog.objects.filter(branch=b, status='completed').order_by('-processing_date').first()
+            wd = wd_map.get(b.pk)
             statuses.append(
                 {
                     'branch': b,
@@ -77,8 +95,8 @@ def dayend_index(request):
                     'is_day_open': wd.is_day_open if wd else False,
                     'day_end_completed': wd.day_end_completed if wd else False,
                     'current_date': wd.current_date if wd else None,
-                    'last_dayend_date': last_dayend.processing_date if last_dayend else None,
-                    'month_end_done': me_done,
+                    'last_dayend_date': last_dayends.get(b.pk),
+                    'month_end_done': b.pk in me_set,
                 }
             )
         branch_statuses = statuses
@@ -483,34 +501,41 @@ class InterestCalculateView(AccountantRequiredMixin, View):
                 )
 
         if account_type in ('all', 'rd'):
-            rd_qs = RecurringDeposit.objects.filter(
-                status='active',
-                interest_rate__gt=0,
-                **branch_filter,
-            ).select_related('member', 'branch')
-            for rd in rd_qs:
-                from apps.deposits.models import RDInstallment
+            from django.db.models import Q
 
-                paid = RDInstallment.objects.filter(rd=rd, status='paid').aggregate(
-                    total=Sum('amount', default=Decimal('0')),
-                )['total']
-                if paid > 0:
-                    rows.append(
-                        {
-                            'account_no': rd.rd_no,
-                            'member_name': rd.member.name,
-                            'member_id': rd.member_id,
-                            'account_id': rd.pk,
-                            'balance': paid,
-                            'rate': rd.interest_rate,
-                            'accrued': Decimal('0'),
-                            'account_type': 'Recurring Deposit',
-                            'category': 'rd',
-                            'obj': rd,
-                            'last_calc_date': None,
-                            'last_post_date': None,
-                        }
+            rd_qs = (
+                RecurringDeposit.objects.filter(
+                    status='active',
+                    interest_rate__gt=0,
+                    **branch_filter,
+                )
+                .select_related('member', 'branch')
+                .annotate(
+                    paid_total=Sum(
+                        'installments__amount',
+                        filter=Q(installments__status='paid'),
+                        default=Decimal('0'),
                     )
+                )
+                .filter(paid_total__gt=0)
+            )
+            for rd in rd_qs:
+                rows.append(
+                    {
+                        'account_no': rd.rd_no,
+                        'member_name': rd.member.name,
+                        'member_id': rd.member_id,
+                        'account_id': rd.pk,
+                        'balance': rd.paid_total,
+                        'rate': rd.interest_rate,
+                        'accrued': Decimal('0'),
+                        'account_type': 'Recurring Deposit',
+                        'category': 'rd',
+                        'obj': rd,
+                        'last_calc_date': None,
+                        'last_post_date': None,
+                    }
+                )
 
         if account_type in ('all', 'loan'):
             loan_qs = LoanAccount.objects.filter(

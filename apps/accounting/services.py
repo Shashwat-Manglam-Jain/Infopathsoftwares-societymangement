@@ -21,9 +21,10 @@ def create_journal_entry(
     if total_debit != total_credit:
         raise ValueError(f'Journal entry does not balance: Debit={total_debit}, Credit={total_credit}')
 
-    for line_data in lines:
-        code = line_data['account_code']
-        if not ChartOfAccounts.objects.filter(code=code).exists():
+    codes = [line_data['account_code'] for line_data in lines]
+    accounts_by_code = {a.code: a for a in ChartOfAccounts.objects.filter(code__in=codes)}
+    for code in codes:
+        if code not in accounts_by_code:
             raise ValueError(
                 f'GL head with code "{code}" does not exist. Create it in Head Master (Chart of Accounts) first.'
             )
@@ -42,8 +43,9 @@ def create_journal_entry(
             created_by=user,
         )
 
+        locked_accounts = {a.code: a for a in ChartOfAccounts.objects.select_for_update().filter(code__in=codes)}
         for line_data in lines:
-            account = ChartOfAccounts.objects.select_for_update().get(code=line_data['account_code'])
+            account = locked_accounts[line_data['account_code']]
             debit = Decimal(str(line_data.get('debit', 0)))
             credit = Decimal(str(line_data.get('credit', 0)))
 
@@ -206,41 +208,50 @@ def get_trial_balance(from_date=None, to_date=None, branch=None, as_of_date=None
         'closing_credit': Decimal('0'),
     }
 
+    base_jl_filter = models.Q(
+        journal_entry__is_reversed=False,
+        journal_entry__is_posted=True,
+        gl_account__in=qs,
+    )
+    if branch:
+        base_jl_filter &= models.Q(journal_entry__branch=branch)
+
+    pre_map = {}
+    if from_date:
+        pre_aggs = (
+            JournalLine.objects.filter(base_jl_filter, journal_entry__entry_date__lt=from_date)
+            .values('gl_account_id')
+            .annotate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
+        )
+        pre_map = {row['gl_account_id']: row for row in pre_aggs}
+
+    period_filter = base_jl_filter
+    if from_date:
+        period_filter &= models.Q(journal_entry__entry_date__gte=from_date)
+    if to_date:
+        period_filter &= models.Q(journal_entry__entry_date__lte=to_date)
+    period_aggs = (
+        JournalLine.objects.filter(period_filter)
+        .values('gl_account_id')
+        .annotate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
+    )
+    period_map = {row['gl_account_id']: row for row in period_aggs}
+
     for account in qs:
         ob = account.opening_balance or Decimal('0')
 
         if from_date:
-            pre_lines = JournalLine.objects.filter(
-                gl_account=account,
-                journal_entry__is_reversed=False,
-                journal_entry__is_posted=True,
-                journal_entry__entry_date__lt=from_date,
-            )
-            if branch:
-                pre_lines = pre_lines.filter(journal_entry__branch=branch)
-            pre = pre_lines.aggregate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
-            pre_dr = pre['dr'] or Decimal('0')
-            pre_cr = pre['cr'] or Decimal('0')
+            pre = pre_map.get(account.pk, {})
+            pre_dr = pre.get('dr') or Decimal('0')
+            pre_cr = pre.get('cr') or Decimal('0')
             if account.account_group in ('asset', 'expense'):
                 ob += pre_dr - pre_cr
             else:
                 ob += pre_cr - pre_dr
 
-        period_qs = JournalLine.objects.filter(
-            gl_account=account,
-            journal_entry__is_reversed=False,
-            journal_entry__is_posted=True,
-        )
-        if from_date:
-            period_qs = period_qs.filter(journal_entry__entry_date__gte=from_date)
-        if to_date:
-            period_qs = period_qs.filter(journal_entry__entry_date__lte=to_date)
-        if branch:
-            period_qs = period_qs.filter(journal_entry__branch=branch)
-
-        period = period_qs.aggregate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
-        p_dr = period['dr'] or Decimal('0')
-        p_cr = period['cr'] or Decimal('0')
+        prd = period_map.get(account.pk, {})
+        p_dr = prd.get('dr') or Decimal('0')
+        p_cr = prd.get('cr') or Decimal('0')
 
         if account.account_group in ('asset', 'expense'):
             closing = ob + p_dr - p_cr

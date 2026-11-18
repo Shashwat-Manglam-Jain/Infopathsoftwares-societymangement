@@ -234,10 +234,18 @@ def collect_emi(loan, amount, branch, user, payment_mode='cash'):
         principal_adjusted = Decimal('0')
         remaining = amount
 
+        others_adjusted = Decimal('0')
+
         if loan.overdue_amount > 0:
             penalty = min(remaining, loan.overdue_amount)
             penalty_adjusted = penalty
             remaining -= penalty
+
+        bal_others = loan.bal_others or Decimal('0')
+        if bal_others > 0 and remaining > 0:
+            others = min(remaining, bal_others)
+            others_adjusted = others
+            remaining -= others
 
         if loan.outstanding_interest > 0:
             interest = min(remaining, loan.outstanding_interest)
@@ -248,6 +256,7 @@ def collect_emi(loan, amount, branch, user, payment_mode='cash'):
         loan.outstanding_principal -= principal_adjusted
         loan.outstanding_interest -= interest_adjusted
         loan.overdue_amount -= penalty_adjusted
+        loan.bal_others = max(bal_others - others_adjusted, Decimal('0'))
         loan.bal_repayment = max(loan.outstanding_principal, Decimal('0'))
         loan.bal_interest = max(loan.outstanding_interest, Decimal('0'))
         loan.bal_penal = max(loan.overdue_amount, Decimal('0'))
@@ -525,9 +534,8 @@ def reverse_repayment(repayment, user):
     from apps.accounting.models import JournalEntry
     from apps.accounting.services import reverse_journal_entry
 
-    loan = repayment.loan
-
     with transaction.atomic():
+        loan = LoanAccount.objects.select_for_update().get(pk=repayment.loan_id)
         loan.outstanding_principal += repayment.principal_adjusted
         loan.outstanding_interest += repayment.interest_adjusted
         loan.overdue_amount += repayment.penalty_adjusted

@@ -120,7 +120,7 @@ class JournalEntry(models.Model):
         ('journal', 'Journal'),
         ('contra', 'Contra'),
     ]
-    entry_date = models.DateField()
+    entry_date = models.DateField(db_index=True)
     voucher_no = models.CharField(max_length=30, db_index=True)
     voucher_type = models.CharField(max_length=10, choices=VOUCHER_TYPE_CHOICES)
     branch = models.ForeignKey('branches.Branch', on_delete=models.PROTECT)
@@ -150,6 +150,10 @@ class JournalEntry(models.Model):
     class Meta:
         verbose_name_plural = 'journal entries'
         ordering = ['-entry_date', '-created_at']
+        indexes = [
+            models.Index(fields=['entry_date', 'is_reversed', 'is_posted', 'branch'], name='je_date_status_branch_idx'),
+            models.Index(fields=['reference_type', 'reference_id'], name='je_reference_idx'),
+        ]
 
     def __str__(self):
         return f'{self.voucher_no} - {self.entry_date}'
@@ -161,10 +165,15 @@ class JournalEntry(models.Model):
 
 class JournalLine(models.Model):
     journal_entry = models.ForeignKey(JournalEntry, on_delete=models.CASCADE, related_name='lines')
-    gl_account = models.ForeignKey(ChartOfAccounts, on_delete=models.PROTECT)
+    gl_account = models.ForeignKey(ChartOfAccounts, on_delete=models.PROTECT, db_index=True)
     debit_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     credit_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     narration = models.CharField(max_length=300, blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['gl_account', 'journal_entry'], name='jl_account_entry_idx'),
+        ]
 
     def __str__(self):
         if self.debit_amount:
