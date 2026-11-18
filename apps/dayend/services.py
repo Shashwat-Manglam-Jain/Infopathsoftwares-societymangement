@@ -36,7 +36,6 @@ def begin_working_day(branch, working_date, user):
     return wd
 
 
-@transaction.atomic
 def run_day_end(branch, user):
     """Execute day-end procedure for a branch.
 
@@ -48,7 +47,7 @@ def run_day_end(branch, user):
     5. Auto-post cashbook (aggregate transactions → GL entries)
     6. Close the day
     """
-    wd = WorkingDay.objects.select_for_update().get(branch=branch)
+    wd = WorkingDay.objects.get(branch=branch)
     if not wd.is_day_open:
         raise ValueError(f'No working day is open for {branch.branch_name}.')
 
@@ -87,20 +86,22 @@ def run_day_end(branch, user):
         )
 
     try:
-        log.savings_interest_accrued_count = _accrue_savings_interest(branch, processing_date)
-        log.loan_interest_accrued_count = _accrue_loan_interest(branch, processing_date)
-        log.loans_marked_overdue_count = _mark_overdue_loans(branch, processing_date)
-        log.loans_marked_npa_count = _mark_npa_loans(branch, processing_date)
-        log.cashbook_entries_posted = _auto_cashbook_posting(branch, processing_date, user)
+        with transaction.atomic():
+            wd = WorkingDay.objects.select_for_update().get(branch=branch)
+            log.savings_interest_accrued_count = _accrue_savings_interest(branch, processing_date)
+            log.loan_interest_accrued_count = _accrue_loan_interest(branch, processing_date)
+            log.loans_marked_overdue_count = _mark_overdue_loans(branch, processing_date)
+            log.loans_marked_npa_count = _mark_npa_loans(branch, processing_date)
+            log.cashbook_entries_posted = _auto_cashbook_posting(branch, processing_date, user)
 
-        log.status = 'completed'
-        log.completed_at = timezone.now()
-        log.save()
+            log.status = 'completed'
+            log.completed_at = timezone.now()
+            log.save()
 
-        wd.day_end_completed = True
-        wd.cashbook_posted = True
-        wd.is_day_open = False
-        wd.save()
+            wd.day_end_completed = True
+            wd.cashbook_posted = True
+            wd.is_day_open = False
+            wd.save()
 
         return log
     except Exception as e:
@@ -111,6 +112,7 @@ def run_day_end(branch, user):
         raise
 
 
+@transaction.atomic
 def rollback_day_end(branch, processing_date, user):
     """Roll back day-end flag to allow more transactions (Day End Flag Correction)."""
     log = DayEndLog.objects.filter(branch=branch, processing_date=processing_date, status='completed').first()
@@ -130,7 +132,6 @@ def rollback_day_end(branch, processing_date, user):
     return log
 
 
-@transaction.atomic
 def run_month_end(branch, month_date, user):
     """Monthly processing: calculate loan interest demand, RD installment dues.
 
@@ -149,38 +150,36 @@ def run_month_end(branch, month_date, user):
     )
 
     try:
-        demand_count = 0
+        with transaction.atomic():
+            demand_count = 0
 
-        loans = LoanAccount.objects.filter(branch=branch, status__in=['disbursed', 'npa'])
+            loans = LoanAccount.objects.filter(branch=branch, status__in=['disbursed', 'npa'])
 
-        # Loan interest accrual is handled daily by run_day_end →
-        # _accrue_loan_interest.  Month-end only tallies demand EMIs and
-        # RD installments so interest is never double-counted.
-        for loan in loans:
-            due_emis = EMISchedule.objects.filter(
-                loan=loan,
+            for loan in loans:
+                due_emis = EMISchedule.objects.filter(
+                    loan=loan,
+                    due_date__month=month_date.month,
+                    due_date__year=month_date.year,
+                    status='pending',
+                )
+                demand_count += due_emis.count()
+
+            from apps.deposits.models import RDInstallment
+
+            rd_count = RDInstallment.objects.filter(
+                rd__branch=branch,
+                rd__status='active',
                 due_date__month=month_date.month,
                 due_date__year=month_date.year,
                 status='pending',
-            )
-            demand_count += due_emis.count()
+            ).count()
 
-        from apps.deposits.models import RDInstallment
-
-        rd_count = RDInstallment.objects.filter(
-            rd__branch=branch,
-            rd__status='active',
-            due_date__month=month_date.month,
-            due_date__year=month_date.year,
-            status='pending',
-        ).count()
-
-        log.loan_interest_calculated_count = loans.count()
-        log.demand_generated_count = demand_count
-        log.rd_installments_due_count = rd_count
-        log.status = 'completed'
-        log.completed_at = timezone.now()
-        log.save()
+            log.loan_interest_calculated_count = loans.count()
+            log.demand_generated_count = demand_count
+            log.rd_installments_due_count = rd_count
+            log.status = 'completed'
+            log.completed_at = timezone.now()
+            log.save()
 
         return log
     except Exception as e:
@@ -191,7 +190,6 @@ def run_month_end(branch, month_date, user):
         raise
 
 
-@transaction.atomic
 def run_year_end(branch, financial_year, user):
     """Year-end procedure: zero out P&L accounts, update opening balances.
 
@@ -214,119 +212,108 @@ def run_year_end(branch, financial_year, user):
     )
 
     try:
-        total_income = Decimal('0')
-        total_expense = Decimal('0')
-        pl_count = 0
-        ob_count = 0
+        with transaction.atomic():
+            total_income = Decimal('0')
+            total_expense = Decimal('0')
+            pl_count = 0
+            ob_count = 0
 
-        income_accounts = ChartOfAccounts.objects.filter(account_group='income')
-        expense_accounts = ChartOfAccounts.objects.filter(account_group='expense')
+            income_accounts = ChartOfAccounts.objects.filter(account_group='income')
+            expense_accounts = ChartOfAccounts.objects.filter(account_group='expense')
 
-        for account in income_accounts:
-            lines = JournalLine.objects.filter(
-                gl_account=account,
-                journal_entry__entry_date__gte=financial_year.start_date,
-                journal_entry__entry_date__lte=financial_year.end_date,
-            )
-            agg = lines.aggregate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
-            balance = (agg['cr'] or Decimal('0')) - (agg['dr'] or Decimal('0'))
-            total_income += balance
-
-        for account in expense_accounts:
-            lines = JournalLine.objects.filter(
-                gl_account=account,
-                journal_entry__entry_date__gte=financial_year.start_date,
-                journal_entry__entry_date__lte=financial_year.end_date,
-            )
-            agg = lines.aggregate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
-            balance = (agg['dr'] or Decimal('0')) - (agg['cr'] or Decimal('0'))
-            total_expense += balance
-
-        profit_or_loss = total_income - total_expense
-
-        # Transfer profit/loss to reserves BEFORE zeroing P&L accounts.
-        # create_journal_entry updates current_balance on the accounts it
-        # touches, so it must run while the P&L balances are still live.
-        reserves_account = ChartOfAccounts.objects.filter(
-            related_table_name='general',
-            name__icontains='reserve',
-            account_group='equity',
-        ).first()
-        if not reserves_account:
-            reserves_account = ChartOfAccounts.objects.filter(
-                account_group='equity',
-                allow_transactions=True,
-            ).first()
-
-        if reserves_account and profit_or_loss != Decimal('0'):
-            from apps.accounting.services import create_journal_entry
-
-            closing_lines = []
+            fy_filter = {
+                'journal_entry__entry_date__gte': financial_year.start_date,
+                'journal_entry__entry_date__lte': financial_year.end_date,
+                'journal_entry__is_reversed': False,
+                'journal_entry__branch': branch,
+            }
             for account in income_accounts:
-                bal = JournalLine.objects.filter(
-                    gl_account=account,
-                    journal_entry__entry_date__gte=financial_year.start_date,
-                    journal_entry__entry_date__lte=financial_year.end_date,
-                ).aggregate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
-                net = (bal['cr'] or Decimal('0')) - (bal['dr'] or Decimal('0'))
-                if net > 0:
-                    closing_lines.append({'account_code': account.code, 'debit': net, 'credit': Decimal('0')})
+                agg = JournalLine.objects.filter(gl_account=account, **fy_filter).aggregate(
+                    dr=Sum('debit_amount'), cr=Sum('credit_amount'),
+                )
+                balance = (agg['cr'] or Decimal('0')) - (agg['dr'] or Decimal('0'))
+                total_income += balance
+
             for account in expense_accounts:
-                bal = JournalLine.objects.filter(
-                    gl_account=account,
-                    journal_entry__entry_date__gte=financial_year.start_date,
-                    journal_entry__entry_date__lte=financial_year.end_date,
-                ).aggregate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
-                net = (bal['dr'] or Decimal('0')) - (bal['cr'] or Decimal('0'))
-                if net > 0:
-                    closing_lines.append({'account_code': account.code, 'debit': Decimal('0'), 'credit': net})
-
-            if profit_or_loss > 0:
-                closing_lines.append(
-                    {'account_code': reserves_account.code, 'debit': Decimal('0'), 'credit': profit_or_loss}
+                agg = JournalLine.objects.filter(gl_account=account, **fy_filter).aggregate(
+                    dr=Sum('debit_amount'), cr=Sum('credit_amount'),
                 )
-            else:
-                closing_lines.append(
-                    {'account_code': reserves_account.code, 'debit': abs(profit_or_loss), 'credit': Decimal('0')}
-                )
+                balance = (agg['dr'] or Decimal('0')) - (agg['cr'] or Decimal('0'))
+                total_expense += balance
 
-            if closing_lines:
-                create_journal_entry(
-                    entry_date=financial_year.end_date,
-                    voucher_type='journal',
-                    branch=branch,
-                    narration=f'Year-end P&L transfer for {financial_year.fy_code}',
-                    lines=closing_lines,
-                    user=user,
-                    reference_type='year_end',
-                )
+            profit_or_loss = total_income - total_expense
 
-        # Zero out income and expense current_balance after the closing entry.
-        # The closing entry already reversed their GL balances; this resets the
-        # running counter so the new financial year starts clean.
-        for account in list(income_accounts) + list(expense_accounts):
-            if account.current_balance != Decimal('0'):
-                account.current_balance = Decimal('0')
-                account.save(update_fields=['current_balance'])
-                pl_count += 1
+            reserves_account = ChartOfAccounts.objects.filter(
+                related_table_name='general',
+                name__icontains='reserve',
+                account_group='equity',
+            ).first()
+            if not reserves_account:
+                reserves_account = ChartOfAccounts.objects.filter(
+                    account_group='equity',
+                    allow_transactions=True,
+                ).first()
 
-        # Asset/liability/equity current_balance is already maintained in
-        # real-time by create_journal_entry, so no recalculation is needed.
-        ob_count = ChartOfAccounts.objects.filter(
-            account_group__in=['asset', 'liability', 'equity'],
-        ).count()
+            if reserves_account and profit_or_loss != Decimal('0'):
+                from apps.accounting.services import create_journal_entry
 
-        log.pl_accounts_zeroed = pl_count
-        log.opening_balances_updated = ob_count
-        log.profit_or_loss = profit_or_loss
-        log.status = 'completed'
-        log.completed_at = timezone.now()
-        log.save()
+                closing_lines = []
+                for account in income_accounts:
+                    bal = JournalLine.objects.filter(gl_account=account, **fy_filter).aggregate(
+                        dr=Sum('debit_amount'), cr=Sum('credit_amount'),
+                    )
+                    net = (bal['cr'] or Decimal('0')) - (bal['dr'] or Decimal('0'))
+                    if net > 0:
+                        closing_lines.append({'account_code': account.code, 'debit': net, 'credit': Decimal('0')})
+                for account in expense_accounts:
+                    bal = JournalLine.objects.filter(gl_account=account, **fy_filter).aggregate(
+                        dr=Sum('debit_amount'), cr=Sum('credit_amount'),
+                    )
+                    net = (bal['dr'] or Decimal('0')) - (bal['cr'] or Decimal('0'))
+                    if net > 0:
+                        closing_lines.append({'account_code': account.code, 'debit': Decimal('0'), 'credit': net})
 
-        financial_year.is_closed = True
-        financial_year.closed_by = user
-        financial_year.closed_at = timezone.now()
-        financial_year.save()
+                if profit_or_loss > 0:
+                    closing_lines.append(
+                        {'account_code': reserves_account.code, 'debit': Decimal('0'), 'credit': profit_or_loss}
+                    )
+                else:
+                    closing_lines.append(
+                        {'account_code': reserves_account.code, 'debit': abs(profit_or_loss), 'credit': Decimal('0')}
+                    )
+
+                if closing_lines:
+                    create_journal_entry(
+                        entry_date=financial_year.end_date,
+                        voucher_type='journal',
+                        branch=branch,
+                        narration=f'Year-end P&L transfer for {financial_year.fy_code}',
+                        lines=closing_lines,
+                        user=user,
+                        reference_type='year_end',
+                    )
+
+            for account in list(income_accounts) + list(expense_accounts):
+                if account.current_balance != Decimal('0'):
+                    account.current_balance = Decimal('0')
+                    account.save(update_fields=['current_balance'])
+                    pl_count += 1
+
+            ob_count = ChartOfAccounts.objects.filter(
+                account_group__in=['asset', 'liability', 'equity'],
+            ).count()
+
+            log.pl_accounts_zeroed = pl_count
+            log.opening_balances_updated = ob_count
+            log.profit_or_loss = profit_or_loss
+            log.status = 'completed'
+            log.completed_at = timezone.now()
+            log.save()
+
+            financial_year.is_closed = True
+            financial_year.closed_by = user
+            financial_year.closed_at = timezone.now()
+            financial_year.save()
 
         return log
     except Exception as e:

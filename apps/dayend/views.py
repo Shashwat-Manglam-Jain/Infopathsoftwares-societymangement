@@ -995,11 +995,14 @@ def rollback_all_interest_postings(request):
 
     from apps.accounting.models import JournalEntry
 
+    branch = getattr(request, 'current_branch', None)
+    branch_filter = {} if request.user.can_access_all_branches else {'branch': branch}
     today = date.today()
     entries = JournalEntry.objects.filter(
         reference_type='interest_posting',
         is_reversed=False,
         entry_date=today,
+        **branch_filter,
     ).prefetch_related('lines__gl_account')
 
     if not entries.exists():

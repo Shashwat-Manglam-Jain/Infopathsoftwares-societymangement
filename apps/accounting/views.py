@@ -794,32 +794,46 @@ def voucher_edit(request, pk):
     if request.method == 'POST':
         form = VoucherForm(request.POST)
         if form.is_valid():
-            from apps.accounting.services import create_journal_entry, reverse_journal_entry
+            from apps.accounting.services import create_journal_entry, reverse_journal_entry, update_cashbook
 
             try:
-                reverse_journal_entry(entry, request.user)
-                new_amount = form.cleaned_data['amount']
-                new_entry = create_journal_entry(
-                    entry_date=get_transaction_date(request.current_branch),
-                    voucher_type=form.cleaned_data['voucher_type'],
-                    branch=request.current_branch,
-                    narration=form.cleaned_data['narration'],
-                    lines=[
-                        {
-                            'account_code': form.cleaned_data['debit_account'].code,
-                            'debit': new_amount,
-                            'credit': Decimal('0'),
-                        },
-                        {
-                            'account_code': form.cleaned_data['credit_account'].code,
-                            'debit': Decimal('0'),
-                            'credit': new_amount,
-                        },
-                    ],
-                    user=request.user,
-                    reference_type='modification',
-                    reference_id=entry.pk,
-                )
+                with transaction.atomic():
+                    old_amount = debit_line.debit_amount
+                    old_type = entry.voucher_type
+                    reverse_journal_entry(entry, request.user)
+                    if old_type in ('receipt', 'payment'):
+                        if old_type == 'receipt':
+                            update_cashbook(request.current_branch, entry.entry_date, payment_amount=old_amount)
+                        else:
+                            update_cashbook(request.current_branch, entry.entry_date, receipt_amount=old_amount)
+                    new_amount = form.cleaned_data['amount']
+                    new_type = form.cleaned_data['voucher_type']
+                    new_entry = create_journal_entry(
+                        entry_date=get_transaction_date(request.current_branch),
+                        voucher_type=new_type,
+                        branch=request.current_branch,
+                        narration=form.cleaned_data['narration'],
+                        lines=[
+                            {
+                                'account_code': form.cleaned_data['debit_account'].code,
+                                'debit': new_amount,
+                                'credit': Decimal('0'),
+                            },
+                            {
+                                'account_code': form.cleaned_data['credit_account'].code,
+                                'debit': Decimal('0'),
+                                'credit': new_amount,
+                            },
+                        ],
+                        user=request.user,
+                        reference_type='modification',
+                        reference_id=entry.pk,
+                    )
+                    if new_type in ('receipt', 'payment'):
+                        if new_type == 'receipt':
+                            update_cashbook(request.current_branch, new_entry.entry_date, receipt_amount=new_amount)
+                        else:
+                            update_cashbook(request.current_branch, new_entry.entry_date, payment_amount=new_amount)
                 messages.success(request, f'Voucher modified. Old: {entry.voucher_no} → New: {new_entry.voucher_no}')
                 return redirect('accounting:vouchers')
             except ValueError as e:
@@ -867,10 +881,17 @@ def voucher_cancel(request, pk):
             messages.error(request, 'This voucher is already reversed/cancelled.')
             return redirect('accounting:vouchers')
 
-        from apps.accounting.services import reverse_journal_entry
+        from apps.accounting.services import reverse_journal_entry, update_cashbook
 
         try:
-            reversal = reverse_journal_entry(entry, request.user)
+            with transaction.atomic():
+                cancel_amount = sum(line.debit_amount for line in entry.lines.all())
+                reversal = reverse_journal_entry(entry, request.user)
+                if entry.voucher_type in ('receipt', 'payment') and cancel_amount > 0:
+                    if entry.voucher_type == 'receipt':
+                        update_cashbook(branch, entry.entry_date, payment_amount=cancel_amount)
+                    else:
+                        update_cashbook(branch, entry.entry_date, receipt_amount=cancel_amount)
             messages.success(request, f'Voucher {entry.voucher_no} cancelled. Reversal: {reversal.voucher_no}')
         except ValueError as e:
             messages.error(request, str(e))

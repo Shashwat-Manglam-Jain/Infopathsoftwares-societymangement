@@ -61,17 +61,16 @@ def share_list(request):
         if 'confirm' in request.POST:
             from apps.savings.models import AccountTransaction, SavingsAccount
 
-            existing_dividend = ShareTransaction.objects.filter(
-                txn_type='dividend',
-                narration__contains=f'FY {financial_year}',
-            ).exists()
-            if existing_dividend:
-                messages.error(request, f'Dividend for FY {financial_year} has already been posted.')
-                return redirect('shares:list')
-
             posted = 0
             today = timezone.now().date()
             with db_transaction.atomic():
+                existing_dividend = ShareTransaction.objects.select_for_update().filter(
+                    txn_type='dividend',
+                    narration=f'Dividend @ {rate}% for FY {financial_year}',
+                ).exists()
+                if existing_dividend:
+                    messages.error(request, f'Dividend for FY {financial_year} has already been posted.')
+                    return redirect('shares:list')
                 total_dividend_posted = Decimal('0')
                 dividend_branch = request.current_branch or (
                     dividend_results[0]['holding'].branch if dividend_results else None
