@@ -311,6 +311,21 @@ class RecurringDepositTests(BaseTestCase):
             account_type='interest_expense',
             is_system=True,
         )
+        ChartOfAccounts.objects.create(
+            code='4002',
+            name='Interest Paid on Deposits',
+            account_group='expense',
+            account_type='interest_expense',
+            is_system=True,
+        )
+        if not ChartOfAccounts.objects.filter(code='4002').exists():
+            ChartOfAccounts.objects.create(
+                code='4002',
+                name='Interest on Deposits',
+                account_group='expense',
+                account_type='interest_expense',
+                is_system=True,
+            )
 
     def test_create_rd(self):
         """Creating an RD generates installment schedule."""
