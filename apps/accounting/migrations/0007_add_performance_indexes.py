@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('accounting', '0006_alter_chartofaccounts_is_active_and_more'),
         ('branches', '0002_branch_address_line_2_branch_country_and_more'),
@@ -20,7 +19,9 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name='journalentry',
-            index=models.Index(fields=['entry_date', 'is_reversed', 'is_posted', 'branch'], name='je_date_status_branch_idx'),
+            index=models.Index(
+                fields=['entry_date', 'is_reversed', 'is_posted', 'branch'], name='je_date_status_branch_idx'
+            ),
         ),
         migrations.AddIndex(
             model_name='journalentry',
