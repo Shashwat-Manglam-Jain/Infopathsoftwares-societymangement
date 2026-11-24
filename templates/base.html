@@ -331,15 +331,13 @@
         .dark .hover\:bg-blue-50\/40:hover, .dark tr.hover\:bg-blue-50\/40:hover { background-color: rgba(59,130,246,0.12) !important; }
 
         /* --- Tom Select overrides --- */
-        .ts-wrapper.single .ts-control { border-color: #d1d5db; border-radius: 0.5rem; padding: 0.5rem 0.75rem; font-size: 0.875rem; min-height: 2.5rem; cursor: pointer; position: relative; }
+        .ts-wrapper.single .ts-control { border-color: #d1d5db; border-radius: 0.5rem; padding: 0.5rem 0.75rem; font-size: 0.875rem; min-height: 2.5rem; cursor: pointer; }
         .ts-wrapper.single .ts-control > input { font-size: 0.875rem; }
-        .ts-wrapper.single.has-items:not(.dropdown-active) .ts-control > input { width: 0 !important; min-width: 0 !important; opacity: 0; position: absolute; padding: 0; }
-        .ts-wrapper.single.dropdown-active .ts-control > input { flex: 1 1 auto; opacity: 1; position: relative; }
-        .ts-wrapper.single.dropdown-active .ts-control > .item { display: none; }
+        .ts-wrapper.single.has-items .ts-control > input { opacity: 0; position: absolute; left: -9999px; }
         .ts-wrapper.single.focus .ts-control { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
         .ts-dropdown { border-radius: 0.5rem; border-color: #e5e7eb; font-size: 0.875rem; }
         .ts-dropdown .active { background-color: #eff6ff; color: #1d4ed8; }
-        .ts-wrapper .clear-button { right: 28px !important; font-size: 16px; color: #9ca3af; opacity: 1 !important; }
+        .ts-wrapper .clear-button { right: 28px !important; font-size: 18px; color: #9ca3af; opacity: 1 !important; cursor: pointer; z-index: 2; }
         .ts-wrapper .clear-button:hover { color: #ef4444; }
         .dark .ts-wrapper.single .ts-control { background-color: #1e293b !important; border-color: #475569 !important; color: #e2e8f0 !important; }
         .dark .ts-wrapper.single.focus .ts-control { border-color: #60a5fa !important; box-shadow: 0 0 0 2px rgba(96,165,250,0.15) !important; }
@@ -569,7 +567,19 @@
             create: false,
             sortField: { field: 'text', direction: 'asc' },
             plugins: { clear_button: { title: 'Clear selection' } },
+            openOnFocus: false,
             onItemAdd: function() { this.setTextboxValue(''); this.close(); },
+            onInitialize: function() {
+                var ts = this;
+                ts.control.addEventListener('click', function(e) {
+                    if (e.target.closest('.clear-button')) return;
+                    if (ts.items.length > 0) {
+                        return;
+                    }
+                    ts.open();
+                    ts.control_input.focus();
+                });
+            },
             render: {
                 no_results: function() { return '<div class="no-results" style="padding:10px;text-align:center;color:#94a3b8;">No results found</div>'; }
             }

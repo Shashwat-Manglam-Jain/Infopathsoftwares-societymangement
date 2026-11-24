@@ -8,6 +8,11 @@
     <meta name="description" content="Register your cooperative society on InfoSociety. Start your free 90-day trial — no credit card required.">
     <link rel="icon" type="image/png" href="{% static 'img/logo.png' %}">
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/css/tom-select.css" rel="stylesheet">
+    <style>
+        .ts-wrapper.single.has-items .ts-control > input { opacity: 0; position: absolute; left: -9999px; }
+        .ts-wrapper .clear-button { right: 28px !important; font-size: 18px; color: #9ca3af; opacity: 1 !important; cursor: pointer; z-index: 2; }
+        .ts-wrapper .clear-button:hover { color: #ef4444; }
+    </style>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
     tailwind.config = {
@@ -201,7 +206,17 @@ document.querySelectorAll('select').forEach(function(el) {
         sortField: { field: 'text', direction: 'asc' },
         controlInput: '<input>',
         plugins: { clear_button: { title: 'Clear' } },
-        onItemAdd: function() { this.setTextboxValue(''); this.refreshOptions(false); },
+        openOnFocus: false,
+        onItemAdd: function() { this.setTextboxValue(''); this.close(); },
+        onInitialize: function() {
+            var ts = this;
+            ts.control.addEventListener('click', function(e) {
+                if (e.target.closest('.clear-button')) return;
+                if (ts.items.length > 0) return;
+                ts.open();
+                ts.control_input.focus();
+            });
+        },
         render: {
             no_results: function() { return '<div class="no-results" style="padding:10px;text-align:center;color:#94a3b8;">{% trans "No results found" %}</div>'; }
         }
