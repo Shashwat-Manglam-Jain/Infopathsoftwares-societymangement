@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}InfoSociety — Society Banking Software{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{% static 'img/logo.png' %}">
 
     <!-- Dark mode: apply before paint to prevent flash -->
     <script>if(localStorage.getItem('darkMode')==='true')document.documentElement.classList.add('dark')</script>
@@ -560,7 +561,7 @@
         var tsOpts = {
             create: false,
             sortField: { field: 'text', direction: 'asc' },
-            plugins: ['no_backspace_delete'],
+            plugins: ['clear_button'],
             render: {
                 no_results: function() { return '<div class="no-results" style="padding:10px;text-align:center;color:#94a3b8;">No results found</div>'; }
             }
