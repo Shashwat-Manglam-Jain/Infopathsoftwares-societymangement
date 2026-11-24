@@ -90,8 +90,8 @@
                 <tr>
                     <td>{{ txn.txn_date|date:"d-m-Y" }}</td>
                     <td>{{ txn.narration|default:txn.get_txn_type_display|truncatechars:35 }}</td>
-                    <td>{% if txn.txn_type == 'withdrawal' or txn.txn_type == 'charge' %}{{ txn.amount|floatformat:2 }}{% endif %}</td>
-                    <td>{% if txn.txn_type == 'deposit' or txn.txn_type == 'interest_credit' %}{{ txn.amount|floatformat:2 }}{% endif %}</td>
+                    <td>{% if txn.txn_type == 'withdrawal' or txn.txn_type == 'charge' %}{{ txn.amount|floatformat:2 }}{% elif txn.txn_type == 'reversal' and txn.reversal_of and txn.reversal_of.txn_type != 'withdrawal' %}{{ txn.amount|floatformat:2 }}{% endif %}</td>
+                    <td>{% if txn.txn_type == 'deposit' or txn.txn_type == 'interest_credit' %}{{ txn.amount|floatformat:2 }}{% elif txn.txn_type == 'reversal' and txn.reversal_of and txn.reversal_of.txn_type == 'withdrawal' %}{{ txn.amount|floatformat:2 }}{% endif %}</td>
                     <td>{{ txn.running_balance|floatformat:2 }}</td>
                 </tr>
                 {% endfor %}

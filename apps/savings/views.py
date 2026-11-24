@@ -138,7 +138,7 @@ def savings_detail(request, pk):
         messages.error(request, 'You do not have access to this account.')
         return redirect('savings:list')
 
-    transactions = account.transactions.order_by('-txn_date', '-created_at')[:20]
+    transactions = account.transactions.select_related('reversal_of').order_by('-txn_date', '-created_at')[:20]
     context = {
         'account': account,
         'transactions': transactions,
@@ -247,7 +247,7 @@ def savings_statement(request, pk):
             fd = datetime.strptime(from_date, '%Y-%m-%d').date()
             td = datetime.strptime(to_date, '%Y-%m-%d').date()
             transactions = list(
-                account.transactions.filter(
+                account.transactions.select_related('reversal_of').filter(
                     txn_date__gte=fd,
                     txn_date__lte=td,
                     is_reversed=False,
@@ -326,7 +326,7 @@ class PassbookPrintView(AuditorOrAboveMixin, View):
         if not has_branch_access(request, account.branch):
             messages.error(request, 'You do not have access to this account.')
             return redirect('savings:list')
-        transactions = account.transactions.order_by('txn_date', 'created_at')
+        transactions = account.transactions.select_related('reversal_of').order_by('txn_date', 'created_at')
 
         from_date = request.GET.get('from')
         to_date = request.GET.get('to')

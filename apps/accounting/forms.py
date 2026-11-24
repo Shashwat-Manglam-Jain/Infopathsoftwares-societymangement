@@ -38,12 +38,12 @@ class ChartOfAccountsForm(forms.ModelForm):
             'account_code': forms.TextInput(attrs={'class': tw, 'maxlength': '3'}),
             'sub_group': forms.TextInput(attrs={'class': tw}),
             'account_group': forms.Select(attrs={'class': tw}),
-            'parent': forms.Select(attrs={'class': tw}),
+            'parent': forms.Select(attrs={'class': 'searchable ' + tw}),
             'related_table_name': forms.Select(attrs={'class': tw}),
             'opening_balance': forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
             'credit_balance': forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
             'debit_balance': forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
-            'interest_code': forms.Select(attrs={'class': tw}),
+            'interest_code': forms.Select(attrs={'class': 'searchable ' + tw}),
             'report_position': forms.Select(attrs={'class': tw}),
             'display_order': forms.NumberInput(attrs={'class': tw}),
             'is_active': forms.CheckboxInput(
@@ -69,12 +69,12 @@ class VoucherForm(forms.Form):
     )
     debit_account = forms.ModelChoiceField(
         queryset=ChartOfAccounts.objects.filter(allow_transactions=True, is_active=True),
-        widget=forms.Select(attrs={'class': tw}),
+        widget=forms.Select(attrs={'class': 'searchable ' + tw}),
         label='Debit (DR) Account',
     )
     credit_account = forms.ModelChoiceField(
         queryset=ChartOfAccounts.objects.filter(allow_transactions=True, is_active=True),
-        widget=forms.Select(attrs={'class': tw}),
+        widget=forms.Select(attrs={'class': 'searchable ' + tw}),
         label='Credit (CR) Account',
     )
     amount = forms.DecimalField(

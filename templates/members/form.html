@@ -41,11 +41,14 @@
             </h3>
         </div>
         <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+            {% if member %}
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Member No" %}</label>
                 <input type="text" name="member_no" value="{{ form.member_no.value|default:'' }}" readonly class="block w-full rounded border border-gray-300 bg-gray-50 px-2.5 py-1.5 text-sm">
-                {% if not member %}<p class="text-xs text-gray-400 mt-0.5">{% trans "Auto-generated" %}</p>{% endif %}
             </div>
+            {% else %}
+            {{ form.member_no }}
+            {% endif %}
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Prefix" %}</label>
                 <select name="prefix" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
@@ -474,6 +477,19 @@ document.addEventListener('alpine:init', function() {
     Alpine.data('nomineeManager', function() {
         return {
             shown: [{% for nf in nominee_formset %}{% if nf.instance.pk or forloop.first %}true{% else %}false{% endif %}{% if not forloop.last %},{% endif %}{% endfor %}],
+            init() {
+                for (var i = 0; i < this.shown.length; i++) {
+                    if (!this.shown[i]) {
+                        var cb = document.querySelector('[data-nom-del="' + i + '"]');
+                        if (cb) cb.checked = true;
+                        var row = cb ? cb.closest('[x-cloak]') : null;
+                        if (row) {
+                            var share = row.querySelector('input[type="number"]');
+                            if (share) share.value = '';
+                        }
+                    }
+                }
+            },
             get visibleCount() { return this.shown.filter(function(s) { return s; }).length; },
             get canAdd() { return this.shown.some(function(s) { return !s; }); },
             addRow() {
@@ -482,6 +498,11 @@ document.addEventListener('alpine:init', function() {
                         this.shown[i] = true;
                         var cb = document.querySelector('[data-nom-del="' + i + '"]');
                         if (cb) cb.checked = false;
+                        var row = cb ? cb.closest('[x-cloak]') : null;
+                        if (row) {
+                            var share = row.querySelector('input[type="number"]');
+                            if (share && !share.value) share.value = '100';
+                        }
                         return;
                     }
                 }
@@ -492,9 +513,8 @@ document.addEventListener('alpine:init', function() {
                 if (cb) cb.checked = true;
                 var row = cb ? cb.closest('[x-cloak]') : null;
                 if (row) {
-                    row.querySelectorAll('input[type="text"], input[type="tel"], input[type="date"]').forEach(function(el) { el.value = ''; });
-                    var share = row.querySelector('input[type="number"]');
-                    if (share) share.value = '100';
+                    row.querySelectorAll('input[type="text"], input[type="tel"], input[type="date"], input[type="number"]').forEach(function(el) { el.value = ''; });
+                    row.querySelectorAll('input[type="checkbox"]').forEach(function(el) { if (el.dataset.nomDel === undefined) el.checked = false; });
                 }
             }
         };

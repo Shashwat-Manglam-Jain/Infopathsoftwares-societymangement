@@ -225,7 +225,7 @@ class MemberNomineeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if not self.instance.pk:
-            self.fields['share_percentage'].initial = 100
+            self.initial.setdefault('share_percentage', 100)
 
 
 class MemberDocumentForm(forms.ModelForm):

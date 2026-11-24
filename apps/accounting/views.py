@@ -29,7 +29,7 @@ CUSTOMER_ACCOUNT_TYPES = ('saving', 'current', 'recurring', 'fixed', 'security',
 def voucher_list(request):
     from django.core.paginator import Paginator
 
-    entries = JournalEntry.objects.select_related('branch', 'created_by')
+    entries = JournalEntry.objects.filter(is_reversed=False).select_related('branch', 'created_by')
     if not request.user.can_access_all_branches:
         entries = entries.filter(branch=request.current_branch)
     entries = entries.order_by('-entry_date', '-created_at')
@@ -149,6 +149,50 @@ def _update_personal_account(head, account_number, amount, txn_type, entry_date,
         else:
             loan.outstanding_principal += amount
             loan.save(update_fields=['outstanding_principal', 'updated_at'])
+
+
+def _reverse_personal_accounts(entry, reversal, user):
+    """Reverse personal account balances when a receipt/payment voucher is cancelled."""
+    from apps.savings.models import AccountTransaction, SavingsAccount
+
+    savings_txns = AccountTransaction.objects.filter(
+        voucher_no=entry.voucher_no,
+        is_reversed=False,
+    ).select_related('account')
+    for stxn in savings_txns:
+        account = SavingsAccount.objects.select_for_update().get(pk=stxn.account_id)
+        if stxn.txn_type == 'deposit':
+            account.current_balance -= stxn.amount
+        elif stxn.txn_type == 'withdrawal':
+            account.current_balance += stxn.amount
+        account.save(update_fields=['current_balance', 'updated_at'])
+
+        stxn.is_reversed = True
+        stxn.save(update_fields=['is_reversed'])
+
+        AccountTransaction.objects.create(
+            account=account,
+            txn_type='reversal',
+            amount=stxn.amount,
+            running_balance=account.current_balance,
+            branch=entry.branch,
+            narration=f'Reversal of voucher {entry.voucher_no}',
+            voucher_no=reversal.voucher_no,
+            txn_date=entry.entry_date,
+            value_date=entry.entry_date,
+            created_by=user,
+            reversal_of=stxn,
+        )
+
+    from apps.loans.models import LoanAccount, LoanRepayment
+
+    loan_repayments = LoanRepayment.objects.filter(
+        receipt_no=entry.voucher_no,
+    ).select_related('loan')
+    for lr in loan_repayments:
+        loan = LoanAccount.objects.select_for_update().get(pk=lr.loan_id)
+        loan.outstanding_principal += lr.principal_adjusted
+        loan.save(update_fields=['outstanding_principal', 'updated_at'])
 
 
 def _process_transaction(request, txn_type, heads):
@@ -902,6 +946,7 @@ def voucher_cancel(request, pk):
                         update_cashbook(branch, entry.entry_date, payment_amount=cancel_amount)
                     else:
                         update_cashbook(branch, entry.entry_date, receipt_amount=cancel_amount)
+                _reverse_personal_accounts(entry, reversal, request.user)
             messages.success(request, f'Voucher {entry.voucher_no} cancelled. Reversal: {reversal.voucher_no}')
         except ValueError as e:
             messages.error(request, str(e))
@@ -925,9 +970,6 @@ def account_search(request):
     q = request.GET.get('q', '').strip()
     head_id = request.GET.get('head_id', '')
 
-    if not q or len(q) < 2:
-        return JsonResponse({'results': []})
-
     try:
         head = ChartOfAccounts.objects.get(id=int(head_id))
     except (ChartOfAccounts.DoesNotExist, ValueError, TypeError):
@@ -935,55 +977,44 @@ def account_search(request):
 
     results = []
     rt = head.related_table_name
+    q_filter = models.Q()
+    if q:
+        q_filter = models.Q(account_no__icontains=q) | models.Q(member__name__icontains=q)
 
     if rt in ('saving', 'current', 'security'):
         from apps.savings.models import SavingsAccount
 
-        qs = (
-            SavingsAccount.objects.filter(status='active')
-            .filter(models.Q(account_no__icontains=q) | models.Q(member__name__icontains=q))
-            .select_related('member')[:10]
-        )
+        qs = SavingsAccount.objects.filter(status='active').filter(q_filter).select_related('member')[:20]
         results = [{'number': a.account_no, 'name': a.member.name, 'balance': str(a.current_balance)} for a in qs]
 
     elif rt in ('loan', 'advance'):
         from apps.loans.models import LoanAccount
 
-        qs = (
-            LoanAccount.objects.filter(status='disbursed')
-            .filter(models.Q(loan_no__icontains=q) | models.Q(member__name__icontains=q))
-            .select_related('member')[:10]
-        )
+        if q:
+            q_filter = models.Q(loan_no__icontains=q) | models.Q(member__name__icontains=q)
+        qs = LoanAccount.objects.filter(status='disbursed').filter(q_filter).select_related('member')[:20]
         results = [{'number': a.loan_no, 'name': a.member.name, 'balance': str(a.outstanding_principal)} for a in qs]
 
     elif rt in ('agent', 'client'):
         from apps.agents.models import PigmmyAccount
 
-        qs = (
-            PigmmyAccount.objects.filter(status='active')
-            .filter(models.Q(account_no__icontains=q) | models.Q(member__name__icontains=q))
-            .select_related('member')[:10]
-        )
+        qs = PigmmyAccount.objects.filter(status='active').filter(q_filter).select_related('member')[:20]
         results = [{'number': a.account_no, 'name': a.member.name, 'balance': str(a.current_balance)} for a in qs]
 
     elif rt == 'fixed':
         from apps.deposits.models import FixedDeposit
 
-        qs = (
-            FixedDeposit.objects.filter(status='active')
-            .filter(models.Q(fd_no__icontains=q) | models.Q(member__name__icontains=q))
-            .select_related('member')[:10]
-        )
+        if q:
+            q_filter = models.Q(fd_no__icontains=q) | models.Q(member__name__icontains=q)
+        qs = FixedDeposit.objects.filter(status='active').filter(q_filter).select_related('member')[:20]
         results = [{'number': a.fd_no, 'name': a.member.name, 'balance': str(a.deposit_amount)} for a in qs]
 
     elif rt == 'recurring':
         from apps.deposits.models import RecurringDeposit
 
-        qs = (
-            RecurringDeposit.objects.filter(status='active')
-            .filter(models.Q(rd_no__icontains=q) | models.Q(member__name__icontains=q))
-            .select_related('member')[:10]
-        )
+        if q:
+            q_filter = models.Q(rd_no__icontains=q) | models.Q(member__name__icontains=q)
+        qs = RecurringDeposit.objects.filter(status='active').filter(q_filter).select_related('member')[:20]
         results = [{'number': a.rd_no, 'name': a.member.name, 'balance': str(a.monthly_installment)} for a in qs]
 
     return JsonResponse({'results': results})

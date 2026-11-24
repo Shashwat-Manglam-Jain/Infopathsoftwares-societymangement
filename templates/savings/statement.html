@@ -65,10 +65,10 @@
                         <td class="px-4 py-2 text-gray-600">{{ txn.get_txn_type_display }}</td>
                         <td class="px-4 py-2 text-gray-600">{{ txn.narration }}</td>
                         <td class="px-4 py-2 text-right text-green-600 font-medium">
-                            {% if txn.txn_type == 'deposit' or txn.txn_type == 'interest_credit' or txn.txn_type == 'transfer' %}&#8377;{{ txn.amount|floatformat:2 }}{% endif %}
+                            {% if txn.txn_type == 'deposit' or txn.txn_type == 'interest_credit' or txn.txn_type == 'transfer' %}&#8377;{{ txn.amount|floatformat:2 }}{% elif txn.txn_type == 'reversal' and txn.reversal_of and txn.reversal_of.txn_type == 'withdrawal' %}&#8377;{{ txn.amount|floatformat:2 }}{% endif %}
                         </td>
                         <td class="px-4 py-2 text-right text-red-600 font-medium">
-                            {% if txn.txn_type == 'withdrawal' or txn.txn_type == 'charge' %}&#8377;{{ txn.amount|floatformat:2 }}{% endif %}
+                            {% if txn.txn_type == 'withdrawal' or txn.txn_type == 'charge' %}&#8377;{{ txn.amount|floatformat:2 }}{% elif txn.txn_type == 'reversal' and txn.reversal_of and txn.reversal_of.txn_type != 'withdrawal' %}&#8377;{{ txn.amount|floatformat:2 }}{% endif %}
                         </td>
                         <td class="px-4 py-2 text-right font-medium text-gray-900">&#8377;{{ txn.running_balance|floatformat:2 }}</td>
                     </tr>

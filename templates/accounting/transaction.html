@@ -32,14 +32,10 @@
             </h3>
         </div>
 
-        <div class="px-5 py-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+        <div class="px-5 py-4 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">Date</label>
                 <input type="date" name="entry_date" :value="today" :max="today" required class="block w-full border border-gray-300 rounded-lg px-2.5 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Voucher No</label>
-                <input type="text" name="voucher_no" placeholder="Auto-generated" class="block w-full border border-gray-200 bg-gray-50 rounded-lg px-2.5 py-2 text-sm text-gray-400">
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">Mode</label>
@@ -106,9 +102,9 @@
                                         <input type="text"
                                                :name="'lines-'+idx+'-account_number'"
                                                x-model="line.account_number"
-                                               placeholder="Search account..."
+                                               placeholder="Search by name or account no..."
                                                @input.debounce.300ms="searchAccount(idx)"
-                                               @focus="line.showResults = true"
+                                               @focus="searchAccount(idx); line.showResults = true"
                                                @click.away="setTimeout(() => line.showResults = false, 200)"
                                                autocomplete="off"
                                                class="block w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
@@ -221,12 +217,13 @@ function transactionForm() {
             this.lines[idx].account_number = '';
             this.lines[idx].accountName = '';
             this.lines[idx].searchResults = [];
+            if (this.lines[idx].isCustomer) this.searchAccount(idx);
         },
 
         async searchAccount(idx) {
             const line = this.lines[idx];
-            const q = line.account_number;
-            if (!q || q.length < 2 || !line.gl_id) return;
+            if (!line.gl_id) return;
+            const q = line.account_number || '';
             try {
                 const resp = await fetch(`${SEARCH_URL}?q=${encodeURIComponent(q)}&head_id=${line.gl_id}`);
                 const data = await resp.json();

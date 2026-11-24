@@ -192,8 +192,8 @@
                             </span>
                         </td>
                         <td class="px-3 py-2.5 text-gray-600 max-w-[200px] truncate">{{ txn.narration }}</td>
-                        <td class="px-3 py-2.5 text-right font-medium whitespace-nowrap {% if txn.txn_type == 'withdrawal' or txn.txn_type == 'charge' %}text-red-600{% else %}text-green-600{% endif %}" style="font-variant-numeric:tabular-nums">
-                            {% if txn.txn_type == 'withdrawal' or txn.txn_type == 'charge' %}-{% endif %}&#8377;{{ txn.amount|floatformat:2 }}
+                        <td class="px-3 py-2.5 text-right font-medium whitespace-nowrap {% if txn.txn_type == 'withdrawal' or txn.txn_type == 'charge' %}text-red-600{% elif txn.txn_type == 'reversal' and txn.reversal_of and txn.reversal_of.txn_type == 'deposit' or txn.txn_type == 'reversal' and txn.reversal_of and txn.reversal_of.txn_type == 'interest_credit' %}text-red-600{% else %}text-green-600{% endif %}" style="font-variant-numeric:tabular-nums">
+                            {% if txn.txn_type == 'withdrawal' or txn.txn_type == 'charge' %}-{% elif txn.txn_type == 'reversal' and txn.reversal_of and txn.reversal_of.txn_type != 'withdrawal' %}-{% endif %}&#8377;{{ txn.amount|floatformat:2 }}
                         </td>
                         <td class="px-3 py-2.5 text-right font-medium text-gray-900 whitespace-nowrap" style="font-variant-numeric:tabular-nums">&#8377;{{ txn.running_balance|floatformat:2 }}</td>
                         <td class="px-3 py-2.5 whitespace-nowrap">
