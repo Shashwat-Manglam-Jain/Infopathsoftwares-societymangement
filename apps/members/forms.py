@@ -224,8 +224,6 @@ class MemberNomineeForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if not self.instance.pk:
-            self.initial.setdefault('share_percentage', 100)
 
 
 class MemberDocumentForm(forms.ModelForm):
@@ -241,6 +239,8 @@ MemberNomineeFormSet = inlineformset_factory(
     Member,
     MemberNominee,
     form=MemberNomineeForm,
-    extra=4,
+    min_num=1,
+    validate_min=True,
+    extra=3,
     can_delete=True,
 )

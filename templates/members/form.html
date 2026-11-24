@@ -422,7 +422,7 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Share %" %}</label>
-                            <input type="number" name="{{ nf.share_percentage.html_name }}" value="{{ nf.share_percentage.value|default:'100' }}" step="0.01" min="0" max="100" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                            <input type="number" name="{{ nf.share_percentage.html_name }}" value="{{ nf.share_percentage.value|default:'' }}" step="0.01" min="0" max="100" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                         </div>
                         <div class="flex items-end pb-1">
                             <label class="flex items-center gap-1.5 cursor-pointer">
@@ -479,14 +479,14 @@ document.addEventListener('alpine:init', function() {
             shown: [{% for nf in nominee_formset %}{% if nf.instance.pk or forloop.first %}true{% else %}false{% endif %}{% if not forloop.last %},{% endif %}{% endfor %}],
             init() {
                 for (var i = 0; i < this.shown.length; i++) {
-                    if (!this.shown[i]) {
-                        var cb = document.querySelector('[data-nom-del="' + i + '"]');
+                    var cb = document.querySelector('[data-nom-del="' + i + '"]');
+                    var row = cb ? cb.closest('[x-cloak]') : null;
+                    var share = row ? row.querySelector('input[type="number"]') : null;
+                    if (this.shown[i]) {
+                        if (share && !share.value) share.value = '100';
+                    } else {
                         if (cb) cb.checked = true;
-                        var row = cb ? cb.closest('[x-cloak]') : null;
-                        if (row) {
-                            var share = row.querySelector('input[type="number"]');
-                            if (share) share.value = '';
-                        }
+                        if (share) share.value = '';
                     }
                 }
             },
