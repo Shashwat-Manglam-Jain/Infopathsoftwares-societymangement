@@ -2220,9 +2220,9 @@ def npa_report(request):
                     loan.bal_interest,
                     loan.bal_penal,
                     loan.overdue_days,
-                    loan._computed_category,
-                    loan._computed_provision_pct,
-                    loan._computed_provision_amt,
+                    loan.computed_category,
+                    loan.computed_provision_pct,
+                    loan.computed_provision_amt,
                 ]
             )
         return _csv_response(

@@ -101,9 +101,9 @@ def get_npa_report(branch=None):
     loans = list(qs)
     for loan in loans:
         result = classify_loan(loan)
-        loan._computed_category = result['category']
-        loan._computed_provision_pct = result['provision_percent']
-        loan._computed_provision_amt = result['provision_amount']
+        loan.computed_category = result['category']
+        loan.computed_provision_pct = result['provision_percent']
+        loan.computed_provision_amt = result['provision_amount']
 
     by_product = defaultdict(list)
     for loan in loans:
@@ -111,13 +111,13 @@ def get_npa_report(branch=None):
 
     category_summary = defaultdict(lambda: {'count': 0, 'outstanding': Decimal('0'), 'provision': Decimal('0')})
     for loan in loans:
-        cat = loan._computed_category
+        cat = loan.computed_category
         category_summary[cat]['count'] += 1
         category_summary[cat]['outstanding'] += loan.outstanding_principal
-        category_summary[cat]['provision'] += loan._computed_provision_amt
+        category_summary[cat]['provision'] += loan.computed_provision_amt
 
     total_outstanding = sum(ln.outstanding_principal for ln in loans) if loans else Decimal('0')
-    total_provision = sum(ln._computed_provision_amt for ln in loans) if loans else Decimal('0')
+    total_provision = sum(ln.computed_provision_amt for ln in loans) if loans else Decimal('0')
 
     return {
         'loans': loans,
