@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('accounting', '0009_fixedasset'),
         ('branches', '0002_branch_address_line_2_branch_country_and_more'),
@@ -36,7 +35,13 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='journalentry',
             name='rejected_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='journal_entries_rejected', to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name='journal_entries_rejected',
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AlterField(
             model_name='journalentry',
@@ -45,6 +50,9 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name='journalentry',
-            index=models.Index(fields=['entry_date', 'is_reversed', 'is_posted', 'is_rejected', 'branch'], name='je_date_full_status_idx'),
+            index=models.Index(
+                fields=['entry_date', 'is_reversed', 'is_posted', 'is_rejected', 'branch'],
+                name='je_date_full_status_idx',
+            ),
         ),
     ]

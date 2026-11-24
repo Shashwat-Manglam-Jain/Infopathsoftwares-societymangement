@@ -49,9 +49,7 @@ def create_journal_entry(
         )
 
         if is_posted:
-            accounts_map = {
-                a.code: a for a in ChartOfAccounts.objects.select_for_update().filter(code__in=codes)
-            }
+            accounts_map = {a.code: a for a in ChartOfAccounts.objects.select_for_update().filter(code__in=codes)}
         else:
             accounts_map = accounts_by_code
 
@@ -159,9 +157,7 @@ def post_journal_entry(entry, user):
 
     with transaction.atomic():
         codes = list(entry.lines.values_list('gl_account__code', flat=True))
-        locked_accounts = {
-            a.code: a for a in ChartOfAccounts.objects.select_for_update().filter(code__in=codes)
-        }
+        locked_accounts = {a.code: a for a in ChartOfAccounts.objects.select_for_update().filter(code__in=codes)}
         for line in entry.lines.select_related('gl_account'):
             account = locked_accounts[line.gl_account.code]
             account.debit_balance += line.debit_amount

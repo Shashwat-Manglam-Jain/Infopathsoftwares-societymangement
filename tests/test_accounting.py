@@ -577,10 +577,17 @@ class VoucherApprovalWorkflowTests(BaseTestCase):
     def setUp(self):
         super().setUp()
         self.cash = ChartOfAccounts.objects.create(
-            code='1001', name='Cash', account_group='asset', is_system=True, branch=self.head_office,
+            code='1001',
+            name='Cash',
+            account_group='asset',
+            is_system=True,
+            branch=self.head_office,
         )
         self.savings = ChartOfAccounts.objects.create(
-            code='2001', name='Savings', account_group='liability', is_system=True,
+            code='2001',
+            name='Savings',
+            account_group='liability',
+            is_system=True,
         )
 
     def _create_pending(self, **kwargs):

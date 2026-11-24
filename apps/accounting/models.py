@@ -157,12 +157,25 @@ class JournalEntry(models.Model):
     rejected_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    SYSTEM_REFERENCE_TYPES = frozenset([
-        'savings_txn', 'interest_posting', 'loan_disbursement', 'emi_payment',
-        'standing_instruction', 'fd_creation', 'fd_maturity', 'rd_installment',
-        'rd_maturity', 'share_purchase', 'share_surrender', 'dividend',
-        'pigmmy_collection', 'year_end', 'inter_branch_transfer',
-    ])
+    SYSTEM_REFERENCE_TYPES = frozenset(
+        [
+            'savings_txn',
+            'interest_posting',
+            'loan_disbursement',
+            'emi_payment',
+            'standing_instruction',
+            'fd_creation',
+            'fd_maturity',
+            'rd_installment',
+            'rd_maturity',
+            'share_purchase',
+            'share_surrender',
+            'dividend',
+            'pigmmy_collection',
+            'year_end',
+            'inter_branch_transfer',
+        ]
+    )
 
     class Meta:
         verbose_name_plural = 'journal entries'
