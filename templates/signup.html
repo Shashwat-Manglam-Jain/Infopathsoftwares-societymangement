@@ -200,6 +200,8 @@ document.querySelectorAll('select').forEach(function(el) {
         create: false,
         sortField: { field: 'text', direction: 'asc' },
         controlInput: '<input>',
+        plugins: { clear_button: { title: 'Clear' } },
+        onItemAdd: function() { this.setTextboxValue(''); this.refreshOptions(false); },
         render: {
             no_results: function() { return '<div class="no-results" style="padding:10px;text-align:center;color:#94a3b8;">{% trans "No results found" %}</div>'; }
         }

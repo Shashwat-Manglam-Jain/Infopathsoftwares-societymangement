@@ -202,7 +202,8 @@ class LoanAccount(models.Model):
                 }
             )
         if (
-            self.loan_product
+            self.member_id
+            and self.loan_product
             and not self.loan_product.allow_multiple
             and self.status in ('applied', 'approved', 'disbursed')
         ):
