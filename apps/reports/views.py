@@ -838,6 +838,8 @@ def subsidiary_ledger(request):
         from apps.agents.models import Agent
 
         qs = Agent.objects.filter(status='active').select_related('member').order_by('agent_code')
+        if branch:
+            qs = qs.filter(branch=branch)
         for agent in qs:
             items.append(
                 {
@@ -2303,7 +2305,10 @@ def agent_reconciliation(request):
         gl_agg = gl_agg.aggregate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
         gl_balance = (head.opening_balance or 0) + (gl_agg['cr'] or 0) - (gl_agg['dr'] or 0)
 
-        agent_total = Agent.objects.filter(status='active').aggregate(
+        agent_qs = Agent.objects.filter(status='active')
+        if branch:
+            agent_qs = agent_qs.filter(branch=branch)
+        agent_total = agent_qs.aggregate(
             t=Sum('security_deposit_amount'),
         )['t'] or Decimal('0')
 
