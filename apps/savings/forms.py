@@ -20,7 +20,7 @@ class SavingsAccountForm(forms.ModelForm):
             'introducer',
         ]
         widgets = {
-            'member': forms.Select(attrs={'class': _tw_s}),
+            'member': forms.Select(attrs={'class': 'searchable ' + _tw_s}),
             'branch': forms.Select(attrs={'class': _tw}),
             'account_type': forms.Select(attrs={'class': _tw}),
             'interest_rate': forms.NumberInput(
@@ -36,7 +36,7 @@ class SavingsAccountForm(forms.ModelForm):
             'minimum_balance': forms.NumberInput(attrs={'class': _tw, 'step': '0.01', 'min': '0'}),
             'interest_posting_frequency': forms.Select(attrs={'class': _tw}),
             'opening_date': forms.DateInput(attrs={'class': _tw, 'type': 'date'}),
-            'introducer': forms.Select(attrs={'class': _tw_s}),
+            'introducer': forms.Select(attrs={'class': 'searchable ' + _tw_s}),
         }
 
     def __init__(self, *args, **kwargs):
