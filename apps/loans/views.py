@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
@@ -237,7 +238,7 @@ def loan_apply(request):
                         messages.info(request, 'This loan product requires collateral. Please add collateral now.')
                         return redirect('loans:collateral_add', loan_pk=loan.pk)
                     return redirect('loans:detail', pk=loan.pk)
-                except Exception as e:
+                except (ValueError, ValidationError) as e:
                     messages.error(request, str(e))
         else:
             for field, errs in form.errors.items():

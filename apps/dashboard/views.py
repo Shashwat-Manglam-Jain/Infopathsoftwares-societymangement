@@ -34,7 +34,6 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         rd_qs = RecurringDeposit.objects.filter(status='active')
         share_qs = ShareHolding.objects.filter(status='active')
 
-        user = self.request.user
         if branch and not user.can_access_all_branches:
             member_qs = member_qs.filter(branch=branch)
             savings_qs = savings_qs.filter(branch=branch)
@@ -54,8 +53,13 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context['total_shares'] = share_qs.aggregate(total=Sum('total_amount'))['total'] or Decimal('0')
 
         context['overdue_count'] = loan_qs.filter(overdue_days__gt=0).count()
-        context['npa_count'] = LoanAccount.objects.filter(status='npa').count()
-        context['pending_approvals'] = LoanAccount.objects.filter(status='applied').count()
+        npa_qs = LoanAccount.objects.filter(status='npa')
+        approval_qs = LoanAccount.objects.filter(status='applied')
+        if branch and not user.can_access_all_branches:
+            npa_qs = npa_qs.filter(branch=branch)
+            approval_qs = approval_qs.filter(branch=branch)
+        context['npa_count'] = npa_qs.count()
+        context['pending_approvals'] = approval_qs.count()
         context['fd_maturing_soon'] = fd_qs.filter(maturity_date__lte=today + timedelta(days=30)).count()
 
         today_txn = AccountTransaction.objects.filter(txn_date=today)
@@ -73,9 +77,10 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context['today_emi'] = today_repay.aggregate(total=Sum('amount'))['total'] or Decimal('0')
         context['today_txn_count'] = today_txn.count()
 
-        context['recent_transactions'] = AccountTransaction.objects.select_related(
-            'account__member', 'branch'
-        ).order_by('-created_at')[:5]
+        recent_qs = AccountTransaction.objects.select_related('account__member', 'branch').order_by('-created_at')
+        if branch and not user.can_access_all_branches:
+            recent_qs = recent_qs.filter(branch=branch)
+        context['recent_transactions'] = recent_qs[:5]
 
         context['today'] = today
 

@@ -222,6 +222,16 @@ def _process_transaction(request, txn_type, heads):
             {'heads': heads, 'txn_type': txn_type, 'title': title},
         )
 
+    gl_ids = set()
+    for i in range(total_forms):
+        gl_id = request.POST.get(f'lines-{i}-gl_account')
+        if gl_id:
+            try:
+                gl_ids.add(int(gl_id))
+            except ValueError:
+                pass
+    heads_map = ChartOfAccounts.objects.in_bulk(gl_ids)
+
     lines = []
     line_heads = []
     total_amount = Decimal('0')
@@ -233,9 +243,9 @@ def _process_transaction(request, txn_type, heads):
         if not gl_id or not amount_str:
             continue
         try:
-            head = ChartOfAccounts.objects.get(id=int(gl_id))
+            head = heads_map[int(gl_id)]
             amount = Decimal(amount_str)
-        except (ChartOfAccounts.DoesNotExist, InvalidOperation, ValueError):
+        except (KeyError, InvalidOperation, ValueError):
             continue
         if amount <= 0:
             continue
@@ -1049,7 +1059,7 @@ def inter_branch_transfer(request):
                 if transfer_date_str
                 else get_transaction_date(request.current_branch)
             )
-        except (Branch.DoesNotExist, Exception) as e:
+        except (Branch.DoesNotExist, ValueError, InvalidOperation) as e:
             messages.error(request, f'Invalid input: {e}')
             return redirect('accounting:inter_branch_transfer')
 

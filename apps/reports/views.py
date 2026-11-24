@@ -1041,10 +1041,13 @@ def balance_reports(request):
         min_amount = request.GET.get('min_amount', '')
         max_amount = request.GET.get('max_amount', '')
         qs = base_qs.filter(status='active')
-        if min_amount:
-            qs = qs.filter(current_balance__gte=Decimal(min_amount))
-        if max_amount:
-            qs = qs.filter(current_balance__lte=Decimal(max_amount))
+        try:
+            if min_amount:
+                qs = qs.filter(current_balance__gte=Decimal(min_amount))
+            if max_amount:
+                qs = qs.filter(current_balance__lte=Decimal(max_amount))
+        except Exception:
+            pass
         accounts = qs.annotate(last_txn=Max('transactions__txn_date')).order_by('-current_balance')
 
     context = {
@@ -1252,7 +1255,6 @@ def enquiry(request):
 
 @auditor_or_above
 def pigmmy_reports(request):
-    from django.db.models import Count
 
     from apps.agents.models import Agent, AgentCommission, PigmmyAccount, PigmmyTransaction
 
@@ -2343,8 +2345,12 @@ def fixed_asset_report(request):
     from apps.accounting.models import FixedAsset
 
     assets = FixedAsset.objects.filter(is_active=True).select_related('gl_head', 'depreciation_head', 'branch')
-    total_purchase = assets.aggregate(t=Sum('purchase_amount'))['t'] or Decimal('0')
-    total_depreciation = assets.aggregate(t=Sum('accumulated_depreciation'))['t'] or Decimal('0')
+    totals = assets.aggregate(
+        total_purchase=Sum('purchase_amount'),
+        total_depreciation=Sum('accumulated_depreciation'),
+    )
+    total_purchase = totals['total_purchase'] or Decimal('0')
+    total_depreciation = totals['total_depreciation'] or Decimal('0')
     total_wdv = total_purchase - total_depreciation
 
     context = {
