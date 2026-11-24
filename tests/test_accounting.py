@@ -2,12 +2,15 @@ from datetime import date
 from decimal import Decimal
 
 from apps.accounting.initial_coa import setup_chart_of_accounts
-from apps.accounting.models import ChartOfAccounts, JournalLine
+from apps.accounting.models import ChartOfAccounts, JournalEntry, JournalLine
 from apps.accounting.services import (
+    batch_post_entries,
     create_journal_entry,
     generate_voucher_no,
     get_ledger,
     get_trial_balance,
+    post_journal_entry,
+    reject_journal_entry,
     reverse_journal_entry,
 )
 
@@ -215,6 +218,7 @@ class JournalEntryTests(BaseTestCase):
                 {'account_code': '2001', 'debit': Decimal('0.00'), 'credit': Decimal('10000.00')},
             ],
             user=self.cashier_user,
+            is_posted=True,
         )
         self.cash.refresh_from_db()
         self.savings.refresh_from_db()
@@ -264,6 +268,7 @@ class JournalReversalTests(BaseTestCase):
                 {'account_code': '2001', 'debit': Decimal('0.00'), 'credit': Decimal('5000.00')},
             ],
             user=self.cashier_user,
+            is_posted=True,
         )
         reversal = reverse_journal_entry(original, self.admin_user)
 
@@ -378,6 +383,7 @@ class TrialBalanceTests(BaseTestCase):
                 {'account_code': '2001', 'debit': Decimal('0.00'), 'credit': Decimal('50000.00')},
             ],
             user=self.cashier_user,
+            is_posted=True,
         )
         create_journal_entry(
             entry_date=date(2024, 3, 5),
@@ -389,6 +395,7 @@ class TrialBalanceTests(BaseTestCase):
                 {'account_code': '1001', 'debit': Decimal('0.00'), 'credit': Decimal('30000.00')},
             ],
             user=self.cashier_user,
+            is_posted=True,
         )
 
         result = get_trial_balance()
@@ -408,6 +415,7 @@ class TrialBalanceTests(BaseTestCase):
                 {'account_code': '2001', 'debit': Decimal('0.00'), 'credit': Decimal('10000.00')},
             ],
             user=self.cashier_user,
+            is_posted=True,
         )
         create_journal_entry(
             entry_date=date(2024, 3, 5),
@@ -419,6 +427,7 @@ class TrialBalanceTests(BaseTestCase):
                 {'account_code': '2001', 'debit': Decimal('0.00'), 'credit': Decimal('5000.00')},
             ],
             user=self.cashier_user,
+            is_posted=True,
         )
 
         result = get_ledger(
@@ -560,3 +569,120 @@ class ChartOfAccountsExtendedFieldsTests(BaseTestCase):
             default_code=True,
         )
         self.assertTrue(system_head.default_code)
+
+
+class VoucherApprovalWorkflowTests(BaseTestCase):
+    """Tests for the voucher approval (pending → posted/rejected) workflow."""
+
+    def setUp(self):
+        super().setUp()
+        self.cash = ChartOfAccounts.objects.create(
+            code='1001', name='Cash', account_group='asset', is_system=True, branch=self.head_office,
+        )
+        self.savings = ChartOfAccounts.objects.create(
+            code='2001', name='Savings', account_group='liability', is_system=True,
+        )
+
+    def _create_pending(self, **kwargs):
+        defaults = {
+            'entry_date': date(2024, 6, 1),
+            'voucher_type': 'journal',
+            'branch': self.head_office,
+            'narration': 'Test pending',
+            'lines': [
+                {'account_code': '1001', 'debit': Decimal('1000'), 'credit': Decimal('0')},
+                {'account_code': '2001', 'debit': Decimal('0'), 'credit': Decimal('1000')},
+            ],
+            'user': self.cashier_user,
+        }
+        defaults.update(kwargs)
+        return create_journal_entry(**defaults)
+
+    def test_pending_entry_does_not_update_gl(self):
+        self._create_pending()
+        self.cash.refresh_from_db()
+        self.savings.refresh_from_db()
+        self.assertEqual(self.cash.current_balance, Decimal('0'))
+        self.assertEqual(self.savings.current_balance, Decimal('0'))
+
+    def test_post_updates_gl(self):
+        entry = self._create_pending()
+        post_journal_entry(entry, self.admin_user)
+        self.cash.refresh_from_db()
+        self.savings.refresh_from_db()
+        self.assertEqual(self.cash.current_balance, Decimal('1000'))
+        self.assertEqual(self.savings.current_balance, Decimal('1000'))
+        self.assertTrue(entry.is_posted)
+        self.assertEqual(entry.approved_by, self.admin_user)
+        self.assertIsNotNone(entry.posted_at)
+
+    def test_cannot_double_post(self):
+        entry = self._create_pending()
+        post_journal_entry(entry, self.admin_user)
+        with self.assertRaises(ValueError):
+            post_journal_entry(entry, self.admin_user)
+
+    def test_reject_manual_entry(self):
+        entry = self._create_pending(reference_type='manual')
+        reject_journal_entry(entry, self.admin_user)
+        self.assertTrue(entry.is_rejected)
+        self.assertEqual(entry.rejected_by, self.admin_user)
+        self.assertIsNotNone(entry.rejected_at)
+        self.cash.refresh_from_db()
+        self.assertEqual(self.cash.current_balance, Decimal('0'))
+
+    def test_cannot_reject_system_entry(self):
+        entry = self._create_pending(reference_type='savings_txn')
+        with self.assertRaises(ValueError):
+            reject_journal_entry(entry, self.admin_user)
+
+    def test_cannot_reject_posted_entry(self):
+        entry = self._create_pending()
+        post_journal_entry(entry, self.admin_user)
+        with self.assertRaises(ValueError):
+            reject_journal_entry(entry, self.admin_user)
+
+    def test_cannot_post_rejected_entry(self):
+        entry = self._create_pending(reference_type='manual')
+        reject_journal_entry(entry, self.admin_user)
+        with self.assertRaises(ValueError):
+            post_journal_entry(entry, self.admin_user)
+
+    def test_batch_post(self):
+        e1 = self._create_pending()
+        e2 = self._create_pending(narration='Second')
+        qs = JournalEntry.objects.filter(pk__in=[e1.pk, e2.pk])
+        count = batch_post_entries(qs, self.admin_user)
+        self.assertEqual(count, 2)
+        e1.refresh_from_db()
+        e2.refresh_from_db()
+        self.assertTrue(e1.is_posted)
+        self.assertTrue(e2.is_posted)
+        self.cash.refresh_from_db()
+        self.assertEqual(self.cash.current_balance, Decimal('2000'))
+
+    def test_system_entry_properties(self):
+        entry = self._create_pending(reference_type='savings_txn')
+        self.assertTrue(entry.is_system_entry)
+        self.assertFalse(entry.can_reject)
+
+    def test_manual_entry_properties(self):
+        entry = self._create_pending(reference_type='manual')
+        self.assertFalse(entry.is_system_entry)
+        self.assertTrue(entry.can_reject)
+
+    def test_is_posted_true_updates_gl_at_creation(self):
+        create_journal_entry(
+            entry_date=date(2024, 6, 1),
+            voucher_type='receipt',
+            branch=self.head_office,
+            narration='Auto-posted system entry',
+            lines=[
+                {'account_code': '1001', 'debit': Decimal('5000'), 'credit': Decimal('0')},
+                {'account_code': '2001', 'debit': Decimal('0'), 'credit': Decimal('5000')},
+            ],
+            user=self.cashier_user,
+            is_posted=True,
+        )
+        self.cash.refresh_from_db()
+        self.assertEqual(self.cash.current_balance, Decimal('5000'))

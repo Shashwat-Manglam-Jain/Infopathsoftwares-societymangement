@@ -405,6 +405,7 @@ def _create_fd_creation_journal(fd, branch, user):
         user=user,
         reference_type='fd_creation',
         reference_id=fd.pk,
+        is_posted=True,
     )
 
 
@@ -434,6 +435,7 @@ def _create_fd_maturity_journal(fd, branch, user, amount=None):
         user=user,
         reference_type='fd_maturity',
         reference_id=fd.pk,
+        is_posted=True,
     )
 
 
@@ -455,6 +457,7 @@ def _create_rd_journal(rd, amount, branch, user, installment):
         user=user,
         reference_type='rd_installment',
         reference_id=installment.pk,
+        is_posted=True,
     )
 
 
@@ -488,4 +491,5 @@ def _create_rd_maturity_journal(rd, branch, user):
         user=user,
         reference_type='rd_maturity',
         reference_id=rd.pk,
+        is_posted=True,
     )

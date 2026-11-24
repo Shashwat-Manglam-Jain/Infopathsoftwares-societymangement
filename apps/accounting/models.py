@@ -142,16 +142,36 @@ class JournalEntry(models.Model):
         ('transfer', 'Transfer'),
     ]
     payment_mode = models.CharField(max_length=10, choices=PAYMENT_MODE_CHOICES, default='cash')
-    is_posted = models.BooleanField(default=True)
+    is_posted = models.BooleanField(default=False)
     is_reversed = models.BooleanField(default=False, db_index=True)
+    is_rejected = models.BooleanField(default=False)
     reversal_of = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
+    rejected_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='journal_entries_rejected',
+    )
+    posted_at = models.DateTimeField(null=True, blank=True)
+    rejected_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    SYSTEM_REFERENCE_TYPES = frozenset([
+        'savings_txn', 'interest_posting', 'loan_disbursement', 'emi_payment',
+        'standing_instruction', 'fd_creation', 'fd_maturity', 'rd_installment',
+        'rd_maturity', 'share_purchase', 'share_surrender', 'dividend',
+        'pigmmy_collection', 'year_end', 'inter_branch_transfer',
+    ])
 
     class Meta:
         verbose_name_plural = 'journal entries'
         ordering = ['-entry_date', '-created_at']
         indexes = [
-            models.Index(fields=['entry_date', 'is_reversed', 'is_posted', 'branch'], name='je_date_status_branch_idx'),
+            models.Index(
+                fields=['entry_date', 'is_reversed', 'is_posted', 'is_rejected', 'branch'],
+                name='je_date_full_status_idx',
+            ),
             models.Index(fields=['reference_type', 'reference_id'], name='je_reference_idx'),
         ]
 
@@ -161,6 +181,14 @@ class JournalEntry(models.Model):
     @property
     def total_amount(self):
         return self.lines.aggregate(t=models.Sum('debit_amount'))['t'] or 0
+
+    @property
+    def is_system_entry(self):
+        return self.reference_type in self.SYSTEM_REFERENCE_TYPES
+
+    @property
+    def can_reject(self):
+        return not self.is_system_entry and not self.is_posted and not self.is_reversed
 
 
 class JournalLine(models.Model):

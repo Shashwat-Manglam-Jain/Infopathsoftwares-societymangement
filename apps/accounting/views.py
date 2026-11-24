@@ -29,10 +29,42 @@ CUSTOMER_ACCOUNT_TYPES = ('saving', 'current', 'recurring', 'fixed', 'security',
 def voucher_list(request):
     from django.core.paginator import Paginator
 
-    entries = JournalEntry.objects.filter(is_reversed=False).select_related('branch', 'created_by')
+    entries = JournalEntry.objects.select_related('branch', 'created_by', 'approved_by')
     if not request.user.can_access_all_branches:
         entries = entries.filter(branch=request.current_branch)
+
+    q = request.GET.get('q', '').strip()
+    if q:
+        entries = entries.filter(models.Q(voucher_no__icontains=q) | models.Q(narration__icontains=q))
+
+    from_date = request.GET.get('from_date', '')
+    to_date = request.GET.get('to_date', '')
+    if from_date:
+        entries = entries.filter(entry_date__gte=from_date)
+    if to_date:
+        entries = entries.filter(entry_date__lte=to_date)
+
+    voucher_type = request.GET.get('type', '')
+    if voucher_type in ('receipt', 'payment', 'journal', 'contra'):
+        entries = entries.filter(voucher_type=voucher_type)
+
+    status_filter = request.GET.get('status', '')
+    if status_filter == 'pending':
+        entries = entries.filter(is_posted=False, is_reversed=False, is_rejected=False)
+    elif status_filter == 'posted':
+        entries = entries.filter(is_posted=True, is_reversed=False)
+    elif status_filter == 'rejected':
+        entries = entries.filter(is_rejected=True)
+    elif status_filter == 'reversed':
+        entries = entries.filter(is_reversed=True)
+
     entries = entries.order_by('-entry_date', '-created_at')
+
+    pending_qs = JournalEntry.objects.filter(is_posted=False, is_reversed=False, is_rejected=False)
+    if not request.user.can_access_all_branches:
+        pending_qs = pending_qs.filter(branch=request.current_branch)
+    pending_count = pending_qs.count()
+
     paginator = Paginator(entries, 25)
     page_obj = paginator.get_page(request.GET.get('page'))
     return render(
@@ -43,8 +75,61 @@ def voucher_list(request):
             'page_obj': page_obj,
             'is_paginated': page_obj.has_other_pages(),
             'paginator': paginator,
+            'q': q,
+            'from_date': from_date,
+            'to_date': to_date,
+            'voucher_type': voucher_type,
+            'status_filter': status_filter,
+            'pending_count': pending_count,
         },
     )
+
+
+@accountant_required
+def voucher_post(request, pk):
+    entry = get_object_or_404(JournalEntry, pk=pk)
+    if not has_branch_access(request, entry.branch):
+        messages.error(request, 'You do not have access to this voucher.')
+        return redirect('accounting:vouchers')
+    if request.method == 'POST':
+        from apps.accounting.services import post_journal_entry
+
+        try:
+            post_journal_entry(entry, request.user)
+            messages.success(request, f'Voucher {entry.voucher_no} posted successfully.')
+        except ValueError as e:
+            messages.error(request, str(e))
+    return redirect('accounting:vouchers')
+
+
+@manager_required
+def voucher_reject(request, pk):
+    entry = get_object_or_404(JournalEntry, pk=pk)
+    if not has_branch_access(request, entry.branch):
+        messages.error(request, 'You do not have access to this voucher.')
+        return redirect('accounting:vouchers')
+    if request.method == 'POST':
+        from apps.accounting.services import reject_journal_entry
+
+        try:
+            reject_journal_entry(entry, request.user)
+            messages.success(request, f'Voucher {entry.voucher_no} rejected.')
+        except ValueError as e:
+            messages.error(request, str(e))
+    return redirect('accounting:vouchers')
+
+
+@accountant_required
+def voucher_batch_post(request):
+    if request.method == 'POST':
+        from apps.accounting.services import batch_post_entries
+
+        qs = JournalEntry.objects.all()
+        if not request.user.can_access_all_branches:
+            qs = qs.filter(branch=request.current_branch)
+        count = batch_post_entries(qs, request.user)
+        messages.success(request, f'{count} voucher(s) posted successfully.')
+    return redirect('accounting:vouchers')
 
 
 @cashier_required
@@ -316,6 +401,7 @@ def _process_transaction(request, txn_type, heads):
                 lines=lines,
                 user=request.user,
                 payment_mode=payment_mode,
+                is_posted=True,
             )
             for lh in line_heads:
                 if lh['account_number'] and lh['head'].related_table_name in CUSTOMER_ACCOUNT_TYPES:
@@ -835,6 +921,12 @@ def voucher_edit(request, pk):
     if entry.is_reversed:
         messages.error(request, 'Cannot edit a reversed voucher.')
         return redirect('accounting:vouchers')
+    if entry.is_posted:
+        messages.error(request, 'Cannot edit a posted voucher. Cancel it first, then re-create.')
+        return redirect('accounting:vouchers')
+    if entry.is_rejected:
+        messages.error(request, 'Cannot edit a rejected voucher.')
+        return redirect('accounting:vouchers')
     if entry.entry_date != get_transaction_date(request.current_branch):
         messages.error(request, 'Can only edit vouchers from the current working day.')
         return redirect('accounting:vouchers')
@@ -889,6 +981,7 @@ def voucher_edit(request, pk):
                         user=request.user,
                         reference_type='modification',
                         reference_id=entry.pk,
+                        is_posted=True,
                     )
                     if new_type in ('receipt', 'payment'):
                         if new_type == 'receipt':
@@ -943,6 +1036,9 @@ def voucher_cancel(request, pk):
     if request.method == 'POST':
         if entry.is_reversed:
             messages.error(request, 'This voucher is already reversed/cancelled.')
+            return redirect('accounting:vouchers')
+        if not entry.is_posted:
+            messages.error(request, 'Cannot cancel a pending voucher. Use reject instead.')
             return redirect('accounting:vouchers')
 
         from apps.accounting.services import reverse_journal_entry, update_cashbook

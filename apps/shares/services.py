@@ -310,4 +310,5 @@ def _create_share_journal(branch, amount, user, txn_type, ref_id=None):
         user=user,
         reference_type=f'share_{txn_type}',
         reference_id=ref_id,
+        is_posted=True,
     )

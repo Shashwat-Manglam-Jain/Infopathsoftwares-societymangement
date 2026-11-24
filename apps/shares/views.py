@@ -136,6 +136,7 @@ def share_list(request):
                         ],
                         user=request.user,
                         reference_type='dividend',
+                        is_posted=True,
                     )
 
             messages.success(request, f'Dividend posted to {posted} accounts. Total: ₹{total_dividend:,.2f}')

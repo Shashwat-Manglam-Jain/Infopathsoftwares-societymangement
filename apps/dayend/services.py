@@ -295,6 +295,7 @@ def run_year_end(branch, financial_year, user):
                         lines=closing_lines,
                         user=user,
                         reference_type='year_end',
+                        is_posted=True,
                     )
 
             for account in list(income_accounts) + list(expense_accounts):

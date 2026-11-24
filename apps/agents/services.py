@@ -237,6 +237,7 @@ def post_collection(collection, posted_by):
         ],
         user=posted_by,
         reference_type='pigmmy_collection',
+        is_posted=True,
     )
 
     from apps.accounting.services import update_cashbook

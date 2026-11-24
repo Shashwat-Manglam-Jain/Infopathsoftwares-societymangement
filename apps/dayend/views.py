@@ -881,6 +881,7 @@ class InterestPostView(ManagerRequiredMixin, View):
                         user=request.user,
                         reference_type='interest_posting',
                         reference_id=txn.pk,
+                        is_posted=True,
                     )
 
                 elif row['category'] == 'fd':
@@ -903,6 +904,7 @@ class InterestPostView(ManagerRequiredMixin, View):
                         ],
                         user=request.user,
                         reference_type='interest_posting',
+                        is_posted=True,
                     )
 
                 posted_count += 1

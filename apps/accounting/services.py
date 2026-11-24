@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from django.db import models, transaction
+from django.utils import timezone
 
 from apps.accounting.models import CashbookMaster, ChartOfAccounts, JournalEntry, JournalLine
 
@@ -15,6 +16,7 @@ def create_journal_entry(
     reference_type='manual',
     reference_id=None,
     payment_mode='cash',
+    is_posted=False,
 ):
     total_debit = sum(Decimal(str(line.get('debit', 0))) for line in lines)
     total_credit = sum(Decimal(str(line.get('credit', 0))) for line in lines)
@@ -41,11 +43,20 @@ def create_journal_entry(
             reference_id=reference_id,
             payment_mode=payment_mode,
             created_by=user,
+            is_posted=is_posted,
+            approved_by=user if is_posted else None,
+            posted_at=timezone.now() if is_posted else None,
         )
 
-        locked_accounts = {a.code: a for a in ChartOfAccounts.objects.select_for_update().filter(code__in=codes)}
+        if is_posted:
+            accounts_map = {
+                a.code: a for a in ChartOfAccounts.objects.select_for_update().filter(code__in=codes)
+            }
+        else:
+            accounts_map = accounts_by_code
+
         for line_data in lines:
-            account = locked_accounts[line_data['account_code']]
+            account = accounts_map[line_data['account_code']]
             debit = Decimal(str(line_data.get('debit', 0)))
             credit = Decimal(str(line_data.get('credit', 0)))
 
@@ -57,13 +68,14 @@ def create_journal_entry(
                 narration=line_data.get('narration', ''),
             )
 
-            account.debit_balance += debit
-            account.credit_balance += credit
-            if account.account_group in ('asset', 'expense'):
-                account.current_balance += debit - credit
-            else:
-                account.current_balance += credit - debit
-            account.save(update_fields=['current_balance', 'debit_balance', 'credit_balance'])
+            if is_posted:
+                account.debit_balance += debit
+                account.credit_balance += credit
+                if account.account_group in ('asset', 'expense'):
+                    account.current_balance += debit - credit
+                else:
+                    account.current_balance += credit - debit
+                account.save(update_fields=['current_balance', 'debit_balance', 'credit_balance'])
 
         from apps.audit.middleware import get_current_ip
         from apps.audit.services import log_action
@@ -80,6 +92,7 @@ def create_journal_entry(
                 'narration': narration,
                 'reference_type': reference_type,
                 'total': str(total_debit),
+                'is_posted': is_posted,
             },
             ip_address=get_current_ip(),
         )
@@ -111,6 +124,7 @@ def reverse_journal_entry(entry, user):
             user=user,
             reference_type=entry.reference_type,
             reference_id=entry.reference_id,
+            is_posted=True,
         )
         reversal.reversal_of = entry
         reversal.is_reversed = True
@@ -133,6 +147,88 @@ def reverse_journal_entry(entry, user):
             ip_address=get_current_ip(),
         )
         return reversal
+
+
+def post_journal_entry(entry, user):
+    if entry.is_posted:
+        raise ValueError('Entry is already posted.')
+    if entry.is_reversed:
+        raise ValueError('Cannot post a reversed entry.')
+    if entry.is_rejected:
+        raise ValueError('Cannot post a rejected entry.')
+
+    with transaction.atomic():
+        codes = list(entry.lines.values_list('gl_account__code', flat=True))
+        locked_accounts = {
+            a.code: a for a in ChartOfAccounts.objects.select_for_update().filter(code__in=codes)
+        }
+        for line in entry.lines.select_related('gl_account'):
+            account = locked_accounts[line.gl_account.code]
+            account.debit_balance += line.debit_amount
+            account.credit_balance += line.credit_amount
+            if account.account_group in ('asset', 'expense'):
+                account.current_balance += line.debit_amount - line.credit_amount
+            else:
+                account.current_balance += line.credit_amount - line.debit_amount
+            account.save(update_fields=['current_balance', 'debit_balance', 'credit_balance'])
+
+        entry.is_posted = True
+        entry.approved_by = user
+        entry.posted_at = timezone.now()
+        entry.save(update_fields=['is_posted', 'approved_by', 'posted_at'])
+
+        from apps.audit.middleware import get_current_ip
+        from apps.audit.services import log_action
+
+        log_action(
+            user=user,
+            branch=entry.branch,
+            action='post',
+            table_name='JournalEntry',
+            record_id=entry.pk,
+            old_values={'is_posted': False},
+            new_values={'is_posted': True, 'approved_by': user.pk},
+            ip_address=get_current_ip(),
+        )
+    return entry
+
+
+def reject_journal_entry(entry, user):
+    if entry.is_posted:
+        raise ValueError('Cannot reject a posted entry.')
+    if entry.is_rejected:
+        raise ValueError('Entry is already rejected.')
+    if entry.is_system_entry:
+        raise ValueError('System-generated entries cannot be rejected.')
+
+    with transaction.atomic():
+        entry.is_rejected = True
+        entry.rejected_by = user
+        entry.rejected_at = timezone.now()
+        entry.save(update_fields=['is_rejected', 'rejected_by', 'rejected_at'])
+
+        from apps.audit.middleware import get_current_ip
+        from apps.audit.services import log_action
+
+        log_action(
+            user=user,
+            branch=entry.branch,
+            action='reject',
+            table_name='JournalEntry',
+            record_id=entry.pk,
+            old_values={'is_rejected': False},
+            new_values={'is_rejected': True, 'rejected_by': user.pk},
+            ip_address=get_current_ip(),
+        )
+    return entry
+
+
+def batch_post_entries(queryset, user):
+    posted_count = 0
+    for entry in queryset.filter(is_posted=False, is_reversed=False, is_rejected=False):
+        post_journal_entry(entry, user)
+        posted_count += 1
+    return posted_count
 
 
 def update_cashbook(branch, txn_date, receipt_amount=Decimal('0'), payment_amount=Decimal('0'), payment_mode='cash'):
@@ -448,6 +544,7 @@ def create_inter_branch_transfer(from_branch, to_branch, amount, transfer_date, 
             ],
             user=user,
             reference_type='inter_branch_transfer',
+            is_posted=True,
         )
 
         je_to = create_journal_entry(
@@ -461,6 +558,7 @@ def create_inter_branch_transfer(from_branch, to_branch, amount, transfer_date, 
             ],
             user=user,
             reference_type='inter_branch_transfer',
+            is_posted=True,
         )
 
         transfer = InterBranchTransfer.objects.create(
