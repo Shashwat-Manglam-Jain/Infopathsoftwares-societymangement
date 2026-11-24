@@ -23,8 +23,9 @@ def public_login(request):
     is_localhost = request_host in ('localhost', '127.0.0.1') or request_host.endswith('.localhost')
     parent_domain = 'localhost' if is_localhost else request_host
 
-    tenants_with_domains = []
     from apps.tenants.models import Society
+
+    tenants_with_domains = []
     for tenant in Society.objects.filter(is_active=True).exclude(schema_name='public'):
         tenant_domains = tenant.domains.all()
         best_domain = None
