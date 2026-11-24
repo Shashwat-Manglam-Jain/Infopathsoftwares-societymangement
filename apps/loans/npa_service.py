@@ -110,8 +110,8 @@ def get_npa_report(branch=None):
         category_summary[cat]['outstanding'] += loan.outstanding_principal
         category_summary[cat]['provision'] += loan._computed_provision_amt
 
-    total_outstanding = sum(l.outstanding_principal for l in loans) if loans else Decimal('0')
-    total_provision = sum(l._computed_provision_amt for l in loans) if loans else Decimal('0')
+    total_outstanding = sum(ln.outstanding_principal for ln in loans) if loans else Decimal('0')
+    total_provision = sum(ln._computed_provision_amt for ln in loans) if loans else Decimal('0')
 
     return {
         'loans': loans,

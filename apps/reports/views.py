@@ -2093,18 +2093,18 @@ def npa_report(request):
 
     report = get_npa_report(branch=branch)
 
-    NPA_CATEGORIES = [
+    npa_categories = [
         ('standard', 'Standard Asset', '0.25%', 'green'),
         ('sub_standard', 'Sub-Standard Asset', '6%', 'yellow'),
-        ('doubtful_1', 'Doubtful Asset — 1', '20–70%', 'orange'),
-        ('doubtful_2', 'Doubtful Asset — 2', '25–80%', 'red'),
-        ('doubtful_3', 'Doubtful Asset — 3', '30–90%', 'red'),
+        ('doubtful_1', 'Doubtful Asset - 1', '20-70%', 'orange'),
+        ('doubtful_2', 'Doubtful Asset - 2', '25-80%', 'red'),
+        ('doubtful_3', 'Doubtful Asset - 3', '30-90%', 'red'),
         ('loss', 'Loss Asset', '100%', 'red'),
     ]
 
     category_rows = []
     summary = report['category_summary']
-    for key, label, pct_range, color in NPA_CATEGORIES:
+    for key, label, pct_range, color in npa_categories:
         if key in summary:
             category_rows.append({
                 'key': key, 'label': label, 'pct_range': pct_range, 'color': color,
