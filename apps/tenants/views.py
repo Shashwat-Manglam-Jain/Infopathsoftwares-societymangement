@@ -19,20 +19,33 @@ def landing_page(request):
 
 
 def public_login(request):
-    domains = (
-        Domain.objects.filter(
-            is_primary=True,
-            tenant__is_active=True,
-        )
-        .exclude(tenant__schema_name='public')
-        .order_by('domain')
-    )
+    request_host = request.get_host().split(':')[0]
+    is_localhost = request_host in ('localhost', '127.0.0.1') or request_host.endswith('.localhost')
+    parent_domain = 'localhost' if is_localhost else request_host
+
+    tenants_with_domains = []
+    from apps.tenants.models import Society
+    for tenant in Society.objects.filter(is_active=True).exclude(schema_name='public'):
+        tenant_domains = tenant.domains.all()
+        best_domain = None
+        for d in tenant_domains:
+            if is_localhost and d.domain.endswith('.localhost'):
+                best_domain = d
+                break
+            if not is_localhost and d.domain.endswith(f'.{parent_domain}'):
+                best_domain = d
+                break
+        if not best_domain and tenant_domains.exists():
+            best_domain = tenant_domains.first()
+        if best_domain:
+            tenants_with_domains.append(best_domain)
+
     error = ''
     if request.method == 'POST':
         domain_id = request.POST.get('domain', '')
-        domain_obj = Domain.objects.filter(pk=domain_id, is_primary=True).first()
+        domain_obj = Domain.objects.filter(pk=domain_id).first()
         if domain_obj:
-            scheme = 'https' if request.is_secure() else 'http'
+            scheme = 'https' if request.is_secure() or request.META.get('HTTP_X_FORWARDED_PROTO') == 'https' else 'http'
             is_proxied = request.META.get('HTTP_X_FORWARDED_PROTO') or request.META.get('HTTP_X_FORWARDED_FOR')
             host = domain_obj.domain
             if not is_proxied:
@@ -45,7 +58,7 @@ def public_login(request):
         request,
         'tenants/public_login.html',
         {
-            'domains': domains,
+            'domains': tenants_with_domains,
             'error': error,
         },
     )
