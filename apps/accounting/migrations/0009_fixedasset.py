@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('accounting', '0008_fix_interest_master_protect_fk'),
         ('branches', '0002_branch_address_line_2_branch_country_and_more'),
@@ -21,16 +20,42 @@ class Migration(migrations.Migration):
                 ('purchase_date', models.DateField()),
                 ('purchase_amount', models.DecimalField(decimal_places=2, max_digits=15)),
                 ('depreciation_rate', models.DecimalField(decimal_places=2, default=0, max_digits=5)),
-                ('depreciation_method', models.CharField(choices=[('slm', 'Straight Line'), ('wdv', 'Written Down Value')], default='slm', max_length=5)),
+                (
+                    'depreciation_method',
+                    models.CharField(
+                        choices=[('slm', 'Straight Line'), ('wdv', 'Written Down Value')], default='slm', max_length=5
+                    ),
+                ),
                 ('accumulated_depreciation', models.DecimalField(decimal_places=2, default=0, max_digits=15)),
                 ('written_down_value', models.DecimalField(decimal_places=2, default=0, max_digits=15)),
                 ('last_depreciation_date', models.DateField(blank=True, null=True)),
                 ('is_active', models.BooleanField(default=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('branch', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='branches.branch')),
-                ('depreciation_head', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='depreciation_assets', to='accounting.chartofaccounts')),
-                ('gl_head', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='fixed_assets', to='accounting.chartofaccounts')),
+                (
+                    'branch',
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='branches.branch'
+                    ),
+                ),
+                (
+                    'depreciation_head',
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name='depreciation_assets',
+                        to='accounting.chartofaccounts',
+                    ),
+                ),
+                (
+                    'gl_head',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name='fixed_assets',
+                        to='accounting.chartofaccounts',
+                    ),
+                ),
             ],
             options={
                 'ordering': ['asset_code'],

@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('savings', '0005_alter_accounttransaction_txn_date_and_more'),
     ]
@@ -18,6 +17,16 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='savingsaccount',
             name='account_type',
-            field=models.CharField(choices=[('savings', 'Savings Account'), ('current', 'Current Account'), ('security', 'Security Deposit'), ('director_security', 'Director Security Deposit')], db_index=True, default='savings', max_length=20),
+            field=models.CharField(
+                choices=[
+                    ('savings', 'Savings Account'),
+                    ('current', 'Current Account'),
+                    ('security', 'Security Deposit'),
+                    ('director_security', 'Director Security Deposit'),
+                ],
+                db_index=True,
+                default='savings',
+                max_length=20,
+            ),
         ),
     ]

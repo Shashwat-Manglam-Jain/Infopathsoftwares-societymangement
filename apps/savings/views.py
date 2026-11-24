@@ -247,11 +247,13 @@ def savings_statement(request, pk):
             fd = datetime.strptime(from_date, '%Y-%m-%d').date()
             td = datetime.strptime(to_date, '%Y-%m-%d').date()
             transactions = list(
-                account.transactions.select_related('reversal_of').filter(
+                account.transactions.select_related('reversal_of')
+                .filter(
                     txn_date__gte=fd,
                     txn_date__lte=td,
                     is_reversed=False,
-                ).order_by('txn_date', 'created_at')
+                )
+                .order_by('txn_date', 'created_at')
             )
         except ValueError:
             messages.error(request, 'Invalid date format.')

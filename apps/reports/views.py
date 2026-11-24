@@ -404,11 +404,20 @@ def _build_groups(heads, cur_balances, prev_balances, group_filter):
             continue
         group_name = head.parent.name if head.parent else f'Other {head.get_account_group_display()}s'
         if group_name not in buckets:
-            buckets[group_name] = {'name': group_name, 'items': [], 'current_total': Decimal('0'), 'prev_total': Decimal('0')}
-        buckets[group_name]['items'].append({
-            'name': head.name, 'code': head.code,
-            'current_amount': cur, 'prev_amount': prev,
-        })
+            buckets[group_name] = {
+                'name': group_name,
+                'items': [],
+                'current_total': Decimal('0'),
+                'prev_total': Decimal('0'),
+            }
+        buckets[group_name]['items'].append(
+            {
+                'name': head.name,
+                'code': head.code,
+                'current_amount': cur,
+                'prev_amount': prev,
+            }
+        )
         buckets[group_name]['current_total'] += cur
         buckets[group_name]['prev_total'] += prev
         total_cur += cur
@@ -482,44 +491,67 @@ def profit_loss(request):
         prev_bals = _pl_balances(prev_fd.isoformat(), prev_td.isoformat())
 
         income_groups, total_income, prev_total_income = _build_groups(
-            pl_heads, cur_bals, prev_bals, lambda h: h.account_group == 'income',
+            pl_heads,
+            cur_bals,
+            prev_bals,
+            lambda h: h.account_group == 'income',
         )
         expense_groups, total_expense, prev_total_expense = _build_groups(
-            pl_heads, cur_bals, prev_bals, lambda h: h.account_group == 'expense',
+            pl_heads,
+            cur_bals,
+            prev_bals,
+            lambda h: h.account_group == 'expense',
         )
 
         net_profit = total_income - total_expense
         prev_net_profit = prev_total_income - prev_total_expense
 
-        context.update({
-            'income_groups': income_groups,
-            'expense_groups': expense_groups,
-            'total_income': total_income,
-            'total_expense': total_expense,
-            'net_profit': net_profit,
-            'prev_total_income': prev_total_income,
-            'prev_total_expense': prev_total_expense,
-            'prev_net_profit': prev_net_profit,
-            'prev_from_date': prev_fd.isoformat(),
-            'prev_to_date': prev_td.isoformat(),
-        })
+        context.update(
+            {
+                'income_groups': income_groups,
+                'expense_groups': expense_groups,
+                'total_income': total_income,
+                'total_expense': total_expense,
+                'net_profit': net_profit,
+                'prev_total_income': prev_total_income,
+                'prev_total_expense': prev_total_expense,
+                'prev_net_profit': prev_net_profit,
+                'prev_from_date': prev_fd.isoformat(),
+                'prev_to_date': prev_td.isoformat(),
+            }
+        )
         if request.GET.get('format') == 'csv':
             rows = []
             for grp in income_groups:
                 for item in grp['items']:
-                    rows.append([item['code'], item['name'], 'Income', grp['name'],
-                                 item['current_amount'], item['prev_amount']])
+                    rows.append(
+                        [item['code'], item['name'], 'Income', grp['name'], item['current_amount'], item['prev_amount']]
+                    )
             for grp in expense_groups:
                 for item in grp['items']:
-                    rows.append([item['code'], item['name'], 'Expense', grp['name'],
-                                 item['current_amount'], item['prev_amount']])
+                    rows.append(
+                        [
+                            item['code'],
+                            item['name'],
+                            'Expense',
+                            grp['name'],
+                            item['current_amount'],
+                            item['prev_amount'],
+                        ]
+                    )
             rows.append(['', 'Total Income', '', '', total_income, prev_total_income])
             rows.append(['', 'Total Expense', '', '', total_expense, prev_total_expense])
             rows.append(['', 'Net Profit/(Loss)', '', '', net_profit, prev_net_profit])
             return _csv_response(
                 f'profit_loss_{from_date}_to_{to_date}.csv',
-                ['Code', 'Account', 'Type', 'Group', f'Current ({from_date} to {to_date})',
-                 f'Previous ({prev_fd} to {prev_td})'],
+                [
+                    'Code',
+                    'Account',
+                    'Type',
+                    'Group',
+                    f'Current ({from_date} to {to_date})',
+                    f'Previous ({prev_fd} to {prev_td})',
+                ],
                 rows,
             )
     return render(request, 'reports/profit_loss.html', context)
@@ -567,76 +599,100 @@ def balance_sheet(request):
             return h.account_group == 'asset'
 
         liability_groups, total_liability, prev_total_liability = _build_groups(
-            all_heads, cur_bals, prev_bals, _is_liability,
+            all_heads,
+            cur_bals,
+            prev_bals,
+            _is_liability,
         )
         asset_groups, total_asset, prev_total_asset = _build_groups(
-            all_heads, cur_bals, prev_bals, _is_asset,
+            all_heads,
+            cur_bals,
+            prev_bals,
+            _is_asset,
         )
 
         # Append net profit as a virtual liability item
         if net_profit != 0 or prev_net_profit != 0:
-            liability_groups.append({
-                'name': 'Profit & Loss',
-                'items': [{'name': 'Net Profit / (Loss)', 'code': '—',
-                           'current_amount': net_profit, 'prev_amount': prev_net_profit}],
-                'current_total': net_profit,
-                'prev_total': prev_net_profit,
-            })
+            liability_groups.append(
+                {
+                    'name': 'Profit & Loss',
+                    'items': [
+                        {
+                            'name': 'Net Profit / (Loss)',
+                            'code': '—',
+                            'current_amount': net_profit,
+                            'prev_amount': prev_net_profit,
+                        }
+                    ],
+                    'current_total': net_profit,
+                    'prev_total': prev_net_profit,
+                }
+            )
             total_liability += net_profit
             prev_total_liability += prev_net_profit
 
         # CRR & SLR ratios
         deposit_tables = {'saving', 'current', 'recurring', 'fixed', 'security', 'client', 'agent'}
         total_deposits = sum(
-            cur_bals.get(h.pk, 0) for h in all_heads
+            cur_bals.get(h.pk, 0)
+            for h in all_heads
             if h.account_group in ('liability', 'equity') and h.related_table_name in deposit_tables
         )
         cash_bank = sum(
-            cur_bals.get(h.pk, 0) for h in all_heads
-            if h.account_group == 'asset' and h.related_table_name in ('general', 'bank', 'other')
+            cur_bals.get(h.pk, 0)
+            for h in all_heads
+            if h.account_group == 'asset'
+            and h.related_table_name in ('general', 'bank', 'other')
             and any(kw in h.name.lower() for kw in ('cash', 'bank'))
         )
         investments = sum(
-            cur_bals.get(h.pk, 0) for h in all_heads
-            if h.account_group == 'asset' and h.related_table_name == 'bank'
+            cur_bals.get(h.pk, 0) for h in all_heads if h.account_group == 'asset' and h.related_table_name == 'bank'
         )
         crr_ratio = (cash_bank / total_deposits * 100) if total_deposits else Decimal('0')
         slr_ratio = ((cash_bank + investments) / total_deposits * 100) if total_deposits else Decimal('0')
 
-        context.update({
-            'liability_groups': liability_groups,
-            'asset_groups': asset_groups,
-            'total_liability': total_liability,
-            'total_asset': total_asset,
-            'prev_total_liability': prev_total_liability,
-            'prev_total_asset': prev_total_asset,
-            'difference': total_asset - total_liability,
-            'net_profit': net_profit,
-            'prev_net_profit': prev_net_profit,
-            'prev_year_date': prev_year_date.isoformat(),
-            'crr_ratio': crr_ratio,
-            'slr_ratio': slr_ratio,
-        })
+        context.update(
+            {
+                'liability_groups': liability_groups,
+                'asset_groups': asset_groups,
+                'total_liability': total_liability,
+                'total_asset': total_asset,
+                'prev_total_liability': prev_total_liability,
+                'prev_total_asset': prev_total_asset,
+                'difference': total_asset - total_liability,
+                'net_profit': net_profit,
+                'prev_net_profit': prev_net_profit,
+                'prev_year_date': prev_year_date.isoformat(),
+                'crr_ratio': crr_ratio,
+                'slr_ratio': slr_ratio,
+            }
+        )
         if request.GET.get('format') == 'csv':
             rows = []
             for grp in liability_groups:
                 for item in grp['items']:
-                    rows.append([item['code'], item['name'], 'Liability/Equity', grp['name'],
-                                 item['current_amount'], item['prev_amount']])
-                rows.append(['', f"Sub-total: {grp['name']}", '', '',
-                             grp['current_total'], grp['prev_total']])
+                    rows.append(
+                        [
+                            item['code'],
+                            item['name'],
+                            'Liability/Equity',
+                            grp['name'],
+                            item['current_amount'],
+                            item['prev_amount'],
+                        ]
+                    )
+                rows.append(['', f'Sub-total: {grp["name"]}', '', '', grp['current_total'], grp['prev_total']])
             rows.append(['', 'Total Liabilities & Equity', '', '', total_liability, prev_total_liability])
             for grp in asset_groups:
                 for item in grp['items']:
-                    rows.append([item['code'], item['name'], 'Asset', grp['name'],
-                                 item['current_amount'], item['prev_amount']])
-                rows.append(['', f"Sub-total: {grp['name']}", '', '',
-                             grp['current_total'], grp['prev_total']])
+                    rows.append(
+                        [item['code'], item['name'], 'Asset', grp['name'], item['current_amount'], item['prev_amount']]
+                    )
+                rows.append(['', f'Sub-total: {grp["name"]}', '', '', grp['current_total'], grp['prev_total']])
             rows.append(['', 'Total Assets', '', '', total_asset, prev_total_asset])
             return _csv_response(
                 f'balance_sheet_{as_on_date}.csv',
-                ['Code', 'Account', 'Type', 'Group',
-                 f'As on {as_on_date}', f'As on {prev_year_date}'],
+                ['Code', 'Account', 'Type', 'Group', f'As on {as_on_date}', f'As on {prev_year_date}'],
                 rows,
             )
     return render(request, 'reports/balance_sheet.html', context)
@@ -683,18 +739,25 @@ def subsidiary_ledger(request):
     if ledger_type in ('savings', 'current', 'security', 'director_security'):
         from apps.savings.models import SavingsAccount
 
-        qs = SavingsAccount.objects.filter(
-            account_type=ledger_type, status='active',
-        ).select_related('member').order_by('account_no')
+        qs = (
+            SavingsAccount.objects.filter(
+                account_type=ledger_type,
+                status='active',
+            )
+            .select_related('member')
+            .order_by('account_no')
+        )
         if branch:
             qs = qs.filter(branch=branch)
         for acct in qs:
-            items.append({
-                'account_no': acct.account_no,
-                'member': acct.member.name,
-                'member_no': acct.member.member_no,
-                'balance': acct.current_balance,
-            })
+            items.append(
+                {
+                    'account_no': acct.account_no,
+                    'member': acct.member.name,
+                    'member_no': acct.member.member_no,
+                    'balance': acct.current_balance,
+                }
+            )
             total += acct.current_balance
             count += 1
 
@@ -705,12 +768,14 @@ def subsidiary_ledger(request):
         if branch:
             qs = qs.filter(branch=branch)
         for fd in qs:
-            items.append({
-                'account_no': fd.fd_no,
-                'member': fd.member.name,
-                'member_no': fd.member.member_no,
-                'balance': fd.deposit_amount,
-            })
+            items.append(
+                {
+                    'account_no': fd.fd_no,
+                    'member': fd.member.name,
+                    'member_no': fd.member.member_no,
+                    'balance': fd.deposit_amount,
+                }
+            )
             total += fd.deposit_amount
             count += 1
 
@@ -722,12 +787,14 @@ def subsidiary_ledger(request):
             qs = qs.filter(branch=branch)
         for rd in qs:
             paid = rd.installments.filter(status='paid').aggregate(t=Sum('paid_amount'))['t'] or Decimal('0')
-            items.append({
-                'account_no': rd.rd_no,
-                'member': rd.member.name,
-                'member_no': rd.member.member_no,
-                'balance': paid,
-            })
+            items.append(
+                {
+                    'account_no': rd.rd_no,
+                    'member': rd.member.name,
+                    'member_no': rd.member.member_no,
+                    'balance': paid,
+                }
+            )
             total += paid
             count += 1
 
@@ -738,12 +805,14 @@ def subsidiary_ledger(request):
         if branch:
             qs = qs.filter(branch=branch)
         for pa in qs:
-            items.append({
-                'account_no': pa.account_no,
-                'member': pa.member.name,
-                'member_no': pa.member.member_no,
-                'balance': pa.current_balance,
-            })
+            items.append(
+                {
+                    'account_no': pa.account_no,
+                    'member': pa.member.name,
+                    'member_no': pa.member.member_no,
+                    'balance': pa.current_balance,
+                }
+            )
             total += pa.current_balance
             count += 1
 
@@ -754,12 +823,14 @@ def subsidiary_ledger(request):
         if branch:
             qs = qs.filter(branch=branch)
         for sh in qs:
-            items.append({
-                'account_no': sh.certificate_no or '—',
-                'member': sh.member.name,
-                'member_no': sh.member.member_no,
-                'balance': sh.total_amount,
-            })
+            items.append(
+                {
+                    'account_no': sh.certificate_no or '—',
+                    'member': sh.member.name,
+                    'member_no': sh.member.member_no,
+                    'balance': sh.total_amount,
+                }
+            )
             total += sh.total_amount
             count += 1
 
@@ -768,12 +839,14 @@ def subsidiary_ledger(request):
 
         qs = Agent.objects.filter(status='active').select_related('member').order_by('agent_code')
         for agent in qs:
-            items.append({
-                'account_no': agent.agent_code,
-                'member': agent.member.name,
-                'member_no': agent.member.member_no,
-                'balance': agent.security_deposit_amount,
-            })
+            items.append(
+                {
+                    'account_no': agent.agent_code,
+                    'member': agent.member.name,
+                    'member_no': agent.member.member_no,
+                    'balance': agent.security_deposit_amount,
+                }
+            )
             total += agent.security_deposit_amount
             count += 1
 
@@ -789,28 +862,37 @@ def subsidiary_ledger(request):
             'rd_loan': {'loan_product__mortgage_type': 'recurring_deposit'},
         }
         filters = loan_type_map.get(ledger_type, {})
-        qs = LoanAccount.objects.filter(
-            status__in=['disbursed', 'npa'], **filters,
-        ).select_related('member', 'loan_product').order_by('loan_no')
+        qs = (
+            LoanAccount.objects.filter(
+                status__in=['disbursed', 'npa'],
+                **filters,
+            )
+            .select_related('member', 'loan_product')
+            .order_by('loan_no')
+        )
         if branch:
             qs = qs.filter(branch=branch)
         for loan in qs:
-            items.append({
-                'account_no': loan.loan_no,
-                'member': loan.member.name,
-                'member_no': loan.member.member_no,
-                'balance': loan.outstanding_principal,
-            })
+            items.append(
+                {
+                    'account_no': loan.loan_no,
+                    'member': loan.member.name,
+                    'member_no': loan.member.member_no,
+                    'balance': loan.outstanding_principal,
+                }
+            )
             total += loan.outstanding_principal
             count += 1
 
     type_label = dict(ledger_types).get(ledger_type, ledger_type)
-    context.update({
-        'items': items,
-        'total': total,
-        'count': count,
-        'type_label': type_label,
-    })
+    context.update(
+        {
+            'items': items,
+            'total': total,
+            'count': count,
+            'type_label': type_label,
+        }
+    )
 
     if request.GET.get('format') == 'csv' and items:
         rows = [[i['account_no'], i['member_no'], i['member'], i['balance']] for i in items]
@@ -2088,7 +2170,9 @@ def npa_report(request):
         from django.shortcuts import redirect
 
         result = classify_all_loans()
-        messages.success(request, f'NPA reclassification complete: {result["updated"]}/{result["total"]} loans updated.')
+        messages.success(
+            request, f'NPA reclassification complete: {result["updated"]}/{result["total"]} loans updated.'
+        )
         return redirect('reports:npa_report')
 
     report = get_npa_report(branch=branch)
@@ -2106,12 +2190,17 @@ def npa_report(request):
     summary = report['category_summary']
     for key, label, pct_range, color in npa_categories:
         if key in summary:
-            category_rows.append({
-                'key': key, 'label': label, 'pct_range': pct_range, 'color': color,
-                'count': summary[key]['count'],
-                'outstanding': summary[key]['outstanding'],
-                'provision': summary[key]['provision'],
-            })
+            category_rows.append(
+                {
+                    'key': key,
+                    'label': label,
+                    'pct_range': pct_range,
+                    'color': color,
+                    'count': summary[key]['count'],
+                    'outstanding': summary[key]['outstanding'],
+                    'provision': summary[key]['provision'],
+                }
+            )
 
     context = {
         'report': report,
@@ -2121,17 +2210,36 @@ def npa_report(request):
     if request.GET.get('format') == 'csv':
         rows = []
         for loan in report['loans']:
-            rows.append([
-                loan.loan_no, loan.member.name, loan.loan_product.name,
-                loan.disbursed_amount or loan.approved_amount,
-                loan.outstanding_principal, loan.bal_interest, loan.bal_penal,
-                loan.overdue_days, loan._computed_category,
-                loan._computed_provision_pct, loan._computed_provision_amt,
-            ])
+            rows.append(
+                [
+                    loan.loan_no,
+                    loan.member.name,
+                    loan.loan_product.name,
+                    loan.disbursed_amount or loan.approved_amount,
+                    loan.outstanding_principal,
+                    loan.bal_interest,
+                    loan.bal_penal,
+                    loan.overdue_days,
+                    loan._computed_category,
+                    loan._computed_provision_pct,
+                    loan._computed_provision_amt,
+                ]
+            )
         return _csv_response(
             f'npa_report_{date.today()}.csv',
-            ['Loan No', 'Member', 'Product', 'Sanction Amt', 'Principal', 'Interest', 'Penal',
-             'Overdue Days', 'NPA Category', 'Provision %', 'Provision Amt'],
+            [
+                'Loan No',
+                'Member',
+                'Product',
+                'Sanction Amt',
+                'Principal',
+                'Interest',
+                'Penal',
+                'Overdue Days',
+                'NPA Category',
+                'Provision %',
+                'Provision Amt',
+            ],
             rows,
         )
 
@@ -2147,7 +2255,9 @@ def agent_reconciliation(request):
     branch = None if request.user.can_access_all_branches else request.current_branch
 
     pigmy_heads = ChartOfAccounts.objects.filter(
-        related_table_name='client', is_active=True, allow_transactions=True,
+        related_table_name='client',
+        is_active=True,
+        allow_transactions=True,
     )
 
     rows = []
@@ -2167,16 +2277,20 @@ def agent_reconciliation(request):
             acct_qs = acct_qs.filter(branch=branch)
         acct_total = acct_qs.aggregate(t=Sum('current_balance'))['t'] or Decimal('0')
 
-        rows.append({
-            'head_code': head.code,
-            'head_name': head.name,
-            'gl_balance': gl_balance,
-            'account_balance': acct_total,
-            'difference': gl_balance - acct_total,
-        })
+        rows.append(
+            {
+                'head_code': head.code,
+                'head_name': head.name,
+                'gl_balance': gl_balance,
+                'account_balance': acct_total,
+                'difference': gl_balance - acct_total,
+            }
+        )
 
     agent_heads = ChartOfAccounts.objects.filter(
-        related_table_name='agent', is_active=True, allow_transactions=True,
+        related_table_name='agent',
+        is_active=True,
+        allow_transactions=True,
     )
     for head in agent_heads:
         gl_agg = JournalLine.objects.filter(
@@ -2193,18 +2307,22 @@ def agent_reconciliation(request):
             t=Sum('security_deposit_amount'),
         )['t'] or Decimal('0')
 
-        rows.append({
-            'head_code': head.code,
-            'head_name': head.name,
-            'gl_balance': gl_balance,
-            'account_balance': agent_total,
-            'difference': gl_balance - agent_total,
-        })
+        rows.append(
+            {
+                'head_code': head.code,
+                'head_name': head.name,
+                'gl_balance': gl_balance,
+                'account_balance': agent_total,
+                'difference': gl_balance - agent_total,
+            }
+        )
 
     context = {'rows': rows, 'has_difference': any(r['difference'] != 0 for r in rows)}
 
     if request.GET.get('format') == 'csv' and rows:
-        csv_rows = [[r['head_code'], r['head_name'], r['gl_balance'], r['account_balance'], r['difference']] for r in rows]
+        csv_rows = [
+            [r['head_code'], r['head_name'], r['gl_balance'], r['account_balance'], r['difference']] for r in rows
+        ]
         return _csv_response(
             f'agent_reconciliation_{date.today()}.csv',
             ['GL Code', 'Head Name', 'GL Balance', 'Account Balance', 'Difference'],
@@ -2233,8 +2351,15 @@ def fixed_asset_report(request):
 
     if request.GET.get('format') == 'csv':
         rows = [
-            [a.asset_code, a.name, a.purchase_date, a.purchase_amount,
-             a.depreciation_rate, a.accumulated_depreciation, a.net_book_value]
+            [
+                a.asset_code,
+                a.name,
+                a.purchase_date,
+                a.purchase_amount,
+                a.depreciation_rate,
+                a.accumulated_depreciation,
+                a.net_book_value,
+            ]
             for a in assets
         ]
         return _csv_response(

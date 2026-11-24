@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('loans', '0008_alter_emischedule_status_alter_loanaccount_status'),
     ]
@@ -13,7 +12,19 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='loanaccount',
             name='npa_category',
-            field=models.CharField(choices=[('standard', 'Standard Asset'), ('sub_standard', 'Sub-Standard Asset'), ('doubtful_1', 'Doubtful Asset — 1'), ('doubtful_2', 'Doubtful Asset — 2'), ('doubtful_3', 'Doubtful Asset — 3'), ('loss', 'Loss Asset')], db_index=True, default='standard', max_length=15),
+            field=models.CharField(
+                choices=[
+                    ('standard', 'Standard Asset'),
+                    ('sub_standard', 'Sub-Standard Asset'),
+                    ('doubtful_1', 'Doubtful Asset — 1'),
+                    ('doubtful_2', 'Doubtful Asset — 2'),
+                    ('doubtful_3', 'Doubtful Asset — 3'),
+                    ('loss', 'Loss Asset'),
+                ],
+                db_index=True,
+                default='standard',
+                max_length=15,
+            ),
         ),
         migrations.AddField(
             model_name='loanaccount',
@@ -33,6 +44,19 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='loanproduct',
             name='mortgage_type',
-            field=models.CharField(choices=[('none', 'None'), ('fixed_deposit', 'Against Fixed Deposit'), ('pigmmy', 'Against Pigmmy/Daily Deposit'), ('recurring_deposit', 'Against Recurring Deposit'), ('gold', 'Against Gold'), ('property', 'Property Mortgage'), ('vehicle', 'Against Vehicle'), ('other', 'Other Mortgage')], default='none', max_length=20),
+            field=models.CharField(
+                choices=[
+                    ('none', 'None'),
+                    ('fixed_deposit', 'Against Fixed Deposit'),
+                    ('pigmmy', 'Against Pigmmy/Daily Deposit'),
+                    ('recurring_deposit', 'Against Recurring Deposit'),
+                    ('gold', 'Against Gold'),
+                    ('property', 'Property Mortgage'),
+                    ('vehicle', 'Against Vehicle'),
+                    ('other', 'Other Mortgage'),
+                ],
+                default='none',
+                max_length=20,
+            ),
         ),
     ]

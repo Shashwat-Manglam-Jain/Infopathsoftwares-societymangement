@@ -75,9 +75,15 @@ def classify_all_loans():
             loan.npa_date = None
             changed = True
         if changed:
-            loan.save(update_fields=[
-                'npa_category', 'npa_provision_percent', 'npa_provision_amount', 'npa_date', 'updated_at',
-            ])
+            loan.save(
+                update_fields=[
+                    'npa_category',
+                    'npa_provision_percent',
+                    'npa_provision_amount',
+                    'npa_date',
+                    'updated_at',
+                ]
+            )
             updated += 1
 
     return {'total': loans.count(), 'updated': updated}

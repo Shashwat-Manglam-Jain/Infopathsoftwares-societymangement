@@ -132,7 +132,10 @@ class LoanAccount(models.Model):
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='applied', db_index=True)
     npa_date = models.DateField(null=True, blank=True, help_text='Date when loan was classified as NPA')
     npa_category = models.CharField(
-        max_length=15, choices=NPA_CATEGORY_CHOICES, default='standard', db_index=True,
+        max_length=15,
+        choices=NPA_CATEGORY_CHOICES,
+        default='standard',
+        db_index=True,
     )
     npa_provision_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     npa_provision_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)

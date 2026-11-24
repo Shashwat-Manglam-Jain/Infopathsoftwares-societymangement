@@ -258,8 +258,11 @@ class FixedAsset(models.Model):
     asset_code = models.CharField(max_length=20, unique=True)
     gl_head = models.ForeignKey(ChartOfAccounts, on_delete=models.PROTECT, related_name='fixed_assets')
     depreciation_head = models.ForeignKey(
-        ChartOfAccounts, on_delete=models.PROTECT, related_name='depreciation_assets',
-        null=True, blank=True,
+        ChartOfAccounts,
+        on_delete=models.PROTECT,
+        related_name='depreciation_assets',
+        null=True,
+        blank=True,
     )
     purchase_date = models.DateField()
     purchase_amount = models.DecimalField(max_digits=15, decimal_places=2)
