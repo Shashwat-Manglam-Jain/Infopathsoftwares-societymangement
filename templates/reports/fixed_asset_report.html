@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Fixed Assets" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Fixed Asset Register" %}{% endblock %}
+
+{% block extra_head %}
+<style>
+@media print { .no-print { display: none !important; } .print-only { display: block !important; } body { font-size: 12px; } }
+.print-only { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-4">
+
+    <div class="no-print flex items-center justify-between">
+        <a href="{% url 'reports:index' %}" class="inline-flex items-center text-sm text-primary-600 hover:text-primary-800 font-medium">
+            <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            {% trans "All Reports" %}
+        </a>
+        <div class="flex gap-2">
+            {% include "includes/export_csv.html" %}
+            <button onclick="window.print()" type="button" class="inline-flex items-center px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                <svg class="h-4 w-4 mr-1.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                {% trans "Print" %}
+            </button>
+        </div>
+    </div>
+
+    <div class="print-only text-center mb-4">
+        <h2 class="text-lg font-bold">{% trans "Fixed Asset Register" %}</h2>
+        <p class="text-sm">{% now "d-M-Y" %}</p>
+    </div>
+
+    {% if assets %}
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Code" %}</th>
+                        <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Asset Name" %}</th>
+                        <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "GL Head" %}</th>
+                        <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600 uppercase">{% trans "Purchase Date" %}</th>
+                        <th class="px-3 py-2.5 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Purchase Amt" %}</th>
+                        <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600 uppercase">{% trans "Dep Rate %" %}</th>
+                        <th class="px-3 py-2.5 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Accum Dep" %}</th>
+                        <th class="px-3 py-2.5 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Net Book Value" %}</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for asset in assets %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-3 py-2 font-mono text-gray-700">{{ asset.asset_code }}</td>
+                        <td class="px-3 py-2 text-gray-900">{{ asset.name }}</td>
+                        <td class="px-3 py-2 text-gray-600 text-xs">{{ asset.gl_head.name }}</td>
+                        <td class="px-3 py-2 text-center text-gray-600">{{ asset.purchase_date|date:"d-m-Y" }}</td>
+                        <td class="px-3 py-2 text-right font-medium text-gray-900">{{ asset.purchase_amount|floatformat:2 }}</td>
+                        <td class="px-3 py-2 text-center text-gray-600">{{ asset.depreciation_rate }}%</td>
+                        <td class="px-3 py-2 text-right text-red-600 font-medium">{{ asset.accumulated_depreciation|floatformat:2 }}</td>
+                        <td class="px-3 py-2 text-right font-bold text-gray-900">{{ asset.net_book_value|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="bg-gray-50 border-t-2 border-gray-300">
+                    <tr>
+                        <td colspan="4" class="px-3 py-3 text-sm font-bold text-gray-800">{% trans "Total" %} ({{ assets|length }} {% trans "assets" %})</td>
+                        <td class="px-3 py-3 text-right font-bold text-gray-800">{{ total_purchase|floatformat:2 }}</td>
+                        <td></td>
+                        <td class="px-3 py-3 text-right font-bold text-red-700">{{ total_depreciation|floatformat:2 }}</td>
+                        <td class="px-3 py-3 text-right font-bold text-gray-900">{{ total_wdv|floatformat:2 }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+        <p class="text-gray-400 text-sm">{% trans "No fixed assets registered." %}</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -38,6 +38,24 @@
                     <p class="text-xs text-gray-500">{% trans "Assets & Liabilities" %}</p>
                 </div>
             </a>
+            <a href="{% url 'reports:subsidiary_ledger' %}" class="flex items-center gap-2.5 p-3 rounded border border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-colors">
+                <div class="h-8 w-8 rounded bg-amber-100 flex items-center justify-center shrink-0">
+                    <svg class="h-4 w-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-900">{% trans "Subsidiary Ledger" %}</p>
+                    <p class="text-xs text-gray-500">{% trans "Account-wise balance schedules" %}</p>
+                </div>
+            </a>
+            <a href="{% url 'reports:npa_report' %}" class="flex items-center gap-2.5 p-3 rounded border border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-colors">
+                <div class="h-8 w-8 rounded bg-red-100 flex items-center justify-center shrink-0">
+                    <svg class="h-4 w-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-900">{% trans "NPA Report" %}</p>
+                    <p class="text-xs text-gray-500">{% trans "Classification & provisioning" %}</p>
+                </div>
+            </a>
         </div>
     </div>
 
@@ -321,6 +339,15 @@
                     <p class="text-xs text-gray-500">{% trans "Agent commission and TDS" %}</p>
                 </div>
             </a>
+            <a href="{% url 'reports:agent_reconciliation' %}" class="flex items-center gap-2.5 p-3 rounded border border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-colors">
+                <div class="h-8 w-8 rounded bg-orange-100 flex items-center justify-center shrink-0">
+                    <svg class="h-4 w-4 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-900">{% trans "Reconciliation" %}</p>
+                    <p class="text-xs text-gray-500">{% trans "GL vs account balance check" %}</p>
+                </div>
+            </a>
         </div>
     </div>
 
@@ -335,6 +362,15 @@
                 <div>
                     <p class="text-sm font-medium text-gray-900">{% trans "Ready Reckoner" %}</p>
                     <p class="text-xs text-gray-500">{% trans "Interest & EMI calculators" %}</p>
+                </div>
+            </a>
+            <a href="{% url 'reports:fixed_asset_report' %}" class="flex items-center gap-2.5 p-3 rounded border border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-colors">
+                <div class="h-8 w-8 rounded bg-slate-100 flex items-center justify-center shrink-0">
+                    <svg class="h-4 w-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-900">{% trans "Fixed Assets" %}</p>
+                    <p class="text-xs text-gray-500">{% trans "Asset register & depreciation" %}</p>
                 </div>
             </a>
         </div>

@@ -345,6 +345,78 @@ def trial_balance(request):
     return render(request, 'reports/trial_balance.html', context)
 
 
+def _prev_year_date(d):
+    """Return same date one year earlier, handling leap-year edge (Feb 29 → Feb 28)."""
+    try:
+        return d.replace(year=d.year - 1)
+    except ValueError:
+        return d.replace(year=d.year - 1, day=28)
+
+
+def _compute_head_balances(heads, agg_map):
+    """Return {head_pk: balance} from opening_balance + journal aggregates."""
+    result = {}
+    for head in heads:
+        ob = head.opening_balance or 0
+        row = agg_map.get(head.pk, {})
+        dr = row.get('dr') or 0
+        cr = row.get('cr') or 0
+        if head.account_group in ('asset', 'expense'):
+            result[head.pk] = ob + dr - cr
+        else:
+            result[head.pk] = ob + cr - dr
+    return result
+
+
+def _aggregate_journal_lines(heads, cutoff_date, branch):
+    from apps.accounting.models import JournalLine
+
+    base_filter = Q(
+        journal_entry__entry_date__lte=cutoff_date,
+        journal_entry__is_reversed=False,
+        journal_entry__is_posted=True,
+        gl_account__in=heads,
+    )
+    if branch:
+        base_filter &= Q(journal_entry__branch=branch)
+    return {
+        row['gl_account_id']: row
+        for row in JournalLine.objects.filter(base_filter)
+        .values('gl_account_id')
+        .annotate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
+    }
+
+
+def _build_groups(heads, cur_balances, prev_balances, group_filter):
+    """Group heads by parent; return (groups_list, current_total, prev_total)."""
+    from collections import OrderedDict
+
+    buckets = OrderedDict()
+    total_cur = Decimal('0')
+    total_prev = Decimal('0')
+
+    for head in heads:
+        if not group_filter(head):
+            continue
+        cur = cur_balances.get(head.pk, 0)
+        prev = prev_balances.get(head.pk, 0)
+        if cur == 0 and prev == 0:
+            continue
+        group_name = head.parent.name if head.parent else f'Other {head.get_account_group_display()}s'
+        if group_name not in buckets:
+            buckets[group_name] = {'name': group_name, 'items': [], 'current_total': Decimal('0'), 'prev_total': Decimal('0')}
+        buckets[group_name]['items'].append({
+            'name': head.name, 'code': head.code,
+            'current_amount': cur, 'prev_amount': prev,
+        })
+        buckets[group_name]['current_total'] += cur
+        buckets[group_name]['prev_total'] += prev
+        total_cur += cur
+        total_prev += prev
+
+    return list(buckets.values()), total_cur, total_prev
+
+
 @auditor_or_above
 def profit_loss(request):
     from_date = request.GET.get('from_date')
@@ -354,10 +426,17 @@ def profit_loss(request):
         from apps.accounting.models import ChartOfAccounts, JournalLine
 
         branch = None if request.user.can_access_all_branches else request.current_branch
-        pl_heads = ChartOfAccounts.objects.filter(
-            account_group__in=['income', 'expense'],
-            allow_transactions=True,
-            is_active=True,
+        fd = date.fromisoformat(from_date)
+        td = date.fromisoformat(to_date)
+        prev_fd = _prev_year_date(fd)
+        prev_td = _prev_year_date(td)
+
+        pl_heads = list(
+            ChartOfAccounts.objects.filter(
+                account_group__in=['income', 'expense'],
+                allow_transactions=True,
+                is_active=True,
+            ).select_related('parent')
         )
 
         base_filter = Q(
@@ -368,69 +447,79 @@ def profit_loss(request):
         if branch:
             base_filter &= Q(journal_entry__branch=branch)
 
-        pre_aggs = (
-            JournalLine.objects.filter(base_filter, journal_entry__entry_date__lt=from_date)
-            .values('gl_account_id')
-            .annotate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
-        )
-        pre_map = {row['gl_account_id']: row for row in pre_aggs}
-
-        period_aggs = (
-            JournalLine.objects.filter(
-                base_filter,
-                journal_entry__entry_date__gte=from_date,
-                journal_entry__entry_date__lte=to_date,
+        def _pl_balances(f_date, t_date):
+            pre_aggs = (
+                JournalLine.objects.filter(base_filter, journal_entry__entry_date__lt=f_date)
+                .values('gl_account_id')
+                .annotate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
             )
-            .values('gl_account_id')
-            .annotate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
+            pre_map = {row['gl_account_id']: row for row in pre_aggs}
+            period_aggs = (
+                JournalLine.objects.filter(
+                    base_filter,
+                    journal_entry__entry_date__gte=f_date,
+                    journal_entry__entry_date__lte=t_date,
+                )
+                .values('gl_account_id')
+                .annotate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
+            )
+            period_map = {row['gl_account_id']: row for row in period_aggs}
+            balances = {}
+            for head in pl_heads:
+                ob = head.opening_balance or 0
+                pre = pre_map.get(head.pk, {})
+                prd = period_map.get(head.pk, {})
+                if head.account_group == 'income':
+                    ob += (pre.get('cr') or 0) - (pre.get('dr') or 0)
+                    period = (prd.get('cr') or 0) - (prd.get('dr') or 0)
+                else:
+                    ob += (pre.get('dr') or 0) - (pre.get('cr') or 0)
+                    period = (prd.get('dr') or 0) - (prd.get('cr') or 0)
+                balances[head.pk] = ob + period
+            return balances
+
+        cur_bals = _pl_balances(from_date, to_date)
+        prev_bals = _pl_balances(prev_fd.isoformat(), prev_td.isoformat())
+
+        income_groups, total_income, prev_total_income = _build_groups(
+            pl_heads, cur_bals, prev_bals, lambda h: h.account_group == 'income',
         )
-        period_map = {row['gl_account_id']: row for row in period_aggs}
-
-        income_items = []
-        total_income = 0
-        expense_items = []
-        total_expense = 0
-
-        for head in pl_heads:
-            ob = head.opening_balance or 0
-            pre = pre_map.get(head.pk, {})
-            prd = period_map.get(head.pk, {})
-            if head.account_group == 'income':
-                ob += (pre.get('cr') or 0) - (pre.get('dr') or 0)
-                period = (prd.get('cr') or 0) - (prd.get('dr') or 0)
-                closing = ob + period
-                if closing != 0:
-                    income_items.append({'name': head.name, 'code': head.code, 'amount': closing})
-                    total_income += closing
-            else:
-                ob += (pre.get('dr') or 0) - (pre.get('cr') or 0)
-                period = (prd.get('dr') or 0) - (prd.get('cr') or 0)
-                closing = ob + period
-                if closing != 0:
-                    expense_items.append({'name': head.name, 'code': head.code, 'amount': closing})
-                    total_expense += closing
-
-        context.update(
-            {
-                'income_items': income_items,
-                'expense_items': expense_items,
-                'total_income': total_income,
-                'total_expense': total_expense,
-                'net_profit': total_income - total_expense,
-            }
+        expense_groups, total_expense, prev_total_expense = _build_groups(
+            pl_heads, cur_bals, prev_bals, lambda h: h.account_group == 'expense',
         )
+
+        net_profit = total_income - total_expense
+        prev_net_profit = prev_total_income - prev_total_expense
+
+        context.update({
+            'income_groups': income_groups,
+            'expense_groups': expense_groups,
+            'total_income': total_income,
+            'total_expense': total_expense,
+            'net_profit': net_profit,
+            'prev_total_income': prev_total_income,
+            'prev_total_expense': prev_total_expense,
+            'prev_net_profit': prev_net_profit,
+            'prev_from_date': prev_fd.isoformat(),
+            'prev_to_date': prev_td.isoformat(),
+        })
         if request.GET.get('format') == 'csv':
             rows = []
-            for item in income_items:
-                rows.append([item['code'], item['name'], 'Income', item['amount']])
-            for item in expense_items:
-                rows.append([item['code'], item['name'], 'Expense', item['amount']])
-            rows.append(['', 'Total Income', '', total_income])
-            rows.append(['', 'Total Expense', '', total_expense])
-            rows.append(['', 'Net Profit/(Loss)', '', total_income - total_expense])
+            for grp in income_groups:
+                for item in grp['items']:
+                    rows.append([item['code'], item['name'], 'Income', grp['name'],
+                                 item['current_amount'], item['prev_amount']])
+            for grp in expense_groups:
+                for item in grp['items']:
+                    rows.append([item['code'], item['name'], 'Expense', grp['name'],
+                                 item['current_amount'], item['prev_amount']])
+            rows.append(['', 'Total Income', '', '', total_income, prev_total_income])
+            rows.append(['', 'Total Expense', '', '', total_expense, prev_total_expense])
+            rows.append(['', 'Net Profit/(Loss)', '', '', net_profit, prev_net_profit])
             return _csv_response(
                 f'profit_loss_{from_date}_to_{to_date}.csv',
-                ['Code', 'Account', 'Type', 'Amount'],
+                ['Code', 'Account', 'Type', 'Group', f'Current ({from_date} to {to_date})',
+                 f'Previous ({prev_fd} to {prev_td})'],
                 rows,
             )
     return render(request, 'reports/profit_loss.html', context)
@@ -441,92 +530,298 @@ def balance_sheet(request):
     as_on_date = request.GET.get('as_on_date')
     context = {'as_on_date': as_on_date}
     if as_on_date:
-        from apps.accounting.models import ChartOfAccounts, JournalLine
+        from apps.accounting.models import ChartOfAccounts
 
         branch = None if request.user.can_access_all_branches else request.current_branch
+        aod = date.fromisoformat(as_on_date)
+        prev_year_date = _prev_year_date(aod)
 
-        all_heads = ChartOfAccounts.objects.filter(
-            account_group__in=['asset', 'liability', 'equity', 'income', 'expense'],
-            allow_transactions=True,
-            is_active=True,
+        all_heads = list(
+            ChartOfAccounts.objects.filter(
+                account_group__in=['asset', 'liability', 'equity', 'income', 'expense'],
+                allow_transactions=True,
+                is_active=True,
+            ).select_related('parent')
         )
 
-        base_filter = Q(
-            journal_entry__entry_date__lte=as_on_date,
-            journal_entry__is_reversed=False,
-            journal_entry__is_posted=True,
-            gl_account__in=all_heads,
+        cur_agg = _aggregate_journal_lines(all_heads, as_on_date, branch)
+        prev_agg = _aggregate_journal_lines(all_heads, prev_year_date.isoformat(), branch)
+
+        cur_bals = _compute_head_balances(all_heads, cur_agg)
+        prev_bals = _compute_head_balances(all_heads, prev_agg)
+
+        # Compute net profit (income - expense) for both periods
+        cur_income = sum(cur_bals.get(h.pk, 0) for h in all_heads if h.account_group == 'income')
+        cur_expense = sum(cur_bals.get(h.pk, 0) for h in all_heads if h.account_group == 'expense')
+        net_profit = cur_income - cur_expense
+
+        prev_income = sum(prev_bals.get(h.pk, 0) for h in all_heads if h.account_group == 'income')
+        prev_expense = sum(prev_bals.get(h.pk, 0) for h in all_heads if h.account_group == 'expense')
+        prev_net_profit = prev_income - prev_expense
+
+        # Build grouped lists for BS heads
+        def _is_liability(h):
+            return h.account_group in ('liability', 'equity')
+
+        def _is_asset(h):
+            return h.account_group == 'asset'
+
+        liability_groups, total_liability, prev_total_liability = _build_groups(
+            all_heads, cur_bals, prev_bals, _is_liability,
         )
-        if branch:
-            base_filter &= Q(journal_entry__branch=branch)
-
-        aggs = (
-            JournalLine.objects.filter(base_filter)
-            .values('gl_account_id')
-            .annotate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
+        asset_groups, total_asset, prev_total_asset = _build_groups(
+            all_heads, cur_bals, prev_bals, _is_asset,
         )
-        agg_map = {row['gl_account_id']: row for row in aggs}
 
-        liabilities = []
-        total_liability = 0
-        assets = []
-        total_asset = 0
-        total_income = 0
-        total_expense = 0
-
-        for head in all_heads:
-            ob = head.opening_balance or 0
-            row = agg_map.get(head.pk, {})
-            dr = row.get('dr') or 0
-            cr = row.get('cr') or 0
-            if head.account_group in ('asset', 'expense'):
-                balance = ob + dr - cr
-            else:
-                balance = ob + cr - dr
-
-            if balance == 0:
-                continue
-
-            if head.account_group in ('liability', 'equity'):
-                liabilities.append({'name': head.name, 'code': head.code, 'amount': balance})
-                total_liability += balance
-            elif head.account_group == 'asset':
-                assets.append({'name': head.name, 'code': head.code, 'amount': balance})
-                total_asset += balance
-            elif head.account_group == 'income':
-                total_income += balance
-            elif head.account_group == 'expense':
-                total_expense += balance
-
-        net_profit = total_income - total_expense
-        if net_profit != 0:
-            liabilities.append({'name': 'Net Profit / (Loss)', 'code': '—', 'amount': net_profit})
+        # Append net profit as a virtual liability item
+        if net_profit != 0 or prev_net_profit != 0:
+            liability_groups.append({
+                'name': 'Profit & Loss',
+                'items': [{'name': 'Net Profit / (Loss)', 'code': '—',
+                           'current_amount': net_profit, 'prev_amount': prev_net_profit}],
+                'current_total': net_profit,
+                'prev_total': prev_net_profit,
+            })
             total_liability += net_profit
+            prev_total_liability += prev_net_profit
 
-        context.update(
-            {
-                'liabilities': liabilities,
-                'assets': assets,
-                'total_liability': total_liability,
-                'total_asset': total_asset,
-                'difference': total_asset - total_liability,
-                'net_profit': net_profit,
-            }
+        # CRR & SLR ratios
+        deposit_tables = {'saving', 'current', 'recurring', 'fixed', 'security', 'client', 'agent'}
+        total_deposits = sum(
+            cur_bals.get(h.pk, 0) for h in all_heads
+            if h.account_group in ('liability', 'equity') and h.related_table_name in deposit_tables
         )
+        cash_bank = sum(
+            cur_bals.get(h.pk, 0) for h in all_heads
+            if h.account_group == 'asset' and h.related_table_name in ('general', 'bank', 'other')
+            and any(kw in h.name.lower() for kw in ('cash', 'bank'))
+        )
+        investments = sum(
+            cur_bals.get(h.pk, 0) for h in all_heads
+            if h.account_group == 'asset' and h.related_table_name == 'bank'
+        )
+        crr_ratio = (cash_bank / total_deposits * 100) if total_deposits else Decimal('0')
+        slr_ratio = ((cash_bank + investments) / total_deposits * 100) if total_deposits else Decimal('0')
+
+        context.update({
+            'liability_groups': liability_groups,
+            'asset_groups': asset_groups,
+            'total_liability': total_liability,
+            'total_asset': total_asset,
+            'prev_total_liability': prev_total_liability,
+            'prev_total_asset': prev_total_asset,
+            'difference': total_asset - total_liability,
+            'net_profit': net_profit,
+            'prev_net_profit': prev_net_profit,
+            'prev_year_date': prev_year_date.isoformat(),
+            'crr_ratio': crr_ratio,
+            'slr_ratio': slr_ratio,
+        })
         if request.GET.get('format') == 'csv':
             rows = []
-            for item in liabilities:
-                rows.append([item['code'], item['name'], 'Liability/Equity', item['amount']])
-            rows.append(['', 'Total Liabilities & Equity', '', total_liability])
-            for item in assets:
-                rows.append([item['code'], item['name'], 'Asset', item['amount']])
-            rows.append(['', 'Total Assets', '', total_asset])
+            for grp in liability_groups:
+                for item in grp['items']:
+                    rows.append([item['code'], item['name'], 'Liability/Equity', grp['name'],
+                                 item['current_amount'], item['prev_amount']])
+                rows.append(['', f"Sub-total: {grp['name']}", '', '',
+                             grp['current_total'], grp['prev_total']])
+            rows.append(['', 'Total Liabilities & Equity', '', '', total_liability, prev_total_liability])
+            for grp in asset_groups:
+                for item in grp['items']:
+                    rows.append([item['code'], item['name'], 'Asset', grp['name'],
+                                 item['current_amount'], item['prev_amount']])
+                rows.append(['', f"Sub-total: {grp['name']}", '', '',
+                             grp['current_total'], grp['prev_total']])
+            rows.append(['', 'Total Assets', '', '', total_asset, prev_total_asset])
             return _csv_response(
                 f'balance_sheet_{as_on_date}.csv',
-                ['Code', 'Account', 'Type', 'Amount'],
+                ['Code', 'Account', 'Type', 'Group',
+                 f'As on {as_on_date}', f'As on {prev_year_date}'],
                 rows,
             )
     return render(request, 'reports/balance_sheet.html', context)
+
+
+@auditor_or_above
+def subsidiary_ledger(request):
+    """Audit schedule: all accounts of a given type with closing balances."""
+    ledger_type = request.GET.get('type', '')
+    as_on_date = request.GET.get('as_on_date', '')
+    branch = None if request.user.can_access_all_branches else request.current_branch
+
+    ledger_types = [
+        ('savings', 'Savings Deposits'),
+        ('current', 'Current Accounts'),
+        ('security', 'Security Deposits'),
+        ('director_security', 'Director Security Deposits'),
+        ('fixed_deposit', 'Fixed Deposits'),
+        ('recurring_deposit', 'Recurring Deposits'),
+        ('pigmmy', 'Daily / Pigmy Deposits'),
+        ('share_capital', 'Share Capital'),
+        ('regular_loan', 'Regular Loans'),
+        ('emergency_loan', 'Emergency Loans'),
+        ('mortgage_loan', 'Mortgage / Property Loans'),
+        ('fd_loan', 'Loans Against FD'),
+        ('pigmmy_loan', 'Loans Against Pigmy'),
+        ('rd_loan', 'Loans Against RD'),
+        ('agent_security', 'Agent Security Deposits'),
+    ]
+
+    context = {
+        'ledger_type': ledger_type,
+        'as_on_date': as_on_date,
+        'ledger_types': ledger_types,
+    }
+
+    if not ledger_type:
+        return render(request, 'reports/subsidiary_ledger.html', context)
+
+    items = []
+    total = Decimal('0')
+    count = 0
+
+    if ledger_type in ('savings', 'current', 'security', 'director_security'):
+        from apps.savings.models import SavingsAccount
+
+        qs = SavingsAccount.objects.filter(
+            account_type=ledger_type, status='active',
+        ).select_related('member').order_by('account_no')
+        if branch:
+            qs = qs.filter(branch=branch)
+        for acct in qs:
+            items.append({
+                'account_no': acct.account_no,
+                'member': acct.member.name,
+                'member_no': acct.member.member_no,
+                'balance': acct.current_balance,
+            })
+            total += acct.current_balance
+            count += 1
+
+    elif ledger_type == 'fixed_deposit':
+        from apps.deposits.models import FixedDeposit
+
+        qs = FixedDeposit.objects.filter(status='active').select_related('member').order_by('fd_no')
+        if branch:
+            qs = qs.filter(branch=branch)
+        for fd in qs:
+            items.append({
+                'account_no': fd.fd_no,
+                'member': fd.member.name,
+                'member_no': fd.member.member_no,
+                'balance': fd.deposit_amount,
+            })
+            total += fd.deposit_amount
+            count += 1
+
+    elif ledger_type == 'recurring_deposit':
+        from apps.deposits.models import RecurringDeposit
+
+        qs = RecurringDeposit.objects.filter(status='active').select_related('member').order_by('rd_no')
+        if branch:
+            qs = qs.filter(branch=branch)
+        for rd in qs:
+            paid = rd.installments.filter(status='paid').aggregate(t=Sum('paid_amount'))['t'] or Decimal('0')
+            items.append({
+                'account_no': rd.rd_no,
+                'member': rd.member.name,
+                'member_no': rd.member.member_no,
+                'balance': paid,
+            })
+            total += paid
+            count += 1
+
+    elif ledger_type == 'pigmmy':
+        from apps.agents.models import PigmmyAccount
+
+        qs = PigmmyAccount.objects.filter(status='active').select_related('member', 'agent').order_by('account_no')
+        if branch:
+            qs = qs.filter(branch=branch)
+        for pa in qs:
+            items.append({
+                'account_no': pa.account_no,
+                'member': pa.member.name,
+                'member_no': pa.member.member_no,
+                'balance': pa.current_balance,
+            })
+            total += pa.current_balance
+            count += 1
+
+    elif ledger_type == 'share_capital':
+        from apps.shares.models import ShareHolding
+
+        qs = ShareHolding.objects.filter(status='active').select_related('member').order_by('member__member_no')
+        if branch:
+            qs = qs.filter(branch=branch)
+        for sh in qs:
+            items.append({
+                'account_no': sh.certificate_no or '—',
+                'member': sh.member.name,
+                'member_no': sh.member.member_no,
+                'balance': sh.total_amount,
+            })
+            total += sh.total_amount
+            count += 1
+
+    elif ledger_type == 'agent_security':
+        from apps.agents.models import Agent
+
+        qs = Agent.objects.filter(status='active').select_related('member').order_by('agent_code')
+        for agent in qs:
+            items.append({
+                'account_no': agent.agent_code,
+                'member': agent.member.name,
+                'member_no': agent.member.member_no,
+                'balance': agent.security_deposit_amount,
+            })
+            total += agent.security_deposit_amount
+            count += 1
+
+    else:
+        from apps.loans.models import LoanAccount
+
+        loan_type_map = {
+            'regular_loan': {'loan_product__loan_category': 'regular'},
+            'emergency_loan': {'loan_product__loan_category': 'emergency'},
+            'mortgage_loan': {'loan_product__mortgage_type': 'property'},
+            'fd_loan': {'loan_product__mortgage_type': 'fixed_deposit'},
+            'pigmmy_loan': {'loan_product__mortgage_type': 'pigmmy'},
+            'rd_loan': {'loan_product__mortgage_type': 'recurring_deposit'},
+        }
+        filters = loan_type_map.get(ledger_type, {})
+        qs = LoanAccount.objects.filter(
+            status__in=['disbursed', 'npa'], **filters,
+        ).select_related('member', 'loan_product').order_by('loan_no')
+        if branch:
+            qs = qs.filter(branch=branch)
+        for loan in qs:
+            items.append({
+                'account_no': loan.loan_no,
+                'member': loan.member.name,
+                'member_no': loan.member.member_no,
+                'balance': loan.outstanding_principal,
+            })
+            total += loan.outstanding_principal
+            count += 1
+
+    type_label = dict(ledger_types).get(ledger_type, ledger_type)
+    context.update({
+        'items': items,
+        'total': total,
+        'count': count,
+        'type_label': type_label,
+    })
+
+    if request.GET.get('format') == 'csv' and items:
+        rows = [[i['account_no'], i['member_no'], i['member'], i['balance']] for i in items]
+        rows.append(['', '', 'Total', total])
+        return _csv_response(
+            f'subsidiary_ledger_{ledger_type}_{as_on_date or date.today()}.csv',
+            ['Account No', 'Member No', 'Member Name', 'Balance'],
+            rows,
+        )
+
+    return render(request, 'reports/subsidiary_ledger.html', context)
 
 
 @auditor_or_above
@@ -1780,3 +2075,172 @@ def calculator(request):
         .order_by('account_head__code', 'min_period')
     )
     return render(request, 'reports/calculator.html', {'interest_rates': rates})
+
+
+@auditor_or_above
+def npa_report(request):
+    from apps.loans.npa_service import classify_all_loans, get_npa_report
+
+    branch = None if request.user.can_access_all_branches else request.current_branch
+
+    if request.method == 'POST' and request.POST.get('action') == 'reclassify':
+        from django.contrib import messages
+        from django.shortcuts import redirect
+
+        result = classify_all_loans()
+        messages.success(request, f'NPA reclassification complete: {result["updated"]}/{result["total"]} loans updated.')
+        return redirect('reports:npa_report')
+
+    report = get_npa_report(branch=branch)
+
+    NPA_CATEGORIES = [
+        ('standard', 'Standard Asset', '0.25%', 'green'),
+        ('sub_standard', 'Sub-Standard Asset', '6%', 'yellow'),
+        ('doubtful_1', 'Doubtful Asset — 1', '20–70%', 'orange'),
+        ('doubtful_2', 'Doubtful Asset — 2', '25–80%', 'red'),
+        ('doubtful_3', 'Doubtful Asset — 3', '30–90%', 'red'),
+        ('loss', 'Loss Asset', '100%', 'red'),
+    ]
+
+    category_rows = []
+    summary = report['category_summary']
+    for key, label, pct_range, color in NPA_CATEGORIES:
+        if key in summary:
+            category_rows.append({
+                'key': key, 'label': label, 'pct_range': pct_range, 'color': color,
+                'count': summary[key]['count'],
+                'outstanding': summary[key]['outstanding'],
+                'provision': summary[key]['provision'],
+            })
+
+    context = {
+        'report': report,
+        'category_rows': category_rows,
+    }
+
+    if request.GET.get('format') == 'csv':
+        rows = []
+        for loan in report['loans']:
+            rows.append([
+                loan.loan_no, loan.member.name, loan.loan_product.name,
+                loan.disbursed_amount or loan.approved_amount,
+                loan.outstanding_principal, loan.bal_interest, loan.bal_penal,
+                loan.overdue_days, loan._computed_category,
+                loan._computed_provision_pct, loan._computed_provision_amt,
+            ])
+        return _csv_response(
+            f'npa_report_{date.today()}.csv',
+            ['Loan No', 'Member', 'Product', 'Sanction Amt', 'Principal', 'Interest', 'Penal',
+             'Overdue Days', 'NPA Category', 'Provision %', 'Provision Amt'],
+            rows,
+        )
+
+    return render(request, 'reports/npa_report.html', context)
+
+
+@auditor_or_above
+def agent_reconciliation(request):
+    """Compare GL balance of pigmy/agent heads with sum of individual account balances."""
+    from apps.accounting.models import ChartOfAccounts, JournalLine
+    from apps.agents.models import Agent, PigmmyAccount
+
+    branch = None if request.user.can_access_all_branches else request.current_branch
+
+    pigmy_heads = ChartOfAccounts.objects.filter(
+        related_table_name='client', is_active=True, allow_transactions=True,
+    )
+
+    rows = []
+    for head in pigmy_heads:
+        gl_agg = JournalLine.objects.filter(
+            gl_account=head,
+            journal_entry__is_reversed=False,
+            journal_entry__is_posted=True,
+        )
+        if branch:
+            gl_agg = gl_agg.filter(journal_entry__branch=branch)
+        gl_agg = gl_agg.aggregate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
+        gl_balance = (head.opening_balance or 0) + (gl_agg['cr'] or 0) - (gl_agg['dr'] or 0)
+
+        acct_qs = PigmmyAccount.objects.filter(status='active')
+        if branch:
+            acct_qs = acct_qs.filter(branch=branch)
+        acct_total = acct_qs.aggregate(t=Sum('current_balance'))['t'] or Decimal('0')
+
+        rows.append({
+            'head_code': head.code,
+            'head_name': head.name,
+            'gl_balance': gl_balance,
+            'account_balance': acct_total,
+            'difference': gl_balance - acct_total,
+        })
+
+    agent_heads = ChartOfAccounts.objects.filter(
+        related_table_name='agent', is_active=True, allow_transactions=True,
+    )
+    for head in agent_heads:
+        gl_agg = JournalLine.objects.filter(
+            gl_account=head,
+            journal_entry__is_reversed=False,
+            journal_entry__is_posted=True,
+        )
+        if branch:
+            gl_agg = gl_agg.filter(journal_entry__branch=branch)
+        gl_agg = gl_agg.aggregate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
+        gl_balance = (head.opening_balance or 0) + (gl_agg['cr'] or 0) - (gl_agg['dr'] or 0)
+
+        agent_total = Agent.objects.filter(status='active').aggregate(
+            t=Sum('security_deposit_amount'),
+        )['t'] or Decimal('0')
+
+        rows.append({
+            'head_code': head.code,
+            'head_name': head.name,
+            'gl_balance': gl_balance,
+            'account_balance': agent_total,
+            'difference': gl_balance - agent_total,
+        })
+
+    context = {'rows': rows, 'has_difference': any(r['difference'] != 0 for r in rows)}
+
+    if request.GET.get('format') == 'csv' and rows:
+        csv_rows = [[r['head_code'], r['head_name'], r['gl_balance'], r['account_balance'], r['difference']] for r in rows]
+        return _csv_response(
+            f'agent_reconciliation_{date.today()}.csv',
+            ['GL Code', 'Head Name', 'GL Balance', 'Account Balance', 'Difference'],
+            csv_rows,
+        )
+
+    return render(request, 'reports/agent_reconciliation.html', context)
+
+
+@auditor_or_above
+def fixed_asset_report(request):
+    """Fixed asset register with depreciation details."""
+    from apps.accounting.models import FixedAsset
+
+    assets = FixedAsset.objects.filter(is_active=True).select_related('gl_head', 'depreciation_head', 'branch')
+    total_purchase = assets.aggregate(t=Sum('purchase_amount'))['t'] or Decimal('0')
+    total_depreciation = assets.aggregate(t=Sum('accumulated_depreciation'))['t'] or Decimal('0')
+    total_wdv = total_purchase - total_depreciation
+
+    context = {
+        'assets': assets,
+        'total_purchase': total_purchase,
+        'total_depreciation': total_depreciation,
+        'total_wdv': total_wdv,
+    }
+
+    if request.GET.get('format') == 'csv':
+        rows = [
+            [a.asset_code, a.name, a.purchase_date, a.purchase_amount,
+             a.depreciation_rate, a.accumulated_depreciation, a.net_book_value]
+            for a in assets
+        ]
+        return _csv_response(
+            f'fixed_assets_{date.today()}.csv',
+            ['Code', 'Name', 'Purchase Date', 'Purchase Amt', 'Dep Rate %', 'Accum Dep', 'Net Book Value'],
+            rows,
+        )
+
+    return render(request, 'reports/fixed_asset_report.html', context)

@@ -17,8 +17,10 @@ class SavingsAccount(models.Model):
         ('savings', 'Savings Account'),
         ('current', 'Current Account'),
         ('security', 'Security Deposit'),
+        ('director_security', 'Director Security Deposit'),
     ]
-    account_type = models.CharField(max_length=10, choices=ACCOUNT_TYPE_CHOICES, default='savings', db_index=True)
+    account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPE_CHOICES, default='savings', db_index=True)
+    manual_account_no = models.CharField(max_length=20, blank=True, help_text='Legacy manual account number')
     gl_head = models.ForeignKey(
         'accounting.ChartOfAccounts',
         on_delete=models.PROTECT,

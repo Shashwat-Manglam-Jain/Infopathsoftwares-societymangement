@@ -19,6 +19,7 @@ class LoanProduct(models.Model):
         ('none', 'None'),
         ('fixed_deposit', 'Against Fixed Deposit'),
         ('pigmmy', 'Against Pigmmy/Daily Deposit'),
+        ('recurring_deposit', 'Against Recurring Deposit'),
         ('gold', 'Against Gold'),
         ('property', 'Property Mortgage'),
         ('vehicle', 'Against Vehicle'),
@@ -71,6 +72,14 @@ class LoanAccount(models.Model):
         ('written_off', 'Written Off'),
         ('npa', 'NPA'),
     ]
+    NPA_CATEGORY_CHOICES = [
+        ('standard', 'Standard Asset'),
+        ('sub_standard', 'Sub-Standard Asset'),
+        ('doubtful_1', 'Doubtful Asset — 1'),
+        ('doubtful_2', 'Doubtful Asset — 2'),
+        ('doubtful_3', 'Doubtful Asset — 3'),
+        ('loss', 'Loss Asset'),
+    ]
     CLOSURE_TYPE_CHOICES = [
         ('normal', 'Normal Closure'),
         ('prepayment', 'Prepayment'),
@@ -121,6 +130,12 @@ class LoanAccount(models.Model):
     overdue_days = models.IntegerField(default=0)
     last_interest_calculated_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='applied', db_index=True)
+    npa_date = models.DateField(null=True, blank=True, help_text='Date when loan was classified as NPA')
+    npa_category = models.CharField(
+        max_length=15, choices=NPA_CATEGORY_CHOICES, default='standard', db_index=True,
+    )
+    npa_provision_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    npa_provision_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     closure_date = models.DateField(null=True, blank=True)
     closure_type = models.CharField(max_length=15, choices=CLOSURE_TYPE_CHOICES, blank=True)
     remarks = models.TextField(blank=True)

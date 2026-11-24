@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "NPA Classification Report" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "NPA Classification Report" %}{% endblock %}
+
+{% block extra_head %}
+<style>
+@media print {
+    .no-print { display: none !important; }
+    .print-only { display: block !important; }
+    body { font-size: 12px; }
+}
+.print-only { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-4">
+
+    <div class="no-print flex items-center justify-between">
+        <a href="{% url 'reports:index' %}" class="inline-flex items-center text-sm text-primary-600 hover:text-primary-800 font-medium">
+            <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            {% trans "All Reports" %}
+        </a>
+        <div class="flex items-center gap-2">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="reclassify">
+                <button type="submit" class="inline-flex items-center px-4 py-2 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 shadow-sm">
+                    <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    {% trans "Reclassify NPA" %}
+                </button>
+            </form>
+            {% if report.total_loans %}
+            {% include "includes/export_csv.html" %}
+            <button onclick="window.print()" type="button" class="inline-flex items-center px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                <svg class="h-4 w-4 mr-1.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                {% trans "Print" %}
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Print Header -->
+    <div class="print-only text-center mb-4">
+        <h2 class="text-lg font-bold">{% trans "NPA Classification & Provision Report" %}</h2>
+        <p class="text-sm">As on {% now "d-M-Y" %}</p>
+    </div>
+
+    {% if report.total_loans %}
+    <!-- Category Summary -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
+            <h3 class="text-sm font-semibold text-gray-800">{% trans "NPA Classification Summary" %}</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Category" %}</th>
+                        <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Provision %" %}</th>
+                        <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Loans" %}</th>
+                        <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Outstanding" %}</th>
+                        <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Provision Amount" %}</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for row in category_rows %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-2">
+                            {% if row.color == 'green' %}<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{{ row.label }}</span>
+                            {% elif row.color == 'yellow' %}<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{{ row.label }}</span>
+                            {% elif row.color == 'orange' %}<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">{{ row.label }}</span>
+                            {% elif row.color == 'red' and row.key == 'loss' %}<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-600 text-white">{{ row.label }}</span>
+                            {% else %}<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">{{ row.label }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-2 text-right text-gray-600">{{ row.pct_range }}</td>
+                        <td class="px-4 py-2 text-right font-medium text-gray-900">{{ row.count }}</td>
+                        <td class="px-4 py-2 text-right font-medium text-gray-900">{{ row.outstanding|floatformat:2 }}</td>
+                        <td class="px-4 py-2 text-right font-medium text-gray-900">{{ row.provision|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="bg-gray-100 border-t-2 border-gray-300">
+                    <tr>
+                        <td colspan="2" class="px-4 py-3 text-sm font-bold text-gray-800">{% trans "Total" %}</td>
+                        <td class="px-4 py-3 text-right font-bold text-gray-800">{{ report.total_loans }}</td>
+                        <td class="px-4 py-3 text-right font-bold text-gray-800">{{ report.total_outstanding|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-right font-bold text-gray-800">{{ report.total_provision|floatformat:2 }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <!-- Product-wise Breakdown -->
+    {% for product_name, loans in report.by_product.items %}
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-4 py-3 bg-blue-50 border-b border-blue-100">
+            <h3 class="text-sm font-semibold text-blue-800">{{ product_name }}</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">{% trans "Loan No" %}</th>
+                        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">{% trans "Member" %}</th>
+                        <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">{% trans "Sanction Amt" %}</th>
+                        <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">{% trans "Principal" %}</th>
+                        <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">{% trans "Interest" %}</th>
+                        <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">{% trans "Penal" %}</th>
+                        <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">{% trans "Overdue Days" %}</th>
+                        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">{% trans "NPA Category" %}</th>
+                        <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">{% trans "Prov. %" %}</th>
+                        <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600">{% trans "Provision Amt" %}</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for loan in loans %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-3 py-2 font-mono text-gray-900">{{ loan.loan_no }}</td>
+                        <td class="px-3 py-2 text-gray-900">{{ loan.member.name }}</td>
+                        <td class="px-3 py-2 text-right text-gray-700">{{ loan.disbursed_amount|default:loan.approved_amount|floatformat:2 }}</td>
+                        <td class="px-3 py-2 text-right font-medium text-gray-900">{{ loan.outstanding_principal|floatformat:2 }}</td>
+                        <td class="px-3 py-2 text-right text-gray-700">{{ loan.bal_interest|floatformat:2 }}</td>
+                        <td class="px-3 py-2 text-right text-gray-700">{{ loan.bal_penal|floatformat:2 }}</td>
+                        <td class="px-3 py-2 text-right text-gray-700">{{ loan.overdue_days }}</td>
+                        <td class="px-3 py-2">
+                            {% if loan._computed_category == 'standard' %}<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Standard</span>
+                            {% elif loan._computed_category == 'sub_standard' %}<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Sub-Standard</span>
+                            {% elif loan._computed_category == 'doubtful_1' %}<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">Doubtful 1</span>
+                            {% elif loan._computed_category == 'doubtful_2' %}<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Doubtful 2</span>
+                            {% elif loan._computed_category == 'doubtful_3' %}<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-200 text-red-800">Doubtful 3</span>
+                            {% elif loan._computed_category == 'loss' %}<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-600 text-white">Loss</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-3 py-2 text-right text-gray-700">{{ loan._computed_provision_pct }}%</td>
+                        <td class="px-3 py-2 text-right font-medium text-gray-900">{{ loan._computed_provision_amt|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% else %}
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+        <p class="text-gray-400 text-sm">{% trans "No active/NPA loans found." %}</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

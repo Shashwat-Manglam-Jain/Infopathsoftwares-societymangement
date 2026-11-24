@@ -248,6 +248,42 @@ class CashbookMaster(models.Model):
         return f'{self.branch.branch_code} - {self.txn_date}'
 
 
+class FixedAsset(models.Model):
+    DEPRECIATION_METHOD_CHOICES = [
+        ('slm', 'Straight Line'),
+        ('wdv', 'Written Down Value'),
+    ]
+
+    name = models.CharField(max_length=200)
+    asset_code = models.CharField(max_length=20, unique=True)
+    gl_head = models.ForeignKey(ChartOfAccounts, on_delete=models.PROTECT, related_name='fixed_assets')
+    depreciation_head = models.ForeignKey(
+        ChartOfAccounts, on_delete=models.PROTECT, related_name='depreciation_assets',
+        null=True, blank=True,
+    )
+    purchase_date = models.DateField()
+    purchase_amount = models.DecimalField(max_digits=15, decimal_places=2)
+    depreciation_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    depreciation_method = models.CharField(max_length=5, choices=DEPRECIATION_METHOD_CHOICES, default='slm')
+    accumulated_depreciation = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    written_down_value = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    last_depreciation_date = models.DateField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    branch = models.ForeignKey('branches.Branch', on_delete=models.PROTECT, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['asset_code']
+
+    def __str__(self):
+        return f'{self.asset_code} — {self.name}'
+
+    @property
+    def net_book_value(self):
+        return self.purchase_amount - self.accumulated_depreciation
+
+
 class InterBranchTransfer(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
