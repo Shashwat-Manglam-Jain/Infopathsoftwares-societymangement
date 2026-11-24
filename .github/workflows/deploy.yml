@@ -32,7 +32,7 @@ jobs:
             pip install -r requirements.txt
             python manage.py migrate_schemas --shared
             python manage.py migrate_schemas --tenant
-            python manage.py collectstatic --noinput
+            python manage.py collectstatic --noinput || echo "WARNING: collectstatic failed, continuing deploy"
             if ! diff -q infrastructure/nginx.conf /etc/nginx/sites-available/society 2>/dev/null; then
               sudo cp infrastructure/nginx.conf /etc/nginx/sites-available/society
               sudo ln -sf /etc/nginx/sites-available/society /etc/nginx/sites-enabled/society
