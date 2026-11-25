@@ -103,6 +103,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         return context
 
     def _get_setup_progress(self):
+        from apps.accounting.models import ChartOfAccounts
         from apps.accounts.models import CustomUser
         from apps.branches.models import Branch
         from apps.loans.models import LoanProduct
@@ -121,6 +122,18 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 'count': branch_count,
                 'url': '/branches/',
                 'icon': 'building',
+            }
+        )
+
+        coa_count = ChartOfAccounts.objects.count()
+        steps.append(
+            {
+                'name': 'Chart of Accounts',
+                'description': 'GL heads for accounting (auto-generated)',
+                'done': coa_count >= 1,
+                'count': coa_count,
+                'url': '/accounting/heads/',
+                'icon': 'book-open',
             }
         )
 

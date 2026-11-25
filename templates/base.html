@@ -333,9 +333,7 @@
         /* --- Tom Select overrides --- */
         .ts-wrapper.single .ts-control { border-color: #d1d5db; border-radius: 0.5rem; padding: 0.5rem 0.75rem; font-size: 0.875rem; min-height: 2.5rem; cursor: pointer; }
         .ts-wrapper.single .ts-control > input { font-size: 0.875rem; }
-        .ts-wrapper.single.has-items .ts-control > input { width: 0 !important; min-width: 0 !important; opacity: 0; position: absolute; padding: 0; }
-        .ts-wrapper.single.dropdown-active .ts-control > input { flex: 1 1 auto; opacity: 1; position: relative; width: auto !important; }
-        .ts-wrapper.single.dropdown-active .ts-control > .item { display: none; }
+        .ts-wrapper.single.has-items .ts-control > input { opacity: 0 !important; position: absolute !important; left: -9999px !important; width: 0 !important; }
         .ts-wrapper.single.focus .ts-control { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
         .ts-dropdown { border-radius: 0.5rem; border-color: #e5e7eb; font-size: 0.875rem; }
         .ts-dropdown .active { background-color: #eff6ff; color: #1d4ed8; }
@@ -569,7 +567,17 @@
             create: false,
             sortField: { field: 'text', direction: 'asc' },
             plugins: { clear_button: { title: 'Clear selection' } },
+            openOnFocus: false,
             onItemAdd: function() { this.setTextboxValue(''); this.close(); },
+            onInitialize: function() {
+                var ts = this;
+                ts.control.addEventListener('click', function(e) {
+                    if (e.target.closest('.clear-button')) return;
+                    if (ts.items.length > 0) return;
+                    ts.open();
+                    ts.control_input.focus();
+                });
+            },
             render: {
                 no_results: function() { return '<div class="no-results" style="padding:10px;text-align:center;color:#94a3b8;">No results found</div>'; }
             }

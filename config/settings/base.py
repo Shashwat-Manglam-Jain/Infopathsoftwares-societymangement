@@ -88,6 +88,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
     'apps.branches.middleware.BranchMiddleware',
+    'apps.tenants.middleware.TenantSetupMiddleware',
     'apps.tenants.middleware.SubscriptionMiddleware',
     'apps.audit.middleware.AuditMiddleware',
     'allauth.account.middleware.AccountMiddleware',

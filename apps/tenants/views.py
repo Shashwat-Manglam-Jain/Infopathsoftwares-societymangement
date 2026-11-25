@@ -116,8 +116,14 @@ class SocietySignupView(View):
                 is_primary=True,
             )
 
+        import logging
+
+        logger = logging.getLogger(__name__)
         with tenant_context(society):
-            self._setup_tenant(form, society)
+            try:
+                self._setup_tenant(form, society)
+            except Exception:
+                logger.exception('Tenant setup failed for %s — COA or seed data may be missing', schema_name)
 
         scheme = 'https' if request.is_secure() else 'http'
         is_proxied = request.META.get('HTTP_X_FORWARDED_PROTO') or request.META.get('HTTP_X_FORWARDED_FOR')
@@ -140,37 +146,44 @@ class SocietySignupView(View):
         )
 
     def _setup_tenant(self, form, society):
+        import logging
+
+        logger = logging.getLogger(__name__)
+
         from apps.branches.models import Branch
 
-        ho = Branch.objects.create(
-            branch_code='HO',
-            branch_name='Head Office',
-            address=form.cleaned_data.get('address', ''),
-            city=form.cleaned_data.get('city', ''),
-            state=form.cleaned_data.get('state', ''),
-            pincode=form.cleaned_data.get('pincode', ''),
-            phone=form.cleaned_data['phone'],
-            is_head_office=True,
-            opening_date=date.today(),
-            status='active',
-        )
+        ho = Branch.objects.filter(branch_code='HO').first()
+        if not ho:
+            ho = Branch.objects.create(
+                branch_code='HO',
+                branch_name='Head Office',
+                address=form.cleaned_data.get('address', ''),
+                city=form.cleaned_data.get('city', ''),
+                state=form.cleaned_data.get('state', ''),
+                pincode=form.cleaned_data.get('pincode', ''),
+                phone=form.cleaned_data['phone'],
+                is_head_office=True,
+                opening_date=date.today(),
+                status='active',
+            )
 
         from apps.accounts.models import CustomUser
 
-        admin_name = form.cleaned_data.get('admin_name', '')
-        first_name = admin_name.split()[0] if admin_name else ''
-        last_name = ' '.join(admin_name.split()[1:]) if admin_name and len(admin_name.split()) > 1 else ''
-        CustomUser.objects.create_superuser(
-            username=form.cleaned_data['admin_username'],
-            email=form.cleaned_data['email'],
-            password=form.cleaned_data['password'],
-            phone=form.cleaned_data['phone'],
-            first_name=first_name,
-            last_name=last_name,
-            role='admin',
-            branch=ho,
-            can_access_all_branches=True,
-        )
+        if not CustomUser.objects.filter(username=form.cleaned_data['admin_username']).exists():
+            admin_name = form.cleaned_data.get('admin_name', '')
+            first_name = admin_name.split()[0] if admin_name else ''
+            last_name = ' '.join(admin_name.split()[1:]) if admin_name and len(admin_name.split()) > 1 else ''
+            CustomUser.objects.create_superuser(
+                username=form.cleaned_data['admin_username'],
+                email=form.cleaned_data['email'],
+                password=form.cleaned_data['password'],
+                phone=form.cleaned_data['phone'],
+                first_name=first_name,
+                last_name=last_name,
+                role='admin',
+                branch=ho,
+                can_access_all_branches=True,
+            )
 
         from apps.dayend.models import FinancialYear
 
@@ -178,75 +191,85 @@ class SocietySignupView(View):
         if date.today().month < 4:
             fy_start = date(date.today().year - 1, 4, 1)
         fy_end = date(fy_start.year + 1, 3, 31)
-        FinancialYear.objects.create(
+        FinancialYear.objects.get_or_create(
             fy_code=f'{fy_start.year}-{str(fy_end.year)[-2:]}',
-            start_date=fy_start,
-            end_date=fy_end,
-            is_current=True,
+            defaults={
+                'start_date': fy_start,
+                'end_date': fy_end,
+                'is_current': True,
+            },
         )
 
         from apps.accounting.initial_coa import setup_chart_of_accounts
 
-        setup_chart_of_accounts(branches=[ho])
+        try:
+            setup_chart_of_accounts(branches=[ho])
+        except Exception:
+            logger.exception('Failed to create Chart of Accounts for %s', society.schema_name)
 
         from apps.loans.models import LoanProduct
 
-        for name, rate, max_amt, tenure, int_type in [
-            ('Personal Loan', Decimal('12.00'), Decimal('500000'), 60, 'reducing_monthly'),
-            ('Gold Loan', Decimal('10.00'), Decimal('1000000'), 36, 'reducing_monthly'),
-            ('Emergency Loan', Decimal('14.00'), Decimal('100000'), 24, 'flat'),
-        ]:
-            LoanProduct.objects.create(
-                name=name,
-                interest_rate=rate,
-                max_amount=max_amt,
-                max_tenure_months=tenure,
-                interest_type=int_type,
-                requires_guarantor=True,
-                max_guarantors=2,
-                processing_fee_percent=Decimal('1.00'),
-                penal_interest_rate=Decimal('18.00'),
-                npa_days_threshold=90,
-                is_active=True,
-            )
+        if not LoanProduct.objects.exists():
+            for name, rate, max_amt, tenure, int_type in [
+                ('Personal Loan', Decimal('12.00'), Decimal('500000'), 60, 'reducing_monthly'),
+                ('Gold Loan', Decimal('10.00'), Decimal('1000000'), 36, 'reducing_monthly'),
+                ('Emergency Loan', Decimal('14.00'), Decimal('100000'), 24, 'flat'),
+            ]:
+                LoanProduct.objects.create(
+                    name=name,
+                    interest_rate=rate,
+                    max_amount=max_amt,
+                    max_tenure_months=tenure,
+                    interest_type=int_type,
+                    requires_guarantor=True,
+                    max_guarantors=2,
+                    processing_fee_percent=Decimal('1.00'),
+                    penal_interest_rate=Decimal('18.00'),
+                    npa_days_threshold=90,
+                    is_active=True,
+                )
 
         from apps.deposits.models import FDProduct
 
-        FDProduct.objects.create(
-            name='Regular Fixed Deposit',
-            min_amount=Decimal('10000'),
-            max_amount=Decimal('5000000'),
-            min_tenure_days=90,
-            max_tenure_days=3650,
-            interest_rates=[
-                {'min_days': 90, 'max_days': 180, 'rate': 6.0, 'senior_rate': 6.5},
-                {'min_days': 181, 'max_days': 365, 'rate': 7.0, 'senior_rate': 7.5},
-                {'min_days': 366, 'max_days': 3650, 'rate': 7.5, 'senior_rate': 8.0},
-            ],
-            compounding='quarterly',
-            premature_penalty_percent=Decimal('1.00'),
-            is_active=True,
-        )
+        if not FDProduct.objects.exists():
+            FDProduct.objects.create(
+                name='Regular Fixed Deposit',
+                min_amount=Decimal('10000'),
+                max_amount=Decimal('5000000'),
+                min_tenure_days=90,
+                max_tenure_days=3650,
+                interest_rates=[
+                    {'min_days': 90, 'max_days': 180, 'rate': 6.0, 'senior_rate': 6.5},
+                    {'min_days': 181, 'max_days': 365, 'rate': 7.0, 'senior_rate': 7.5},
+                    {'min_days': 366, 'max_days': 3650, 'rate': 7.5, 'senior_rate': 8.0},
+                ],
+                compounding='quarterly',
+                premature_penalty_percent=Decimal('1.00'),
+                is_active=True,
+            )
 
         from apps.shares.models import ShareConfig
 
-        ShareConfig.objects.create(
-            face_value_per_share=Decimal('100.00'),
-            max_shares_per_member=500,
-            min_shares_required=10,
-            is_active=True,
-        )
+        if not ShareConfig.objects.exists():
+            ShareConfig.objects.create(
+                face_value_per_share=Decimal('100.00'),
+                max_shares_per_member=500,
+                min_shares_required=10,
+                is_active=True,
+            )
 
         plan = SubscriptionPlan.objects.filter(is_active=True).order_by('price_monthly').first()
         if plan:
             from apps.tenants.models import Subscription
 
-            Subscription.objects.create(
+            Subscription.objects.get_or_create(
                 society=society,
-                plan=plan,
-                start_date=date.today(),
-                is_trial=True,
-                status='trial',
+                defaults={
+                    'plan': plan,
+                    'start_date': date.today(),
+                    'is_trial': True,
+                    'status': 'trial',
+                },
             )
 
 
