@@ -71,13 +71,14 @@ def generate_account_number(branch, account_code):
     Uses select_for_update to prevent race conditions — concurrent calls block
     until the first transaction commits.
     """
+    from django.db import connection
+
     from apps.agents.models import PigmmyAccount
     from apps.deposits.models import FixedDeposit, RecurringDeposit
     from apps.loans.models import LoanAccount
     from apps.savings.models import SavingsAccount
 
-    society = getattr(branch, 'society', None)
-    society_code = getattr(society, 'society_code', None) or getattr(branch, 'society_code', None) or '001'
+    society_code = getattr(connection.tenant, 'society_code', None) or '001'
     branch_part = branch.branch_code[:2].zfill(2)
     acct_part = account_code[:3].zfill(3)
 

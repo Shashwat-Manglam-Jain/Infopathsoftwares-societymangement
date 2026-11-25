@@ -30,6 +30,7 @@ class LoanProductForm(forms.ModelForm):
             'processing_fee_percent',
             'penal_interest_rate',
             'npa_days_threshold',
+            'gl_head',
             'is_active',
         ]
 
@@ -47,6 +48,17 @@ class LoanProductForm(forms.ModelForm):
 
 
 class LoanApplicationForm(forms.ModelForm):
+    interest_rate = forms.DecimalField(
+        max_digits=5, decimal_places=2, min_value=Decimal('0.01'),
+        widget=forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '0.01'}),
+        help_text='Pre-filled from product. Override if needed.',
+    )
+    penal_interest_rate = forms.DecimalField(
+        max_digits=5, decimal_places=2, min_value=Decimal('0'), required=False,
+        widget=forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '0'}),
+        help_text='Pre-filled from product. Override if needed.',
+    )
+
     class Meta:
         model = LoanAccount
         fields = [
@@ -54,10 +66,10 @@ class LoanApplicationForm(forms.ModelForm):
             'loan_product',
             'applied_amount',
             'tenure_months',
+            'interest_rate',
+            'penal_interest_rate',
             'director_recommendation',
             'remarks',
-            'loan_form_no',
-            'mortgage_account_no',
             'mortgage_value',
         ]
         widgets = {
@@ -67,8 +79,6 @@ class LoanApplicationForm(forms.ModelForm):
             'tenure_months': forms.NumberInput(attrs={'class': tw, 'min': '1'}),
             'director_recommendation': forms.Select(attrs={'class': 'searchable ' + tw}),
             'remarks': forms.Textarea(attrs={'class': tw, 'rows': 3}),
-            'loan_form_no': forms.TextInput(attrs={'class': tw}),
-            'mortgage_account_no': forms.TextInput(attrs={'class': tw}),
             'mortgage_value': forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '0'}),
         }
 
@@ -105,9 +115,8 @@ class LoanApplicationForm(forms.ModelForm):
             id__in=director_shareholder_ids,
         )
         self.fields['director_recommendation'].required = False
-        self.fields['loan_form_no'].required = False
-        self.fields['mortgage_account_no'].required = False
         self.fields['mortgage_value'].required = False
+        self.fields['penal_interest_rate'].required = False
 
     def clean_member(self):
         member = self.cleaned_data.get('member')

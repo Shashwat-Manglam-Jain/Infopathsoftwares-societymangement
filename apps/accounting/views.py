@@ -651,12 +651,38 @@ def chart_of_accounts_list(request):
     return render(request, 'accounting/heads_list.html', {'groups': groups, 'total': heads.count()})
 
 
+def _next_head_code(group):
+    """Return the next available head code for the given account_group."""
+    prefix_map = {'asset': '1', 'liability': '2', 'equity': '25', 'income': '3', 'expense': '4'}
+    prefix = prefix_map.get(group, '9')
+    last = (
+        ChartOfAccounts.objects.filter(code__startswith=prefix, code__regex=r'^\d+$')
+        .order_by('-code')
+        .values_list('code', flat=True)
+        .first()
+    )
+    if last:
+        return str(int(last) + 1)
+    return prefix + '0' * (4 - len(prefix))
+
+
+@admin_required
+def next_head_code_ajax(request):
+    group = request.GET.get('group', '')
+    if group not in dict(ChartOfAccounts.ACCOUNT_GROUP_CHOICES):
+        return JsonResponse({'code': ''})
+    return JsonResponse({'code': _next_head_code(group)})
+
+
 @admin_required
 def chart_of_accounts_create(request):
     if request.method == 'POST':
         form = ChartOfAccountsForm(request.POST)
         if form.is_valid():
-            form.save()
+            head = form.save(commit=False)
+            if not head.code:
+                head.code = _next_head_code(head.account_group)
+            head.save()
             messages.success(request, 'Account head created.')
             return redirect('accounting:heads')
     else:

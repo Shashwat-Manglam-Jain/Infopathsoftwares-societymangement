@@ -57,6 +57,14 @@ class LoanProduct(models.Model):
     penal_interest_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     npa_days_threshold = models.IntegerField(default=90)
     is_active = models.BooleanField(default=True)
+    gl_head = models.ForeignKey(
+        'accounting.ChartOfAccounts',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='loan_products',
+        help_text='Default GL head for loans of this product type',
+    )
 
     def __str__(self):
         return f'{self.name} ({self.interest_rate}%)'

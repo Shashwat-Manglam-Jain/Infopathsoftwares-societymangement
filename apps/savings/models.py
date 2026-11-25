@@ -84,10 +84,29 @@ class SavingsAccount(models.Model):
         if not self.account_no:
             from apps.core.account_utils import generate_account_number
 
-            type_codes = {'savings': '001', 'current': '002', 'security': '003'}
-            code = type_codes.get(self.account_type, '001')
+            code = self._get_account_code()
             self.account_no = generate_account_number(self.branch, code)
         super().save(*args, **kwargs)
+
+    def _get_account_code(self):
+        from apps.accounting.models import ChartOfAccounts
+
+        type_to_related = {
+            'savings': 'saving',
+            'current': 'current',
+            'security': 'security',
+            'director_security': 'security',
+        }
+        related = type_to_related.get(self.account_type, 'saving')
+        head = ChartOfAccounts.objects.filter(
+            related_table_name=related,
+            account_code__gt='',
+            is_active=True,
+        ).first()
+        if head and head.account_code:
+            return head.account_code
+        fallback = {'savings': '006', 'current': '002', 'security': '003'}
+        return fallback.get(self.account_type, '006')
 
     def clean(self):
         if self.account_type and self.status == 'active':

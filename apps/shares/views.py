@@ -192,7 +192,10 @@ def share_purchase(request):
             status='active',
         )
 
-    return render(request, 'shares/purchase.html', {'form': form})
+    from apps.shares.models import ShareConfig
+
+    config = ShareConfig.objects.filter(is_active=True).first()
+    return render(request, 'shares/purchase.html', {'form': form, 'config': config})
 
 
 @manager_required

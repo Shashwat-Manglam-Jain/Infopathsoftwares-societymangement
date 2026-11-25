@@ -159,16 +159,17 @@ class PigmmyAccount(models.Model):
         return f'{self.account_no} - {self.member.name}'
 
     def clean(self):
-        if self.client_type == 'D' and self.status == 'active':
+        if self.status == 'active':
             qs = PigmmyAccount.objects.filter(
                 member=self.member,
-                client_type='D',
+                client_type=self.client_type,
                 status='active',
             )
             if self.pk:
                 qs = qs.exclude(pk=self.pk)
             if qs.exists():
-                raise ValidationError('Member already has an active daily pigmmy account.')
+                label = dict(self.CLIENT_TYPE_CHOICES).get(self.client_type, self.client_type)
+                raise ValidationError(f'Member already has an active {label} pigmmy account.')
 
 
 class PigmmyTransaction(models.Model):

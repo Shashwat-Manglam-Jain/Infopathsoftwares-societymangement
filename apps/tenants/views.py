@@ -210,23 +210,77 @@ class SocietySignupView(View):
         from apps.loans.models import LoanProduct
 
         if not LoanProduct.objects.exists():
-            for name, rate, max_amt, tenure, int_type in [
-                ('Personal Loan', Decimal('12.00'), Decimal('500000'), 60, 'reducing_monthly'),
-                ('Gold Loan', Decimal('10.00'), Decimal('1000000'), 36, 'reducing_monthly'),
-                ('Emergency Loan', Decimal('14.00'), Decimal('100000'), 24, 'flat'),
-            ]:
+            default_products = [
+                {
+                    'name': 'Personal Loan',
+                    'interest_rate': Decimal('12.00'),
+                    'max_amount': Decimal('500000'),
+                    'max_tenure_months': 60,
+                    'interest_type': 'reducing_monthly',
+                    'loan_category': 'regular',
+                },
+                {
+                    'name': 'Emergency Loan',
+                    'interest_rate': Decimal('14.00'),
+                    'max_amount': Decimal('100000'),
+                    'max_tenure_months': 24,
+                    'interest_type': 'flat',
+                    'loan_category': 'emergency',
+                },
+                {
+                    'name': 'Gold Loan',
+                    'interest_rate': Decimal('10.00'),
+                    'max_amount': Decimal('1000000'),
+                    'max_tenure_months': 36,
+                    'interest_type': 'reducing_monthly',
+                    'loan_category': 'mortgage',
+                    'mortgage_type': 'gold',
+                    'allow_multiple': True,
+                    'requires_collateral': True,
+                },
+                {
+                    'name': 'Loan Against FD',
+                    'interest_rate': Decimal('10.00'),
+                    'max_amount': Decimal('500000'),
+                    'max_tenure_months': 60,
+                    'interest_type': 'reducing_monthly',
+                    'loan_category': 'mortgage',
+                    'mortgage_type': 'fixed_deposit',
+                    'allow_multiple': True,
+                    'max_loan_to_deposit_ratio': Decimal('90.00'),
+                },
+                {
+                    'name': 'Loan Against Pigmmy',
+                    'interest_rate': Decimal('10.00'),
+                    'max_amount': Decimal('500000'),
+                    'max_tenure_months': 60,
+                    'interest_type': 'reducing_monthly',
+                    'loan_category': 'mortgage',
+                    'mortgage_type': 'pigmmy',
+                    'allow_multiple': True,
+                    'max_loan_to_deposit_ratio': Decimal('90.00'),
+                },
+                {
+                    'name': 'Property Mortgage Loan',
+                    'interest_rate': Decimal('11.00'),
+                    'max_amount': Decimal('2000000'),
+                    'max_tenure_months': 120,
+                    'interest_type': 'reducing_monthly',
+                    'loan_category': 'mortgage',
+                    'mortgage_type': 'property',
+                    'allow_multiple': True,
+                    'requires_collateral': True,
+                },
+            ]
+            for prod in default_products:
                 LoanProduct.objects.create(
-                    name=name,
-                    interest_rate=rate,
-                    max_amount=max_amt,
-                    max_tenure_months=tenure,
-                    interest_type=int_type,
                     requires_guarantor=True,
                     max_guarantors=2,
                     processing_fee_percent=Decimal('1.00'),
                     penal_interest_rate=Decimal('18.00'),
                     npa_days_threshold=90,
                     is_active=True,
+                    **prod,
                 )
 
         from apps.deposits.models import FDProduct

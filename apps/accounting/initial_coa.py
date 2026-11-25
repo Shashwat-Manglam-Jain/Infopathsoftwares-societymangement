@@ -20,7 +20,7 @@ DEFAULT_CHART_OF_ACCOUNTS = [
     {
         'code': '1003', 'name': 'Loans & Advances (Members)', 'group': 'asset', 'type': 'loans_given',
         'parent': '1000', 'related': 'loan', 'report': 'balance_sheet',
-        'interest_affected': True, 'overdue_affected': True, 'int_code': '3001', 'order': 103,
+        'interest_affected': True, 'overdue_affected': True, 'int_code': '3001', 'ac_code': '026', 'order': 103,
     },
     {
         'code': '1004', 'name': 'Fixed Assets', 'group': 'asset', 'type': 'other',
@@ -67,6 +67,41 @@ DEFAULT_CHART_OF_ACCOUNTS = [
         'code': '1011', 'name': 'Other Assets', 'group': 'asset', 'type': 'other',
         'parent': '1000', 'related': 'other', 'report': 'balance_sheet', 'order': 119,
     },
+    {
+        'code': '1012', 'name': 'Regular Loan', 'group': 'asset', 'type': 'loans_given',
+        'parent': '1000', 'related': 'loan', 'report': 'balance_sheet',
+        'interest_affected': True, 'overdue_affected': True, 'int_code': '3001', 'ac_code': '026', 'order': 120,
+    },
+    {
+        'code': '1013', 'name': 'Emergency Loan', 'group': 'asset', 'type': 'loans_given',
+        'parent': '1000', 'related': 'loan', 'report': 'balance_sheet',
+        'interest_affected': True, 'overdue_affected': True, 'int_code': '3001', 'ac_code': '027', 'order': 121,
+    },
+    {
+        'code': '1014', 'name': 'Loan Against FD', 'group': 'asset', 'type': 'loans_given',
+        'parent': '1000', 'related': 'loan', 'report': 'balance_sheet',
+        'interest_affected': True, 'overdue_affected': True, 'int_code': '3001', 'ac_code': '028', 'order': 122,
+    },
+    {
+        'code': '1015', 'name': 'Loan Against Pigmmy', 'group': 'asset', 'type': 'loans_given',
+        'parent': '1000', 'related': 'loan', 'report': 'balance_sheet',
+        'interest_affected': True, 'overdue_affected': True, 'int_code': '3001', 'ac_code': '029', 'order': 123,
+    },
+    {
+        'code': '1016', 'name': 'Gold Loan', 'group': 'asset', 'type': 'loans_given',
+        'parent': '1000', 'related': 'loan', 'report': 'balance_sheet',
+        'interest_affected': True, 'overdue_affected': True, 'int_code': '3001', 'ac_code': '030', 'order': 124,
+    },
+    {
+        'code': '1017', 'name': 'Property Mortgage Loan', 'group': 'asset', 'type': 'loans_given',
+        'parent': '1000', 'related': 'loan', 'report': 'balance_sheet',
+        'interest_affected': True, 'overdue_affected': True, 'int_code': '3001', 'ac_code': '063', 'order': 125,
+    },
+    {
+        'code': '1018', 'name': 'Loan Against RD', 'group': 'asset', 'type': 'loans_given',
+        'parent': '1000', 'related': 'loan', 'report': 'balance_sheet',
+        'interest_affected': True, 'overdue_affected': True, 'int_code': '3001', 'ac_code': '031', 'order': 126,
+    },
 
     # =========================================================================
     # LIABILITIES (2xxx) — Balance Sheet
@@ -79,34 +114,34 @@ DEFAULT_CHART_OF_ACCOUNTS = [
     {
         'code': '2001', 'name': 'Savings Deposits', 'group': 'liability', 'type': 'deposits_taken',
         'parent': '2000', 'related': 'saving', 'report': 'balance_sheet',
-        'interest_given': True, 'int_code': '4001', 'order': 201,
+        'interest_given': True, 'int_code': '4001', 'ac_code': '006', 'order': 201,
     },
     {
         'code': '2002', 'name': 'Fixed Deposits', 'group': 'liability', 'type': 'deposits_taken',
         'parent': '2000', 'related': 'fixed', 'report': 'balance_sheet',
-        'interest_given': True, 'int_code': '4002', 'order': 202,
+        'interest_given': True, 'int_code': '4002', 'ac_code': '008', 'order': 202,
     },
     {
         'code': '2003', 'name': 'Recurring Deposits', 'group': 'liability', 'type': 'deposits_taken',
         'parent': '2000', 'related': 'recurring', 'report': 'balance_sheet',
-        'interest_given': True, 'int_code': '4003', 'order': 203,
+        'interest_given': True, 'int_code': '4003', 'ac_code': '011', 'order': 203,
     },
     {
         'code': '2004', 'name': 'Current Accounts', 'group': 'liability', 'type': 'deposits_taken',
-        'parent': '2000', 'related': 'current', 'report': 'balance_sheet', 'order': 204,
+        'parent': '2000', 'related': 'current', 'report': 'balance_sheet', 'ac_code': '002', 'order': 204,
     },
     {
         'code': '2005', 'name': 'Daily / Pigmmy Deposits', 'group': 'liability', 'type': 'deposits_taken',
         'parent': '2000', 'related': 'client', 'report': 'balance_sheet',
-        'interest_given': True, 'int_code': '4004', 'order': 205,
+        'interest_given': True, 'int_code': '4004', 'ac_code': '007', 'order': 205,
     },
     {
         'code': '2006', 'name': 'Security Deposits', 'group': 'liability', 'type': 'deposits_taken',
-        'parent': '2000', 'related': 'security', 'report': 'balance_sheet', 'order': 206,
+        'parent': '2000', 'related': 'security', 'report': 'balance_sheet', 'ac_code': '003', 'order': 206,
     },
     {
         'code': '2007', 'name': 'Agent Security Deposit', 'group': 'liability', 'type': 'deposits_taken',
-        'parent': '2000', 'related': 'security', 'report': 'balance_sheet', 'order': 207,
+        'parent': '2000', 'related': 'security', 'report': 'balance_sheet', 'ac_code': '074', 'order': 207,
     },
     {
         'code': '2008', 'name': 'Interest Payable on Deposits', 'group': 'liability', 'type': 'other',
@@ -124,6 +159,14 @@ DEFAULT_CHART_OF_ACCOUNTS = [
         'code': '2011', 'name': 'Other Liabilities', 'group': 'liability', 'type': 'other',
         'parent': '2000', 'related': 'other', 'report': 'balance_sheet', 'order': 219,
     },
+    {
+        'code': '2012', 'name': 'Director Security Deposit', 'group': 'liability', 'type': 'deposits_taken',
+        'parent': '2000', 'related': 'security', 'report': 'balance_sheet', 'ac_code': '005', 'order': 211,
+    },
+    {
+        'code': '2013', 'name': 'Bank Overdraft', 'group': 'liability', 'type': 'other',
+        'parent': '2000', 'related': 'general', 'report': 'balance_sheet', 'order': 212,
+    },
 
     # =========================================================================
     # EQUITY (25xx) — Balance Sheet
@@ -135,7 +178,7 @@ DEFAULT_CHART_OF_ACCOUNTS = [
     },
     {
         'code': '2501', 'name': 'Share Capital', 'group': 'equity', 'type': 'share_capital',
-        'parent': '2500', 'related': 'shares', 'report': 'balance_sheet', 'order': 251,
+        'parent': '2500', 'related': 'shares', 'report': 'balance_sheet', 'ac_code': '004', 'order': 251,
     },
     {
         'code': '2502', 'name': 'Statutory Reserve Fund (25%)', 'group': 'equity', 'type': 'reserve_fund',
@@ -157,6 +200,22 @@ DEFAULT_CHART_OF_ACCOUNTS = [
         'code': '2506', 'name': 'Profit & Loss Account', 'group': 'equity', 'type': 'other',
         'parent': '2500', 'related': 'general', 'report': 'balance_sheet', 'order': 256,
     },
+    {
+        'code': '2507', 'name': 'Social Welfare Fund', 'group': 'equity', 'type': 'other',
+        'parent': '2500', 'related': 'general', 'report': 'balance_sheet', 'order': 257,
+    },
+    {
+        'code': '2508', 'name': 'Member Welfare Fund', 'group': 'equity', 'type': 'other',
+        'parent': '2500', 'related': 'general', 'report': 'balance_sheet', 'order': 258,
+    },
+    {
+        'code': '2509', 'name': 'Election Fund', 'group': 'equity', 'type': 'other',
+        'parent': '2500', 'related': 'general', 'report': 'balance_sheet', 'order': 259,
+    },
+    {
+        'code': '2510', 'name': 'NPA Provision Fund', 'group': 'equity', 'type': 'other',
+        'parent': '2500', 'related': 'general', 'report': 'balance_sheet', 'order': 260,
+    },
 
     # =========================================================================
     # INCOME (3xxx) — Profit & Loss
@@ -172,7 +231,7 @@ DEFAULT_CHART_OF_ACCOUNTS = [
     },
     {
         'code': '3002', 'name': 'Processing Fees / Loan Form Fees', 'group': 'income', 'type': 'other',
-        'parent': '3000', 'related': 'processing_fee_income', 'report': 'profit_loss', 'order': 302,
+        'parent': '3000', 'related': 'general', 'report': 'profit_loss', 'order': 302,
     },
     {
         'code': '3003', 'name': 'Penal Interest Received', 'group': 'income', 'type': 'other',
@@ -209,6 +268,22 @@ DEFAULT_CHART_OF_ACCOUNTS = [
     {
         'code': '3011', 'name': 'Miscellaneous Income', 'group': 'income', 'type': 'other',
         'parent': '3000', 'related': 'general', 'report': 'profit_loss', 'order': 319,
+    },
+    {
+        'code': '3012', 'name': 'Daily Collection Commission', 'group': 'income', 'type': 'other',
+        'parent': '3000', 'related': 'general', 'report': 'profit_loss', 'order': 311,
+    },
+    {
+        'code': '3013', 'name': 'FD Commission Received', 'group': 'income', 'type': 'other',
+        'parent': '3000', 'related': 'general', 'report': 'profit_loss', 'order': 312,
+    },
+    {
+        'code': '3014', 'name': 'RD Commission Received', 'group': 'income', 'type': 'other',
+        'parent': '3000', 'related': 'general', 'report': 'profit_loss', 'order': 313,
+    },
+    {
+        'code': '3015', 'name': 'Share Transfer Fees', 'group': 'income', 'type': 'other',
+        'parent': '3000', 'related': 'general', 'report': 'profit_loss', 'order': 314,
     },
 
     # =========================================================================
@@ -320,6 +395,26 @@ DEFAULT_CHART_OF_ACCOUNTS = [
         'parent': '4000', 'related': 'general', 'report': 'profit_loss', 'order': 429,
     },
     {
+        'code': '4030', 'name': 'Interest on Bank Overdraft', 'group': 'expense', 'type': 'interest_expense',
+        'parent': '4000', 'related': 'interest_paid', 'report': 'profit_loss', 'order': 430,
+    },
+    {
+        'code': '4031', 'name': 'NPA Provision Expense', 'group': 'expense', 'type': 'other',
+        'parent': '4000', 'related': 'general', 'report': 'profit_loss', 'order': 431,
+    },
+    {
+        'code': '4032', 'name': 'Election Fund Expense', 'group': 'expense', 'type': 'other',
+        'parent': '4000', 'related': 'general', 'report': 'profit_loss', 'order': 432,
+    },
+    {
+        'code': '4033', 'name': 'Training Fund Expense', 'group': 'expense', 'type': 'other',
+        'parent': '4000', 'related': 'general', 'report': 'profit_loss', 'order': 433,
+    },
+    {
+        'code': '4034', 'name': 'Building Fund Expense', 'group': 'expense', 'type': 'other',
+        'parent': '4000', 'related': 'general', 'report': 'profit_loss', 'order': 434,
+    },
+    {
         'code': '4099', 'name': 'Miscellaneous Expenses', 'group': 'expense', 'type': 'other',
         'parent': '4000', 'related': 'general', 'report': 'profit_loss', 'order': 499,
     },
@@ -352,6 +447,7 @@ def setup_chart_of_accounts(branches=None):
             'display_order': item.get('order', 0),
             'allow_transactions': allow_txn,
             'default_code': True,
+            'account_code': item.get('ac_code', ''),
         }
 
         if item.get('per_branch') and branches:

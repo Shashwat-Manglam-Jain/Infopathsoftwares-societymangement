@@ -125,6 +125,20 @@ class BeginDayView(AccountantRequiredMixin, View):
             messages.error(request, 'Please select a branch.')
             return redirect('dayend:index')
 
+        from apps.dayend.models import FinancialYear
+
+        if not FinancialYear.objects.filter(is_current=True).exists():
+            fy_start = date(date.today().year, 4, 1)
+            if date.today().month < 4:
+                fy_start = date(date.today().year - 1, 4, 1)
+            fy_end = date(fy_start.year + 1, 3, 31)
+            FinancialYear.objects.create(
+                fy_code=f'{fy_start.year}-{str(fy_end.year)[-2:]}',
+                start_date=fy_start,
+                end_date=fy_end,
+                is_current=True,
+            )
+
         working_day = WorkingDay.objects.filter(branch=branch).first()
         if working_day and not working_day.is_day_open:
             working_date = working_day.current_date + timedelta(days=1)

@@ -23,6 +23,7 @@ class Society(TenantMixin):
     share_nominal_value = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     registration_authority = models.CharField(max_length=200, blank=True)
     society_category = models.CharField(max_length=100, blank=True)
+    society_code = models.CharField(max_length=3, default='001', help_text='3-digit code used in account number prefix')
     logo = models.ImageField(upload_to='society/logos/', blank=True)
 
     society_type = models.CharField(

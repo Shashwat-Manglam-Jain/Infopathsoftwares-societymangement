@@ -19,9 +19,11 @@ def create_pigmmy_account(
     linked_savings=None,
     created_by=None,
 ):
-    client_type = 'D' if deposit_type == 'daily' else 'M'
-    if client_type == 'D' and PigmmyAccount.objects.filter(member=member, client_type='D', status='active').exists():
-        raise ValueError('Member already has an active daily pigmmy account.')
+    type_map = {'daily': 'D', 'weekly': 'D', 'monthly': 'M'}
+    client_type = type_map.get(deposit_type, 'D')
+    if PigmmyAccount.objects.filter(member=member, client_type=client_type, status='active').exists():
+        label = {'D': 'daily', 'M': 'monthly'}.get(client_type, deposit_type)
+        raise ValueError(f'Member already has an active {label} pigmmy account.')
 
     from apps.savings.models import SavingsAccount
 
@@ -47,8 +49,9 @@ def create_pigmmy_account(
 
     from apps.core.account_utils import generate_account_number
 
-    type_codes = {'daily': '010', 'weekly': '011', 'monthly': '012'}
-    ac_code = type_codes.get(deposit_type, '010')
+    ac_code = '007'
+    if head and head.account_code:
+        ac_code = head.account_code
     account_no = generate_account_number(branch, ac_code)
 
     if deposit_type == 'daily':

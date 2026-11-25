@@ -45,7 +45,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Deposit Amount" %} (&#8377;) <span class="text-red-500">*</span></label>
-                    <input type="number" name="amount" step="0.01" min="1" required class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                    <input type="number" name="amount" step="0.01" min="1" required x-model="amount" @input="calcMaturity()" class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Tenure" %} (Days) <span class="text-red-500">*</span></label>
@@ -53,7 +53,12 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Compounding" %}</label>
-                    {{ form.compounding }}
+                    <select name="compounding" x-model="compounding" @change="calcMaturity()" class="w-full rounded-lg border-gray-300 px-3 py-2">
+                        <option value="quarterly">Quarterly</option>
+                        <option value="half_yearly">Half Yearly</option>
+                        <option value="yearly">Yearly</option>
+                        <option value="cumulative">Cumulative</option>
+                    </select>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Linked Savings Account" %}</label>
@@ -62,14 +67,6 @@
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Certificate No" %}</label>
                     {{ form.certificate_no }}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Meeting No" %}</label>
-                    {{ form.meeting_no }}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Meeting Date" %}</label>
-                    {{ form.meeting_date }}
                 </div>
                 <div class="md:col-span-2 flex items-center gap-4">
                     <label class="flex items-center gap-1.5 cursor-pointer">
@@ -102,6 +99,26 @@
                 </div>
             </template>
 
+            <template x-if="maturityAmount">
+                <div class="mx-5 mb-3 bg-blue-50 border border-blue-200 rounded p-3">
+                    <p class="text-xs font-semibold text-blue-700 uppercase mb-1.5">{% trans "Maturity Preview" %}</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <span class="text-xs text-blue-600">{% trans "Maturity Date" %}</span>
+                            <p class="text-sm font-medium text-blue-900" x-text="maturityDate"></p>
+                        </div>
+                        <div>
+                            <span class="text-xs text-blue-600">{% trans "Maturity Amount" %}</span>
+                            <p class="text-sm font-medium text-blue-900" x-text="'₹ ' + maturityAmount"></p>
+                        </div>
+                        <div>
+                            <span class="text-xs text-blue-600">{% trans "Interest Earned" %}</span>
+                            <p class="text-sm font-medium text-green-700" x-text="'₹ ' + interestEarned"></p>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
             <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-end gap-3">
                 <a href="{% url 'deposits:fd_list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
                 <button type="submit" class="px-5 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "Create FD" %}</button>
@@ -115,9 +132,14 @@ function fdForm() {
     return {
         slabs: {{ slabs_json|safe }},
         tenureDays: '',
+        amount: '',
+        compounding: 'quarterly',
         isSenior: false,
         interestRate: null,
         rateError: '',
+        maturityAmount: '',
+        maturityDate: '',
+        interestEarned: '',
         calcRate() {
             this.interestRate = null;
             this.rateError = '';
@@ -126,10 +148,31 @@ function fdForm() {
             for (const slab of this.slabs) {
                 if (days >= slab.min_days && days <= slab.max_days) {
                     this.interestRate = this.isSenior ? (slab.rate + slab.senior_extra) : slab.rate;
-                    return;
+                    break;
                 }
             }
-            this.rateError = 'No interest slab found for this tenure.';
+            if (!this.interestRate) {
+                this.rateError = 'No interest slab found for this tenure.';
+            }
+            this.calcMaturity();
+        },
+        calcMaturity() {
+            this.maturityAmount = '';
+            this.maturityDate = '';
+            this.interestEarned = '';
+            const p = parseFloat(this.amount);
+            const days = parseInt(this.tenureDays);
+            const r = parseFloat(this.interestRate);
+            if (!p || p <= 0 || !days || days < 1 || !r || r <= 0) return;
+            const nMap = {quarterly: 4, half_yearly: 2, yearly: 1, cumulative: 4};
+            const n = nMap[this.compounding] || 4;
+            const t = days / 365;
+            const matAmt = p * Math.pow(1 + (r / 100) / n, n * t);
+            this.maturityAmount = matAmt.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            this.interestEarned = (matAmt - p).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            const dt = new Date();
+            dt.setDate(dt.getDate() + days);
+            this.maturityDate = dt.toLocaleDateString('en-IN', {day: '2-digit', month: 'short', year: 'numeric'});
         }
     };
 }

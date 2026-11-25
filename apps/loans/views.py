@@ -195,9 +195,23 @@ def loan_apply(request):
 
                         loan.applied_date = get_transaction_date(request.current_branch)
                         loan.status = 'applied'
-                        loan.interest_rate = product.interest_rate
-                        loan.penal_interest_rate = product.penal_interest_rate
-                        loan.loan_no = generate_account_number(request.current_branch, '010')
+                        loan.interest_rate = form.cleaned_data.get('interest_rate') or product.interest_rate
+                        penal = form.cleaned_data.get('penal_interest_rate')
+                        loan.penal_interest_rate = penal if penal is not None else product.penal_interest_rate
+                        ac_code = '026'
+                        if product.gl_head and product.gl_head.account_code:
+                            ac_code = product.gl_head.account_code
+                        loan.loan_no = generate_account_number(request.current_branch, ac_code)
+                        if not loan.loan_form_no:
+                            today_str = loan.applied_date.strftime('%Y%m%d')
+                            day_count = LoanAccount.objects.filter(
+                                loan_form_no__startswith=f'LF-{today_str}-',
+                            ).count()
+                            loan.loan_form_no = f'LF-{today_str}-{day_count + 1}'
+                        if not loan.mortgage_account_no:
+                            loan.mortgage_account_no = f'MG-{loan.loan_no}'
+                        if product.gl_head:
+                            loan.gl_head = product.gl_head
                         loan.created_by = request.user
                         loan.save()
 

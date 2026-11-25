@@ -53,6 +53,7 @@ class ChartOfAccountsForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['code'].required = False
         self.fields['parent'].queryset = ChartOfAccounts.objects.filter(is_active=True)
         self.fields['parent'].required = False
         self.fields['interest_code'].queryset = ChartOfAccounts.objects.filter(is_active=True)

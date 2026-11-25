@@ -59,12 +59,16 @@
                     {% if form.tenure_months.errors %}<p class="text-red-600 text-xs mt-0.5">{{ form.tenure_months.errors.0 }}</p>{% endif %}
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Interest Rate" %} (%)</label>
-                    <input type="text" readonly class="w-full rounded border border-gray-200 bg-gray-50 text-gray-600 px-2.5 py-1.5 text-sm" :value="interestRate || '—'">
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Interest Rate (%)" %} <span class="text-red-500">*</span></label>
+                    {{ form.interest_rate }}
+                    <p class="text-xs text-gray-400 mt-0.5">Auto-filled from product. Editable.</p>
+                    {% if form.interest_rate.errors %}<p class="text-red-600 text-xs mt-0.5">{{ form.interest_rate.errors.0 }}</p>{% endif %}
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Penal Interest Rate" %} (%)</label>
-                    <input type="text" readonly class="w-full rounded border border-gray-200 bg-gray-50 text-gray-600 px-2.5 py-1.5 text-sm" :value="penalRate || '—'">
+                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Penal Interest Rate (%)" %}</label>
+                    {{ form.penal_interest_rate }}
+                    <p class="text-xs text-gray-400 mt-0.5">Auto-filled from product. Editable.</p>
+                    {% if form.penal_interest_rate.errors %}<p class="text-red-600 text-xs mt-0.5">{{ form.penal_interest_rate.errors.0 }}</p>{% endif %}
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Director Recommendation" %}</label>
@@ -80,16 +84,11 @@
             <!-- Optional fields -->
             <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 border-t border-gray-100">
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Loan Form No" %}</label>
-                    {{ form.loan_form_no }}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Mortgage Account No" %}</label>
-                    {{ form.mortgage_account_no }}
-                </div>
-                <div>
                     <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Mortgage Value" %}</label>
                     {{ form.mortgage_value }}
+                </div>
+                <div class="flex items-end">
+                    <p class="text-xs text-gray-400 pb-2">Loan Form No &amp; Mortgage Account No are auto-generated on save.</p>
                 </div>
             </div>
 
@@ -191,6 +190,10 @@ function loanForm() {
             this.requiresCollateral = product.requires_collateral;
             this.minGuarantors = product.min_guarantors;
             this.maxGuarantors = product.max_guarantors;
+            var irEl = document.getElementById('id_interest_rate');
+            var prEl = document.getElementById('id_penal_interest_rate');
+            if (irEl && !irEl.dataset.userEdited) irEl.value = product.interest_rate;
+            if (prEl && !prEl.dataset.userEdited) prEl.value = product.penal_interest_rate;
         }
     };
 }
