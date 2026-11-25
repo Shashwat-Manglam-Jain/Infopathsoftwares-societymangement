@@ -42,7 +42,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Account Type" %} <span class="text-red-500">*</span></label>
-                    {{ form.account_type }}
+                    {{ form.gl_head }}
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Interest Rate" %} (%)</label>
@@ -84,7 +84,7 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    var typeSelect = document.querySelector('[name="account_type"]');
+    var headSelect = document.querySelector('[name="gl_head"]');
     var rateInput = document.querySelector('[name="interest_rate"]');
     var hint = document.getElementById('rate-hint');
     var banner = document.getElementById('rate-missing-banner');
@@ -103,14 +103,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function fetchRate() {
-        if (!typeSelect.value) {
+        if (!headSelect.value) {
             rateInput.value = '';
             if (hint) hint.classList.add('hidden');
             if (banner) banner.classList.add('hidden');
             setSubmitState(true);
             return;
         }
-        fetch('/savings/api/account-type-rate/?type=' + typeSelect.value)
+        fetch('/savings/api/account-type-rate/?head_id=' + headSelect.value)
             .then(function(r) { return r.json(); })
             .then(function(d) {
                 if (d.rate > 0) {
@@ -130,9 +130,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
-    if (typeSelect && rateInput) {
-        typeSelect.addEventListener('change', fetchRate);
-        if (typeSelect.value) fetchRate();
+    if (headSelect && rateInput) {
+        headSelect.addEventListener('change', fetchRate);
+        if (headSelect.value) fetchRate();
     }
 
     var memberSelect = document.querySelector('select[name="member"]');

@@ -49,7 +49,9 @@ def voucher_list(request):
     _ensure_coa_exists()
     from django.core.paginator import Paginator
 
-    entries = JournalEntry.objects.select_related('branch', 'created_by', 'approved_by')
+    entries = JournalEntry.objects.select_related('branch', 'created_by', 'approved_by').annotate(
+        amount=Sum('lines__debit_amount'),
+    )
     if not request.user.can_access_all_branches:
         entries = entries.filter(branch=request.current_branch)
 
@@ -107,7 +109,7 @@ def voucher_list(request):
 
 @accountant_required
 def voucher_post(request, pk):
-    entry = get_object_or_404(JournalEntry, pk=pk)
+    entry = get_object_or_404(JournalEntry.objects.prefetch_related('lines__gl_account'), pk=pk)
     if not has_branch_access(request, entry.branch):
         messages.error(request, 'You do not have access to this voucher.')
         return redirect('accounting:vouchers')
@@ -115,7 +117,9 @@ def voucher_post(request, pk):
         from apps.accounting.services import post_journal_entry
 
         try:
-            post_journal_entry(entry, request.user)
+            with transaction.atomic():
+                post_journal_entry(entry, request.user)
+                _post_side_effects(entry, request.user)
             messages.success(request, f'Voucher {entry.voucher_no} posted successfully.')
         except ValueError as e:
             messages.error(request, str(e))
@@ -142,12 +146,19 @@ def voucher_reject(request, pk):
 @accountant_required
 def voucher_batch_post(request):
     if request.method == 'POST':
-        from apps.accounting.services import batch_post_entries
+        from apps.accounting.services import post_journal_entry
 
-        qs = JournalEntry.objects.all()
+        qs = JournalEntry.objects.filter(
+            is_posted=False, is_reversed=False, is_rejected=False,
+        ).prefetch_related('lines__gl_account')
         if not request.user.can_access_all_branches:
             qs = qs.filter(branch=request.current_branch)
-        count = batch_post_entries(qs, request.user)
+        count = 0
+        for entry in qs:
+            with transaction.atomic():
+                post_journal_entry(entry, request.user)
+                _post_side_effects(entry, request.user)
+            count += 1
         messages.success(request, f'{count} voucher(s) posted successfully.')
     return redirect('accounting:vouchers')
 
@@ -300,6 +311,30 @@ def _reverse_personal_accounts(entry, reversal, user):
         loan.save(update_fields=['outstanding_principal', 'updated_at'])
 
 
+def _post_side_effects(entry, user):
+    """Update personal accounts and cashbook when a receipt/payment voucher is posted."""
+    for line in entry.lines.select_related('gl_account'):
+        if line.account_number and line.gl_account.related_table_name in CUSTOMER_ACCOUNT_TYPES:
+            _update_personal_account(
+                head=line.gl_account,
+                account_number=line.account_number,
+                amount=max(line.debit_amount, line.credit_amount),
+                txn_type=entry.voucher_type,
+                entry_date=entry.entry_date,
+                branch=entry.branch,
+                user=user,
+                journal_entry=entry,
+            )
+    if entry.voucher_type in ('receipt', 'payment'):
+        from apps.accounting.services import update_cashbook
+
+        total = entry.total_amount
+        if entry.voucher_type == 'receipt':
+            update_cashbook(entry.branch, entry.entry_date, receipt_amount=total, payment_mode=entry.payment_mode)
+        else:
+            update_cashbook(entry.branch, entry.entry_date, payment_amount=total, payment_mode=entry.payment_mode)
+
+
 def _process_transaction(request, txn_type, heads):
     from apps.accounting.services import create_journal_entry
     from apps.accounts.permissions import is_date_locked
@@ -338,7 +373,6 @@ def _process_transaction(request, txn_type, heads):
     heads_map = ChartOfAccounts.objects.in_bulk(gl_ids)
 
     lines = []
-    line_heads = []
     total_amount = Decimal('0')
     for i in range(total_forms):
         gl_id = request.POST.get(f'lines-{i}-gl_account')
@@ -355,11 +389,11 @@ def _process_transaction(request, txn_type, heads):
         if amount <= 0:
             continue
 
+        acct_no = account_number if account_number and head.related_table_name in CUSTOMER_ACCOUNT_TYPES else ''
         if txn_type == 'receipt':
-            lines.append({'account_code': head.code, 'debit': Decimal('0'), 'credit': amount, 'narration': desc})
+            lines.append({'account_code': head.code, 'debit': Decimal('0'), 'credit': amount, 'narration': desc, 'account_number': acct_no})
         else:
-            lines.append({'account_code': head.code, 'debit': amount, 'credit': Decimal('0'), 'narration': desc})
-        line_heads.append({'head': head, 'amount': amount, 'account_number': account_number})
+            lines.append({'account_code': head.code, 'debit': amount, 'credit': Decimal('0'), 'narration': desc, 'account_number': acct_no})
         total_amount += amount
 
     if not lines:
@@ -412,37 +446,18 @@ def _process_transaction(request, txn_type, heads):
 
     try:
         branch = request.current_branch
-        with transaction.atomic():
-            entry = create_journal_entry(
-                entry_date=entry_date,
-                voucher_type=txn_type,
-                branch=branch,
-                narration=narration,
-                lines=lines,
-                user=request.user,
-                payment_mode=payment_mode,
-                is_posted=True,
-            )
-            for lh in line_heads:
-                if lh['account_number'] and lh['head'].related_table_name in CUSTOMER_ACCOUNT_TYPES:
-                    _update_personal_account(
-                        head=lh['head'],
-                        account_number=lh['account_number'],
-                        amount=lh['amount'],
-                        txn_type=txn_type,
-                        entry_date=entry_date,
-                        branch=branch,
-                        user=request.user,
-                        journal_entry=entry,
-                    )
-            from apps.accounting.services import update_cashbook
-
-            if txn_type == 'receipt':
-                update_cashbook(branch, entry_date, receipt_amount=total_amount, payment_mode=payment_mode)
-            else:
-                update_cashbook(branch, entry_date, payment_amount=total_amount, payment_mode=payment_mode)
-        messages.success(request, f'{txn_type.title()} {entry.voucher_no} saved.')
-        return redirect('accounting:cashbook')
+        entry = create_journal_entry(
+            entry_date=entry_date,
+            voucher_type=txn_type,
+            branch=branch,
+            narration=narration,
+            lines=lines,
+            user=request.user,
+            payment_mode=payment_mode,
+            is_posted=False,
+        )
+        messages.success(request, f'{txn_type.title()} {entry.voucher_no} created (pending approval).')
+        return redirect('accounting:vouchers')
     except ValueError as e:
         messages.error(request, str(e))
         title = 'Receipt Transaction' if txn_type == 'receipt' else 'Payment Transaction'
@@ -474,6 +489,7 @@ def cashbook_entry(request):
         JournalEntry.objects.filter(
             entry_date=cb_date,
             voucher_type__in=['receipt', 'payment'],
+            is_posted=True,
             is_reversed=False,
         )
         .prefetch_related('lines__gl_account')
@@ -761,6 +777,7 @@ def day_book(request):
     entries = (
         JournalEntry.objects.filter(
             entry_date=book_date,
+            is_posted=True,
             is_reversed=False,
         )
         .prefetch_related('lines__gl_account')
@@ -994,18 +1011,11 @@ def voucher_edit(request, pk):
     if request.method == 'POST':
         form = VoucherForm(request.POST)
         if form.is_valid():
-            from apps.accounting.services import create_journal_entry, reverse_journal_entry, update_cashbook
+            from apps.accounting.services import create_journal_entry, reject_journal_entry
 
             try:
                 with transaction.atomic():
-                    old_amount = debit_line.debit_amount
-                    old_type = entry.voucher_type
-                    reverse_journal_entry(entry, request.user)
-                    if old_type in ('receipt', 'payment'):
-                        if old_type == 'receipt':
-                            update_cashbook(request.current_branch, entry.entry_date, payment_amount=old_amount)
-                        else:
-                            update_cashbook(request.current_branch, entry.entry_date, receipt_amount=old_amount)
+                    reject_journal_entry(entry, request.user)
                     new_amount = form.cleaned_data['amount']
                     new_type = form.cleaned_data['voucher_type']
                     new_entry = create_journal_entry(
@@ -1028,13 +1038,7 @@ def voucher_edit(request, pk):
                         user=request.user,
                         reference_type='modification',
                         reference_id=entry.pk,
-                        is_posted=True,
                     )
-                    if new_type in ('receipt', 'payment'):
-                        if new_type == 'receipt':
-                            update_cashbook(request.current_branch, new_entry.entry_date, receipt_amount=new_amount)
-                        else:
-                            update_cashbook(request.current_branch, new_entry.entry_date, payment_amount=new_amount)
                 messages.success(request, f'Voucher modified. Old: {entry.voucher_no} → New: {new_entry.voucher_no}')
                 return redirect('accounting:vouchers')
             except ValueError as e:
@@ -1173,74 +1177,3 @@ def account_search(request):
     return JsonResponse({'results': results})
 
 
-@manager_required
-def inter_branch_transfer(request):
-    from apps.branches.models import Branch
-
-    from .models import InterBranchTransfer
-
-    branches = Branch.objects.filter(status='active').order_by('branch_name')
-    transfers = InterBranchTransfer.objects.select_related(
-        'from_branch',
-        'to_branch',
-        'created_by',
-    ).order_by('-transfer_date', '-created_at')[:50]
-
-    if request.method == 'POST':
-        from_branch_id = request.POST.get('from_branch')
-        to_branch_id = request.POST.get('to_branch')
-        amount_str = request.POST.get('amount', '0')
-        narration = request.POST.get('narration', '')
-        transfer_date_str = request.POST.get('transfer_date', '')
-
-        try:
-            from_branch = Branch.objects.get(pk=from_branch_id)
-            to_branch = Branch.objects.get(pk=to_branch_id)
-            amount = Decimal(amount_str)
-            transfer_date = (
-                date.fromisoformat(transfer_date_str)
-                if transfer_date_str
-                else get_transaction_date(request.current_branch)
-            )
-        except (Branch.DoesNotExist, ValueError, InvalidOperation) as e:
-            messages.error(request, f'Invalid input: {e}')
-            return redirect('accounting:inter_branch_transfer')
-
-        if from_branch == to_branch:
-            messages.error(request, 'From and To branch cannot be the same.')
-            return redirect('accounting:inter_branch_transfer')
-
-        if amount <= 0:
-            messages.error(request, 'Amount must be greater than zero.')
-            return redirect('accounting:inter_branch_transfer')
-
-        from .services import create_inter_branch_transfer
-
-        try:
-            transfer = create_inter_branch_transfer(
-                from_branch=from_branch,
-                to_branch=to_branch,
-                amount=amount,
-                transfer_date=transfer_date,
-                narration=narration,
-                user=request.user,
-            )
-            messages.success(
-                request,
-                f'Transfer {transfer.transfer_no}: ₹{amount:,.2f} from '
-                f'{from_branch.branch_name} to {to_branch.branch_name}',
-            )
-        except Exception as e:
-            messages.error(request, f'Transfer failed: {e}')
-
-        return redirect('accounting:inter_branch_transfer')
-
-    return render(
-        request,
-        'accounting/inter_branch_transfer.html',
-        {
-            'branches': branches,
-            'transfers': transfers,
-            'today': date.today(),
-        },
-    )

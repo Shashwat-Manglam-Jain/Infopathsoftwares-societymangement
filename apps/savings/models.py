@@ -20,6 +20,7 @@ class SavingsAccount(models.Model):
         ('director_security', 'Director Security Deposit'),
     ]
     account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPE_CHOICES, default='savings', db_index=True)
+    GL_RELATED_TYPES = ('saving', 'current', 'security')
     manual_account_no = models.CharField(max_length=20, blank=True, help_text='Legacy manual account number')
     gl_head = models.ForeignKey(
         'accounting.ChartOfAccounts',
@@ -81,6 +82,13 @@ class SavingsAccount(models.Model):
         return f'{self.account_no} - {self.member.name}'
 
     def save(self, *args, **kwargs):
+        if self.gl_head_id:
+            related = self.gl_head.related_table_name
+            type_map = {'saving': 'savings', 'current': 'current', 'security': 'security'}
+            base_type = type_map.get(related, 'savings')
+            if base_type == 'security' and 'director' in self.gl_head.name.lower():
+                base_type = 'director_security'
+            self.account_type = base_type
         if not self.account_no:
             from apps.core.account_utils import generate_account_number
 
@@ -89,6 +97,9 @@ class SavingsAccount(models.Model):
         super().save(*args, **kwargs)
 
     def _get_account_code(self):
+        if self.gl_head_id and self.gl_head.account_code:
+            return self.gl_head.account_code
+
         from apps.accounting.models import ChartOfAccounts
 
         type_to_related = {
@@ -119,16 +130,19 @@ class SavingsAccount(models.Model):
         return fallback.get(self.account_type, '006')
 
     def clean(self):
-        if self.account_type and self.status == 'active':
-            qs = SavingsAccount.objects.filter(
-                member=self.member,
-                account_type=self.account_type,
-                status='active',
-            )
+        if self.status == 'active' and (self.gl_head_id or self.account_type):
+            if self.gl_head_id:
+                qs = SavingsAccount.objects.filter(
+                    member=self.member, gl_head=self.gl_head, status='active',
+                )
+            else:
+                qs = SavingsAccount.objects.filter(
+                    member=self.member, account_type=self.account_type, status='active',
+                )
             if self.pk:
                 qs = qs.exclude(pk=self.pk)
             if qs.exists():
-                label = dict(self.ACCOUNT_TYPE_CHOICES).get(self.account_type, self.account_type)
+                label = self.gl_head.name if self.gl_head_id else dict(self.ACCOUNT_TYPE_CHOICES).get(self.account_type, self.account_type)
                 raise ValidationError(f'Member already has an active {label}.')
 
 

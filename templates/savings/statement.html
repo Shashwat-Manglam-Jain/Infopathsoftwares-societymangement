@@ -19,7 +19,7 @@
             </div>
             <div>
                 <span class="text-xs text-gray-500">{% trans "Type" %}</span>
-                <p class="text-sm font-medium text-gray-900">{{ account.get_account_type_display }}</p>
+                <p class="text-sm font-medium text-gray-900">{% if account.gl_head %}{{ account.gl_head.name }}{% else %}{{ account.get_account_type_display }}{% endif %}</p>
             </div>
             <div>
                 <span class="text-xs text-gray-500">{% trans "Balance" %}</span>

@@ -72,7 +72,7 @@
                 </div>
                 <div>
                     <span class="text-xs text-gray-400">{% trans "Type" %}</span>
-                    <p class="text-gray-600">{{ a.get_account_type_display }}</p>
+                    <p class="text-gray-600">{% if a.gl_head %}{{ a.gl_head.name }}{% else %}{{ a.get_account_type_display }}{% endif %}</p>
                 </div>
                 <div>
                     <span class="text-xs text-gray-400">{% trans "Opened" %}</span>
@@ -113,7 +113,7 @@
                                 <a href="{% url 'members:detail' a.member.pk %}" class="flex-shrink-0 text-gray-300 hover:text-primary-500" title="View Member" onclick="event.stopPropagation()"><svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
                             </div>
                         </td>
-                        <td class="px-4 py-3 text-gray-500 whitespace-nowrap">{{ a.get_account_type_display }}</td>
+                        <td class="px-4 py-3 text-gray-500 whitespace-nowrap">{% if a.gl_head %}{{ a.gl_head.name }}{% else %}{{ a.get_account_type_display }}{% endif %}</td>
                         <td class="px-5 py-3 text-right font-semibold text-gray-900 whitespace-nowrap" style="font-variant-numeric:tabular-nums">&#8377;{{ a.current_balance|floatformat:2 }}</td>
                         <td class="px-5 py-3 text-right text-green-700 whitespace-nowrap" style="font-variant-numeric:tabular-nums">{% if a.accrued_interest %}&#8377;{{ a.accrued_interest|floatformat:2 }}{% else %}—{% endif %}</td>
                         <td class="px-5 py-3 text-gray-400 hidden lg:table-cell whitespace-nowrap">{{ a.opening_date|date:"d-M-Y" }}</td>

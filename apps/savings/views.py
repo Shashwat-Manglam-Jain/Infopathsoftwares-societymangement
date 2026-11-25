@@ -29,19 +29,21 @@ _ACCOUNT_TYPE_MAP = {'savings': 'saving', 'current': 'current', 'security': 'sec
 
 
 def _apply_interest_rate(account):
-    related = _ACCOUNT_TYPE_MAP.get(account.account_type, '')
-    if related:
-        head = ChartOfAccounts.objects.filter(related_table_name=related, is_active=True).first()
-        if head:
-            slab = InterestMaster.objects.filter(account_head=head, is_active=True).first()
-            if slab:
-                account.interest_rate = slab.interest_rate
+    head = account.gl_head
+    if not head:
+        related = _ACCOUNT_TYPE_MAP.get(account.account_type, '')
+        if related:
+            head = ChartOfAccounts.objects.filter(related_table_name=related, is_active=True).first()
+    if head:
+        slab = InterestMaster.objects.filter(account_head=head, is_active=True).first()
+        if slab:
+            account.interest_rate = slab.interest_rate
 
 
 @auditor_or_above
 def savings_list(request):
     account_type = request.GET.get('type', '')
-    accounts = SavingsAccount.objects.select_related('member', 'branch')
+    accounts = SavingsAccount.objects.select_related('member', 'branch', 'gl_head')
     if account_type in ('savings', 'current', 'security'):
         accounts = accounts.filter(account_type=account_type)
     q = request.GET.get('q', '').strip()
@@ -89,8 +91,13 @@ def savings_create(request):
     else:
         initial = {'opening_date': date.today().isoformat()}
         account_type = request.GET.get('type', '')
-        if account_type in ('savings', 'current', 'security'):
-            initial['account_type'] = account_type
+        if account_type:
+            related = _ACCOUNT_TYPE_MAP.get(account_type, account_type)
+            head = ChartOfAccounts.objects.filter(
+                related_table_name=related, allow_transactions=True, is_active=True
+            ).first()
+            if head:
+                initial['gl_head'] = head.pk
         form = SavingsAccountForm(initial=initial, current_branch=branch)
 
     if branch:
@@ -131,14 +138,14 @@ def savings_edit(request, pk):
 @auditor_or_above
 def savings_detail(request, pk):
     account = get_object_or_404(
-        SavingsAccount.objects.select_related('member', 'branch', 'created_by'),
+        SavingsAccount.objects.select_related('member', 'branch', 'created_by', 'gl_head'),
         pk=pk,
     )
     if not request.user.can_access_all_branches and account.branch != request.current_branch:
         messages.error(request, 'You do not have access to this account.')
         return redirect('savings:list')
 
-    transactions = account.transactions.select_related('reversal_of').order_by('-txn_date', '-created_at')[:20]
+    transactions = account.transactions.select_related('reversal_of', 'created_by').order_by('-txn_date', '-created_at')[:20]
     context = {
         'account': account,
         'transactions': transactions,
@@ -231,7 +238,7 @@ def savings_withdraw(request, pk):
 @auditor_or_above
 def savings_statement(request, pk):
     account = get_object_or_404(
-        SavingsAccount.objects.select_related('member', 'branch'),
+        SavingsAccount.objects.select_related('member', 'branch', 'gl_head'),
         pk=pk,
     )
     if not request.user.can_access_all_branches and account.branch != request.current_branch:
@@ -364,27 +371,30 @@ class PassbookPrintView(AuditorOrAboveMixin, View):
 
 @login_required
 def account_type_rate_api(request):
+    head_id_param = request.GET.get('head_id', '')
     account_type = request.GET.get('type', '')
-    type_map = {'savings': 'saving', 'current': 'current', 'security': 'security'}
-    related = type_map.get(account_type, '')
 
     rate = 0
     head_id = None
     head_name = ''
-    if related:
-        head = ChartOfAccounts.objects.filter(
-            related_table_name=related,
-            is_active=True,
-        ).first()
-        if head:
-            head_id = head.pk
-            head_name = str(head)
-            slab = InterestMaster.objects.filter(
-                account_head=head,
-                is_active=True,
+
+    head = None
+    if head_id_param:
+        head = ChartOfAccounts.objects.filter(pk=head_id_param, is_active=True).first()
+    elif account_type:
+        type_map = {'savings': 'saving', 'current': 'current', 'security': 'security'}
+        related = type_map.get(account_type, '')
+        if related:
+            head = ChartOfAccounts.objects.filter(
+                related_table_name=related, is_active=True
             ).first()
-            if slab:
-                rate = float(slab.interest_rate)
+
+    if head:
+        head_id = head.pk
+        head_name = str(head)
+        slab = InterestMaster.objects.filter(account_head=head, is_active=True).first()
+        if slab:
+            rate = float(slab.interest_rate)
 
     return JsonResponse({'rate': rate, 'account_type': account_type, 'head_id': head_id, 'head_name': head_name})
 

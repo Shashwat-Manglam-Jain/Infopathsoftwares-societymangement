@@ -90,6 +90,15 @@
             font-family: 'Inter', system-ui, sans-serif;
             font-size: 0.875rem;
         }
+        input[type="text"], input[type="search"], input[type="email"], input[type="url"],
+        textarea {
+            text-transform: uppercase;
+        }
+        input[type="text"]::placeholder, input[type="search"]::placeholder,
+        input[type="email"]::placeholder, input[type="url"]::placeholder,
+        textarea::placeholder {
+            text-transform: none;
+        }
         .font-mono, code, pre, input.font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
 
         /* Dark mode overrides — comprehensive */
@@ -497,6 +506,16 @@
             }, duration);
         };
     })();
+    </script>
+
+    <!-- Global Uppercase: convert text inputs to uppercase on submit -->
+    <script>
+    document.addEventListener('submit', function(e) {
+        if (e.target.tagName !== 'FORM') return;
+        e.target.querySelectorAll('input[type="text"], input[type="search"], input[type="email"], input[type="url"], textarea').forEach(function(el) {
+            if (el.value) el.value = el.value.toUpperCase();
+        });
+    }, true);
     </script>
 
     <!-- Global Double-Submit Protection (POST forms only, skip search/filter GET forms) -->

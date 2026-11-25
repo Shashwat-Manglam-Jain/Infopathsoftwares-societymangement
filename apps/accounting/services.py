@@ -64,6 +64,7 @@ def create_journal_entry(
                 debit_amount=debit,
                 credit_amount=credit,
                 narration=line_data.get('narration', ''),
+                account_number=line_data.get('account_number', ''),
             )
 
             if is_posted:
@@ -501,77 +502,3 @@ def generate_voucher_no(voucher_type, branch):
     return f'{prefix}/{seq:06d}'
 
 
-def _get_or_create_ibt_head():
-    head, _created = ChartOfAccounts.objects.get_or_create(
-        code='1020',
-        defaults={
-            'name': 'Inter-Branch Transfer Account',
-            'account_group': 'asset',
-            'related_table_name': 'general',
-            'is_system': True,
-            'allow_transactions': True,
-            'report_position': 'balance_sheet',
-        },
-    )
-    return head.code
-
-
-def create_inter_branch_transfer(from_branch, to_branch, amount, transfer_date, narration, user):
-    from apps.accounting.models import InterBranchTransfer
-    from apps.core.gl_utils import get_cash_code
-
-    last = InterBranchTransfer.objects.order_by('-pk').first()
-    seq = (last.pk + 1) if last else 1
-    transfer_no = f'IBT-{seq:06d}'
-
-    ibt_code = _get_or_create_ibt_head()
-    cash_code_from = get_cash_code(from_branch)
-    cash_code_to = get_cash_code(to_branch)
-
-    with transaction.atomic():
-        je_from = create_journal_entry(
-            entry_date=transfer_date,
-            voucher_type='contra',
-            branch=from_branch,
-            narration=f'Inter-branch transfer to {to_branch.branch_name}: {narration}',
-            lines=[
-                {'account_code': ibt_code, 'debit': amount, 'credit': Decimal('0')},
-                {'account_code': cash_code_from, 'debit': Decimal('0'), 'credit': amount},
-            ],
-            user=user,
-            reference_type='inter_branch_transfer',
-            is_posted=True,
-        )
-
-        je_to = create_journal_entry(
-            entry_date=transfer_date,
-            voucher_type='contra',
-            branch=to_branch,
-            narration=f'Inter-branch transfer from {from_branch.branch_name}: {narration}',
-            lines=[
-                {'account_code': cash_code_to, 'debit': amount, 'credit': Decimal('0')},
-                {'account_code': ibt_code, 'debit': Decimal('0'), 'credit': amount},
-            ],
-            user=user,
-            reference_type='inter_branch_transfer',
-            is_posted=True,
-        )
-
-        transfer = InterBranchTransfer.objects.create(
-            transfer_no=transfer_no,
-            from_branch=from_branch,
-            to_branch=to_branch,
-            amount=amount,
-            transfer_date=transfer_date,
-            narration=narration,
-            status='completed',
-            journal_entry_from=je_from,
-            journal_entry_to=je_to,
-            created_by=user,
-            approved_by=user,
-        )
-
-        update_cashbook(from_branch, transfer_date, payment_amount=amount)
-        update_cashbook(to_branch, transfer_date, receipt_amount=amount)
-
-    return transfer

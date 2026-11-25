@@ -1,5 +1,6 @@
 from django import forms
 
+from apps.accounting.models import ChartOfAccounts
 from apps.savings.models import SavingsAccount
 
 _tw = 'w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500'
@@ -12,7 +13,7 @@ class SavingsAccountForm(forms.ModelForm):
         fields = [
             'member',
             'branch',
-            'account_type',
+            'gl_head',
             'interest_rate',
             'minimum_balance',
             'interest_posting_frequency',
@@ -22,7 +23,7 @@ class SavingsAccountForm(forms.ModelForm):
         widgets = {
             'member': forms.Select(attrs={'class': _tw_s}),
             'branch': forms.Select(attrs={'class': _tw}),
-            'account_type': forms.Select(attrs={'class': _tw}),
+            'gl_head': forms.Select(attrs={'class': _tw}),
             'interest_rate': forms.NumberInput(
                 attrs={
                     'class': _tw + ' bg-gray-50 cursor-not-allowed',
@@ -38,10 +39,20 @@ class SavingsAccountForm(forms.ModelForm):
             'opening_date': forms.DateInput(attrs={'class': _tw, 'type': 'date'}),
             'introducer': forms.Select(attrs={'class': _tw_s}),
         }
+        labels = {
+            'gl_head': 'Account Type',
+        }
 
     def __init__(self, *args, **kwargs):
         self.current_branch = kwargs.pop('current_branch', None)
         super().__init__(*args, **kwargs)
+        self.fields['gl_head'].queryset = ChartOfAccounts.objects.filter(
+            related_table_name__in=SavingsAccount.GL_RELATED_TYPES,
+            allow_transactions=True,
+            is_active=True,
+        ).order_by('display_order', 'name')
+        self.fields['gl_head'].required = True
+        self.fields['gl_head'].empty_label = '-- Select Account Type --'
         self.fields['opening_date'].required = True
         self.fields['introducer'].required = False
         self.fields['branch'].empty_label = None
@@ -53,18 +64,17 @@ class SavingsAccountForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         member = cleaned_data.get('member')
-        account_type = cleaned_data.get('account_type')
-        if member and account_type:
+        gl_head = cleaned_data.get('gl_head')
+        if member and gl_head:
             qs = SavingsAccount.objects.filter(
                 member=member,
-                account_type=account_type,
+                gl_head=gl_head,
                 status='active',
             )
             if self.instance.pk:
                 qs = qs.exclude(pk=self.instance.pk)
             if qs.exists():
-                label = dict(SavingsAccount.ACCOUNT_TYPE_CHOICES).get(account_type, account_type)
-                raise forms.ValidationError(f'Member already has an active {label}. Only one per member is allowed.')
+                raise forms.ValidationError(f'Member already has an active {gl_head.name}. Only one per member is allowed.')
         return cleaned_data
 
 

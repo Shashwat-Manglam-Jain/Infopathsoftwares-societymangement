@@ -19,7 +19,7 @@
             </div>
             <div>
                 <span class="text-xs text-gray-500">{% trans "Type" %}</span>
-                <p class="text-sm font-medium text-gray-900">{{ account.get_account_type_display }}</p>
+                <p class="text-sm font-medium text-gray-900">{% if account.gl_head %}{{ account.gl_head.name }}{% else %}{{ account.get_account_type_display }}{% endif %}</p>
             </div>
             <div>
                 <span class="text-xs text-gray-500">{% trans "Status" %}</span>
@@ -98,7 +98,9 @@
                         <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Narration" %}</th>
                         <th class="px-3 py-2.5 text-right text-xs font-semibold text-gray-600 uppercase whitespace-nowrap">{% trans "Amount" %}</th>
                         <th class="px-3 py-2.5 text-right text-xs font-semibold text-gray-600 uppercase whitespace-nowrap">{% trans "Balance" %}</th>
-                        <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase whitespace-nowrap">{% trans "Receipt" %}</th>
+                        <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase whitespace-nowrap">{% trans "Voucher" %}</th>
+                        <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase whitespace-nowrap hidden lg:table-cell">{% trans "Mode" %}</th>
+                        <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase whitespace-nowrap hidden lg:table-cell">{% trans "By" %}</th>
                         {% if request.user.is_manager %}<th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600 uppercase whitespace-nowrap">{% trans "Action" %}</th>{% endif %}
                     </tr>
                 </thead>
@@ -117,8 +119,11 @@
                         </td>
                         <td class="px-3 py-2.5 text-right font-medium text-gray-900 whitespace-nowrap" style="font-variant-numeric:tabular-nums">&#8377;{{ txn.running_balance|floatformat:2 }}</td>
                         <td class="px-3 py-2.5 whitespace-nowrap">
-                            {% if txn.receipt_no %}<a href="{% url 'savings:receipt' txn_id=txn.pk %}" class="text-primary-600 hover:underline">{{ txn.receipt_no }}</a>{% endif %}
+                            {% if txn.voucher_no %}<span class="text-xs font-mono text-gray-700">{{ txn.voucher_no }}</span>{% endif %}
+                            {% if txn.receipt_no %}<a href="{% url 'savings:receipt' txn_id=txn.pk %}" class="text-xs text-primary-600 hover:underline ml-1">{{ txn.receipt_no }}</a>{% endif %}
                         </td>
+                        <td class="px-3 py-2.5 text-xs text-gray-500 whitespace-nowrap hidden lg:table-cell">{{ txn.get_payment_mode_display }}</td>
+                        <td class="px-3 py-2.5 text-xs text-gray-500 whitespace-nowrap hidden lg:table-cell">{{ txn.created_by.get_short_name }}</td>
                         {% if request.user.is_manager %}
                         <td class="px-3 py-2.5 text-center whitespace-nowrap">
                             {% if not txn.is_reversed and txn.txn_type != 'reversal' %}
@@ -128,7 +133,7 @@
                         {% endif %}
                     </tr>
                     {% empty %}
-                    <tr><td colspan="{% if request.user.is_manager %}7{% else %}6{% endif %}" class="px-4 py-6 text-center text-gray-400">{% trans "No transactions yet." %}</td></tr>
+                    <tr><td colspan="{% if request.user.is_manager %}9{% else %}8{% endif %}" class="px-4 py-6 text-center text-gray-400">{% trans "No transactions yet." %}</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
