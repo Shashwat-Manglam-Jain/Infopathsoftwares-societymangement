@@ -98,14 +98,24 @@ class SavingsAccount(models.Model):
             'director_security': 'security',
         }
         related = type_to_related.get(self.account_type, 'saving')
-        head = ChartOfAccounts.objects.filter(
+
+        qs = ChartOfAccounts.objects.filter(
             related_table_name=related,
             account_code__gt='',
             is_active=True,
-        ).first()
+        )
+        if self.account_type == 'director_security':
+            head = qs.filter(name__icontains='director').first() or qs.first()
+        else:
+            head = qs.exclude(name__icontains='director').first() or qs.first()
         if head and head.account_code:
             return head.account_code
-        fallback = {'savings': '006', 'current': '002', 'security': '003'}
+        fallback = {
+            'savings': '006',
+            'current': '002',
+            'security': '003',
+            'director_security': '075',
+        }
         return fallback.get(self.account_type, '006')
 
     def clean(self):

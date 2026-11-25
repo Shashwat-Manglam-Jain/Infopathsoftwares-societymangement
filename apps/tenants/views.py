@@ -207,9 +207,14 @@ class SocietySignupView(View):
         except Exception:
             logger.exception('Failed to create Chart of Accounts for %s', society.schema_name)
 
+        from apps.accounting.models import ChartOfAccounts
         from apps.loans.models import LoanProduct
 
         if not LoanProduct.objects.exists():
+            gl_map = {}
+            for head in ChartOfAccounts.objects.filter(related_table_name='loan', account_code__gt=''):
+                gl_map[head.account_code] = head
+
             default_products = [
                 {
                     'name': 'Personal Loan',
@@ -218,6 +223,7 @@ class SocietySignupView(View):
                     'max_tenure_months': 60,
                     'interest_type': 'reducing_monthly',
                     'loan_category': 'regular',
+                    'gl_head': gl_map.get('026'),
                 },
                 {
                     'name': 'Emergency Loan',
@@ -226,6 +232,7 @@ class SocietySignupView(View):
                     'max_tenure_months': 24,
                     'interest_type': 'flat',
                     'loan_category': 'emergency',
+                    'gl_head': gl_map.get('027'),
                 },
                 {
                     'name': 'Gold Loan',
@@ -237,6 +244,7 @@ class SocietySignupView(View):
                     'mortgage_type': 'gold',
                     'allow_multiple': True,
                     'requires_collateral': True,
+                    'gl_head': gl_map.get('092'),
                 },
                 {
                     'name': 'Loan Against FD',
@@ -248,6 +256,7 @@ class SocietySignupView(View):
                     'mortgage_type': 'fixed_deposit',
                     'allow_multiple': True,
                     'max_loan_to_deposit_ratio': Decimal('90.00'),
+                    'gl_head': gl_map.get('028'),
                 },
                 {
                     'name': 'Loan Against Pigmmy',
@@ -259,6 +268,7 @@ class SocietySignupView(View):
                     'mortgage_type': 'pigmmy',
                     'allow_multiple': True,
                     'max_loan_to_deposit_ratio': Decimal('90.00'),
+                    'gl_head': gl_map.get('029'),
                 },
                 {
                     'name': 'Property Mortgage Loan',
@@ -270,6 +280,19 @@ class SocietySignupView(View):
                     'mortgage_type': 'property',
                     'allow_multiple': True,
                     'requires_collateral': True,
+                    'gl_head': gl_map.get('063'),
+                },
+                {
+                    'name': 'Loan Against RD',
+                    'interest_rate': Decimal('10.00'),
+                    'max_amount': Decimal('500000'),
+                    'max_tenure_months': 60,
+                    'interest_type': 'reducing_monthly',
+                    'loan_category': 'mortgage',
+                    'mortgage_type': 'recurring_deposit',
+                    'allow_multiple': True,
+                    'max_loan_to_deposit_ratio': Decimal('90.00'),
+                    'gl_head': gl_map.get('033'),
                 },
             ]
             for prod in default_products:

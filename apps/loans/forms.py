@@ -49,12 +49,17 @@ class LoanProductForm(forms.ModelForm):
 
 class LoanApplicationForm(forms.ModelForm):
     interest_rate = forms.DecimalField(
-        max_digits=5, decimal_places=2, min_value=Decimal('0.01'),
+        max_digits=5,
+        decimal_places=2,
+        min_value=Decimal('0.01'),
         widget=forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '0.01'}),
         help_text='Pre-filled from product. Override if needed.',
     )
     penal_interest_rate = forms.DecimalField(
-        max_digits=5, decimal_places=2, min_value=Decimal('0'), required=False,
+        max_digits=5,
+        decimal_places=2,
+        min_value=Decimal('0'),
+        required=False,
         widget=forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '0'}),
         help_text='Pre-filled from product. Override if needed.',
     )

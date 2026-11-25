@@ -78,7 +78,11 @@ def generate_account_number(branch, account_code):
     from apps.loans.models import LoanAccount
     from apps.savings.models import SavingsAccount
 
-    society_code = getattr(connection.tenant, 'society_code', None) or '001'
+    try:
+        tenant = connection.tenant
+        society_code = getattr(tenant, 'society_code', None) or '001'
+    except AttributeError:
+        society_code = '001'
     branch_part = branch.branch_code[:2].zfill(2)
     acct_part = account_code[:3].zfill(3)
 
