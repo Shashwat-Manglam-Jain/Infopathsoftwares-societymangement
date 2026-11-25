@@ -29,11 +29,14 @@ def _ensure_coa_exists():
     """Create default Chart of Accounts if none exist for the current tenant."""
     if ChartOfAccounts.objects.exists():
         return
+
     import logging
+
     logger = logging.getLogger(__name__)
     try:
         from apps.accounting.initial_coa import setup_chart_of_accounts
         from apps.branches.models import Branch
+
         branches = list(Branch.objects.all())
         setup_chart_of_accounts(branches=branches or None)
         logger.info('Auto-created %d COA heads for tenant', ChartOfAccounts.objects.count())
