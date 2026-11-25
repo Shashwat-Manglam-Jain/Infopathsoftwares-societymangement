@@ -152,7 +152,7 @@
                                     </a>
                                     {% endif %}
                                 {% else %}
-                                    {% if request.user.is_accountant %}
+                                    {% if request.user.is_manager %}
                                     <form method="post" action="{% url 'accounting:voucher_cancel' entry.pk %}" class="inline">
                                         {% csrf_token %}
                                         <button type="submit" class="inline-flex items-center px-2 py-1 text-xs font-medium text-orange-700 bg-orange-50 rounded hover:bg-orange-100 dark:text-orange-400 dark:bg-orange-900/30 dark:hover:bg-orange-900/50"

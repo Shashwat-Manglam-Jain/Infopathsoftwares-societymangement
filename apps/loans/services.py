@@ -306,14 +306,6 @@ def collect_emi(loan, amount, branch, user, payment_mode='cash'):
         return repayment
 
 
-def calculate_loan_interest(loan, for_date):
-    if loan.outstanding_principal <= 0 or loan.interest_rate <= 0:
-        return Decimal('0.00')
-    daily_rate = loan.interest_rate / (Decimal('365') * Decimal('100'))
-    interest = (loan.outstanding_principal * daily_rate).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
-    return interest
-
-
 def prepay_loan(loan, amount, branch, user):
     amount = Decimal(str(amount))
     if amount > loan.outstanding_principal + loan.outstanding_interest:
