@@ -7,6 +7,17 @@
 {% block content %}
 <div class="max-w-full space-y-4">
 
+    <div class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex items-start gap-3" x-data="{ show: true }" x-show="show" x-transition.opacity.duration.200ms>
+        <svg class="h-5 w-5 text-blue-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div class="flex-1">
+            <h3 class="text-sm font-semibold text-blue-800">{% trans "Pigmy Accounts" %}</h3>
+            <p class="text-xs text-blue-700 mt-0.5">{% trans "View and manage all pigmy (daily deposit) accounts. Filter by agent to see their client portfolio and track collection status." %}</p>
+        </div>
+        <button @click="show = false" class="text-blue-400 hover:text-blue-600 shrink-0 p-0.5">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+    </div>
+
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
             <h2 class="text-lg font-semibold text-gray-900">{% trans "Pigmy Accounts" %}</h2>
@@ -22,7 +33,7 @@
                 </select>
             </form>
             {% if request.user.is_cashier %}
-            <a href="{% url 'agents:pigmmy_create' %}" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "Open Account" %}</a>
+            <a href="{% url 'agents:pigmmy_create' %}" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">{% trans "Open Account" %}</a>
             {% endif %}
         </div>
     </div>
@@ -30,7 +41,7 @@
     <!-- Mobile Card View -->
     <div class="md:hidden space-y-3">
         {% for acct in accounts %}
-        <a href="{% url 'agents:pigmmy_detail' pk=acct.pk %}" class="block bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:border-primary-300 transition-colors">
+        <a href="{% url 'agents:pigmmy_detail' pk=acct.pk %}" class="block bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:border-primary-300 transition-colors">
             <div class="flex items-start justify-between mb-2">
                 <div class="min-w-0">
                     <p class="text-sm font-semibold text-gray-900 truncate">{{ acct.member.name }}</p>
@@ -38,7 +49,7 @@
                 </div>
                 <span class="ml-2 flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if acct.status == 'active' %}bg-green-100 text-green-700{% elif acct.status == 'matured' %}bg-blue-100 text-blue-700{% else %}bg-gray-100 text-gray-600{% endif %}">{{ acct.get_status_display }}</span>
             </div>
-            <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-sm">
                 <div>
                     <span class="text-xs text-gray-400">{% trans "Balance" %}</span>
                     <p class="font-semibold text-gray-900" style="font-variant-numeric:tabular-nums">&#8377;{{ acct.current_balance|floatformat:2 }}</p>
@@ -58,12 +69,12 @@
             </div>
         </a>
         {% empty %}
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-sm text-gray-400">{% trans "No pigmy accounts found." %}</div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center text-sm text-gray-400">{% trans "No pigmy accounts found." %}</div>
         {% endfor %}
     </div>
 
     <!-- Desktop Table View -->
-    <div class="hidden md:block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="hidden md:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-[900px] w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50">

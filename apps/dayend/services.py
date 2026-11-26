@@ -225,6 +225,7 @@ def run_year_end(branch, financial_year, user):
                 'journal_entry__entry_date__gte': financial_year.start_date,
                 'journal_entry__entry_date__lte': financial_year.end_date,
                 'journal_entry__is_reversed': False,
+                'journal_entry__is_posted': True,
                 'journal_entry__branch': branch,
             }
             for account in income_accounts:
@@ -304,9 +305,15 @@ def run_year_end(branch, financial_year, user):
                     account.save(update_fields=['current_balance'])
                     pl_count += 1
 
-            ob_count = ChartOfAccounts.objects.filter(
+            bs_accounts = ChartOfAccounts.objects.filter(
                 account_group__in=['asset', 'liability', 'equity'],
-            ).count()
+            )
+            for account in bs_accounts:
+                account.opening_balance = account.current_balance
+                account.debit_balance = Decimal('0')
+                account.credit_balance = Decimal('0')
+                account.save(update_fields=['opening_balance', 'debit_balance', 'credit_balance'])
+                ob_count += 1
 
             log.pl_accounts_zeroed = pl_count
             log.opening_balances_updated = ob_count
@@ -336,7 +343,7 @@ def _accrue_savings_interest(branch, processing_date):
 
     count = 0
     days_in_year = Decimal('366' if calendar.isleap(processing_date.year) else '365')
-    accounts = SavingsAccount.objects.filter(branch=branch, status='active', interest_rate__gt=0)
+    accounts = SavingsAccount.objects.filter(branch=branch, status='active', interest_rate__gt=0, current_balance__gt=0)
     for account in accounts:
         daily_rate = account.interest_rate / (Decimal('100') * days_in_year)
         daily_interest = (account.current_balance * daily_rate).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
@@ -348,12 +355,15 @@ def _accrue_savings_interest(branch, processing_date):
 
 
 def _accrue_loan_interest(branch, processing_date):
+    import calendar
+
     from apps.loans.models import LoanAccount
 
     count = 0
-    loans = LoanAccount.objects.filter(branch=branch, status__in=['disbursed', 'npa'])
+    days_in_year = Decimal('366' if calendar.isleap(processing_date.year) else '365')
+    loans = LoanAccount.objects.filter(branch=branch, status__in=['disbursed', 'npa'], outstanding_principal__gt=0)
     for loan in loans:
-        daily_rate = loan.interest_rate / Decimal('365') / Decimal('100')
+        daily_rate = loan.interest_rate / days_in_year / Decimal('100')
         daily_interest = (loan.outstanding_principal * daily_rate).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
         loan.outstanding_interest += daily_interest
         loan.last_interest_calculated_date = processing_date
@@ -373,6 +383,18 @@ def _mark_overdue_loans(branch, processing_date):
     )
     count = past_due.update(status='overdue')
     return count
+
+
+def _classify_npa_category(days_overdue):
+    """RBI NPA classification based on days overdue past threshold."""
+    if days_overdue < 365:
+        return 'sub_standard', Decimal('10')
+    elif days_overdue < 730:
+        return 'doubtful_1', Decimal('20')
+    elif days_overdue < 1095:
+        return 'doubtful_2', Decimal('30')
+    else:
+        return 'doubtful_3', Decimal('100')
 
 
 def _mark_npa_loans(branch, processing_date):
@@ -395,10 +417,23 @@ def _mark_npa_loans(branch, processing_date):
                 paid=Sum('paid_amount', default=Decimal('0')),
             )
             loan.overdue_amount = overdue_agg['total'] - overdue_agg['paid']
+            update_fields = ['overdue_days', 'overdue_amount', 'status']
             if days_overdue >= threshold and loan.status != 'npa':
                 loan.status = 'npa'
+                loan.npa_date = processing_date
+                update_fields.extend(['npa_date'])
                 count += 1
-            loan.save(update_fields=['overdue_days', 'overdue_amount', 'status'])
+            if loan.status == 'npa':
+                category, provision_pct = _classify_npa_category(days_overdue)
+                loan.npa_category = category
+                loan.npa_provision_percent = provision_pct
+                loan.npa_provision_amount = (
+                    loan.outstanding_principal * provision_pct / Decimal('100')
+                ).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+                update_fields.extend([
+                    'npa_category', 'npa_provision_percent', 'npa_provision_amount',
+                ])
+            loan.save(update_fields=list(set(update_fields)))
     return count
 
 
@@ -414,6 +449,7 @@ def _auto_cashbook_posting(branch, processing_date, user):
     entries = JournalEntry.objects.filter(
         branch=branch,
         entry_date=processing_date,
+        is_posted=True,
         is_reversed=False,
     )
     entries_count = entries.count()

@@ -5,7 +5,7 @@
 ![Python](https://img.shields.io/badge/Python-3.12-blue)
 ![Django](https://img.shields.io/badge/Django-5.1-green)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue)
-![Tests](https://img.shields.io/badge/Tests-299_passing-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-386_passing-brightgreen)
 ![i18n](https://img.shields.io/badge/i18n-EN_|_HI_|_MR-orange)
 ![License](https://img.shields.io/badge/License-Proprietary-red)
 
@@ -25,7 +25,7 @@ Societies pay a monthly subscription. All hosting, updates, backups, and securit
 - **Member Management** — KYC (Aadhaar/PAN), nominees, photos, documents. Category flags for senior citizen, widow, ex-military, employee, director (auto interest bonus). Member exit tracking. Excel import/export.
 - **Share Capital** — Purchase, transfer, surrender. Auto certificate numbers. Dividend calculation.
 - **Savings Accounts** — Deposit, withdrawal, daily interest accrual. Passbook printing. Security deposit accounts.
-- **Loan Management** — Mortgage and non-mortgage types. SBI Reducing Balance EMI formula. Guarantor validation. Director recommendation workflow. Standing instructions. NPA classification.
+- **Loan Management** — Mortgage and non-mortgage types. SBI Reducing Balance EMI formula. Guarantor validation. Director recommendation workflow. Standing instructions. NPA classification with RBI sub-categories (Sub-Standard, Doubtful 1-3) and provision calculation.
 - **Fixed Deposits** — Slab-based interest by tenure. Quarterly/half-yearly/yearly/cumulative compounding. Auto-renewal, premature closure with penalty. TDS tracking. Senior citizen bonus rates.
 - **Recurring Deposits** — Monthly installment tracking. Default penalty. Maturity calculation.
 
@@ -35,7 +35,7 @@ Societies pay a monthly subscription. All hosting, updates, backups, and securit
 - **Daily Collections** — Record agent collections with matching. Auto-post to member savings. Commission calculation with TDS.
 
 ### Accounting & Day Operations
-- **Double-Entry Bookkeeping** — Every transaction auto-generates balanced journal entries. Manual voucher entry for adjustments. Chart of accounts with 60+ default heads.
+- **Double-Entry Bookkeeping** — Every transaction auto-generates balanced journal entries. Manual voucher entry for adjustments. Chart of accounts with 181 default heads aligned with legacy Sawitribai head master.
 - **Day Operations Workflow** — Begin Day → Transactions → Day End (interest accrual, overdue marking, NPA classification, cashbook posting) → Month End → Year End.
 - **Day Controls** — All financial views blocked when working day is closed (`day_open_required` decorator).
 - **Rollback** — Day End can be rolled back before opening a new day.
@@ -109,7 +109,7 @@ society_software/
 │   ├── urls_public.py          #   Public schema (landing, signup)
 │   └── celery.py
 ├── apps/                       # 17 Django apps (see table above)
-├── templates/                  # 119 templates
+├── templates/                  # 124 templates
 │   ├── base.html               #   Main layout (sidebar + topbar + content)
 │   ├── includes/               #   sidebar, topbar, navbar, branch_switcher
 │   ├── components/             #   modal, table, pagination, alerts
@@ -117,8 +117,10 @@ society_software/
 ├── locale/                     # i18n translations
 │   ├── hi/LC_MESSAGES/         #   Hindi
 │   └── mr/LC_MESSAGES/         #   Marathi
-├── static/img/logo.png         # InfopathSolutions logo
-├── tests/                      # 299 tests across 14 modules
+├── static/img/
+│   ├── logo.png                #   InfopathSolutions logo
+│   └── favicon.png             #   Browser tab icon
+├── tests/                      # 386 tests across 15 modules
 └── infrastructure/             # Nginx, Gunicorn, Celery, backup, deploy
 ```
 
@@ -181,15 +183,15 @@ PostgreSQL Database
 ## Running Tests
 
 ```bash
-# Full suite (299 tests)
-python manage.py test tests/ --settings=config.settings.testing
+# Full suite (386 tests)
+DJANGO_SETTINGS_MODULE=config.settings.testing python manage.py test tests
 
 # Single module
-python manage.py test tests.test_savings --settings=config.settings.testing
+DJANGO_SETTINGS_MODULE=config.settings.testing python manage.py test tests.test_savings
 
 # With coverage
 pip install coverage
-coverage run manage.py test tests/ --settings=config.settings.testing
+DJANGO_SETTINGS_MODULE=config.settings.testing coverage run manage.py test tests
 coverage report -m
 ```
 

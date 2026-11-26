@@ -18,37 +18,48 @@
 {% block content %}
 <div class="space-y-4">
 
+    <div class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex items-start gap-3 no-print" x-data="{ show: true }" x-show="show" x-transition.opacity.duration.200ms>
+        <svg class="h-5 w-5 text-blue-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div class="flex-1">
+            <h3 class="text-sm font-semibold text-blue-800">{% trans "Profit & Loss Statement" %}</h3>
+            <p class="text-xs text-blue-700 mt-0.5">{% trans "Income vs expenditure statement for the selected financial year. Shows all income heads, expense heads, and the net profit or loss of the society." %}</p>
+        </div>
+        <button @click="show = false" class="text-blue-400 hover:text-blue-600 shrink-0 p-0.5">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+    </div>
+
     <div class="no-print">
-        <a href="{% url 'reports:index' %}" class="inline-flex items-center text-sm text-primary-600 hover:text-primary-800 font-medium">
+        <a href="{% url 'reports:index' %}" class="inline-flex items-center text-sm text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-medium">
             <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
             {% trans "All Reports" %}
         </a>
     </div>
 
     <!-- Date Filter -->
-    <form method="get" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 no-print"
+    <form method="get" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 no-print"
           x-data="{ fromDate: '{{ from_date|default:'' }}', toDate: '{{ to_date|default:'' }}', today: new Date().toISOString().split('T')[0] }">
         <div class="flex flex-col sm:flex-row items-end gap-3">
             <div class="flex-1">
-                <label class="block text-sm font-medium text-gray-700 mb-1">{% trans "From Date" %}</label>
-                <input type="date" name="from_date" x-model="fromDate" :max="toDate || today" required class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{% trans "From Date" %}</label>
+                <input type="date" name="from_date" x-model="fromDate" :max="toDate || today" required class="block w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white">
             </div>
             <div class="flex-1">
-                <label class="block text-sm font-medium text-gray-700 mb-1">{% trans "To Date" %}</label>
-                <input type="date" name="to_date" x-model="toDate" :min="fromDate" :max="today" required class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{% trans "To Date" %}</label>
+                <input type="date" name="to_date" x-model="toDate" :min="fromDate" :max="today" required class="block w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white">
             </div>
             <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">{% trans "Generate" %}</button>
             {% if income_groups or expense_groups %}{% include "includes/export_csv.html" %}
-            <button onclick="window.print()" type="button" class="inline-flex items-center px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+            <button onclick="window.print()" type="button" class="inline-flex items-center px-4 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                 <svg class="h-4 w-4 mr-1.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                 {% trans "Print" %}
             </button>{% endif %}
         </div>
         <div class="flex flex-wrap gap-2 mt-3">
             <span class="text-xs text-gray-400 self-center mr-1">{% trans "Quick:" %}</span>
-            <button type="button" @click="let d=new Date(); fromDate=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01'; toDate=today" class="px-2.5 py-1 text-xs font-medium rounded bg-gray-100 text-gray-600 hover:bg-gray-200">{% trans "This Month" %}</button>
-            <button type="button" @click="let d=new Date(); d.setMonth(d.getMonth()-1); let l=new Date(d.getFullYear(),d.getMonth()+1,0); fromDate=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01'; toDate=l.toISOString().split('T')[0]" class="px-2.5 py-1 text-xs font-medium rounded bg-gray-100 text-gray-600 hover:bg-gray-200">{% trans "Last Month" %}</button>
-            <button type="button" @click="let d=new Date(), fy=d.getMonth()>=3?d.getFullYear():d.getFullYear()-1; fromDate=fy+'-04-01'; toDate=(fy+1)+'-03-31'" class="px-2.5 py-1 text-xs font-medium rounded bg-gray-100 text-gray-600 hover:bg-gray-200">{% trans "This FY" %}</button>
+            <button type="button" @click="let d=new Date(); fromDate=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01'; toDate=today" class="px-2.5 py-1 text-xs font-medium rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">{% trans "This Month" %}</button>
+            <button type="button" @click="let d=new Date(); d.setMonth(d.getMonth()-1); let l=new Date(d.getFullYear(),d.getMonth()+1,0); fromDate=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01'; toDate=l.toISOString().split('T')[0]" class="px-2.5 py-1 text-xs font-medium rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">{% trans "Last Month" %}</button>
+            <button type="button" @click="let d=new Date(), fy=d.getMonth()>=3?d.getFullYear():d.getFullYear()-1; fromDate=fy+'-04-01'; toDate=(fy+1)+'-03-31'" class="px-2.5 py-1 text-xs font-medium rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">{% trans "This FY" %}</button>
         </div>
     </form>
 
@@ -62,51 +73,53 @@
     <!-- Two-Column Layout -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <!-- Expenditure (Left) -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div class="px-4 py-3 bg-red-50 border-b border-red-100">
-                <h3 class="text-sm font-semibold text-red-800">{% trans "Expenditure" %}</h3>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="px-4 py-3 bg-red-50 dark:bg-red-900/20 border-b border-red-100 dark:border-red-800/30">
+                <h3 class="text-sm font-semibold text-red-800 dark:text-red-300">{% trans "Expenditure" %}</h3>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-gray-50 dark:bg-gray-900">
                         <tr>
-                            <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-600">{% trans "Particular" %}</th>
-                            <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-600">{% trans "Current" %}</th>
-                            <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-600">{% trans "Previous" %}</th>
+                            <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">{% trans "Particular" %}</th>
+                            <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-600 dark:text-gray-300">{% trans "Current" %}</th>
+                            <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-600 dark:text-gray-300">{% trans "Previous" %}</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100">
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                         {% for group in expense_groups %}
-                        <tr class="bg-gray-50">
-                            <td colspan="3" class="px-4 py-2 text-xs font-bold text-gray-700 uppercase tracking-wide">{{ group.name }}</td>
+                        <tr class="bg-gray-50 dark:bg-gray-700/50">
+                            <td colspan="3" class="px-4 py-2 text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wide">{{ group.name }}</td>
                         </tr>
                         {% for item in group.items %}
-                        <tr class="hover:bg-gray-50">
-                            <td class="pl-8 pr-4 py-1.5 text-sm text-gray-900">{{ item.name }}</td>
-                            <td class="px-4 py-1.5 text-sm text-right font-medium text-gray-900 tabular-nums">{{ item.current_amount|floatformat:2 }}</td>
-                            <td class="px-4 py-1.5 text-sm text-right text-gray-500 tabular-nums">{{ item.prev_amount|floatformat:2 }}</td>
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                            <td class="pl-8 pr-4 py-1.5 text-sm text-gray-900 dark:text-gray-100">
+                                {% if item.code and item.code != '—' %}<span class="font-mono text-xs text-gray-400 dark:text-gray-500 mr-1">{{ item.code }}</span>{% endif %}{{ item.name }}
+                            </td>
+                            <td class="px-4 py-1.5 text-sm text-right font-medium text-gray-900 dark:text-gray-100" style="font-variant-numeric:tabular-nums">{{ item.current_amount|floatformat:2 }}</td>
+                            <td class="px-4 py-1.5 text-sm text-right text-gray-500 dark:text-gray-400" style="font-variant-numeric:tabular-nums">{{ item.prev_amount|floatformat:2 }}</td>
                         </tr>
                         {% endfor %}
-                        <tr class="border-t border-gray-200">
-                            <td class="px-4 py-1.5 text-xs font-semibold text-gray-600 text-right">{% trans "Sub-total" %}</td>
-                            <td class="px-4 py-1.5 text-xs font-semibold text-right text-gray-700 tabular-nums">{{ group.current_total|floatformat:2 }}</td>
-                            <td class="px-4 py-1.5 text-xs font-semibold text-right text-gray-500 tabular-nums">{{ group.prev_total|floatformat:2 }}</td>
+                        <tr class="border-t border-gray-200 dark:border-gray-600">
+                            <td class="px-4 py-1.5 text-xs font-semibold text-gray-600 dark:text-gray-300 text-right">{% trans "Sub-total" %}</td>
+                            <td class="px-4 py-1.5 text-xs font-semibold text-right text-gray-700 dark:text-gray-200" style="font-variant-numeric:tabular-nums">{{ group.current_total|floatformat:2 }}</td>
+                            <td class="px-4 py-1.5 text-xs font-semibold text-right text-gray-500 dark:text-gray-400" style="font-variant-numeric:tabular-nums">{{ group.prev_total|floatformat:2 }}</td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="3" class="px-4 py-4 text-center text-sm text-gray-400">{% trans "No expenses" %}</td></tr>
+                        <tr><td colspan="3" class="px-4 py-4 text-center text-sm text-gray-400 dark:text-gray-500">{% trans "No expenses" %}</td></tr>
                         {% endfor %}
                     </tbody>
-                    <tfoot class="bg-red-50 border-t-2 border-red-200">
+                    <tfoot class="bg-red-50 dark:bg-red-900/20 border-t-2 border-red-200 dark:border-red-800/50">
                         <tr>
-                            <td class="px-4 py-3 text-sm font-bold text-red-800">{% trans "Total Expenditure" %}</td>
-                            <td class="px-4 py-3 text-sm text-right font-bold text-red-800 tabular-nums">{{ total_expense|floatformat:2 }}</td>
-                            <td class="px-4 py-3 text-sm text-right font-bold text-red-700 tabular-nums">{{ prev_total_expense|floatformat:2 }}</td>
+                            <td class="px-4 py-3 text-sm font-bold text-red-800 dark:text-red-300">{% trans "Total Expenditure" %}</td>
+                            <td class="px-4 py-3 text-sm text-right font-bold text-red-800 dark:text-red-300" style="font-variant-numeric:tabular-nums">{{ total_expense|floatformat:2 }}</td>
+                            <td class="px-4 py-3 text-sm text-right font-bold text-red-700 dark:text-red-400" style="font-variant-numeric:tabular-nums">{{ prev_total_expense|floatformat:2 }}</td>
                         </tr>
                         {% if net_profit > 0 %}
-                        <tr class="bg-green-50 border-t border-green-200">
-                            <td class="px-4 py-2 text-sm font-semibold text-green-700">{% trans "Net Profit" %}</td>
-                            <td class="px-4 py-2 text-sm text-right font-bold text-green-700 tabular-nums">{{ net_profit|floatformat:2 }}</td>
-                            <td class="px-4 py-2 text-sm text-right font-bold text-green-600 tabular-nums">{{ prev_net_profit|floatformat:2 }}</td>
+                        <tr class="bg-green-50 dark:bg-green-900/20 border-t border-green-200 dark:border-green-800/50">
+                            <td class="px-4 py-2 text-sm font-semibold text-green-700 dark:text-green-300">{% trans "Net Profit" %}</td>
+                            <td class="px-4 py-2 text-sm text-right font-bold text-green-700 dark:text-green-300" style="font-variant-numeric:tabular-nums">{{ net_profit|floatformat:2 }}</td>
+                            <td class="px-4 py-2 text-sm text-right font-bold text-green-600 dark:text-green-400" style="font-variant-numeric:tabular-nums">{{ prev_net_profit|floatformat:2 }}</td>
                         </tr>
                         {% endif %}
                     </tfoot>
@@ -115,51 +128,53 @@
         </div>
 
         <!-- Income (Right) -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div class="px-4 py-3 bg-green-50 border-b border-green-100">
-                <h3 class="text-sm font-semibold text-green-800">{% trans "Income" %}</h3>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="px-4 py-3 bg-green-50 dark:bg-green-900/20 border-b border-green-100 dark:border-green-800/30">
+                <h3 class="text-sm font-semibold text-green-800 dark:text-green-300">{% trans "Income" %}</h3>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-gray-50 dark:bg-gray-900">
                         <tr>
-                            <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-600">{% trans "Particular" %}</th>
-                            <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-600">{% trans "Current" %}</th>
-                            <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-600">{% trans "Previous" %}</th>
+                            <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">{% trans "Particular" %}</th>
+                            <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-600 dark:text-gray-300">{% trans "Current" %}</th>
+                            <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-600 dark:text-gray-300">{% trans "Previous" %}</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100">
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                         {% for group in income_groups %}
-                        <tr class="bg-gray-50">
-                            <td colspan="3" class="px-4 py-2 text-xs font-bold text-gray-700 uppercase tracking-wide">{{ group.name }}</td>
+                        <tr class="bg-gray-50 dark:bg-gray-700/50">
+                            <td colspan="3" class="px-4 py-2 text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wide">{{ group.name }}</td>
                         </tr>
                         {% for item in group.items %}
-                        <tr class="hover:bg-gray-50">
-                            <td class="pl-8 pr-4 py-1.5 text-sm text-gray-900">{{ item.name }}</td>
-                            <td class="px-4 py-1.5 text-sm text-right font-medium text-gray-900 tabular-nums">{{ item.current_amount|floatformat:2 }}</td>
-                            <td class="px-4 py-1.5 text-sm text-right text-gray-500 tabular-nums">{{ item.prev_amount|floatformat:2 }}</td>
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                            <td class="pl-8 pr-4 py-1.5 text-sm text-gray-900 dark:text-gray-100">
+                                {% if item.code and item.code != '—' %}<span class="font-mono text-xs text-gray-400 dark:text-gray-500 mr-1">{{ item.code }}</span>{% endif %}{{ item.name }}
+                            </td>
+                            <td class="px-4 py-1.5 text-sm text-right font-medium text-gray-900 dark:text-gray-100" style="font-variant-numeric:tabular-nums">{{ item.current_amount|floatformat:2 }}</td>
+                            <td class="px-4 py-1.5 text-sm text-right text-gray-500 dark:text-gray-400" style="font-variant-numeric:tabular-nums">{{ item.prev_amount|floatformat:2 }}</td>
                         </tr>
                         {% endfor %}
-                        <tr class="border-t border-gray-200">
-                            <td class="px-4 py-1.5 text-xs font-semibold text-gray-600 text-right">{% trans "Sub-total" %}</td>
-                            <td class="px-4 py-1.5 text-xs font-semibold text-right text-gray-700 tabular-nums">{{ group.current_total|floatformat:2 }}</td>
-                            <td class="px-4 py-1.5 text-xs font-semibold text-right text-gray-500 tabular-nums">{{ group.prev_total|floatformat:2 }}</td>
+                        <tr class="border-t border-gray-200 dark:border-gray-600">
+                            <td class="px-4 py-1.5 text-xs font-semibold text-gray-600 dark:text-gray-300 text-right">{% trans "Sub-total" %}</td>
+                            <td class="px-4 py-1.5 text-xs font-semibold text-right text-gray-700 dark:text-gray-200" style="font-variant-numeric:tabular-nums">{{ group.current_total|floatformat:2 }}</td>
+                            <td class="px-4 py-1.5 text-xs font-semibold text-right text-gray-500 dark:text-gray-400" style="font-variant-numeric:tabular-nums">{{ group.prev_total|floatformat:2 }}</td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="3" class="px-4 py-4 text-center text-sm text-gray-400">{% trans "No income" %}</td></tr>
+                        <tr><td colspan="3" class="px-4 py-4 text-center text-sm text-gray-400 dark:text-gray-500">{% trans "No income" %}</td></tr>
                         {% endfor %}
                     </tbody>
-                    <tfoot class="bg-green-50 border-t-2 border-green-200">
+                    <tfoot class="bg-green-50 dark:bg-green-900/20 border-t-2 border-green-200 dark:border-green-800/50">
                         <tr>
-                            <td class="px-4 py-3 text-sm font-bold text-green-800">{% trans "Total Income" %}</td>
-                            <td class="px-4 py-3 text-sm text-right font-bold text-green-800 tabular-nums">{{ total_income|floatformat:2 }}</td>
-                            <td class="px-4 py-3 text-sm text-right font-bold text-green-700 tabular-nums">{{ prev_total_income|floatformat:2 }}</td>
+                            <td class="px-4 py-3 text-sm font-bold text-green-800 dark:text-green-300">{% trans "Total Income" %}</td>
+                            <td class="px-4 py-3 text-sm text-right font-bold text-green-800 dark:text-green-300" style="font-variant-numeric:tabular-nums">{{ total_income|floatformat:2 }}</td>
+                            <td class="px-4 py-3 text-sm text-right font-bold text-green-700 dark:text-green-400" style="font-variant-numeric:tabular-nums">{{ prev_total_income|floatformat:2 }}</td>
                         </tr>
                         {% if net_profit < 0 %}
-                        <tr class="bg-red-50 border-t border-red-200">
-                            <td class="px-4 py-2 text-sm font-semibold text-red-700">{% trans "Net Loss" %}</td>
-                            <td class="px-4 py-2 text-sm text-right font-bold text-red-700 tabular-nums">{{ net_profit|floatformat:2 }}</td>
-                            <td class="px-4 py-2 text-sm text-right font-bold text-red-600 tabular-nums">{{ prev_net_profit|floatformat:2 }}</td>
+                        <tr class="bg-red-50 dark:bg-red-900/20 border-t border-red-200 dark:border-red-800/50">
+                            <td class="px-4 py-2 text-sm font-semibold text-red-700 dark:text-red-300">{% trans "Net Loss" %}</td>
+                            <td class="px-4 py-2 text-sm text-right font-bold text-red-700 dark:text-red-300" style="font-variant-numeric:tabular-nums">{{ net_profit|floatformat:2 }}</td>
+                            <td class="px-4 py-2 text-sm text-right font-bold text-red-600 dark:text-red-400" style="font-variant-numeric:tabular-nums">{{ prev_net_profit|floatformat:2 }}</td>
                         </tr>
                         {% endif %}
                     </tfoot>
@@ -169,23 +184,23 @@
     </div>
 
     <!-- Net Summary -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-5">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
             <div>
-                <p class="text-xs text-gray-500 uppercase">{% if net_profit >= 0 %}{% trans "Net Profit" %}{% else %}{% trans "Net Loss" %}{% endif %} ({% trans "Current" %})</p>
-                <p class="text-lg font-bold {% if net_profit >= 0 %}text-green-700{% else %}text-red-700{% endif %}">
+                <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">{% if net_profit >= 0 %}{% trans "Net Profit" %}{% else %}{% trans "Net Loss" %}{% endif %} ({% trans "Current" %})</p>
+                <p class="text-lg font-bold {% if net_profit >= 0 %}text-green-700 dark:text-green-400{% else %}text-red-700 dark:text-red-400{% endif %}" style="font-variant-numeric:tabular-nums">
                     {{ net_profit|floatformat:2 }}
                 </p>
             </div>
             <div>
-                <p class="text-xs text-gray-500 uppercase">{% if prev_net_profit >= 0 %}{% trans "Net Profit" %}{% else %}{% trans "Net Loss" %}{% endif %} ({% trans "Previous" %})</p>
-                <p class="text-lg font-bold {% if prev_net_profit >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">{% if prev_net_profit >= 0 %}{% trans "Net Profit" %}{% else %}{% trans "Net Loss" %}{% endif %} ({% trans "Previous" %})</p>
+                <p class="text-lg font-bold {% if prev_net_profit >= 0 %}text-green-600 dark:text-green-400{% else %}text-red-600 dark:text-red-400{% endif %}" style="font-variant-numeric:tabular-nums">
                     {{ prev_net_profit|floatformat:2 }}
                 </p>
             </div>
             <div>
-                <p class="text-xs text-gray-500 uppercase">{% trans "Change" %}</p>
-                <p class="text-lg font-bold text-gray-700">
+                <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">{% trans "Change" %}</p>
+                <p class="text-lg font-bold text-gray-700 dark:text-gray-200">
                     {% widthratio net_profit 1 1 as cur_int %}{% widthratio prev_net_profit 1 1 as prev_int %}
                     {% if prev_net_profit > 0 %}
                         {% widthratio net_profit prev_net_profit 100 %}%
@@ -197,8 +212,8 @@
         </div>
     </div>
     {% elif from_date %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-        <p class="text-gray-400 text-sm">{% trans "No data found for the selected period." %}</p>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 text-center">
+        <p class="text-gray-400 dark:text-gray-500 text-sm">{% trans "No data found for the selected period." %}</p>
     </div>
     {% endif %}
 </div>

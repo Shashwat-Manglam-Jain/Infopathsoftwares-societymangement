@@ -61,6 +61,14 @@ class Agent(models.Model):
     def __str__(self):
         return f'{self.agent_code} - {self.member.name}'
 
+    def clean(self):
+        from apps.savings.models import SavingsAccount
+
+        if not SavingsAccount.objects.filter(member=self.member, status='active').exists():
+            raise ValidationError('Agent must have an active savings account.')
+        if not self.security_deposit_account_id:
+            raise ValidationError({'security_deposit_account': 'Agent must have a security deposit account.'})
+
 
 class PigmmyAccount(models.Model):
     STATUS_CHOICES = [

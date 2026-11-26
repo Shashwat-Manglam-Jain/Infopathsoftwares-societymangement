@@ -14,10 +14,10 @@
     {% endfor %}
     {% endif %}
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
         <div class="px-5 py-3 border-b border-gray-200 flex items-center justify-between">
             <p class="text-sm text-gray-500">Only one config can be active at a time.</p>
-            <a href="{% url 'shares:config_create' %}" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">+ New Config</a>
+            <a href="{% url 'shares:config_create' %}" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">+ New Config</a>
         </div>
         <div class="overflow-x-auto">
         <table class="min-w-full text-sm">
@@ -70,7 +70,7 @@
                 <tr>
                     <td colspan="5" class="px-4 py-8 text-center">
                         <p class="text-sm text-gray-500">No share configurations yet</p>
-                        <a href="{% url 'shares:config_create' %}" class="mt-2 inline-flex items-center px-3 py-1.5 bg-primary-600 text-white text-sm rounded hover:bg-primary-700">Create First Config</a>
+                        <a href="{% url 'shares:config_create' %}" class="mt-2 inline-flex items-center px-3 py-1.5 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700">Create First Config</a>
                     </td>
                 </tr>
                 {% endfor %}

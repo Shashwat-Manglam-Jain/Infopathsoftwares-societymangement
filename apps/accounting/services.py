@@ -123,6 +123,7 @@ def reverse_journal_entry(entry, user):
             user=user,
             reference_type=entry.reference_type,
             reference_id=entry.reference_id,
+            payment_mode=entry.payment_mode,
             is_posted=True,
         )
         reversal.reversal_of = entry

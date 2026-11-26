@@ -7,6 +7,17 @@
 {% block content %}
 <div class="space-y-4">
 
+    <div class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex items-start gap-3" x-data="{ show: true }" x-show="show" x-transition.opacity.duration.200ms>
+        <svg class="h-5 w-5 text-blue-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div class="flex-1">
+            <h3 class="text-sm font-semibold text-blue-800">{% trans "Members Directory" %}</h3>
+            <p class="text-xs text-blue-700 mt-0.5">{% trans "View and manage all society members. Add new members, import from Excel, or search by name, member number, or mobile." %}</p>
+        </div>
+        <button @click="show = false" class="text-blue-400 hover:text-blue-600 shrink-0 p-0.5">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+    </div>
+
     <!-- Header + Actions -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
@@ -32,7 +43,7 @@
     </div>
 
     <!-- Search & Filters -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4" x-data="{ showFilters: false }">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4" x-data="{ showFilters: false }">
         <form method="get" x-ref="searchForm" class="flex flex-col sm:flex-row gap-3">
             <div class="flex-1 relative">
                 <svg class="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -65,7 +76,7 @@
     <!-- Mobile Card View -->
     <div class="md:hidden space-y-3">
         {% for m in members %}
-        <a href="{% url 'members:detail' m.pk %}" class="block bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:border-primary-300 transition-colors">
+        <a href="{% url 'members:detail' m.pk %}" class="block bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:border-primary-300 transition-colors">
             <div class="flex items-center gap-3">
                 <div class="flex-shrink-0">{% avatar m 40 "" %}</div>
                 <div class="flex-1 min-w-0">
@@ -92,7 +103,7 @@
             </div>
         </a>
         {% empty %}
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
             <svg class="mx-auto h-10 w-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             <p class="mt-2 text-sm text-gray-500">{% trans "No members found" %}</p>
             <a href="{% url 'members:create' %}" class="mt-3 inline-flex items-center px-3 py-1.5 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700">{% trans "Add First Member" %}</a>
@@ -101,7 +112,7 @@
     </div>
 
     <!-- Desktop Table View -->
-    <div class="hidden md:block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="hidden md:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50">

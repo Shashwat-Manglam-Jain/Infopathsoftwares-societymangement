@@ -56,7 +56,7 @@
     <div x-show="tab === 'overview'" class="space-y-4">
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-4">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 px-5 py-4">
                 <h3 class="text-xs font-semibold text-gray-500 uppercase mb-2">{% trans "Application Details" %}</h3>
                 <dl class="space-y-1.5 text-sm">
                     <div class="flex justify-between"><dt class="text-gray-500">{% trans "Loan No" %}</dt><dd class="font-mono font-medium">{{ loan.loan_no }}</dd></div>
@@ -75,7 +75,7 @@
                 </dl>
             </div>
 
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-4">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 px-5 py-4">
                 <h3 class="text-xs font-semibold text-gray-500 uppercase mb-2">{% trans "Financial Summary" %}</h3>
                 <dl class="space-y-1.5 text-sm">
                     {% if loan.approved_amount %}<div class="flex justify-between"><dt class="text-gray-500">{% trans "Approved Amount" %}</dt><dd class="font-medium text-green-700">{{ loan.approved_amount|floatformat:2 }}</dd></div>{% endif %}
@@ -97,7 +97,7 @@
         </div>
 
         {% if approval_form %}
-        <div class="bg-white rounded-lg shadow-sm border border-yellow-200 px-5 py-4">
+        <div class="bg-white rounded-xl shadow-sm border border-yellow-200 px-5 py-4">
             <h3 class="text-xs font-semibold text-yellow-800 uppercase mb-2">{% trans "Approve / Reject Loan" %}</h3>
             {% if not guarantor_ok %}
             <div class="mb-3 rounded bg-yellow-50 border border-yellow-200 px-4 py-2">
@@ -132,7 +132,7 @@
         {% endif %}
 
         {% if loan.status == 'approved' and request.user.is_manager %}
-        <div class="bg-white rounded-lg shadow-sm border border-green-200 px-5 py-4">
+        <div class="bg-white rounded-xl shadow-sm border border-green-200 px-5 py-4">
             <h3 class="text-xs font-semibold text-green-800 uppercase mb-2">{% trans "Disburse Loan" %}</h3>
             <p class="text-sm text-gray-600 mb-3">{% trans "Approved amount:" %} <strong>{{ loan.approved_amount|floatformat:2 }}</strong>. {% trans "Disbursing will generate the EMI schedule and create the disbursement journal entry." %}</p>
             {% if loan.loan_product.requires_collateral and not collateral_ok %}
@@ -156,7 +156,7 @@
         {% endif %}
 
         {% if emi_form %}
-        <div class="bg-white rounded-lg shadow-sm border border-primary-200 px-5 py-4">
+        <div class="bg-white rounded-xl shadow-sm border border-primary-200 px-5 py-4">
             <h3 class="text-xs font-semibold text-primary-800 uppercase mb-2">{% trans "Collect EMI / Repayment" %}</h3>
             <form method="post" action="{% url 'loans:collect' pk=loan.pk %}" class="flex flex-wrap items-end gap-3">
                 {% csrf_token %}
@@ -179,7 +179,7 @@
     <!-- {% trans "Guarantors" %} Tab -->
     <div x-show="tab === 'guarantors'" x-cloak class="space-y-4">
 
-        <div class="bg-white rounded-lg shadow-sm border {% if not guarantor_ok and loan.status in 'applied,approved' %}border-red-300{% else %}border-gray-200{% endif %} px-5 py-4">
+        <div class="bg-white rounded-xl shadow-sm border {% if not guarantor_ok and loan.status in 'applied,approved' %}border-red-300{% else %}border-gray-200{% endif %} px-5 py-4">
             <div class="flex items-center justify-between mb-2">
                 <h3 class="text-xs font-semibold text-gray-500 uppercase">
                     {% trans "Guarantors" %}
@@ -188,7 +188,7 @@
                     {% endif %}
                 </h3>
                 {% if request.user.is_manager and loan.status not in 'closed,rejected,written_off' %}
-                <a href="{% url 'loans:guarantor_add' loan_pk=loan.pk %}" class="px-3 py-1 bg-primary-600 text-white text-xs font-medium rounded hover:bg-primary-700">{% trans "+ Add Guarantor" %}</a>
+                <a href="{% url 'loans:guarantor_add' loan_pk=loan.pk %}" class="px-3 py-1 bg-primary-600 text-white text-xs font-medium rounded-lg hover:bg-primary-700">{% trans "+ Add Guarantor" %}</a>
                 {% endif %}
             </div>
 
@@ -244,7 +244,7 @@
     <div x-show="tab === 'emi'" x-cloak class="space-y-4">
 
         {% if emi_schedule %}
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-5 py-3 border-b bg-gray-50">
                 <h3 class="text-xs font-semibold text-gray-500 uppercase">{% trans "EMI Schedule" %}</h3>
             </div>
@@ -288,13 +288,13 @@
             </div>
         </div>
         {% else %}
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 px-5 py-6">
             <p class="text-center text-sm text-gray-400">{% trans "No EMI schedule generated yet. The schedule is created upon loan disbursement." %}</p>
         </div>
         {% endif %}
 
         {% if repayments %}
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-5 py-3 border-b bg-gray-50">
                 <h3 class="text-xs font-semibold text-gray-500 uppercase">{% trans "Recent Repayments" %}</h3>
             </div>
@@ -337,7 +337,7 @@
         </div>
         {% else %}
         {% if emi_schedule %}
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 px-5 py-6">
             <p class="text-center text-sm text-gray-400">{% trans "No repayments recorded yet." %}</p>
         </div>
         {% endif %}
@@ -348,11 +348,11 @@
     <!-- {% trans "Collateral" %}s Tab -->
     <div x-show="tab === 'collaterals'" x-cloak class="space-y-4">
 
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-4">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 px-5 py-4">
             <div class="flex items-center justify-between mb-2">
                 <h3 class="text-xs font-semibold text-gray-500 uppercase">{% trans "Collateral / Mortgage" %}</h3>
                 {% if request.user.is_manager and loan.status not in 'closed,rejected,written_off' %}
-                <a href="{% url 'loans:collateral_add' loan_pk=loan.pk %}" class="px-3 py-1 bg-primary-600 text-white text-xs font-medium rounded hover:bg-primary-700">{% trans "+ Add Collateral" %}</a>
+                <a href="{% url 'loans:collateral_add' loan_pk=loan.pk %}" class="px-3 py-1 bg-primary-600 text-white text-xs font-medium rounded-lg hover:bg-primary-700">{% trans "+ Add Collateral" %}</a>
                 {% endif %}
             </div>
 
@@ -401,7 +401,7 @@
         </div>
 
         {% if standing_instructions %}
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-4">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 px-5 py-4">
             <h3 class="text-xs font-semibold text-gray-500 uppercase mb-2">{% trans "Standing Instructions / Charges" %}</h3>
             <div class="overflow-x-auto">
             <table class="w-full text-sm">

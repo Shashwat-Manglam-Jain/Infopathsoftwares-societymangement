@@ -100,6 +100,12 @@ def savings_create(request):
                 initial['gl_head'] = head.pk
         form = SavingsAccountForm(initial=initial, current_branch=branch)
 
+    account_type = request.GET.get('type', '')
+    if account_type:
+        related = _ACCOUNT_TYPE_MAP.get(account_type, account_type)
+        from .forms import _get_leaf_heads
+        form.fields['gl_head'].queryset = _get_leaf_heads((related,))
+
     if branch:
         form.fields['member'].queryset = Member.objects.filter(
             branch=request.current_branch,
@@ -107,7 +113,7 @@ def savings_create(request):
         )
 
     type_labels = {'savings': 'Savings Account', 'current': 'Current Account', 'security': 'Security Deposit'}
-    create_title = type_labels.get(request.GET.get('type', ''), 'Account')
+    create_title = type_labels.get(account_type, 'Account')
     return render(request, 'savings/create.html', {'form': form, 'create_title': create_title})
 
 
@@ -156,8 +162,6 @@ def savings_detail(request, pk):
         branch = getattr(request, 'current_branch', None)
         wd = WorkingDay.objects.filter(branch=branch).order_by('-current_date').first() if branch else None
         context['is_day_open'] = bool(wd and wd.is_day_open)
-        context['deposit_form'] = DepositForm(initial={'account_id': account.pk})
-        context['withdrawal_form'] = WithdrawalForm(initial={'account_id': account.pk})
     return render(request, 'savings/detail.html', context)
 
 
@@ -367,6 +371,22 @@ class PassbookPrintView(AuditorOrAboveMixin, View):
                 'to_date': to_date,
             },
         )
+
+
+@login_required
+def member_savings_api(request):
+    member_id = request.GET.get('member_id', '')
+    if not member_id:
+        return JsonResponse({'accounts': []})
+    accounts = SavingsAccount.objects.filter(
+        member_id=member_id, status='active',
+    ).select_related('gl_head').order_by('account_no')
+    return JsonResponse({
+        'accounts': [
+            {'id': a.pk, 'account_no': a.account_no, 'type': a.get_account_type_display(), 'balance': str(a.current_balance)}
+            for a in accounts
+        ]
+    })
 
 
 @login_required

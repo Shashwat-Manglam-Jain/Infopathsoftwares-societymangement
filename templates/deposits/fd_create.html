@@ -4,7 +4,18 @@
 {% block page_title %}{% trans "Open Fixed Deposit" %}{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl" x-data="fdForm()">
+<div class="w-full" x-data="fdForm()">
+
+    <div class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex items-start gap-3 mb-4" x-data="{ show: true }" x-show="show" x-transition.opacity.duration.200ms>
+        <svg class="h-5 w-5 text-blue-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div class="flex-1">
+            <h3 class="text-sm font-semibold text-blue-800">{% trans "Open Fixed Deposit" %}</h3>
+            <p class="text-xs text-blue-700 mt-0.5">{% trans "Create a new Fixed Deposit for a member. Interest rate is auto-filled based on tenure from the Interest Master. Senior citizens get a bonus rate." %}</p>
+        </div>
+        <button @click="show = false" class="text-blue-400 hover:text-blue-600 shrink-0 p-0.5">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+    </div>
 
     {% if not slabs_json or slabs_json == "[]" %}
     <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
@@ -32,7 +43,7 @@
     <form method="post">
         {% csrf_token %}
 
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
             <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Member" %} <span class="text-red-500">*</span></label>
@@ -53,7 +64,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Compounding" %}</label>
-                    <select name="compounding" x-model="compounding" @change="calcMaturity()" class="w-full rounded-lg border-gray-300 px-3 py-2">
+                    <select name="compounding" x-model="compounding" @change="calcMaturity()" class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                         <option value="quarterly">Quarterly</option>
                         <option value="half_yearly">Half Yearly</option>
                         <option value="yearly">Yearly</option>
@@ -62,11 +73,16 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Linked Savings Account" %}</label>
-                    {{ form.linked_savings_account }}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Certificate No" %}</label>
-                    {{ form.certificate_no }}
+                    <select x-model="linkedAccount" data-no-tomselect
+                            class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500"
+                            :disabled="savingsAccounts.length === 0">
+                        <option value="">-- None --</option>
+                        <template x-for="a in savingsAccounts" :key="a.id">
+                            <option :value="a.id" x-text="a.account_no + ' — ' + a.type + ' (₹' + a.balance + ')'"></option>
+                        </template>
+                    </select>
+                    <input type="hidden" name="linked_savings_account" :value="linkedAccount">
+                    <p class="text-xs text-gray-400 mt-0.5" x-show="savingsAccounts.length === 0 && memberSelected">{% trans "No active savings accounts for this member" %}</p>
                 </div>
                 <div class="md:col-span-2 flex items-center gap-4">
                     <label class="flex items-center gap-1.5 cursor-pointer">
@@ -84,14 +100,6 @@
                 </div>
             </div>
 
-            <template x-if="interestRate !== null">
-                <div class="mx-5 mb-3 bg-green-50 border border-green-200 rounded p-2">
-                    <p class="text-sm font-medium text-green-800">
-                        Interest Rate: <span class="text-lg font-bold" x-text="interestRate + '%'"></span>
-                        <span class="text-xs text-green-600 ml-2" x-text="isSenior ? '(Senior Citizen Rate)' : '(Regular Rate)'"></span>
-                    </p>
-                </div>
-            </template>
             <template x-if="rateError">
                 <div class="mx-5 mb-3 bg-amber-50 border border-amber-200 rounded p-2">
                     <p class="text-xs text-amber-800" x-text="rateError"></p>
@@ -99,29 +107,54 @@
                 </div>
             </template>
 
-            <template x-if="maturityAmount">
-                <div class="mx-5 mb-3 bg-blue-50 border border-blue-200 rounded p-3">
-                    <p class="text-xs font-semibold text-blue-700 uppercase mb-1.5">{% trans "Maturity Preview" %}</p>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <span class="text-xs text-blue-600">{% trans "Maturity Date" %}</span>
-                            <p class="text-sm font-medium text-blue-900" x-text="maturityDate"></p>
+            <template x-if="interestRate !== null">
+                <div class="mx-5 mb-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
+                    <p class="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                        {% trans "Deposit Summary" %}
+                    </p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div class="bg-white/70 rounded-md p-2.5">
+                            <span class="text-xs text-gray-500">{% trans "Deposit Amount" %}</span>
+                            <p class="text-sm font-semibold text-gray-900" x-text="amount ? '₹ ' + parseFloat(amount).toLocaleString('en-IN', {minimumFractionDigits: 2}) : '—'"></p>
                         </div>
-                        <div>
-                            <span class="text-xs text-blue-600">{% trans "Maturity Amount" %}</span>
-                            <p class="text-sm font-medium text-blue-900" x-text="'₹ ' + maturityAmount"></p>
+                        <div class="bg-white/70 rounded-md p-2.5">
+                            <span class="text-xs text-gray-500">{% trans "Interest Rate" %}</span>
+                            <p class="text-sm font-semibold text-green-700" x-text="interestRate + '% p.a.'"></p>
+                            <span class="text-[10px] text-gray-400" x-text="isSenior ? '(Senior Citizen)' : '(Regular)'"></span>
                         </div>
-                        <div>
-                            <span class="text-xs text-blue-600">{% trans "Interest Earned" %}</span>
-                            <p class="text-sm font-medium text-green-700" x-text="'₹ ' + interestEarned"></p>
+                        <div class="bg-white/70 rounded-md p-2.5">
+                            <span class="text-xs text-gray-500">{% trans "Lock-in Period" %}</span>
+                            <p class="text-sm font-semibold text-gray-900" x-text="tenureDays + ' days'"></p>
+                            <span class="text-[10px] text-gray-400" x-text="'(' + Math.floor(tenureDays/30) + ' months)'"></span>
+                        </div>
+                        <div class="bg-white/70 rounded-md p-2.5">
+                            <span class="text-xs text-gray-500">{% trans "Compounding" %}</span>
+                            <p class="text-sm font-semibold text-gray-900" x-text="compounding.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())"></p>
+                        </div>
+                        <div class="bg-white/70 rounded-md p-2.5">
+                            <span class="text-xs text-gray-500">{% trans "Start Date" %}</span>
+                            <p class="text-sm font-semibold text-gray-900" x-text="startDate"></p>
+                        </div>
+                        <div class="bg-white/70 rounded-md p-2.5">
+                            <span class="text-xs text-gray-500">{% trans "Maturity Date" %}</span>
+                            <p class="text-sm font-semibold text-blue-900" x-text="maturityDate || '—'"></p>
+                        </div>
+                        <div class="bg-white/70 rounded-md p-2.5 border border-green-200">
+                            <span class="text-xs text-gray-500">{% trans "Maturity Amount" %}</span>
+                            <p class="text-base font-bold text-green-700" x-text="maturityAmount ? '₹ ' + maturityAmount : '—'"></p>
+                        </div>
+                        <div class="bg-white/70 rounded-md p-2.5">
+                            <span class="text-xs text-gray-500">{% trans "Interest Earned" %}</span>
+                            <p class="text-sm font-semibold text-green-600" x-text="interestEarned ? '₹ ' + interestEarned : '—'"></p>
                         </div>
                     </div>
                 </div>
             </template>
 
-            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-end gap-3">
+            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex flex-wrap items-center justify-end gap-3">
                 <a href="{% url 'deposits:fd_list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
-                <button type="submit" class="px-5 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "Create FD" %}</button>
+                <button type="submit" class="px-5 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">{% trans "Create FD" %}</button>
             </div>
         </div>
     </form>
@@ -129,6 +162,8 @@
 
 <script>
 function fdForm() {
+    const txnDate = '{{ txn_date|date:"Y-m-d" }}';
+    const fmtDate = (d) => d.toLocaleDateString('en-IN', {day: '2-digit', month: 'short', year: 'numeric'});
     return {
         slabs: {{ slabs_json|safe }},
         tenureDays: '',
@@ -140,6 +175,25 @@ function fdForm() {
         maturityAmount: '',
         maturityDate: '',
         interestEarned: '',
+        startDate: fmtDate(new Date(txnDate + 'T00:00:00')),
+        linkedAccount: '',
+        savingsAccounts: [],
+        memberSelected: false,
+        init() {
+            const memberSelect = this.$el.querySelector('select[name="member"]');
+            if (memberSelect) {
+                memberSelect.addEventListener('change', () => this.fetchSavings(memberSelect.value));
+            }
+        },
+        fetchSavings(memberId) {
+            this.savingsAccounts = [];
+            this.linkedAccount = '';
+            this.memberSelected = !!memberId;
+            if (!memberId) return;
+            fetch('/savings/api/member-accounts/?member_id=' + memberId)
+                .then(r => r.json())
+                .then(d => { this.savingsAccounts = d.accounts || []; });
+        },
         calcRate() {
             this.interestRate = null;
             this.rateError = '';
@@ -170,9 +224,9 @@ function fdForm() {
             const matAmt = p * Math.pow(1 + (r / 100) / n, n * t);
             this.maturityAmount = matAmt.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
             this.interestEarned = (matAmt - p).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-            const dt = new Date();
+            const dt = new Date(txnDate + 'T00:00:00');
             dt.setDate(dt.getDate() + days);
-            this.maturityDate = dt.toLocaleDateString('en-IN', {day: '2-digit', month: 'short', year: 'numeric'});
+            this.maturityDate = fmtDate(dt);
         }
     };
 }

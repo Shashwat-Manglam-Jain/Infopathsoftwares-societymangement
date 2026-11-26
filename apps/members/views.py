@@ -19,7 +19,24 @@ from apps.accounts.permissions import (
 )
 from apps.branches.models import Branch
 
-from .models import Member
+from .models import Member, MemberDocument
+
+DOC_FIELD_MAP = {
+    'doc_aadhar': 'aadhar',
+    'doc_pan': 'pan',
+    'doc_address_proof': 'address_proof',
+    'doc_other': 'other',
+}
+
+
+def _save_kyc_documents(request, member):
+    for field_name, doc_type in DOC_FIELD_MAP.items():
+        f = request.FILES.get(field_name)
+        if f:
+            MemberDocument.objects.update_or_create(
+                member=member, document_type=doc_type,
+                defaults={'file': f},
+            )
 
 
 @auditor_or_above
@@ -69,7 +86,10 @@ GENDER_MAP = {
 class MemberImportView(ManagerRequiredMixin, View):
     def get(self, request):
         branches = Branch.objects.filter(status='active')
-        return render(request, 'members/member_import.html', {'branches': branches})
+        return render(request, 'members/member_import.html', {
+            'branches': branches,
+            'current_branch': getattr(request, 'current_branch', None),
+        })
 
     def post(self, request):
         file = request.FILES.get('file')
@@ -432,6 +452,7 @@ def member_create(request):
             member.save()
             nominee_formset.instance = member
             nominee_formset.save()
+            _save_kyc_documents(request, member)
             messages.success(request, f'Member {member.name} created successfully.')
             return redirect('members:detail', pk=member.pk)
     else:
@@ -469,6 +490,7 @@ def member_edit(request, pk):
         if form.is_valid() and nominee_formset.is_valid():
             form.save()
             nominee_formset.save()
+            _save_kyc_documents(request, member)
             messages.success(request, f'Member {member.name} updated.')
             return redirect('members:detail', pk=member.pk)
     else:

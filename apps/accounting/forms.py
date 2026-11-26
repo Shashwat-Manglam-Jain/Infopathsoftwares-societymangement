@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from django import forms
 
-from apps.accounting.models import ChartOfAccounts, InterestMaster, JournalEntry
+from apps.accounting.models import ChartOfAccounts, InterestMaster
 
 tw = 'w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500'
 
@@ -11,58 +11,30 @@ class ChartOfAccountsForm(forms.ModelForm):
     class Meta:
         model = ChartOfAccounts
         fields = [
-            'code',
             'name',
             'head_name_regional',
             'account_group',
-            'account_code',
             'parent',
-            'sub_group',
-            'related_table_name',
             'opening_balance',
-            'credit_balance',
-            'debit_balance',
-            'interest_affected',
-            'overdue_affected',
-            'interest_given',
-            'interest_code',
-            'report_position',
-            'display_order',
-            'allow_transactions',
-            'is_active',
         ]
         widgets = {
-            'code': forms.TextInput(attrs={'class': tw}),
             'name': forms.TextInput(attrs={'class': tw}),
             'head_name_regional': forms.TextInput(attrs={'class': tw}),
-            'account_code': forms.TextInput(attrs={'class': tw, 'maxlength': '3'}),
-            'sub_group': forms.TextInput(attrs={'class': tw}),
             'account_group': forms.Select(attrs={'class': tw}),
             'parent': forms.Select(attrs={'class': 'searchable ' + tw}),
-            'related_table_name': forms.Select(attrs={'class': tw}),
             'opening_balance': forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
-            'credit_balance': forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
-            'debit_balance': forms.NumberInput(attrs={'class': tw, 'step': '0.01'}),
-            'interest_code': forms.Select(attrs={'class': 'searchable ' + tw}),
-            'report_position': forms.Select(attrs={'class': tw}),
-            'display_order': forms.NumberInput(attrs={'class': tw}),
-            'is_active': forms.CheckboxInput(
-                attrs={'class': 'rounded border-gray-300 text-primary-600 focus:ring-primary-500'}
-            ),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['code'].required = False
         self.fields['parent'].queryset = ChartOfAccounts.objects.filter(is_active=True)
         self.fields['parent'].required = False
-        self.fields['interest_code'].queryset = ChartOfAccounts.objects.filter(is_active=True)
-        self.fields['interest_code'].required = False
 
 
 class VoucherForm(forms.Form):
+    VOUCHER_TYPES = [('journal', 'Journal'), ('contra', 'Contra')]
     voucher_type = forms.ChoiceField(
-        choices=JournalEntry.VOUCHER_TYPE_CHOICES,
+        choices=VOUCHER_TYPES,
         widget=forms.Select(attrs={'class': tw}),
     )
     narration = forms.CharField(

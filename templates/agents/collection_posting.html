@@ -1,101 +1,157 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Collection Posting" %} — InfoSociety{% endblock %}
-{% block page_title %}{% trans "Pigmy Module" %}{% endblock %}
+{% block title %}{% trans "Transaction Posting" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Transaction Posting" %}{% endblock %}
 
 {% block content %}
-<div class="max-w-full space-y-4">
+<div class="max-w-full space-y-5">
 
+    <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-            <h2 class="text-lg font-semibold text-gray-900">{% trans "Collection Posting" %}</h2>
-            <p class="text-sm text-gray-500">{% trans "Post submitted agent collections to credit respective customer pigmy accounts." %}</p>
+            <h2 class="text-xl font-bold text-gray-900">{% trans "Transaction Posting" %}</h2>
+            <p class="text-sm text-gray-500 mt-0.5">{% trans "Agent collections, vouchers, and all financial entries in one place." %}</p>
         </div>
-        <form method="get" class="flex items-center gap-2">
-            <select name="agent" onchange="this.form.submit()" class="searchable text-sm border border-gray-300 rounded px-2.5 py-1.5 focus:ring-primary-500 focus:border-primary-500">
-                <option value="">{% trans "All Agents" %}</option>
-                {% for ag in agents %}
-                <option value="{{ ag.id }}" {% if request.GET.agent == ag.id|stringformat:"d" %}selected{% endif %}>{{ ag.agent_code }} — {{ ag.member.name }}</option>
-                {% endfor %}
-            </select>
-        </form>
+        <div class="flex items-center gap-2 flex-wrap">
+            <a href="{% url 'accounting:receipt' %}" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 shadow-sm">
+                <svg class="h-4 w-4 mr-1.5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                {% trans "Receipt" %}
+            </a>
+            <a href="{% url 'accounting:payment' %}" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 shadow-sm">
+                <svg class="h-4 w-4 mr-1.5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+                {% trans "Payment" %}
+            </a>
+            <a href="{% url 'accounting:voucher_create' %}" class="inline-flex items-center px-3 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">
+                <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                {% trans "New Voucher" %}
+            </a>
+        </div>
     </div>
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div class="px-5 py-3 border-b border-gray-200">
-            <h3 class="text-xs font-semibold text-gray-500 uppercase">{% trans "Pending Collections (Submitted)" %}</h3>
+    <!-- Summary Stats -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm px-4 py-3">
+            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">{% trans "Today Receipts" %}</p>
+            <p class="text-lg font-bold text-green-700 mt-1" style="font-variant-numeric:tabular-nums">&#8377;{{ today_receipts|floatformat:2 }}</p>
         </div>
-        {% if pending %}
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm px-4 py-3">
+            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">{% trans "Today Payments" %}</p>
+            <p class="text-lg font-bold text-red-700 mt-1" style="font-variant-numeric:tabular-nums">&#8377;{{ today_payments|floatformat:2 }}</p>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm px-4 py-3">
+            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">{% trans "Agent Collections" %}</p>
+            <p class="text-lg font-bold text-blue-700 mt-1" style="font-variant-numeric:tabular-nums">&#8377;{{ today_collections|floatformat:2 }}</p>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm px-4 py-3">
+            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">{% trans "Journal / Contra" %}</p>
+            <p class="text-lg font-bold text-purple-700 mt-1" style="font-variant-numeric:tabular-nums">&#8377;{{ today_journal|floatformat:2 }}</p>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         SECTION 1: Pending Agent Collections
+         ═══════════════════════════════════════════════════════════════ -->
+    {% if pending %}
+    <div class="bg-white rounded-xl shadow-sm border border-amber-200">
+        <div class="px-5 py-3 border-b border-amber-200 bg-amber-50/50 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+                <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-amber-100 text-amber-700">
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </span>
+                <h3 class="text-sm font-semibold text-amber-900">{% trans "Pending Agent Collections" %}</h3>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500 text-white">{{ pending|length }}</span>
+            </div>
+            <form method="get" class="flex items-center gap-2">
+                {% if from_date %}<input type="hidden" name="from_date" value="{{ from_date }}">{% endif %}
+                {% if to_date %}<input type="hidden" name="to_date" value="{{ to_date }}">{% endif %}
+                {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+                <select name="agent" onchange="this.form.submit()" class="searchable text-xs border border-gray-300 rounded-lg px-2.5 py-1.5 focus:ring-primary-500 focus:border-primary-500">
+                    <option value="">{% trans "All Agents" %}</option>
+                    {% for ag in agents %}
+                    <option value="{{ ag.id }}" {% if request.GET.agent == ag.id|stringformat:"d" %}selected{% endif %}>{{ ag.agent_code }} — {{ ag.member.name }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
                 <thead>
-                    <tr class="text-left text-xs font-semibold text-gray-500 uppercase bg-gray-50">
-                        <th class="px-2 py-2 w-8"></th>
-                        <th class="px-4 py-2">{% trans "Date" %}</th>
-                        <th class="px-4 py-2">{% trans "Agent" %}</th>
-                        <th class="px-4 py-2">{% trans "Branch" %}</th>
-                        <th class="px-4 py-2 text-right">{% trans "Clients" %}</th>
-                        <th class="px-4 py-2 text-right">{% trans "Collected" %}</th>
-                        <th class="px-4 py-2 text-center">{% trans "Action" %}</th>
+                    <tr class="text-left text-xs font-semibold text-gray-500 uppercase bg-gray-50/80">
+                        <th class="px-2 py-2.5 w-8"></th>
+                        <th class="px-4 py-2.5">{% trans "Date" %}</th>
+                        <th class="px-4 py-2.5">{% trans "Agent" %}</th>
+                        <th class="px-4 py-2.5 hidden sm:table-cell">{% trans "Branch" %}</th>
+                        <th class="px-4 py-2.5 text-right">{% trans "Clients" %}</th>
+                        <th class="px-4 py-2.5 text-right">{% trans "Amount" %}</th>
+                        <th class="px-4 py-2.5 text-center">{% trans "Action" %}</th>
                     </tr>
                 </thead>
                 {% for c in pending %}
                 <tbody x-data="{ open: false }" class="border-b border-gray-100">
-                    <tr class="hover:bg-gray-50 cursor-pointer" @click="open = !open">
-                        <td class="px-2 py-2 text-gray-400">
+                    <tr class="hover:bg-amber-50/40 cursor-pointer transition-colors" @click="open = !open">
+                        <td class="px-2 py-2.5 text-gray-400">
                             <svg class="h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-90' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                         </td>
-                        <td class="px-4 py-2 text-gray-900">{{ c.collection_date|date:"d-M-Y" }}</td>
-                        <td class="px-4 py-2"><a href="{% url 'agents:detail' pk=c.agent.pk %}" class="text-primary-600 hover:underline" @click.stop>{{ c.agent.agent_code }} — {{ c.agent.member.name }}</a></td>
-                        <td class="px-4 py-2 text-gray-500">{{ c.branch.branch_name }}</td>
-                        <td class="px-4 py-2 text-right text-gray-900">{{ c.total_clients_collected }}</td>
-                        <td class="px-4 py-2 text-right font-medium text-gray-900">{{ c.collected_amount|floatformat:2 }}</td>
-                        <td class="px-4 py-2 text-center" @click.stop>
-                            <div class="flex items-center justify-center gap-2">
-                                <a href="{% url 'agents:collection_detail' pk=c.pk %}" class="p-1 text-gray-400 hover:text-primary-600" title="{% trans 'View Detail' %}">
+                        <td class="px-4 py-2.5 text-gray-900 font-medium">{{ c.collection_date|date:"d-M-Y" }}</td>
+                        <td class="px-4 py-2.5">
+                            <a href="{% url 'agents:detail' pk=c.agent.pk %}" class="text-primary-600 hover:underline font-medium" @click.stop>{{ c.agent.agent_code }}</a>
+                            <span class="text-gray-500 ml-1 hidden sm:inline">{{ c.agent.member.name }}</span>
+                        </td>
+                        <td class="px-4 py-2.5 text-gray-500 hidden sm:table-cell">{{ c.branch.branch_name }}</td>
+                        <td class="px-4 py-2.5 text-right text-gray-900">{{ c.total_clients_collected }}</td>
+                        <td class="px-4 py-2.5 text-right font-bold text-gray-900" style="font-variant-numeric:tabular-nums">&#8377;{{ c.collected_amount|floatformat:2 }}</td>
+                        <td class="px-4 py-2.5 text-center" @click.stop>
+                            <div class="flex items-center justify-center gap-1.5">
+                                <a href="{% url 'agents:collection_detail' pk=c.pk %}" class="p-1.5 text-gray-400 hover:text-primary-600 rounded-lg hover:bg-gray-100" title="{% trans 'View Detail' %}">
                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                 </a>
                                 {% if request.user.is_manager %}
                                 <form method="post" action="{% url 'agents:collection_post' c.pk %}" class="inline"
-                                      onsubmit="return confirm('Post collection of {{ c.collected_amount|floatformat:2 }} for {{ c.agent.agent_code }} on {{ c.collection_date }}?');">
+                                      onsubmit="return confirm('Post collection of ₹{{ c.collected_amount|floatformat:2 }} for {{ c.agent.agent_code }} on {{ c.collection_date }}?');">
                                     {% csrf_token %}
-                                    <button type="submit" class="px-3 py-1 bg-green-600 text-white text-xs font-medium rounded hover:bg-green-700">{% trans "Post" %}</button>
+                                    <button type="submit" class="inline-flex items-center px-2.5 py-1 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 shadow-sm">
+                                        <svg class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                        {% trans "Post" %}
+                                    </button>
                                 </form>
                                 <form method="post" action="{% url 'agents:collection_reject' c.pk %}" class="inline"
-                                      onsubmit="return confirm('Reject collection of {{ c.collected_amount|floatformat:2 }} for {{ c.agent.agent_code }}? This will reverse all transactions.');">
+                                      onsubmit="return confirm('Reject collection of ₹{{ c.collected_amount|floatformat:2 }} for {{ c.agent.agent_code }}? This will reverse all transactions.');">
                                     {% csrf_token %}
-                                    <button type="submit" class="px-3 py-1 bg-red-600 text-white text-xs font-medium rounded hover:bg-red-700">{% trans "Reject" %}</button>
+                                    <button type="submit" class="inline-flex items-center px-2.5 py-1 text-red-700 bg-red-50 border border-red-200 text-xs font-medium rounded-lg hover:bg-red-100">
+                                        <svg class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                        {% trans "Reject" %}
+                                    </button>
                                 </form>
                                 {% endif %}
                             </div>
                         </td>
                     </tr>
                     <tr :class="open ? '' : 'hidden'">
-                        <td colspan="7" class="px-0 py-0 bg-gray-50">
+                        <td colspan="7" class="px-0 py-0 bg-gray-50 border-t border-gray-200">
                             <table class="w-full text-xs">
                                 <thead>
-                                    <tr class="text-left text-xs font-semibold text-gray-400 uppercase">
-                                        <th class="px-6 py-1.5">{% trans "Account" %}</th>
-                                        <th class="px-4 py-1.5">{% trans "Member" %}</th>
-                                        <th class="px-4 py-1.5">{% trans "Type" %}</th>
-                                        <th class="px-4 py-1.5 text-right">{% trans "Installment #" %}</th>
-                                        <th class="px-4 py-1.5 text-right">{% trans "Amount" %}</th>
+                                    <tr class="text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+                                        <th class="px-6 py-2">{% trans "Account" %}</th>
+                                        <th class="px-4 py-2">{% trans "Member" %}</th>
+                                        <th class="px-4 py-2">{% trans "Type" %}</th>
+                                        <th class="px-4 py-2 text-right">{% trans "Inst #" %}</th>
+                                        <th class="px-4 py-2 text-right">{% trans "Amount" %}</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
                                     {% for txn in c.client_transactions %}
-                                    <tr>
+                                    <tr class="hover:bg-white">
                                         <td class="px-6 py-1.5 font-mono text-gray-700">{{ txn.account.account_no }}</td>
                                         <td class="px-4 py-1.5 text-gray-700">{{ txn.account.member.name }}</td>
                                         <td class="px-4 py-1.5">
-                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium {% if txn.account.deposit_type == 'daily' %}bg-blue-100 text-blue-700{% elif txn.account.deposit_type == 'weekly' %}bg-amber-100 text-amber-700{% else %}bg-purple-100 text-purple-700{% endif %}">{{ txn.account.get_deposit_type_display }}</span>
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium {% if txn.account.deposit_type == 'daily' %}bg-blue-100 text-blue-700{% elif txn.account.deposit_type == 'weekly' %}bg-amber-100 text-amber-700{% else %}bg-purple-100 text-purple-700{% endif %}">{{ txn.account.get_deposit_type_display }}</span>
                                         </td>
                                         <td class="px-4 py-1.5 text-right text-gray-500">{{ txn.installment_no }}</td>
-                                        <td class="px-4 py-1.5 text-right font-medium text-gray-900">{{ txn.amount|floatformat:2 }}</td>
+                                        <td class="px-4 py-1.5 text-right font-medium text-gray-900" style="font-variant-numeric:tabular-nums">&#8377;{{ txn.amount|floatformat:2 }}</td>
                                     </tr>
                                     {% empty %}
-                                    <tr><td colspan="5" class="px-6 py-2 text-gray-400">{% trans "No transactions" %}</td></tr>
+                                    <tr><td colspan="5" class="px-6 py-3 text-gray-400 text-center">{% trans "No transactions" %}</td></tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
@@ -105,92 +161,105 @@
                 {% endfor %}
             </table>
         </div>
-        {% else %}
-        <div class="px-5 py-6 text-center">
-            <p class="text-sm text-gray-400">{% trans "No pending collections to post." %}</p>
-        </div>
-        {% endif %}
     </div>
+    {% endif %}
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div class="px-5 py-3 border-b border-gray-200 flex items-center justify-between">
-            <h3 class="text-xs font-semibold text-gray-500 uppercase">{% trans "Recently Posted / Rejected" %}</h3>
+    <!-- ═══════════════════════════════════════════════════════════════
+         SECTION 2: Recently Posted Agent Collections
+         ═══════════════════════════════════════════════════════════════ -->
+    {% if posted %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-5 py-3 border-b border-gray-200 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+                <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-100 text-blue-700">
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                </span>
+                <h3 class="text-sm font-semibold text-gray-700">{% trans "Recent Agent Postings" %}</h3>
+            </div>
             {% if today_rollback_count > 0 and request.user.is_manager %}
             <form method="post" action="{% url 'agents:collection_rollback_all' %}" class="inline"
                   onsubmit="return confirm('Rollback ALL {{ today_rollback_count }} posted collection(s) for today?\nTotal: ₹{{ today_rollback_total|floatformat:2 }}\n\nThis will reverse journal entries, cashbook, and savings account credits.');">
                 {% csrf_token %}
-                <button type="submit" class="px-3 py-1 bg-red-600 text-white text-xs font-medium rounded hover:bg-red-700">Rollback All ({{ today_rollback_count }})</button>
+                <button type="submit" class="inline-flex items-center px-2.5 py-1 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 shadow-sm">
+                    <svg class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.333 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z"/></svg>
+                    {% trans "Rollback All" %} ({{ today_rollback_count }})
+                </button>
             </form>
             {% endif %}
         </div>
-        {% if posted %}
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
                 <thead>
-                    <tr class="text-left text-xs font-semibold text-gray-500 uppercase bg-gray-50">
-                        <th class="px-2 py-2 w-8"></th>
-                        <th class="px-4 py-2">{% trans "Date" %}</th>
-                        <th class="px-4 py-2">{% trans "Agent" %}</th>
-                        <th class="px-4 py-2">{% trans "Branch" %}</th>
-                        <th class="px-4 py-2 text-right">{% trans "Clients" %}</th>
-                        <th class="px-4 py-2 text-right">{% trans "Amount" %}</th>
-                        <th class="px-4 py-2">{% trans "Status" %}</th>
-                        <th class="px-4 py-2">{% trans "By" %}</th>
-                        <th class="px-4 py-2 text-center">{% trans "Action" %}</th>
+                    <tr class="text-left text-xs font-semibold text-gray-500 uppercase bg-gray-50/80">
+                        <th class="px-2 py-2.5 w-8"></th>
+                        <th class="px-4 py-2.5">{% trans "Date" %}</th>
+                        <th class="px-4 py-2.5">{% trans "Agent" %}</th>
+                        <th class="px-4 py-2.5 hidden sm:table-cell">{% trans "Branch" %}</th>
+                        <th class="px-4 py-2.5 text-right">{% trans "Clients" %}</th>
+                        <th class="px-4 py-2.5 text-right">{% trans "Amount" %}</th>
+                        <th class="px-4 py-2.5 text-center">{% trans "Status" %}</th>
+                        <th class="px-4 py-2.5 hidden md:table-cell">{% trans "By" %}</th>
+                        <th class="px-4 py-2.5 text-center w-24">{% trans "Action" %}</th>
                     </tr>
                 </thead>
                 {% for c in posted %}
                 <tbody x-data="{ open: false }" class="border-b border-gray-100">
-                    <tr class="hover:bg-gray-50 cursor-pointer" @click="open = !open">
-                        <td class="px-2 py-2 text-gray-400">
+                    <tr class="hover:bg-gray-50 cursor-pointer transition-colors" @click="open = !open">
+                        <td class="px-2 py-2.5 text-gray-400">
                             <svg class="h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-90' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                         </td>
-                        <td class="px-4 py-2 text-gray-900">{{ c.collection_date|date:"d-M-Y" }}</td>
-                        <td class="px-4 py-2" @click.stop><a href="{% url 'agents:detail' pk=c.agent.pk %}" class="text-primary-600 hover:underline">{{ c.agent.agent_code }} — {{ c.agent.member.name }}</a></td>
-                        <td class="px-4 py-2 text-gray-500">{{ c.branch.branch_name }}</td>
-                        <td class="px-4 py-2 text-right text-gray-900">{{ c.total_clients_collected }}</td>
-                        <td class="px-4 py-2 text-right font-medium {% if c.status == 'reconciled' %}text-green-700{% else %}text-red-700{% endif %}">{{ c.collected_amount|floatformat:2 }}</td>
-                        <td class="px-4 py-2">
+                        <td class="px-4 py-2.5 text-gray-900">{{ c.collection_date|date:"d-M-Y" }}</td>
+                        <td class="px-4 py-2.5" @click.stop>
+                            <a href="{% url 'agents:detail' pk=c.agent.pk %}" class="text-primary-600 hover:underline font-medium">{{ c.agent.agent_code }}</a>
+                            <span class="text-gray-500 ml-1 hidden sm:inline">{{ c.agent.member.name }}</span>
+                        </td>
+                        <td class="px-4 py-2.5 text-gray-500 hidden sm:table-cell">{{ c.branch.branch_name }}</td>
+                        <td class="px-4 py-2.5 text-right text-gray-900">{{ c.total_clients_collected }}</td>
+                        <td class="px-4 py-2.5 text-right font-medium {% if c.status == 'reconciled' %}text-green-700{% else %}text-red-700{% endif %}" style="font-variant-numeric:tabular-nums">&#8377;{{ c.collected_amount|floatformat:2 }}</td>
+                        <td class="px-4 py-2.5 text-center">
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if c.status == 'reconciled' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">{{ c.get_status_display }}</span>
                         </td>
-                        <td class="px-4 py-2 text-gray-500 text-sm">{% if c.reconciled_by %}{{ c.reconciled_by.get_full_name|default:c.reconciled_by.username }}{% else %}—{% endif %}</td>
-                        <td class="px-4 py-2 text-center" @click.stop>
+                        <td class="px-4 py-2.5 text-gray-500 text-sm hidden md:table-cell">{% if c.reconciled_by %}{{ c.reconciled_by.get_full_name|default:c.reconciled_by.username }}{% else %}—{% endif %}</td>
+                        <td class="px-4 py-2.5 text-center" @click.stop>
                             {% if c.can_rollback and request.user.is_manager %}
                             <form method="post" action="{% url 'agents:collection_rollback' c.pk %}" class="inline"
-                                  onsubmit="return confirm('Rollback collection of ₹{{ c.collected_amount|floatformat:2 }} for {{ c.agent.agent_code }}?\n\nThis will reverse journal entries, cashbook, and savings account credits.');">
+                                  onsubmit="return confirm('Rollback collection of ₹{{ c.collected_amount|floatformat:2 }} for {{ c.agent.agent_code }}?\n\nThis will reverse journal entries, cashbook, and savings credits.');">
                                 {% csrf_token %}
-                                <button type="submit" class="px-2 py-1 bg-red-600 text-white text-xs font-medium rounded hover:bg-red-700">Rollback</button>
+                                <button type="submit" class="inline-flex items-center px-2 py-1 text-red-700 bg-red-50 border border-red-200 text-xs font-medium rounded-lg hover:bg-red-100">
+                                    <svg class="h-3 w-3 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.333 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z"/></svg>
+                                    {% trans "Rollback" %}
+                                </button>
                             </form>
                             {% else %}
-                            <span class="text-xs text-gray-400">—</span>
+                            <span class="text-xs text-gray-300">—</span>
                             {% endif %}
                         </td>
                     </tr>
                     <tr :class="open ? '' : 'hidden'">
-                        <td colspan="9" class="px-0 py-0 bg-gray-50">
+                        <td colspan="9" class="px-0 py-0 bg-gray-50 border-t border-gray-200">
                             <table class="w-full text-xs">
                                 <thead>
-                                    <tr class="text-left text-xs font-semibold text-gray-400 uppercase">
-                                        <th class="px-6 py-1.5">{% trans "Account" %}</th>
-                                        <th class="px-4 py-1.5">{% trans "Member" %}</th>
-                                        <th class="px-4 py-1.5">{% trans "Type" %}</th>
-                                        <th class="px-4 py-1.5 text-right">{% trans "Installment #" %}</th>
-                                        <th class="px-4 py-1.5 text-right">{% trans "Amount" %}</th>
+                                    <tr class="text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+                                        <th class="px-6 py-2">{% trans "Account" %}</th>
+                                        <th class="px-4 py-2">{% trans "Member" %}</th>
+                                        <th class="px-4 py-2">{% trans "Type" %}</th>
+                                        <th class="px-4 py-2 text-right">{% trans "Inst #" %}</th>
+                                        <th class="px-4 py-2 text-right">{% trans "Amount" %}</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
                                     {% for txn in c.client_transactions %}
-                                    <tr>
+                                    <tr class="hover:bg-white">
                                         <td class="px-6 py-1.5 font-mono text-gray-700">{{ txn.account.account_no }}</td>
                                         <td class="px-4 py-1.5 text-gray-700">{{ txn.account.member.name }}</td>
                                         <td class="px-4 py-1.5">
-                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium {% if txn.account.deposit_type == 'daily' %}bg-blue-100 text-blue-700{% elif txn.account.deposit_type == 'weekly' %}bg-amber-100 text-amber-700{% else %}bg-purple-100 text-purple-700{% endif %}">{{ txn.account.get_deposit_type_display }}</span>
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium {% if txn.account.deposit_type == 'daily' %}bg-blue-100 text-blue-700{% elif txn.account.deposit_type == 'weekly' %}bg-amber-100 text-amber-700{% else %}bg-purple-100 text-purple-700{% endif %}">{{ txn.account.get_deposit_type_display }}</span>
                                         </td>
                                         <td class="px-4 py-1.5 text-right text-gray-500">{{ txn.installment_no }}</td>
-                                        <td class="px-4 py-1.5 text-right font-medium text-gray-900">{{ txn.amount|floatformat:2 }}</td>
+                                        <td class="px-4 py-1.5 text-right font-medium text-gray-900" style="font-variant-numeric:tabular-nums">&#8377;{{ txn.amount|floatformat:2 }}</td>
                                     </tr>
                                     {% empty %}
-                                    <tr><td colspan="5" class="px-6 py-2 text-gray-400">{% trans "No transactions" %}</td></tr>
+                                    <tr><td colspan="5" class="px-6 py-3 text-gray-400 text-center">{% trans "No transactions" %}</td></tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
@@ -200,11 +269,159 @@
                 {% endfor %}
             </table>
         </div>
-        {% else %}
-        <div class="px-5 py-6 text-center">
-            <p class="text-sm text-gray-400">{% trans "No recently posted collections." %}</p>
-        </div>
-        {% endif %}
     </div>
+    {% endif %}
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         SECTION 3: All Transactions (unified journal entries)
+         ═══════════════════════════════════════════════════════════════ -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+
+        <!-- Section Header -->
+        <div class="px-5 py-3 border-b border-gray-200">
+            <div class="flex items-center gap-2">
+                <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-gray-100 text-gray-600">
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                </span>
+                <h3 class="text-sm font-semibold text-gray-700">{% trans "All Transactions" %}</h3>
+                <span class="text-xs text-gray-400 ml-1">{{ paginator.count }} entr{{ paginator.count|pluralize:"y,ies" }}</span>
+            </div>
+        </div>
+
+        <!-- Search & Filters -->
+        <div class="px-5 py-3 border-b border-gray-100 bg-gray-50/50">
+            <form method="get" class="space-y-3">
+                {% if request.GET.agent %}<input type="hidden" name="agent" value="{{ request.GET.agent }}">{% endif %}
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <div class="relative flex-1">
+                        <svg class="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <input type="text" name="q" value="{{ q }}" placeholder="{% trans 'Search voucher no, narration, agent code...' %}"
+                               class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+                    <input type="date" name="from_date" value="{{ from_date }}" title="{% trans 'From Date' %}"
+                           class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-primary-500 focus:border-primary-500">
+                    <input type="date" name="to_date" value="{{ to_date }}" title="{% trans 'To Date' %}"
+                           class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-primary-500 focus:border-primary-500">
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <select name="type" class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm bg-white">
+                        <option value="">{% trans "All Types" %}</option>
+                        <option value="receipt" {% if voucher_type == 'receipt' %}selected{% endif %}>{% trans "Receipt" %}</option>
+                        <option value="payment" {% if voucher_type == 'payment' %}selected{% endif %}>{% trans "Payment" %}</option>
+                        <option value="journal" {% if voucher_type == 'journal' %}selected{% endif %}>{% trans "Journal" %}</option>
+                        <option value="contra" {% if voucher_type == 'contra' %}selected{% endif %}>{% trans "Contra" %}</option>
+                    </select>
+                    <select name="source" class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm bg-white">
+                        <option value="">{% trans "All Sources" %}</option>
+                        <option value="manual" {% if source_filter == 'manual' %}selected{% endif %}>{% trans "Manual" %}</option>
+                        <option value="agent" {% if source_filter == 'agent' %}selected{% endif %}>{% trans "Agent Collection" %}</option>
+                        <option value="system" {% if source_filter == 'system' %}selected{% endif %}>{% trans "System" %}</option>
+                    </select>
+                    <select name="status" class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm bg-white">
+                        <option value="">{% trans "All Status" %}</option>
+                        <option value="posted" {% if status_filter == 'posted' %}selected{% endif %}>{% trans "Posted" %}</option>
+                        <option value="reversed" {% if status_filter == 'reversed' %}selected{% endif %}>{% trans "Reversed" %}</option>
+                    </select>
+                    <button type="submit" class="inline-flex items-center px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">
+                        <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+                        {% trans "Filter" %}
+                    </button>
+                    {% if q or from_date or to_date or voucher_type or source_filter or status_filter %}
+                    <a href="?{% if request.GET.agent %}agent={{ request.GET.agent }}{% endif %}" class="px-3 py-1.5 text-sm text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">{% trans "Clear" %}</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+
+        <!-- Transactions Table -->
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Voucher No" %}</th>
+                        <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Date" %}</th>
+                        <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Type" %}</th>
+                        <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">{% trans "Source" %}</th>
+                        <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Amount" %}</th>
+                        <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">{% trans "Narration" %}</th>
+                        <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">{% trans "By" %}</th>
+                        <th class="px-4 py-2.5 text-center text-xs font-semibold text-gray-600 uppercase">{% trans "Status" %}</th>
+                        <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-600 uppercase w-20">{% trans "Actions" %}</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for entry in entries %}
+                    <tr class="{% if entry.is_reversed or entry.is_rejected %}opacity-50{% else %}hover:bg-gray-50{% endif %} transition-colors">
+                        <td class="px-4 py-2.5 font-mono text-gray-900 whitespace-nowrap">{{ entry.voucher_no }}</td>
+                        <td class="px-4 py-2.5 text-gray-600 whitespace-nowrap">{{ entry.entry_date|date:"d-M-Y" }}</td>
+                        <td class="px-4 py-2.5">
+                            {% if entry.voucher_type == 'receipt' %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{% trans "Receipt" %}</span>
+                            {% elif entry.voucher_type == 'payment' %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">{% trans "Payment" %}</span>
+                            {% elif entry.voucher_type == 'journal' %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{% trans "Journal" %}</span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">{% trans "Contra" %}</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-2.5 hidden lg:table-cell">
+                            {% if entry.reference_type == 'pigmmy_collection' %}
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-600 border border-blue-200">{% trans "Agent" %}</span>
+                            {% elif entry.reference_type == 'manual' or entry.reference_type == '' %}
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-50 text-gray-500 border border-gray-200">{% trans "Manual" %}</span>
+                            {% elif entry.reference_type == 'modification' %}
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-50 text-orange-600 border border-orange-200">{% trans "Edit" %}</span>
+                            {% else %}
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-indigo-50 text-indigo-600 border border-indigo-200">{% trans "System" %}</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-2.5 text-right font-medium text-gray-900 whitespace-nowrap" style="font-variant-numeric:tabular-nums">&#8377;{{ entry.amount|floatformat:2 }}</td>
+                        <td class="px-4 py-2.5 text-gray-600 hidden md:table-cell max-w-[200px] truncate" title="{{ entry.narration }}">{{ entry.narration|default:"—" }}</td>
+                        <td class="px-4 py-2.5 text-gray-500 hidden lg:table-cell whitespace-nowrap">{{ entry.created_by.get_short_name }}</td>
+                        <td class="px-4 py-2.5 text-center">
+                            {% if entry.is_reversed %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">{% trans "Reversed" %}</span>
+                            {% elif entry.is_rejected %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">{% trans "Rejected" %}</span>
+                            {% elif entry.is_posted %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">{% trans "Posted" %}</span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">{% trans "Pending" %}</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-2.5 text-right">
+                            {% if entry.is_posted and not entry.is_reversed and not entry.is_rejected and not entry.is_system_entry and request.user.is_manager %}
+                            <form method="post" action="{% url 'accounting:voucher_cancel' entry.pk %}" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" class="inline-flex items-center px-2 py-1 text-xs font-medium text-orange-700 bg-orange-50 rounded-lg hover:bg-orange-100 border border-orange-200"
+                                        onclick="return confirm('{% trans "Cancel (reverse) this posted voucher?" %}')" title="{% trans 'Cancel' %}">
+                                    <svg class="h-3 w-3 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                                    {% trans "Cancel" %}
+                                </button>
+                            </form>
+                            {% else %}
+                            <span class="text-xs text-gray-300">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="px-4 py-10 text-center">
+                            <svg class="mx-auto h-8 w-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                            <p class="mt-2 text-sm text-gray-400">{% trans "No transactions found." %}</p>
+                            {% if q or from_date or to_date or voucher_type or source_filter or status_filter %}
+                            <a href="?{% if request.GET.agent %}agent={{ request.GET.agent }}{% endif %}" class="mt-1 text-xs text-primary-600 hover:underline">{% trans "Clear filters" %}</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% include "includes/pagination.html" %}
+
 </div>
 {% endblock %}

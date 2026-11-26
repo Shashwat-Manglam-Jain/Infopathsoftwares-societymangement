@@ -7,6 +7,17 @@
 {% block content %}
 <div class="space-y-4">
 
+    <div class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex items-start gap-3" x-data="{ show: true }" x-show="show" x-transition.opacity.duration.200ms>
+        <svg class="h-5 w-5 text-blue-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div class="flex-1">
+            <h3 class="text-sm font-semibold text-blue-800">{% trans "Deposit Reports" %}</h3>
+            <p class="text-xs text-blue-700 mt-0.5">{% trans "Track Fixed Deposits and Recurring Deposits — view maturity schedules, interest accrued, and deposit-wise summaries. Filter by status, date range, or maturity period." %}</p>
+        </div>
+        <button @click="show = false" class="text-blue-400 hover:text-blue-600 shrink-0 p-0.5">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+    </div>
+
     <div>
         <a href="{% url 'reports:index' %}" class="inline-flex items-center text-sm text-primary-600 hover:text-primary-800 font-medium">
             <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
@@ -15,7 +26,7 @@
     </div>
 
 <!-- Filter Bar -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-4">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 px-5 py-4">
         <form method="get" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-x-4 gap-y-3 items-end">
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Report Type" %}</label>
@@ -51,7 +62,7 @@
                        class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
             </div>
             <div class="flex items-end gap-2">
-                <button type="submit" class="flex-1 px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700 shadow-sm">
+                <button type="submit" class="flex-1 px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">
                     {% trans "Generate" %}
                 </button>
                 {% include "includes/export_csv.html" %}
@@ -61,7 +72,7 @@
 
     {% if report_type %}
     <!-- Results -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
 
         {% if groups %}
         <!-- Grouped Report (period_wise, amount_wise, interest_wise) -->

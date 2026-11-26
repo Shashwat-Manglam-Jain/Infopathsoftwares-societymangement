@@ -4,16 +4,22 @@
 {% block page_title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl">
+<div class="w-full">
 
-    <div class="bg-gray-50 rounded-lg border border-gray-200 px-5 py-3 mb-4">
+    <div class="bg-gray-50 rounded-xl border border-gray-200 px-5 py-3 mb-4">
         <p class="text-sm text-gray-700">Loan <span class="font-mono font-semibold">{{ loan.loan_no }}</span> — {{ loan.member.name }}</p>
     </div>
 
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
 
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-xl">
+                <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    {% trans "Collateral Details" %}
+                </h3>
+            </div>
             <div class="px-5 py-4 space-y-3">
                 {% for field in form %}
                 <div>
@@ -26,9 +32,9 @@
                 {% endfor %}
             </div>
 
-            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-end gap-3">
-                <a href="{% url 'loans:detail' pk=loan.pk %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
-                <button type="submit" class="px-5 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">Save {% trans "Collateral" %}</button>
+            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex flex-wrap items-center justify-end gap-3">
+                <a href="{% url 'loans:detail' pk=loan.pk %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
+                <button type="submit" class="px-5 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm">Save {% trans "Collateral" %}</button>
             </div>
         </div>
     </form>

@@ -7,7 +7,7 @@
 <div class="max-w-full">
 
     <!-- Account Info + Filter -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-4">
         <div class="px-5 py-4 grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-2">
             <div>
                 <span class="text-xs text-gray-500">{% trans "Account No" %}</span>
@@ -38,14 +38,14 @@
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "To Date" %}</label>
                 <input type="date" name="to_date" value="{{ to_date }}" required class="rounded border border-gray-300 px-2.5 py-1.5 text-sm">
             </div>
-            <button type="submit" class="px-5 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "View Statement" %}</button>
+            <button type="submit" class="px-5 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">{% trans "View Statement" %}</button>
             {% if transactions %}<button type="button" onclick="window.print()" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Print" %}</button>{% endif %}
             <a href="{% url 'savings:detail' pk=account.pk %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">&larr; {% trans "Back" %}</a>
         </form>
     </div>
 
     {% if transactions %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
                 <thead class="bg-gray-50">
@@ -78,7 +78,7 @@
         </div>
     </div>
     {% elif from_date %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
         <p class="text-gray-400 text-sm">No transactions found for the selected period.</p>
     </div>
     {% endif %}

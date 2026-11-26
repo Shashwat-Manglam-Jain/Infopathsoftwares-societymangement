@@ -240,6 +240,7 @@ def post_collection(collection, posted_by):
         ],
         user=posted_by,
         reference_type='pigmmy_collection',
+        reference_id=collection.pk,
         is_posted=True,
     )
 
@@ -309,10 +310,16 @@ def rollback_collection(collection, user):
 
     journal = JournalEntry.objects.filter(
         reference_type='pigmmy_collection',
-        entry_date=collection.collection_date,
-        narration__contains=collection.agent.agent_code,
+        reference_id=collection.pk,
         is_reversed=False,
     ).first()
+    if not journal:
+        journal = JournalEntry.objects.filter(
+            reference_type='pigmmy_collection',
+            entry_date=collection.collection_date,
+            narration__contains=collection.agent.agent_code,
+            is_reversed=False,
+        ).first()
 
     total_amount = collection.deposited_amount
 

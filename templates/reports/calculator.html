@@ -7,6 +7,17 @@
 {% block content %}
 <div class="space-y-4" x-data="{ tab: 'savings' }">
 
+    <div class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex items-start gap-3" x-data="{ show: true }" x-show="show" x-transition.opacity.duration.200ms>
+        <svg class="h-5 w-5 text-blue-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div class="flex-1">
+            <h3 class="text-sm font-semibold text-blue-800">{% trans "Ready Reckoner / Interest Calculator" %}</h3>
+            <p class="text-xs text-blue-700 mt-0.5">{% trans "Quick interest calculation tool for savings, FD, RD, and loan products. Enter principal, rate, and tenure to compute maturity value, EMI, or interest payable." %}</p>
+        </div>
+        <button @click="show = false" class="text-blue-400 hover:text-blue-600 shrink-0 p-0.5">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+    </div>
+
     <div>
         <a href="{% url 'reports:index' %}" class="inline-flex items-center text-sm text-primary-600 hover:text-primary-800 font-medium">
             <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
@@ -26,7 +37,7 @@
 
     <!-- Savings Interest Calculator -->
     <div x-show="tab === 'savings'" x-data="{ principal: 10000, rate: 4, days: 365, get interest() { return (this.principal * this.rate * this.days) / (365 * 100); } }">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-4">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 px-5 py-4">
             <h3 class="text-base font-semibold text-gray-900 mb-4">{% trans "Savings Interest Calculator" %}</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <div>
@@ -79,7 +90,7 @@
         },
         get interestEarned() { return this.maturityAmount - this.principal; }
     }">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-4">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 px-5 py-4">
             <h3 class="text-base font-semibold text-gray-900 mb-4">{% trans "FD/RD Interest Calculator" %}</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
                 <div>
@@ -143,7 +154,7 @@
         get totalPayment() { return this.emi * this.tenure; },
         get totalInterest() { return this.totalPayment - this.principal; }
     }">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-4">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 px-5 py-4">
             <h3 class="text-base font-semibold text-gray-900 mb-4">{% trans "Loan EMI Calculator (Reducing Balance)" %}</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <div>
@@ -195,7 +206,7 @@
         get commission() { return this.collection * this.days * this.rate / 100; },
         get daily() { return this.collection * this.rate / 100; }
     }">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-4">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 px-5 py-4">
             <h3 class="text-base font-semibold text-gray-900 mb-4">{% trans "Agent Commission Calculator" %}</h3>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                 <div>

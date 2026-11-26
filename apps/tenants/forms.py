@@ -175,6 +175,43 @@ class SocietySignupForm(forms.Form):
         ),
     )
 
+    pan_no = forms.CharField(
+        max_length=10,
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'class': INPUT_CLASS,
+                'placeholder': 'ABCDE1234F',
+                'maxlength': '10',
+            }
+        ),
+        label='PAN Number',
+    )
+    tan_no = forms.CharField(
+        max_length=10,
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'class': INPUT_CLASS,
+                'placeholder': 'ABCD12345E',
+                'maxlength': '10',
+            }
+        ),
+        label='TAN Number',
+    )
+    gst_no = forms.CharField(
+        max_length=15,
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'class': INPUT_CLASS,
+                'placeholder': '22ABCDE1234F1Z5',
+                'maxlength': '15',
+            }
+        ),
+        label='GST Number',
+    )
+
     def clean(self):
         cleaned_data = super().clean()
         password = cleaned_data.get('password')
@@ -211,8 +248,11 @@ class SocietyEditForm(forms.ModelForm):
             'fax',
             'email',
             'pan_no',
+            'pan_doc',
             'tan_no',
+            'tan_doc',
             'gst_no',
+            'gst_doc',
             'authorized_capital',
             'paid_up_capital',
             'share_nominal_value',
@@ -234,8 +274,11 @@ class SocietyEditForm(forms.ModelForm):
             'fax': forms.TextInput(attrs={'class': _tw}),
             'email': forms.EmailInput(attrs={'class': _tw}),
             'pan_no': forms.TextInput(attrs={'class': _tw, 'maxlength': '10'}),
+            'pan_doc': forms.ClearableFileInput(attrs={'class': _tw}),
             'tan_no': forms.TextInput(attrs={'class': _tw, 'maxlength': '10'}),
+            'tan_doc': forms.ClearableFileInput(attrs={'class': _tw}),
             'gst_no': forms.TextInput(attrs={'class': _tw, 'maxlength': '15'}),
+            'gst_doc': forms.ClearableFileInput(attrs={'class': _tw}),
             'authorized_capital': forms.NumberInput(attrs={'class': _tw}),
             'paid_up_capital': forms.NumberInput(attrs={'class': _tw}),
             'share_nominal_value': forms.NumberInput(attrs={'class': _tw}),

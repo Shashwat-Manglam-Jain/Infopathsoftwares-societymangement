@@ -25,6 +25,9 @@ class Society(TenantMixin):
     society_category = models.CharField(max_length=100, blank=True)
     society_code = models.CharField(max_length=3, default='001', help_text='3-digit code used in account number prefix')
     logo = models.ImageField(upload_to='society/logos/', blank=True)
+    pan_doc = models.FileField(upload_to='society/kyc/', blank=True)
+    tan_doc = models.FileField(upload_to='society/kyc/', blank=True)
+    gst_doc = models.FileField(upload_to='society/kyc/', blank=True)
 
     society_type = models.CharField(
         max_length=30,

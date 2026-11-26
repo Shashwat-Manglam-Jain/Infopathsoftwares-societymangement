@@ -71,21 +71,12 @@ def voucher_list(request):
         entries = entries.filter(voucher_type=voucher_type)
 
     status_filter = request.GET.get('status', '')
-    if status_filter == 'pending':
-        entries = entries.filter(is_posted=False, is_reversed=False, is_rejected=False)
-    elif status_filter == 'posted':
+    if status_filter == 'posted':
         entries = entries.filter(is_posted=True, is_reversed=False)
-    elif status_filter == 'rejected':
-        entries = entries.filter(is_rejected=True)
     elif status_filter == 'reversed':
         entries = entries.filter(is_reversed=True)
 
     entries = entries.order_by('-entry_date', '-created_at')
-
-    pending_qs = JournalEntry.objects.filter(is_posted=False, is_reversed=False, is_rejected=False)
-    if not request.user.can_access_all_branches:
-        pending_qs = pending_qs.filter(branch=request.current_branch)
-    pending_count = pending_qs.count()
 
     paginator = Paginator(entries, 25)
     page_obj = paginator.get_page(request.GET.get('page'))
@@ -102,7 +93,6 @@ def voucher_list(request):
             'to_date': to_date,
             'voucher_type': voucher_type,
             'status_filter': status_filter,
-            'pending_count': pending_count,
         },
     )
 
@@ -172,6 +162,7 @@ def receipt_transaction(request):
     heads = ChartOfAccounts.objects.filter(allow_transactions=True, is_active=True).order_by('code')
     if request.method == 'POST':
         return _process_transaction(request, 'receipt', heads)
+    txn_date = get_transaction_date(request.current_branch)
     return render(
         request,
         'accounting/transaction.html',
@@ -179,6 +170,7 @@ def receipt_transaction(request):
             'heads': heads,
             'txn_type': 'receipt',
             'title': 'Receipt Transaction',
+            'txn_date': txn_date.isoformat(),
         },
     )
 
@@ -192,6 +184,7 @@ def payment_transaction(request):
     heads = ChartOfAccounts.objects.filter(allow_transactions=True, is_active=True).order_by('code')
     if request.method == 'POST':
         return _process_transaction(request, 'payment', heads)
+    txn_date = get_transaction_date(request.current_branch)
     return render(
         request,
         'accounting/transaction.html',
@@ -199,6 +192,7 @@ def payment_transaction(request):
             'heads': heads,
             'txn_type': 'payment',
             'title': 'Payment Transaction',
+            'txn_date': txn_date.isoformat(),
         },
     )
 
@@ -446,17 +440,19 @@ def _process_transaction(request, txn_type, heads):
 
     try:
         branch = request.current_branch
-        entry = create_journal_entry(
-            entry_date=entry_date,
-            voucher_type=txn_type,
-            branch=branch,
-            narration=narration,
-            lines=lines,
-            user=request.user,
-            payment_mode=payment_mode,
-            is_posted=False,
-        )
-        messages.success(request, f'{txn_type.title()} {entry.voucher_no} created (pending approval).')
+        with transaction.atomic():
+            entry = create_journal_entry(
+                entry_date=entry_date,
+                voucher_type=txn_type,
+                branch=branch,
+                narration=narration,
+                lines=lines,
+                user=request.user,
+                payment_mode=payment_mode,
+                is_posted=True,
+            )
+            _post_side_effects(entry, request.user)
+        messages.success(request, f'{txn_type.title()} {entry.voucher_no} created and posted.')
         return redirect('accounting:vouchers')
     except ValueError as e:
         messages.error(request, str(e))
@@ -600,32 +596,36 @@ def voucher_create(request):
             amount = form.cleaned_data['amount']
             try:
                 branch = request.current_branch
-                entry = create_journal_entry(
-                    entry_date=get_transaction_date(branch),
-                    voucher_type=form.cleaned_data['voucher_type'],
-                    branch=branch,
-                    narration=form.cleaned_data['narration'],
-                    lines=[
-                        {
-                            'account_code': form.cleaned_data['debit_account'].code,
-                            'debit': amount,
-                            'credit': Decimal('0'),
-                        },
-                        {
-                            'account_code': form.cleaned_data['credit_account'].code,
-                            'debit': Decimal('0'),
-                            'credit': amount,
-                        },
-                    ],
-                    user=request.user,
-                )
-                messages.success(request, f'Voucher {entry.voucher_no} created.')
+                with transaction.atomic():
+                    entry = create_journal_entry(
+                        entry_date=get_transaction_date(branch),
+                        voucher_type=form.cleaned_data['voucher_type'],
+                        branch=branch,
+                        narration=form.cleaned_data['narration'],
+                        lines=[
+                            {
+                                'account_code': form.cleaned_data['debit_account'].code,
+                                'debit': amount,
+                                'credit': Decimal('0'),
+                            },
+                            {
+                                'account_code': form.cleaned_data['credit_account'].code,
+                                'debit': Decimal('0'),
+                                'credit': amount,
+                            },
+                        ],
+                        user=request.user,
+                        is_posted=True,
+                    )
+                    _post_side_effects(entry, request.user)
+                messages.success(request, f'Voucher {entry.voucher_no} created and posted.')
                 return redirect('accounting:vouchers')
             except ValueError as e:
                 messages.error(request, str(e))
     else:
         form = VoucherForm()
-    return render(request, 'accounting/voucher_create.html', {'form': form})
+    txn_date = get_transaction_date(request.current_branch)
+    return render(request, 'accounting/voucher_create.html', {'form': form, 'txn_date': txn_date})
 
 
 @auditor_or_above
@@ -691,15 +691,64 @@ def next_head_code_ajax(request):
 
 
 @admin_required
+def parent_head_info_ajax(request):
+    pk = request.GET.get('pk', '')
+    if not pk:
+        return JsonResponse({'group': ''})
+    head = ChartOfAccounts.objects.filter(pk=pk, is_active=True).first()
+    if not head:
+        return JsonResponse({'group': ''})
+    return JsonResponse({'group': head.account_group})
+
+
+def _next_account_code():
+    """Return the next available 3-digit account_code."""
+    last = (
+        ChartOfAccounts.objects.filter(account_code__regex=r'^\d{3}$')
+        .order_by('-account_code')
+        .values_list('account_code', flat=True)
+        .first()
+    )
+    if last:
+        return str(int(last) + 1).zfill(3)
+    return '100'
+
+
+GROUP_RELATED_TABLE_MAP = {
+    'asset': 'general',
+    'liability': 'general',
+    'equity': 'general',
+    'income': 'interest_received',
+    'expense': 'interest_paid',
+}
+
+GROUP_REPORT_MAP = {
+    'asset': 'balance_sheet',
+    'liability': 'balance_sheet',
+    'equity': 'balance_sheet',
+    'income': 'profit_loss',
+    'expense': 'profit_loss',
+}
+
+
+@admin_required
 def chart_of_accounts_create(request):
     if request.method == 'POST':
         form = ChartOfAccountsForm(request.POST)
         if form.is_valid():
             head = form.save(commit=False)
-            if not head.code:
-                head.code = _next_head_code(head.account_group)
+            if head.parent_id:
+                head.account_group = head.parent.account_group
+            head.code = _next_head_code(head.account_group)
+            head.account_code = _next_account_code()
+            if head.parent_id and head.parent.related_table_name not in ('group', 'general', ''):
+                head.related_table_name = head.parent.related_table_name
+            else:
+                head.related_table_name = GROUP_RELATED_TABLE_MAP.get(head.account_group, 'general')
+            head.report_position = GROUP_REPORT_MAP.get(head.account_group, 'balance_sheet')
+            head.allow_transactions = True
             head.save()
-            messages.success(request, 'Account head created.')
+            messages.success(request, f'Account head "{head.name}" created with code {head.code}.')
             return redirect('accounting:heads')
     else:
         form = ChartOfAccountsForm()
@@ -717,7 +766,7 @@ def chart_of_accounts_edit(request, pk):
             return redirect('accounting:heads')
     else:
         form = ChartOfAccountsForm(instance=head)
-    return render(request, 'accounting/heads_form.html', {'form': form, 'title': f'Edit: {head.name}'})
+    return render(request, 'accounting/heads_form.html', {'form': form, 'title': f'Edit: {head.name}', 'head': head})
 
 
 @auditor_or_above
@@ -1038,7 +1087,9 @@ def voucher_edit(request, pk):
                         user=request.user,
                         reference_type='modification',
                         reference_id=entry.pk,
+                        is_posted=True,
                     )
+                    _post_side_effects(new_entry, request.user)
                 messages.success(request, f'Voucher modified. Old: {entry.voucher_no} → New: {new_entry.voucher_no}')
                 return redirect('accounting:vouchers')
             except ValueError as e:
@@ -1077,6 +1128,10 @@ def voucher_cancel(request, pk):
         messages.error(request, 'You do not have access to this voucher.')
         return redirect('accounting:vouchers')
 
+    if entry.is_system_entry:
+        messages.error(request, 'System-generated entries cannot be cancelled from the voucher list.')
+        return redirect('accounting:vouchers')
+
     from apps.accounts.permissions import is_date_locked
 
     branch = getattr(request, 'current_branch', None) or entry.branch
@@ -1089,7 +1144,7 @@ def voucher_cancel(request, pk):
             messages.error(request, 'This voucher is already reversed/cancelled.')
             return redirect('accounting:vouchers')
         if not entry.is_posted:
-            messages.error(request, 'Cannot cancel a pending voucher. Use reject instead.')
+            messages.error(request, 'This voucher is not posted and cannot be cancelled.')
             return redirect('accounting:vouchers')
 
         from apps.accounting.services import reverse_journal_entry, update_cashbook
@@ -1100,9 +1155,9 @@ def voucher_cancel(request, pk):
                 reversal = reverse_journal_entry(entry, request.user)
                 if entry.voucher_type in ('receipt', 'payment') and cancel_amount > 0:
                     if entry.voucher_type == 'receipt':
-                        update_cashbook(branch, entry.entry_date, payment_amount=cancel_amount)
+                        update_cashbook(branch, entry.entry_date, payment_amount=cancel_amount, payment_mode=entry.payment_mode)
                     else:
-                        update_cashbook(branch, entry.entry_date, receipt_amount=cancel_amount)
+                        update_cashbook(branch, entry.entry_date, receipt_amount=cancel_amount, payment_mode=entry.payment_mode)
                 _reverse_personal_accounts(entry, reversal, request.user)
             messages.success(request, f'Voucher {entry.voucher_no} cancelled. Reversal: {reversal.voucher_no}')
         except ValueError as e:

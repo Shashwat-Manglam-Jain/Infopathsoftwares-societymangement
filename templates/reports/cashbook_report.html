@@ -25,7 +25,7 @@
         </a>
     </div>
 
-    <form method="get" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 no-print">
+    <form method="get" class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 no-print">
         <div class="flex flex-col sm:flex-row items-end gap-3">
             <div class="flex-1">
                 <label class="block text-sm font-medium text-gray-700 mb-1">{% trans "Date" %}</label>
@@ -74,7 +74,7 @@
     </div>
 
     {% if branch_cashbooks %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-3 bg-gray-50 border-b border-gray-200">
             <h3 class="text-sm font-semibold text-gray-700">{% trans "Branch-wise Breakdown" %}</h3>
         </div>
@@ -107,7 +107,7 @@
 
     <!-- Head-wise Breakdown -->
     {% if heads %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-3 bg-gray-50 border-b border-gray-200">
             <h3 class="text-sm font-semibold text-gray-700">{% trans "Head-wise Summary" %}</h3>
         </div>
@@ -144,7 +144,7 @@
     {% endif %}
 
     {% elif report_date %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
         <p class="text-gray-400 text-sm">{% trans "No cashbook record found for this date. Day End may not have been run yet." %}</p>
     </div>
     {% endif %}

@@ -8,7 +8,7 @@
 <div class="max-w-full">
 
     <!-- Filter & Calculate -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
         <form method="post">
             {% csrf_token %}
             <div class="px-5 py-4 grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-3">
@@ -30,10 +30,10 @@
                            class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
                 </div>
                 <div class="flex items-end">
-                    <button type="submit" class="w-full px-3 py-1.5 bg-teal-600 text-white text-sm font-medium rounded hover:bg-teal-700">Calculate Interest</button>
+                    <button type="submit" class="w-full px-3 py-1.5 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700">Calculate Interest</button>
                 </div>
             </div>
-            <div class="px-5 py-2 bg-gray-50 border-t border-gray-200 rounded-b-lg flex justify-end">
+            <div class="px-5 py-2 bg-gray-50 border-t border-gray-200 rounded-b-xl flex justify-end">
                 <a href="{% url 'dayend:interest_post' %}" class="text-sm text-indigo-600 hover:underline font-medium">Go to {% trans "Interest Posting" %} &rarr;</a>
             </div>
         </form>
@@ -42,19 +42,19 @@
     <!-- Summary -->
     {% if summary %}
     <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 mt-4">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-4 py-3">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 px-4 py-3">
             <span class="text-xs font-medium text-gray-500">Total {% trans "Accounts" %}</span>
             <p class="text-lg font-bold text-gray-800">{{ summary.total_accounts }}</p>
         </div>
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-4 py-3">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 px-4 py-3">
             <span class="text-xs font-medium text-gray-500">Total Balance</span>
             <p class="text-lg font-bold text-gray-800">₹{{ summary.total_balance|floatformat:2 }}</p>
         </div>
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-4 py-3">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 px-4 py-3">
             <span class="text-xs font-medium text-gray-500">Total Accrued</span>
             <p class="text-lg font-bold text-teal-700">₹{{ summary.total_accrued|floatformat:2 }}</p>
         </div>
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-4 py-3">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 px-4 py-3">
             <span class="text-xs font-medium text-gray-500">Calculated Today</span>
             <p class="text-lg font-bold {% if summary.already_calculated_today > 0 %}text-amber-600{% else %}text-gray-400{% endif %}">
                 {{ summary.already_calculated_today }} / {{ summary.total_accounts }}
@@ -75,7 +75,7 @@
 
     <!-- Calculation Results (POST response) -->
     {% if results %}
-    <div class="bg-white rounded-lg shadow-sm border border-teal-200 overflow-hidden mt-4">
+    <div class="bg-white rounded-xl shadow-sm border border-teal-200 overflow-hidden mt-4">
         <div class="px-5 py-3 border-b border-teal-200 bg-teal-50 flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <svg class="h-5 w-5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -117,7 +117,7 @@
             </table>
         </div>
         <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 flex justify-end">
-            <a href="{% url 'dayend:interest_post' %}" class="inline-flex items-center px-4 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded hover:bg-indigo-700">
+            <a href="{% url 'dayend:interest_post' %}" class="inline-flex items-center px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">
                 Go to Interest Posting &rarr;
             </a>
         </div>
@@ -126,7 +126,7 @@
 
     <!-- Account List (GET view, no results yet) -->
     {% if accounts and not results %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mt-4">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-4">
         <div class="px-5 py-3 border-b border-gray-200">
             <p class="text-xs font-semibold text-gray-500 uppercase">Eligible {% trans "Accounts" %}</p>
         </div>

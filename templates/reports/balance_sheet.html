@@ -18,23 +18,34 @@
 {% block content %}
 <div class="space-y-4">
 
+    <div class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex items-start gap-3 no-print" x-data="{ show: true }" x-show="show" x-transition.opacity.duration.200ms>
+        <svg class="h-5 w-5 text-blue-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div class="flex-1">
+            <h3 class="text-sm font-semibold text-blue-800">{% trans "Balance Sheet" %}</h3>
+            <p class="text-xs text-blue-700 mt-0.5">{% trans "Statement of assets and liabilities as on a given date. Shows the society's financial position including capital, reserves, deposits, loans, and investments." %}</p>
+        </div>
+        <button @click="show = false" class="text-blue-400 hover:text-blue-600 shrink-0 p-0.5">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+    </div>
+
     <div class="no-print">
-        <a href="{% url 'reports:index' %}" class="inline-flex items-center text-sm text-primary-600 hover:text-primary-800 font-medium">
+        <a href="{% url 'reports:index' %}" class="inline-flex items-center text-sm text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-medium">
             <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
             {% trans "All Reports" %}
         </a>
     </div>
 
     <!-- Date Filter -->
-    <form method="get" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 no-print">
+    <form method="get" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 no-print">
         <div class="flex flex-col sm:flex-row items-end gap-3">
             <div class="flex-1">
-                <label class="block text-sm font-medium text-gray-700 mb-1">{% trans "As On Date" %}</label>
-                <input type="date" name="as_on_date" value="{{ as_on_date|default:'' }}" max="{% now 'Y-m-d' %}" required class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{% trans "As On Date" %}</label>
+                <input type="date" name="as_on_date" value="{{ as_on_date|default:'' }}" max="{% now 'Y-m-d' %}" required class="block w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white">
             </div>
             <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">{% trans "Generate" %}</button>
             {% if liability_groups or asset_groups %}{% include "includes/export_csv.html" %}
-            <button onclick="window.print()" type="button" class="inline-flex items-center px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+            <button onclick="window.print()" type="button" class="inline-flex items-center px-4 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                 <svg class="h-4 w-4 mr-1.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                 {% trans "Print" %}
             </button>{% endif %}
@@ -51,45 +62,47 @@
     <!-- Two-Column Layout -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <!-- Liabilities (Left) -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div class="px-4 py-3 bg-amber-50 border-b border-amber-100">
-                <h3 class="text-sm font-semibold text-amber-800">{% trans "Liabilities & Capital" %}</h3>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-100 dark:border-amber-800/30">
+                <h3 class="text-sm font-semibold text-amber-800 dark:text-amber-300">{% trans "Liabilities & Capital" %}</h3>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-gray-50 dark:bg-gray-900">
                         <tr>
-                            <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-600">{% trans "Particular" %}</th>
-                            <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-600 whitespace-nowrap">{{ as_on_date }}</th>
-                            <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-600 whitespace-nowrap">{{ prev_year_date }}</th>
+                            <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">{% trans "Particular" %}</th>
+                            <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 whitespace-nowrap">{{ as_on_date }}</th>
+                            <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 whitespace-nowrap">{{ prev_year_date }}</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100">
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                         {% for group in liability_groups %}
-                        <tr class="bg-gray-50">
-                            <td colspan="3" class="px-4 py-2 text-xs font-bold text-gray-700 uppercase tracking-wide">{{ group.name }}</td>
+                        <tr class="bg-gray-50 dark:bg-gray-700/50">
+                            <td colspan="3" class="px-4 py-2 text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wide">{{ group.name }}</td>
                         </tr>
                         {% for item in group.items %}
-                        <tr class="hover:bg-gray-50">
-                            <td class="pl-8 pr-4 py-1.5 text-sm text-gray-900">{{ item.name }}</td>
-                            <td class="px-4 py-1.5 text-sm text-right font-medium text-gray-900 tabular-nums">{{ item.current_amount|floatformat:2 }}</td>
-                            <td class="px-4 py-1.5 text-sm text-right text-gray-500 tabular-nums">{{ item.prev_amount|floatformat:2 }}</td>
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                            <td class="pl-8 pr-4 py-1.5 text-sm text-gray-900 dark:text-gray-100">
+                                {% if item.code and item.code != '—' %}<span class="font-mono text-xs text-gray-400 dark:text-gray-500 mr-1">{{ item.code }}</span>{% endif %}{{ item.name }}
+                            </td>
+                            <td class="px-4 py-1.5 text-sm text-right font-medium text-gray-900 dark:text-gray-100" style="font-variant-numeric:tabular-nums">{{ item.current_amount|floatformat:2 }}</td>
+                            <td class="px-4 py-1.5 text-sm text-right text-gray-500 dark:text-gray-400" style="font-variant-numeric:tabular-nums">{{ item.prev_amount|floatformat:2 }}</td>
                         </tr>
                         {% endfor %}
-                        <tr class="border-t border-gray-200">
-                            <td class="px-4 py-1.5 text-xs font-semibold text-gray-600 text-right">{% trans "Sub-total" %}</td>
-                            <td class="px-4 py-1.5 text-xs font-semibold text-right text-gray-700 tabular-nums">{{ group.current_total|floatformat:2 }}</td>
-                            <td class="px-4 py-1.5 text-xs font-semibold text-right text-gray-500 tabular-nums">{{ group.prev_total|floatformat:2 }}</td>
+                        <tr class="border-t border-gray-200 dark:border-gray-600">
+                            <td class="px-4 py-1.5 text-xs font-semibold text-gray-600 dark:text-gray-300 text-right">{% trans "Sub-total" %}</td>
+                            <td class="px-4 py-1.5 text-xs font-semibold text-right text-gray-700 dark:text-gray-200" style="font-variant-numeric:tabular-nums">{{ group.current_total|floatformat:2 }}</td>
+                            <td class="px-4 py-1.5 text-xs font-semibold text-right text-gray-500 dark:text-gray-400" style="font-variant-numeric:tabular-nums">{{ group.prev_total|floatformat:2 }}</td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="3" class="px-4 py-4 text-center text-sm text-gray-400">{% trans "No liabilities" %}</td></tr>
+                        <tr><td colspan="3" class="px-4 py-4 text-center text-sm text-gray-400 dark:text-gray-500">{% trans "No liabilities" %}</td></tr>
                         {% endfor %}
                     </tbody>
-                    <tfoot class="bg-amber-50 border-t-2 border-amber-200">
+                    <tfoot class="bg-amber-50 dark:bg-amber-900/20 border-t-2 border-amber-200 dark:border-amber-800/50">
                         <tr>
-                            <td class="px-4 py-3 text-sm font-bold text-amber-800">{% trans "Total Liabilities" %}</td>
-                            <td class="px-4 py-3 text-sm text-right font-bold text-amber-800 tabular-nums">{{ total_liability|floatformat:2 }}</td>
-                            <td class="px-4 py-3 text-sm text-right font-bold text-amber-700 tabular-nums">{{ prev_total_liability|floatformat:2 }}</td>
+                            <td class="px-4 py-3 text-sm font-bold text-amber-800 dark:text-amber-300">{% trans "Total Liabilities" %}</td>
+                            <td class="px-4 py-3 text-sm text-right font-bold text-amber-800 dark:text-amber-300" style="font-variant-numeric:tabular-nums">{{ total_liability|floatformat:2 }}</td>
+                            <td class="px-4 py-3 text-sm text-right font-bold text-amber-700 dark:text-amber-400" style="font-variant-numeric:tabular-nums">{{ prev_total_liability|floatformat:2 }}</td>
                         </tr>
                     </tfoot>
                 </table>
@@ -97,45 +110,47 @@
         </div>
 
         <!-- Assets (Right) -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div class="px-4 py-3 bg-blue-50 border-b border-blue-100">
-                <h3 class="text-sm font-semibold text-blue-800">{% trans "Assets" %}</h3>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="px-4 py-3 bg-blue-50 dark:bg-blue-900/20 border-b border-blue-100 dark:border-blue-800/30">
+                <h3 class="text-sm font-semibold text-blue-800 dark:text-blue-300">{% trans "Assets" %}</h3>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-gray-50 dark:bg-gray-900">
                         <tr>
-                            <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-600">{% trans "Particular" %}</th>
-                            <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-600 whitespace-nowrap">{{ as_on_date }}</th>
-                            <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-600 whitespace-nowrap">{{ prev_year_date }}</th>
+                            <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">{% trans "Particular" %}</th>
+                            <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 whitespace-nowrap">{{ as_on_date }}</th>
+                            <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 whitespace-nowrap">{{ prev_year_date }}</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100">
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                         {% for group in asset_groups %}
-                        <tr class="bg-gray-50">
-                            <td colspan="3" class="px-4 py-2 text-xs font-bold text-gray-700 uppercase tracking-wide">{{ group.name }}</td>
+                        <tr class="bg-gray-50 dark:bg-gray-700/50">
+                            <td colspan="3" class="px-4 py-2 text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wide">{{ group.name }}</td>
                         </tr>
                         {% for item in group.items %}
-                        <tr class="hover:bg-gray-50">
-                            <td class="pl-8 pr-4 py-1.5 text-sm text-gray-900">{{ item.name }}</td>
-                            <td class="px-4 py-1.5 text-sm text-right font-medium text-gray-900 tabular-nums">{{ item.current_amount|floatformat:2 }}</td>
-                            <td class="px-4 py-1.5 text-sm text-right text-gray-500 tabular-nums">{{ item.prev_amount|floatformat:2 }}</td>
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                            <td class="pl-8 pr-4 py-1.5 text-sm text-gray-900 dark:text-gray-100">
+                                {% if item.code and item.code != '—' %}<span class="font-mono text-xs text-gray-400 dark:text-gray-500 mr-1">{{ item.code }}</span>{% endif %}{{ item.name }}
+                            </td>
+                            <td class="px-4 py-1.5 text-sm text-right font-medium text-gray-900 dark:text-gray-100" style="font-variant-numeric:tabular-nums">{{ item.current_amount|floatformat:2 }}</td>
+                            <td class="px-4 py-1.5 text-sm text-right text-gray-500 dark:text-gray-400" style="font-variant-numeric:tabular-nums">{{ item.prev_amount|floatformat:2 }}</td>
                         </tr>
                         {% endfor %}
-                        <tr class="border-t border-gray-200">
-                            <td class="px-4 py-1.5 text-xs font-semibold text-gray-600 text-right">{% trans "Sub-total" %}</td>
-                            <td class="px-4 py-1.5 text-xs font-semibold text-right text-gray-700 tabular-nums">{{ group.current_total|floatformat:2 }}</td>
-                            <td class="px-4 py-1.5 text-xs font-semibold text-right text-gray-500 tabular-nums">{{ group.prev_total|floatformat:2 }}</td>
+                        <tr class="border-t border-gray-200 dark:border-gray-600">
+                            <td class="px-4 py-1.5 text-xs font-semibold text-gray-600 dark:text-gray-300 text-right">{% trans "Sub-total" %}</td>
+                            <td class="px-4 py-1.5 text-xs font-semibold text-right text-gray-700 dark:text-gray-200" style="font-variant-numeric:tabular-nums">{{ group.current_total|floatformat:2 }}</td>
+                            <td class="px-4 py-1.5 text-xs font-semibold text-right text-gray-500 dark:text-gray-400" style="font-variant-numeric:tabular-nums">{{ group.prev_total|floatformat:2 }}</td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="3" class="px-4 py-4 text-center text-sm text-gray-400">{% trans "No assets" %}</td></tr>
+                        <tr><td colspan="3" class="px-4 py-4 text-center text-sm text-gray-400 dark:text-gray-500">{% trans "No assets" %}</td></tr>
                         {% endfor %}
                     </tbody>
-                    <tfoot class="bg-blue-50 border-t-2 border-blue-200">
+                    <tfoot class="bg-blue-50 dark:bg-blue-900/20 border-t-2 border-blue-200 dark:border-blue-800/50">
                         <tr>
-                            <td class="px-4 py-3 text-sm font-bold text-blue-800">{% trans "Total Assets" %}</td>
-                            <td class="px-4 py-3 text-sm text-right font-bold text-blue-800 tabular-nums">{{ total_asset|floatformat:2 }}</td>
-                            <td class="px-4 py-3 text-sm text-right font-bold text-blue-700 tabular-nums">{{ prev_total_asset|floatformat:2 }}</td>
+                            <td class="px-4 py-3 text-sm font-bold text-blue-800 dark:text-blue-300">{% trans "Total Assets" %}</td>
+                            <td class="px-4 py-3 text-sm text-right font-bold text-blue-800 dark:text-blue-300" style="font-variant-numeric:tabular-nums">{{ total_asset|floatformat:2 }}</td>
+                            <td class="px-4 py-3 text-sm text-right font-bold text-blue-700 dark:text-blue-400" style="font-variant-numeric:tabular-nums">{{ prev_total_asset|floatformat:2 }}</td>
                         </tr>
                     </tfoot>
                 </table>
@@ -144,42 +159,42 @@
     </div>
 
     <!-- Balance Check + Ratios -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-5">
         <div class="flex items-center justify-between">
-            <span class="text-sm font-semibold text-gray-700">{% trans "Balance Check" %}</span>
+            <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">{% trans "Balance Check" %}</span>
             {% if difference == 0 %}
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
                 <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                 {% trans "Balanced" %}
             </span>
             {% else %}
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300">
                 {% trans "Difference:" %} {{ difference|floatformat:2 }}
             </span>
             {% endif %}
         </div>
         <div class="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
             <div>
-                <p class="text-xs text-gray-500 uppercase">{% trans "Total Liabilities" %}</p>
-                <p class="text-lg font-bold text-amber-700">{{ total_liability|floatformat:2 }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">{% trans "Total Liabilities" %}</p>
+                <p class="text-lg font-bold text-amber-700 dark:text-amber-400" style="font-variant-numeric:tabular-nums">{{ total_liability|floatformat:2 }}</p>
             </div>
             <div>
-                <p class="text-xs text-gray-500 uppercase">{% trans "Total Assets" %}</p>
-                <p class="text-lg font-bold text-blue-700">{{ total_asset|floatformat:2 }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">{% trans "Total Assets" %}</p>
+                <p class="text-lg font-bold text-blue-700 dark:text-blue-400" style="font-variant-numeric:tabular-nums">{{ total_asset|floatformat:2 }}</p>
             </div>
             <div>
-                <p class="text-xs text-gray-500 uppercase">{% trans "CRR" %}</p>
-                <p class="text-lg font-bold text-gray-700">{{ crr_ratio|floatformat:2 }}%</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">{% trans "CRR" %}</p>
+                <p class="text-lg font-bold text-gray-700 dark:text-gray-200">{{ crr_ratio|floatformat:2 }}%</p>
             </div>
             <div>
-                <p class="text-xs text-gray-500 uppercase">{% trans "SLR" %}</p>
-                <p class="text-lg font-bold text-gray-700">{{ slr_ratio|floatformat:2 }}%</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">{% trans "SLR" %}</p>
+                <p class="text-lg font-bold text-gray-700 dark:text-gray-200">{{ slr_ratio|floatformat:2 }}%</p>
             </div>
         </div>
     </div>
     {% elif as_on_date %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-        <p class="text-gray-400 text-sm">{% trans "No data found for the selected date." %}</p>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 text-center">
+        <p class="text-gray-400 dark:text-gray-500 text-sm">{% trans "No data found for the selected date." %}</p>
     </div>
     {% endif %}
 </div>

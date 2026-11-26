@@ -632,21 +632,24 @@ def balance_sheet(request):
             prev_total_liability += prev_net_profit
 
         # CRR & SLR ratios
+        # Deposits = all liability heads linked to deposit account types
         deposit_tables = {'saving', 'current', 'recurring', 'fixed', 'security', 'client', 'agent'}
         total_deposits = sum(
             cur_bals.get(h.pk, 0)
             for h in all_heads
             if h.account_group in ('liability', 'equity') and h.related_table_name in deposit_tables
         )
+        # Cash & Bank = cash heads + bank account heads (account_type 'cash' or 'bank')
         cash_bank = sum(
             cur_bals.get(h.pk, 0)
             for h in all_heads
-            if h.account_group == 'asset'
-            and h.related_table_name in ('general', 'bank', 'other')
-            and any(kw in h.name.lower() for kw in ('cash', 'bank'))
+            if h.account_group == 'asset' and h.account_type in ('cash', 'bank')
         )
+        # Investments = bank FD investments (related_table_name 'bank') excluding the bank group heads
         investments = sum(
-            cur_bals.get(h.pk, 0) for h in all_heads if h.account_group == 'asset' and h.related_table_name == 'bank'
+            cur_bals.get(h.pk, 0)
+            for h in all_heads
+            if h.account_group == 'asset' and h.related_table_name == 'bank' and h.allow_transactions
         )
         crr_ratio = (cash_bank / total_deposits * 100) if total_deposits else Decimal('0')
         slr_ratio = ((cash_bank + investments) / total_deposits * 100) if total_deposits else Decimal('0')

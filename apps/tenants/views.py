@@ -78,7 +78,7 @@ class SocietySignupView(View):
         return host
 
     def post(self, request):
-        form = SocietySignupForm(request.POST)
+        form = SocietySignupForm(request.POST, request.FILES)
         if not form.is_valid():
             plans = SubscriptionPlan.objects.filter(is_active=True).order_by('price_monthly')
             return render(request, 'signup.html', {'form': form, 'plans': plans})
@@ -108,7 +108,18 @@ class SocietySignupView(View):
                 phone=form.cleaned_data['phone'],
                 email=form.cleaned_data['email'],
                 society_type=form.cleaned_data.get('society_type', 'credit_cooperative'),
+                pan_no=form.cleaned_data.get('pan_no', ''),
+                tan_no=form.cleaned_data.get('tan_no', ''),
+                gst_no=form.cleaned_data.get('gst_no', ''),
             )
+            file_fields = {}
+            for key in ('logo', 'pan_doc', 'tan_doc', 'gst_doc'):
+                if request.FILES.get(key):
+                    file_fields[key] = request.FILES[key]
+            if file_fields:
+                for k, v in file_fields.items():
+                    setattr(society, k, v)
+                society.save(update_fields=list(file_fields.keys()))
 
             Domain.objects.create(
                 domain=domain_name,

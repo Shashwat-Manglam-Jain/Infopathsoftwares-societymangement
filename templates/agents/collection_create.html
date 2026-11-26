@@ -5,7 +5,7 @@
 {% block page_title %}{% trans "Record Collection" %}{% endblock %}
 
 {% block content %}
-<div class="max-w-5xl" x-data="collectionApp()">
+<div class="w-full" x-data="collectionApp()">
 
     {% if messages %}
     {% for message in messages %}
@@ -16,7 +16,7 @@
     <form method="post" @submit="onSubmit($event)">
         {% csrf_token %}
 
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
             <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-3">
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Agent" %} <span class="text-red-500">*</span></label>
@@ -47,8 +47,8 @@
 
         <!-- Step 2: Client Amounts (loaded via AJAX) -->
         <div x-show="clients.length > 0" x-cloak class="mt-6 space-y-4">
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-3">
                     <h3 class="text-sm font-semibold text-gray-700">
                         Client Accounts (<span x-text="clients.length"></span>)
                     </h3>
@@ -132,7 +132,7 @@
                 </div>
 
                 <!-- Actions -->
-                <div class="p-5 border-t flex items-center justify-between">
+                <div class="p-5 border-t flex items-center justify-between flex-wrap gap-3">
                     <span class="text-xs text-gray-400" x-show="clientsWithAmount > 0" x-text="clientsWithAmount + ' client(s) with amount'"></span>
                     <div class="flex gap-3 ml-auto">
                         <a href="{% url 'agents:collection_list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
@@ -149,7 +149,7 @@
 
         <!-- No agent selected -->
         <div x-show="!loading && clients.length === 0 && !agentId" class="mt-6">
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
                 <svg class="mx-auto h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                 <p class="mt-3 text-sm text-gray-500">{% trans "Select an agent above to load their client accounts." %}</p>
             </div>

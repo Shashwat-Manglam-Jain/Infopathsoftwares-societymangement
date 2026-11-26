@@ -5,150 +5,303 @@
 {% block page_title %}{% trans "Loan Account Opening" %}{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl" x-data="loanForm()">
+<div class="w-full" x-data="loanForm()">
 
     {% if not form.loan_product.field.queryset.exists %}
-    <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
-        <h3 class="text-sm font-semibold text-amber-800">{% trans "No Loan Products Configured" %}</h3>
-        <p class="text-sm text-amber-700 mt-1">{% trans "Create at least one loan product before applying for loans." %}
-            <a href="{% url 'loans:product_create' %}" class="underline font-medium">{% trans "Create Loan Product" %} &rarr;</a>
-        </p>
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4 flex items-start gap-3">
+        <svg class="h-5 w-5 text-amber-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        <div>
+            <h3 class="text-sm font-semibold text-amber-800">{% trans "No Loan Products Configured" %}</h3>
+            <p class="text-sm text-amber-700 mt-0.5">{% trans "Create at least one loan product before applying for loans." %}
+                <a href="{% url 'loans:product_create' %}" class="underline font-medium hover:text-amber-900">{% trans "Create Loan Product" %} &rarr;</a>
+            </p>
+        </div>
     </div>
     {% endif %}
 
-    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-        <p class="text-sm text-blue-800"><svg class="h-4 w-4 inline mr-1 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{% trans "Members must hold active shares before applying for a loan." %}</p>
+    {% if not has_interest_slabs %}
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4 flex items-start gap-3">
+        <svg class="h-5 w-5 text-amber-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        <div>
+            <h3 class="text-sm font-semibold text-amber-800">{% trans "No Loan Interest Slabs Configured" %}</h3>
+            <p class="text-sm text-amber-700 mt-0.5">{% trans "Interest rates are set per product only. Configure Interest Master for slab-based rates." %}
+                <a href="{% url 'accounting:interest_master_create' %}{% if loan_head_id %}?head={{ loan_head_id }}{% endif %}" class="underline font-medium hover:text-amber-900">{% trans "Configure Interest Master" %} &rarr;</a>
+            </p>
+        </div>
     </div>
+    {% endif %}
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="rounded-xl p-3 mb-4 text-sm flex items-start gap-2 {% if message.tags == 'error' %}bg-red-50 text-red-800 border border-red-200{% elif message.tags == 'warning' %}bg-yellow-50 text-yellow-800 border border-yellow-200{% elif message.tags == 'info' %}bg-blue-50 text-blue-800 border border-blue-200{% else %}bg-green-50 text-green-800 border border-green-200{% endif %}">
+        <svg class="h-4 w-4 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
 
     <form method="post">
         {% csrf_token %}
 
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
-            <!-- {% trans "Loan Details" %} -->
-            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Member" %} <span class="text-red-500">*</span></label>
-                    {{ form.member }}
-                    {% if form.member.errors %}<p class="text-red-600 text-xs mt-0.5">{{ form.member.errors.0 }}</p>{% endif %}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Loan Product" %} <span class="text-red-500">*</span></label>
-                    <select name="loan_product" required class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500" x-model="selectedProduct" @change="updateRates()">
-                        <option value="">---------</option>
-                        {% for product in form.loan_product.field.queryset %}
-                        <option value="{{ product.pk }}" {% if form.loan_product.value|stringformat:"s" == product.pk|stringformat:"s" %}selected{% endif %}>{{ product }}</option>
-                        {% endfor %}
-                    </select>
-                    {% if form.loan_product.errors %}<p class="text-red-600 text-xs mt-0.5">{{ form.loan_product.errors.0 }}</p>{% endif %}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Applied Amount" %} <span class="text-red-500">*</span></label>
-                    {{ form.applied_amount }}
-                    <template x-if="maxAmount">
-                        <p class="text-xs text-gray-400 mt-0.5">Max: &#8377;<span x-text="maxAmount"></span></p>
-                    </template>
-                    {% if form.applied_amount.errors %}<p class="text-red-600 text-xs mt-0.5">{{ form.applied_amount.errors.0 }}</p>{% endif %}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Tenure (Months)" %} <span class="text-red-500">*</span></label>
-                    {{ form.tenure_months }}
-                    <template x-if="maxTenure">
-                        <p class="text-xs text-gray-400 mt-0.5">Max: <span x-text="maxTenure"></span> months</p>
-                    </template>
-                    {% if form.tenure_months.errors %}<p class="text-red-600 text-xs mt-0.5">{{ form.tenure_months.errors.0 }}</p>{% endif %}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Interest Rate (%)" %} <span class="text-red-500">*</span></label>
-                    {{ form.interest_rate }}
-                    <p class="text-xs text-gray-400 mt-0.5">Auto-filled from product. Editable.</p>
-                    {% if form.interest_rate.errors %}<p class="text-red-600 text-xs mt-0.5">{{ form.interest_rate.errors.0 }}</p>{% endif %}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Penal Interest Rate (%)" %}</label>
-                    {{ form.penal_interest_rate }}
-                    <p class="text-xs text-gray-400 mt-0.5">Auto-filled from product. Editable.</p>
-                    {% if form.penal_interest_rate.errors %}<p class="text-red-600 text-xs mt-0.5">{{ form.penal_interest_rate.errors.0 }}</p>{% endif %}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Director Recommendation" %}</label>
-                    {{ form.director_recommendation }}
-                    {% if form.director_recommendation.errors %}<p class="text-red-600 text-xs mt-0.5">{{ form.director_recommendation.errors.0 }}</p>{% endif %}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Remarks" %}</label>
-                    {{ form.remarks }}
-                </div>
-            </div>
+            <!-- Main Form (3 cols) -->
+            <div class="lg:col-span-3 space-y-0">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
 
-            <!-- Optional fields -->
-            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 border-t border-gray-100">
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Mortgage Value" %}</label>
-                    {{ form.mortgage_value }}
-                </div>
-                <div class="flex items-end">
-                    <p class="text-xs text-gray-400 pb-2">Loan Form No &amp; Mortgage Account No are auto-generated on save.</p>
-                </div>
-            </div>
-
-            <template x-if="requiresCollateral">
-                <div class="mx-5 mb-3 bg-blue-50 border border-blue-200 rounded p-2">
-                    <p class="text-xs text-blue-800 font-medium">{% trans "This loan product requires collateral. You will add collateral after submission." %}</p>
-                </div>
-            </template>
-
-            <hr class="border-gray-200">
-
-            <!-- {% trans "Guarantors" %} -->
-            <div class="px-5 py-4">
-                <div class="flex items-center justify-between mb-3">
-                    <label class="text-xs font-medium text-gray-500">{% trans "Guarantors" %}</label>
-                    <template x-if="requiresGuarantor">
-                        <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-700">
-                            Min <span x-text="minGuarantors"></span> required
-                        </span>
-                    </template>
-                </div>
-
-                {{ guarantor_formset.management_form }}
-                <div id="guarantor-forms" class="space-y-3">
-                    {% for gform in guarantor_formset %}
-                    <div class="guarantor-row relative border border-gray-200 rounded-lg p-4 bg-gray-50/80 group hover:border-gray-300 transition-colors" data-index="{{ forloop.counter0 }}">
-                        <div style="display:none">{{ gform.DELETE }}</div>
-                        {{ gform.id }}
-                        <button type="button" class="remove-guarantor absolute top-2 right-2 p-1 rounded-full text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors" onclick="removeGuarantor(this)" title="{% trans 'Remove guarantor' %}">
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                        </button>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pr-6">
-                            <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Guarantor Member" %}</label>
-                                {{ gform.guarantor_member }}
-                                {% if gform.guarantor_member.errors %}<p class="text-red-600 text-xs mt-0.5">{{ gform.guarantor_member.errors.0 }}</p>{% endif %}
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Guarantee Amount" %}</label>
-                                {{ gform.guarantee_amount }}
-                                {% if gform.guarantee_amount.errors %}<p class="text-red-600 text-xs mt-0.5">{{ gform.guarantee_amount.errors.0 }}</p>{% endif %}
-                            </div>
+                    <!-- Loan Details Section -->
+                    <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-xl flex items-center justify-between">
+                        <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                            <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z"/></svg>
+                            {% trans "Loan Details" %}
+                        </h3>
+                        <div class="flex items-center gap-2">
+                            <a href="{% url 'loans:product_list' %}" class="text-xs text-gray-500 hover:text-primary-600 flex items-center gap-1">
+                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                                {% trans "Products" %}
+                            </a>
                         </div>
                     </div>
-                    {% endfor %}
-                </div>
-                {% if guarantor_formset.non_form_errors %}
-                <p class="text-red-600 text-sm mt-1">{{ guarantor_formset.non_form_errors.0 }}</p>
-                {% endif %}
+                    <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Member" %} <span class="text-red-500">*</span></label>
+                            {{ form.member }}
+                            {% if form.member.errors %}<p class="text-red-600 text-xs mt-0.5">{{ form.member.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Loan Product" %} <span class="text-red-500">*</span></label>
+                            <select name="loan_product" required class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500" x-model="selectedProduct" @change="updateRates()">
+                                <option value="">— {% trans "Select Product" %} —</option>
+                                {% for product in form.loan_product.field.queryset %}
+                                <option value="{{ product.pk }}" {% if form.loan_product.value|stringformat:"s" == product.pk|stringformat:"s" %}selected{% endif %}>{{ product }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if form.loan_product.errors %}<p class="text-red-600 text-xs mt-0.5">{{ form.loan_product.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Applied Amount" %} <span class="text-red-500">*</span></label>
+                            {{ form.applied_amount }}
+                            <template x-if="maxAmount">
+                                <p class="text-xs text-gray-400 mt-0.5">{% trans "Max" %}: &#8377;<span x-text="Number(maxAmount).toLocaleString('en-IN')"></span></p>
+                            </template>
+                            {% if form.applied_amount.errors %}<p class="text-red-600 text-xs mt-0.5">{{ form.applied_amount.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Tenure (Months)" %} <span class="text-red-500">*</span></label>
+                            {{ form.tenure_months }}
+                            <template x-if="maxTenure">
+                                <p class="text-xs text-gray-400 mt-0.5">{% trans "Max" %}: <span x-text="maxTenure"></span> {% trans "months" %}</p>
+                            </template>
+                            {% if form.tenure_months.errors %}<p class="text-red-600 text-xs mt-0.5">{{ form.tenure_months.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Interest Rate (%)" %} <span class="text-red-500">*</span></label>
+                            {{ form.interest_rate }}
+                            <p class="text-xs text-gray-400 mt-0.5">{% trans "Auto-filled from product. Editable." %}</p>
+                            {% if form.interest_rate.errors %}<p class="text-red-600 text-xs mt-0.5">{{ form.interest_rate.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Penal Interest Rate (%)" %}</label>
+                            {{ form.penal_interest_rate }}
+                            <p class="text-xs text-gray-400 mt-0.5">{% trans "Auto-filled from product. Editable." %}</p>
+                            {% if form.penal_interest_rate.errors %}<p class="text-red-600 text-xs mt-0.5">{{ form.penal_interest_rate.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Director Recommendation" %}</label>
+                            {{ form.director_recommendation }}
+                            {% if form.director_recommendation.errors %}<p class="text-red-600 text-xs mt-0.5">{{ form.director_recommendation.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div class="lg:col-span-2">
+                            <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Remarks" %}</label>
+                            {{ form.remarks }}
+                        </div>
+                    </div>
 
-                <button type="button" onclick="addGuarantor()" class="mt-2 inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-primary-700 bg-primary-50 border border-primary-200 rounded-lg hover:bg-primary-100 transition-colors">
-                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    {% trans "Add Guarantor" %}
-                </button>
+                    <!-- Mortgage & Additional -->
+                    <div class="px-5 py-3 border-b border-t border-gray-200 bg-gray-50/50">
+                        <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                            <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                            {% trans "Mortgage & Additional" %}
+                        </h3>
+                    </div>
+                    <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Mortgage Value" %}</label>
+                            {{ form.mortgage_value }}
+                        </div>
+                        <div class="lg:col-span-2 flex items-end">
+                            <p class="text-xs text-gray-400 pb-2">{% trans "Loan Form No & Mortgage Account No are auto-generated on save." %}</p>
+                        </div>
+                    </div>
+
+                    <template x-if="requiresCollateral">
+                        <div class="mx-5 mb-3 bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-start gap-2">
+                            <svg class="h-4 w-4 text-blue-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <p class="text-xs text-blue-800 font-medium flex-1">{% trans "This loan product requires collateral. You will add collateral after submission." %}</p>
+                            <button @click="$el.closest('div').remove()" class="text-blue-400 hover:text-blue-600 shrink-0 p-0.5">
+                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                        </div>
+                    </template>
+
+                    <!-- Guarantors -->
+                    <div class="px-5 py-3 border-b border-t border-gray-200 bg-gray-50/50">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                                {% trans "Guarantors" %}
+                            </h3>
+                            <template x-if="requiresGuarantor">
+                                <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-700">
+                                    {% trans "Min" %} <span x-text="minGuarantors"></span> {% trans "required" %}
+                                </span>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="px-5 py-4">
+
+                        {{ guarantor_formset.management_form }}
+                        <div id="guarantor-forms" class="space-y-3">
+                            {% for gform in guarantor_formset %}
+                            <div class="guarantor-row relative border border-gray-200 rounded-lg p-4 bg-gray-50/80 group hover:border-gray-300 transition-colors" data-index="{{ forloop.counter0 }}">
+                                <div style="display:none">{{ gform.DELETE }}</div>
+                                {{ gform.id }}
+                                <button type="button" class="remove-guarantor absolute top-2 right-2 p-1 rounded-full text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors" onclick="removeGuarantor(this)" title="{% trans 'Remove guarantor' %}">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </button>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pr-6">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Guarantor Member" %}</label>
+                                        {{ gform.guarantor_member }}
+                                        {% if gform.guarantor_member.errors %}<p class="text-red-600 text-xs mt-0.5">{{ gform.guarantor_member.errors.0 }}</p>{% endif %}
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Guarantee Amount" %}</label>
+                                        {{ gform.guarantee_amount }}
+                                        {% if gform.guarantee_amount.errors %}<p class="text-red-600 text-xs mt-0.5">{{ gform.guarantee_amount.errors.0 }}</p>{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if guarantor_formset.non_form_errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ guarantor_formset.non_form_errors.0 }}</p>
+                        {% endif %}
+
+                        <button type="button" onclick="addGuarantor()" class="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-700 bg-primary-50 border border-primary-200 rounded-lg hover:bg-primary-100 transition-colors">
+                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            {% trans "Add Guarantor" %}
+                        </button>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex items-center justify-between">
+                        <p class="text-xs text-gray-400">{% trans "Members must hold active shares before applying for a loan." %}</p>
+                        <div class="flex items-center gap-3">
+                            <a href="{% url 'loans:list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
+                            <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm inline-flex items-center gap-2">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                {% trans "Submit Application" %}
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-end gap-3">
-                <a href="{% url 'loans:list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
-                <button type="submit" class="px-5 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "Save" %}</button>
+            <!-- Sidebar (1 col) -->
+            <div class="lg:col-span-1 space-y-4">
+
+                <!-- Product Summary Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="px-4 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-xl">
+                        <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                            <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                            {% trans "Product Summary" %}
+                        </h3>
+                    </div>
+                    <div class="p-4">
+                        <template x-if="!selectedProduct">
+                            <p class="text-xs text-gray-400 text-center py-4">{% trans "Select a loan product to see details" %}</p>
+                        </template>
+                        <template x-if="selectedProduct">
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs text-gray-500">{% trans "Interest Rate" %}</span>
+                                    <span class="text-sm font-semibold text-gray-900" x-text="interestRate + '%'"></span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs text-gray-500">{% trans "Penal Rate" %}</span>
+                                    <span class="text-sm font-medium text-gray-700" x-text="penalRate + '%'"></span>
+                                </div>
+                                <div class="border-t border-gray-100 pt-2">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-xs text-gray-500">{% trans "Max Amount" %}</span>
+                                        <span class="text-sm font-medium text-gray-700">&#8377;<span x-text="maxAmount ? Number(maxAmount).toLocaleString('en-IN') : '—'"></span></span>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs text-gray-500">{% trans "Max Tenure" %}</span>
+                                    <span class="text-sm font-medium text-gray-700"><span x-text="maxTenure || '—'"></span> {% trans "months" %}</span>
+                                </div>
+                                <div class="border-t border-gray-100 pt-2">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-xs text-gray-500">{% trans "Guarantors" %}</span>
+                                        <template x-if="requiresGuarantor">
+                                            <span class="text-xs font-medium px-1.5 py-0.5 rounded bg-red-50 text-red-600" x-text="minGuarantors + '–' + maxGuarantors"></span>
+                                        </template>
+                                        <template x-if="!requiresGuarantor">
+                                            <span class="text-xs text-gray-400">{% trans "Optional" %}</span>
+                                        </template>
+                                    </div>
+                                </div>
+                                <template x-if="requiresCollateral">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-xs text-gray-500">{% trans "Collateral" %}</span>
+                                        <span class="text-xs font-medium px-1.5 py-0.5 rounded bg-amber-50 text-amber-700">{% trans "Required" %}</span>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Configure Interest Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="px-4 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-xl">
+                        <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                            <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            {% trans "Configure Interest" %}
+                        </h3>
+                    </div>
+                    <div class="p-4 space-y-2">
+                        <a href="{% url 'accounting:interest_master' %}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50 border border-gray-200 transition-colors group">
+                            <svg class="h-4 w-4 text-gray-400 group-hover:text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                            <div>
+                                <p class="text-sm font-medium">{% trans "Interest Slabs" %}</p>
+                                <p class="text-[11px] text-gray-400">{% trans "View & manage interest rates" %}</p>
+                            </div>
+                            <svg class="h-4 w-4 text-gray-300 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </a>
+                        <a href="{% url 'accounting:interest_master_create' %}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50 border border-gray-200 transition-colors group">
+                            <svg class="h-4 w-4 text-gray-400 group-hover:text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            <div>
+                                <p class="text-sm font-medium">{% trans "Add Interest Slab" %}</p>
+                                <p class="text-[11px] text-gray-400">{% trans "Create new rate configuration" %}</p>
+                            </div>
+                            <svg class="h-4 w-4 text-gray-300 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </a>
+                        <a href="{% url 'loans:product_list' %}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50 border border-gray-200 transition-colors group">
+                            <svg class="h-4 w-4 text-gray-400 group-hover:text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                            <div>
+                                <p class="text-sm font-medium">{% trans "Loan Products" %}</p>
+                                <p class="text-[11px] text-gray-400">{% trans "Edit product rates & rules" %}</p>
+                            </div>
+                            <svg class="h-4 w-4 text-gray-300 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </a>
+                    </div>
+                </div>
+
             </div>
 
         </div>

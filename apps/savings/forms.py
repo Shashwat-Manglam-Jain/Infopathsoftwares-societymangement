@@ -7,6 +7,20 @@ _tw = 'w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-p
 _tw_s = 'searchable ' + _tw
 
 
+def _get_leaf_heads(related_types):
+    """Return children of heads with matching related_table_name.
+    Falls back to the parent heads themselves if no children exist."""
+    parents = ChartOfAccounts.objects.filter(
+        related_table_name__in=related_types, is_active=True,
+    )
+    children = ChartOfAccounts.objects.filter(
+        parent__in=parents, allow_transactions=True, is_active=True,
+    )
+    if children.exists():
+        return children.order_by('display_order', 'name')
+    return parents.filter(allow_transactions=True).order_by('display_order', 'name')
+
+
 class SavingsAccountForm(forms.ModelForm):
     class Meta:
         model = SavingsAccount
@@ -46,11 +60,7 @@ class SavingsAccountForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.current_branch = kwargs.pop('current_branch', None)
         super().__init__(*args, **kwargs)
-        self.fields['gl_head'].queryset = ChartOfAccounts.objects.filter(
-            related_table_name__in=SavingsAccount.GL_RELATED_TYPES,
-            allow_transactions=True,
-            is_active=True,
-        ).order_by('display_order', 'name')
+        self.fields['gl_head'].queryset = _get_leaf_heads(SavingsAccount.GL_RELATED_TYPES)
         self.fields['gl_head'].required = True
         self.fields['gl_head'].empty_label = '-- Select Account Type --'
         self.fields['opening_date'].required = True

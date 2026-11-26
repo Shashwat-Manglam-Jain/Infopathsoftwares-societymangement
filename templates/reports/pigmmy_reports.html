@@ -7,6 +7,17 @@
 {% block content %}
 <div class="space-y-4">
 
+    <div class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex items-start gap-3" x-data="{ show: true }" x-show="show" x-transition.opacity.duration.200ms>
+        <svg class="h-5 w-5 text-blue-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div class="flex-1">
+            <h3 class="text-sm font-semibold text-blue-800">{% trans "Pigmy / Daily Deposit Reports" %}</h3>
+            <p class="text-xs text-blue-700 mt-0.5">{% trans "Agent-wise pigmy collection reports, deposit maturity tracking, and daily/weekly/monthly collection summaries. Monitor agent performance and pending collections." %}</p>
+        </div>
+        <button @click="show = false" class="text-blue-400 hover:text-blue-600 shrink-0 p-0.5">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+    </div>
+
     <div>
         <a href="{% url 'reports:index' %}" class="inline-flex items-center text-sm text-primary-600 hover:text-primary-800 font-medium">
             <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
@@ -15,7 +26,7 @@
     </div>
 
 <!-- Filter Bar -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-4">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 px-5 py-4">
         <form method="get" class="flex flex-wrap items-end gap-4">
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Report Type" %}</label>
@@ -37,7 +48,7 @@
                     {% endfor %}
                 </select>
             </div>
-            <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "View" %}</button>
+            <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">{% trans "View" %}</button>
             {% endif %}
             {% if report_type == 'date_daybook' %}
             <div>
@@ -45,7 +56,7 @@
                 <input type="date" name="date" value="{{ report_date }}"
                        class="border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
             </div>
-            <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "View" %}</button>
+            <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">{% trans "View" %}</button>
             {% endif %}
             {% if report_type == 'commission' %}
             <div>
@@ -58,7 +69,7 @@
                 <input type="date" name="to_date" value="{{ to_date }}"
                        class="border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
             </div>
-            <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "View" %}</button>
+            <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">{% trans "View" %}</button>
             {% endif %}
             {% include "includes/export_csv.html" %}
         </form>
@@ -66,7 +77,7 @@
 
     <!-- Agent Clients: Summary -->
     {% if report_type == 'agent_clients' and summary %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-200">
             <h3 class="text-base font-semibold text-gray-900">{% trans "Agent Summary" %}</h3>
         </div>
@@ -97,7 +108,7 @@
 
     <!-- Agent Clients: Detail List -->
     {% if report_type == 'agent_clients' and accounts %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
             <h3 class="text-base font-semibold text-gray-900">{% trans "Client Accounts" %}</h3>
             <span class="text-sm text-gray-500">{{ accounts|length }} account{{ accounts|length|pluralize }}</span>
@@ -133,7 +144,7 @@
 
     <!-- Date Daybook -->
     {% if report_type == 'date_daybook' and transactions is not None %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
             <h3 class="text-base font-semibold text-gray-900">{% trans "Pigmy Daybook" %} — {{ report_date }}</h3>
             <span class="text-sm font-medium text-gray-700">{% trans "Total" %}: {{ total_amount|floatformat:2 }}</span>
@@ -169,7 +180,7 @@
 
     <!-- Deposit Type Summary -->
     {% if report_type == 'deposit_type' and type_summary %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-200">
             <h3 class="text-base font-semibold text-gray-900">{% trans "Accounts by Deposit Type" %}</h3>
         </div>
@@ -198,7 +209,7 @@
 
     <!-- Matured Accounts -->
     {% if report_type == 'matured' and accounts %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
             <h3 class="text-base font-semibold text-gray-900">{% trans "Matured Pigmy Accounts (still active)" %}</h3>
             <span class="text-sm text-gray-500">{{ accounts|length }} account{{ accounts|length|pluralize }}</span>
@@ -231,7 +242,7 @@
         </div>
     </div>
     {% elif report_type == 'matured' and accounts is not None %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
         <p class="text-gray-400">{% trans "No matured active accounts found." %}</p>
     </div>
     {% endif %}
@@ -240,20 +251,20 @@
     {% if report_type == 'commission' and commissions is not None %}
     {% if commissions %}
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
             <p class="text-xs font-semibold text-gray-500 uppercase">{% trans "Total Commission" %}</p>
             <p class="text-lg font-bold text-gray-800 mt-1">{{ total_commission|floatformat:2 }}</p>
         </div>
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
             <p class="text-xs font-semibold text-gray-500 uppercase">{% trans "Total TDS" %}</p>
             <p class="text-lg font-bold text-red-700 mt-1">{{ total_tds|floatformat:2 }}</p>
         </div>
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
             <p class="text-xs font-semibold text-gray-500 uppercase">{% trans "Net Payable" %}</p>
             <p class="text-lg font-bold text-green-700 mt-1">{{ total_net|floatformat:2 }}</p>
         </div>
     </div>
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
@@ -292,7 +303,7 @@
         </div>
     </div>
     {% else %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
         <p class="text-gray-400">{% trans "No commission records found for this period." %}</p>
     </div>
     {% endif %}

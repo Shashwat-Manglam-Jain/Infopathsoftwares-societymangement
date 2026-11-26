@@ -323,6 +323,8 @@ class InterestCalculationTests(BaseTestCase):
 
     def test_quarterly_interest_posting(self):
         """Interest is credited to the account at quarter end."""
+        self.account.accrued_interest = Decimal('271.23')
+        self.account.save(update_fields=['accrued_interest'])
         txn = post_interest(
             account=self.account,
             from_date=date(2024, 1, 1),

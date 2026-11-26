@@ -27,11 +27,10 @@ class FDCreateForm(forms.Form):
         widget=forms.Select(attrs={'class': 'w-full rounded-lg border-gray-300 px-3 py-2'}),
     )
     is_auto_renew = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={'class': 'rounded'}))
-    linked_savings_account = forms.IntegerField(required=False, widget=forms.Select(attrs={'class': tw}))
+    linked_savings_account = forms.IntegerField(required=False, widget=forms.HiddenInput())
     is_senior = forms.BooleanField(
         required=False, label='Senior Citizen', widget=forms.CheckboxInput(attrs={'class': 'rounded'})
     )
-    certificate_no = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': tw}))
     tds_applicable = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={'class': 'rounded'}))
 
     def clean_member(self):
@@ -79,7 +78,7 @@ class RDCreateForm(forms.Form):
             }
         ),
     )
-    linked_savings_account = forms.IntegerField(required=False, widget=forms.Select(attrs={'class': tw}))
+    linked_savings_account = forms.IntegerField(required=False, widget=forms.HiddenInput())
 
     def clean_member(self):
         from apps.members.models import Member

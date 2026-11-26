@@ -2,7 +2,8 @@ import logging
 from decimal import Decimal
 
 from django.db import models, transaction
-from django.utils import timezone
+
+from apps.core.date_utils import get_transaction_date
 
 from .models import ShareConfig, ShareHolding, ShareTransaction
 
@@ -34,6 +35,8 @@ def purchase_shares(member, branch, count, user):
 
     total_amount = Decimal(count) * config.face_value_per_share
 
+    txn_date = get_transaction_date(branch)
+
     if existing_holding:
         existing_holding.share_count += count
         existing_holding.total_amount += total_amount
@@ -46,7 +49,7 @@ def purchase_shares(member, branch, count, user):
             share_count=count,
             face_value_per_share=config.face_value_per_share,
             total_amount=total_amount,
-            purchase_date=timezone.now().date(),
+            purchase_date=txn_date,
             certificate_no=_generate_certificate_no(),
             status='active',
             created_by=user,
@@ -58,7 +61,7 @@ def purchase_shares(member, branch, count, user):
         txn_type='purchase',
         shares_count=count,
         amount=total_amount,
-        txn_date=timezone.now().date(),
+        txn_date=txn_date,
         narration=f'Purchase of {count} shares',
         created_by=user,
     )
@@ -123,7 +126,8 @@ def transfer_shares(from_member, to_member, count, user):
                 f'exceeding maximum ({config.max_shares_per_member}).'
             )
 
-    today = timezone.now().date()
+    branch = from_member.branch
+    txn_date = get_transaction_date(branch)
 
     remaining = count
     for h in holdings:
@@ -139,14 +143,13 @@ def transfer_shares(from_member, to_member, count, user):
             h.save()
             remaining = 0
 
-    branch = from_member.branch
     ShareTransaction.objects.create(
         member=from_member,
         branch=branch,
         txn_type='transfer',
         shares_count=-count,
         amount=amount,
-        txn_date=today,
+        txn_date=txn_date,
         narration=f'Transfer of {count} shares to {to_member.name}',
         transfer_to_member=to_member,
         created_by=user,
@@ -163,7 +166,7 @@ def transfer_shares(from_member, to_member, count, user):
             share_count=count,
             face_value_per_share=config.face_value_per_share,
             total_amount=amount,
-            purchase_date=today,
+            purchase_date=txn_date,
             certificate_no=_generate_certificate_no(),
             status='active',
             created_by=user,
@@ -174,16 +177,14 @@ def transfer_shares(from_member, to_member, count, user):
         txn_type='transfer',
         shares_count=count,
         amount=amount,
-        txn_date=today,
+        txn_date=txn_date,
         narration=f'Transfer received from {from_member.name}',
         transfer_to_member=from_member,
         created_by=user,
     )
 
-    try:
-        _create_share_journal(branch, amount, user, 'transfer')
-    except ValueError as e:
-        logger.warning('Share transfer journal entry failed: %s', e)
+    # No journal entry for transfers — share capital doesn't change,
+    # shares just move between members on the register.
 
 
 @transaction.atomic
@@ -224,7 +225,8 @@ def surrender_shares(member, count, user):
                 f'below minimum required ({config.min_shares_required}).'
             )
 
-    today = timezone.now().date()
+    branch = member.branch
+    txn_date = get_transaction_date(branch)
 
     remaining = count
     for h in holdings:
@@ -242,11 +244,11 @@ def surrender_shares(member, count, user):
 
     ShareTransaction.objects.create(
         member=member,
-        branch=member.branch,
+        branch=branch,
         txn_type='surrender',
         shares_count=-count,
         amount=amount,
-        txn_date=today,
+        txn_date=txn_date,
         narration=f'Surrender of {count} shares',
         created_by=user,
     )
@@ -284,25 +286,28 @@ def _generate_certificate_no():
 
 def _create_share_journal(branch, amount, user, txn_type, ref_id=None):
     from apps.accounting.services import create_journal_entry
+    from apps.core.gl_utils import get_gl_code
     from apps.savings.services import _get_cash_code
+
+    share_capital_code = get_gl_code('shares', '2501')
 
     if txn_type == 'purchase':
         lines = [
             {'account_code': _get_cash_code(branch), 'debit': amount, 'credit': Decimal('0')},
-            {'account_code': '2501', 'debit': Decimal('0'), 'credit': amount},
+            {'account_code': share_capital_code, 'debit': Decimal('0'), 'credit': amount},
         ]
         narration = 'Share capital received'
         voucher_type = 'receipt'
     else:
         lines = [
-            {'account_code': '2501', 'debit': amount, 'credit': Decimal('0')},
+            {'account_code': share_capital_code, 'debit': amount, 'credit': Decimal('0')},
             {'account_code': _get_cash_code(branch), 'debit': Decimal('0'), 'credit': amount},
         ]
         narration = 'Share capital refunded'
         voucher_type = 'payment'
 
     create_journal_entry(
-        entry_date=timezone.now().date(),
+        entry_date=get_transaction_date(branch),
         voucher_type=voucher_type,
         branch=branch,
         narration=narration,

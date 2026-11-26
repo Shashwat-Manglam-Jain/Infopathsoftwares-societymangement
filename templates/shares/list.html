@@ -26,7 +26,7 @@
         </div>
     </div>
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
         <form method="get" class="relative">
             <svg class="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             <input type="text" name="q" value="{{ request.GET.q }}" placeholder="{% trans 'Search by member name, certificate no...' %}" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-primary-500 focus:border-primary-500">
@@ -36,7 +36,7 @@
     <!-- Mobile Card View -->
     <div class="md:hidden space-y-3">
         {% for h in holdings %}
-        <a href="{% url 'shares:detail' pk=h.pk %}" class="block bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:border-primary-300 transition-colors">
+        <a href="{% url 'shares:detail' pk=h.pk %}" class="block bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:border-primary-300 transition-colors">
             <div class="flex items-start justify-between mb-2">
                 <div class="min-w-0">
                     <p class="text-sm font-semibold text-gray-900 truncate">{{ h.member.name }}</p>
@@ -44,7 +44,7 @@
                 </div>
                 <span class="ml-2 flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if h.status == 'active' %}bg-green-100 text-green-700{% else %}bg-gray-100 text-gray-600{% endif %}">{{ h.get_status_display }}</span>
             </div>
-            <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-sm">
                 <div>
                     <span class="text-xs text-gray-400">{% trans "Shares" %}</span>
                     <p class="font-semibold text-gray-900" style="font-variant-numeric:tabular-nums">{{ h.share_count }}</p>
@@ -60,12 +60,12 @@
             </div>
         </a>
         {% empty %}
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-sm text-gray-400">{% trans "No share holdings found." %}</div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center text-sm text-gray-400">{% trans "No share holdings found." %}</div>
         {% endfor %}
     </div>
 
     <!-- Desktop Table View -->
-    <div class="hidden md:block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="hidden md:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-[750px] w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50">
@@ -114,7 +114,7 @@
 
     {% if request.user.is_manager %}
     <!-- Dividend Calculation -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" x-data="{ showDividend: {% if dividend_results %}true{% else %}false{% endif %} }">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden" x-data="{ showDividend: {% if dividend_results %}true{% else %}false{% endif %} }">
         <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 flex items-center justify-between">
             <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
                 <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
@@ -147,8 +147,11 @@
             </div>
 
             {% if dividend_results %}
-            <div class="mx-5 mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <p class="text-sm text-blue-800 font-medium">{{ dividend_count }} shareholders. Total dividend: &#8377;{{ total_dividend|floatformat:2 }}</p>
+            <div class="mx-5 mb-4 bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-center gap-3" x-data="{ show: true }" x-show="show" x-transition.opacity.duration.200ms>
+                <p class="text-sm text-blue-800 font-medium flex-1">{{ dividend_count }} shareholders. Total dividend: &#8377;{{ total_dividend|floatformat:2 }}</p>
+                <button @click="show = false" class="text-blue-400 hover:text-blue-600 shrink-0 p-0.5">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
             </div>
 
             <div class="overflow-x-auto border-t border-gray-200 mb-4">

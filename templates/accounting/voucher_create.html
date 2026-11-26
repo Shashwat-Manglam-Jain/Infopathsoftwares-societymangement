@@ -16,17 +16,23 @@
     <form method="post">
         {% csrf_token %}
 
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
             <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-xl">
                 <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
                     <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/></svg>
-                    {% trans "Voucher Entry" %}
+                    {% trans "Journal / Contra Voucher" %}
                 </h3>
             </div>
-            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Voucher Type" %} <span class="text-red-500">*</span></label>
                     {{ form.voucher_type }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Date" %}</label>
+                    <input type="date" value="{{ txn_date|date:'Y-m-d' }}" readonly
+                           class="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 cursor-not-allowed">
+                    <p class="text-xs text-gray-400 mt-0.5">{% trans "Working day date" %}</p>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Amount" %} <span class="text-red-500">*</span></label>
@@ -40,13 +46,13 @@
                     <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Credit (CR) Account" %} <span class="text-red-500">*</span></label>
                     {{ form.credit_account }}
                 </div>
-                <div class="md:col-span-2">
+                <div class="md:col-span-3">
                     <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Narration" %}</label>
                     {{ form.narration }}
                 </div>
             </div>
 
-            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex items-center justify-end gap-3">
+            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex flex-wrap items-center justify-end gap-3">
                 <a href="{% url 'accounting:vouchers' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
                 <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm">{% trans "Save Voucher" %}</button>
             </div>

@@ -5,7 +5,7 @@
 {% block page_title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="max-w-full" x-data="headForm()">
+<div class="w-full" x-data="headForm()">
 
     {% if form.errors %}
     <div class="rounded-lg bg-red-50 border border-red-200 p-4 mb-5">
@@ -24,141 +24,110 @@
     <form method="post">
         {% csrf_token %}
 
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-
-            <!-- General -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
             <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-xl">
                 <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
                     <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-                    {% trans "General Information" %}
+                    {% trans "Account Head" %}
                 </h3>
             </div>
-            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Head Code" %} <span class="text-red-500">*</span></label>
-                    {{ form.code }}
-                    <p class="text-xs text-gray-400 mt-0.5">Auto-generated from group. Editable if needed.</p>
+            <div class="px-5 py-4 space-y-4">
+                {% if head %}
+                <div class="bg-gray-50 rounded-lg px-4 py-2 flex gap-6">
+                    <div>
+                        <span class="text-xs text-gray-400">{% trans "Head Code" %}</span>
+                        <p class="text-sm font-mono font-semibold text-gray-800">{{ head.code }}</p>
+                    </div>
+                    <div>
+                        <span class="text-xs text-gray-400">{% trans "Account Code" %}</span>
+                        <p class="text-sm font-mono font-semibold text-gray-800">{{ head.account_code|default:"—" }}</p>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Account Code" %}</label>
-                    {{ form.account_code }}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Head Name" %} <span class="text-red-500">*</span></label>
-                    {{ form.name }}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Head Name (Regional)" %}</label>
-                    {{ form.head_name_regional }}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Account Group" %} <span class="text-red-500">*</span></label>
-                    {{ form.account_group }}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Sub Group" %}</label>
-                    {{ form.sub_group }}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Parent Head" %}</label>
-                    {{ form.parent }}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Related Table" %} <span class="text-red-500">*</span></label>
-                    {{ form.related_table_name }}
-                </div>
-            </div>
-
-            <!-- Balances -->
-            <div class="px-5 py-3 border-b border-t border-gray-200 bg-gray-50/50">
-                <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                    {% trans "Balances" %}
-                </h3>
-            </div>
-            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Opening Balance" %}</label>
-                    {{ form.opening_balance }}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Credit Balance" %}</label>
-                    {{ form.credit_balance }}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Debit Balance" %}</label>
-                    {{ form.debit_balance }}
+                {% endif %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Parent Head" %}</label>
+                        {{ form.parent }}
+                        <p class="text-xs text-gray-400 mt-0.5" x-show="parentGroup" x-cloak>
+                            {% trans "Account Group auto-set from parent:" %}
+                            <span class="font-medium text-gray-600" x-text="parentGroupLabel"></span>
+                        </p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Account Group" %} <span class="text-red-500">*</span></label>
+                        {{ form.account_group }}
+                        <p class="text-xs text-gray-400 mt-0.5" x-show="parentGroup" x-cloak>{% trans "Inherited from parent head" %}</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Head Name" %} <span class="text-red-500">*</span></label>
+                        {{ form.name }}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Head Name (Regional)" %}</label>
+                        {{ form.head_name_regional }}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Opening Balance" %}</label>
+                        {{ form.opening_balance }}
+                    </div>
                 </div>
             </div>
 
-            <!-- Settings -->
-            <div class="px-5 py-3 border-b border-t border-gray-200 bg-gray-50/50">
-                <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                    {% trans "Settings" %}
-                </h3>
-            </div>
-            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Report Position" %}</label>
-                    {{ form.report_position }}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Interest Income/Expense Head" %}</label>
-                    {{ form.interest_code }}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Display Order" %}</label>
-                    {{ form.display_order }}
-                </div>
-            </div>
-
-            <div class="px-5 py-4 border-t border-gray-200 flex flex-wrap gap-4">
-                <label class="flex items-center gap-1.5 cursor-pointer">
-                    {{ form.interest_affected }}
-                    <span class="text-sm text-gray-700">{% trans "Interest Affected" %}</span>
-                </label>
-                <label class="flex items-center gap-1.5 cursor-pointer">
-                    {{ form.overdue_affected }}
-                    <span class="text-sm text-gray-700">{% trans "Overdue Affected" %}</span>
-                </label>
-                <label class="flex items-center gap-1.5 cursor-pointer">
-                    {{ form.interest_given }}
-                    <span class="text-sm text-gray-700">{% trans "Interest Given" %}</span>
-                </label>
-                <label class="flex items-center gap-1.5 cursor-pointer">
-                    {{ form.allow_transactions }}
-                    <span class="text-sm text-gray-700">{% trans "Allow Transactions" %}</span>
-                </label>
-            </div>
-
-            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex items-center justify-end gap-3">
+            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex flex-wrap items-center justify-end gap-3">
                 <a href="{% url 'accounting:heads' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
                 <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm">{% trans "Save" %}</button>
             </div>
         </div>
     </form>
 </div>
-{% endblock %}
 
-{% block extra_js %}
 <script>
 function headForm() {
+    const groupLabels = { asset: 'Asset', liability: 'Liability', income: 'Income', expense: 'Expense', equity: 'Equity' };
     return {
+        parentGroup: '',
+        parentGroupLabel: '',
         init() {
-            var groupEl = document.getElementById('id_account_group');
-            var codeEl = document.getElementById('id_code');
-            if (!groupEl || !codeEl) return;
-            if (!codeEl.value) {
-                groupEl.addEventListener('change', function() {
-                    var g = groupEl.value;
-                    if (!g) return;
-                    fetch('{% url "accounting:next_head_code" %}?group=' + g)
-                        .then(function(r) { return r.json(); })
-                        .then(function(d) { if (d.code) codeEl.value = d.code; });
-                });
-                if (groupEl.value) groupEl.dispatchEvent(new Event('change'));
+            const parentEl = this.$el.querySelector('[name="parent"]');
+            const groupEl = this.$el.querySelector('[name="account_group"]');
+            if (!parentEl || !groupEl) return;
+
+            parentEl.addEventListener('change', () => this.onParentChange(parentEl, groupEl));
+
+            this.$el.closest('form').addEventListener('submit', () => {
+                groupEl.disabled = false;
+                if (groupEl.tomselect) groupEl.tomselect.enable();
+            });
+
+            {% if not head %}
+            if (parentEl.value) {
+                this.onParentChange(parentEl, groupEl);
             }
+            {% endif %}
+        },
+        onParentChange(parentEl, groupEl) {
+            const parentId = parentEl.value;
+            if (!parentId) {
+                this.parentGroup = '';
+                this.parentGroupLabel = '';
+                groupEl.disabled = false;
+                if (groupEl.tomselect) groupEl.tomselect.enable();
+                return;
+            }
+            fetch('{% url "accounting:parent_head_info" %}?pk=' + parentId)
+                .then(r => r.json())
+                .then(d => {
+                    if (d.group) {
+                        this.parentGroup = d.group;
+                        this.parentGroupLabel = groupLabels[d.group] || d.group;
+                        groupEl.value = d.group;
+                        groupEl.disabled = true;
+                        if (groupEl.tomselect) {
+                            groupEl.tomselect.setValue(d.group, true);
+                            groupEl.tomselect.disable();
+                        }
+                    }
+                });
         }
     };
 }

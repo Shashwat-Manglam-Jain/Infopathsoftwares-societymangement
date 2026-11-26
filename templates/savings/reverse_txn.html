@@ -5,9 +5,15 @@
 {% block page_title %}{% trans "Cancel Transaction" %}{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl">
+<div class="w-full">
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-xl">
+            <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <svg class="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                {% trans "Transaction Details" %}
+            </h3>
+        </div>
         <div class="px-5 py-4 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
             <div>
                 <span class="text-xs text-gray-500">Account</span>
@@ -40,17 +46,17 @@
         </div>
 
         {% if txn.is_reversed %}
-        <div class="px-5 py-3 bg-yellow-50 border-t border-yellow-200 rounded-b-lg">
+        <div class="px-5 py-3 bg-yellow-50 border-t border-yellow-200 rounded-b-xl">
             <p class="text-sm text-yellow-800 font-medium">This transaction is already reversed.</p>
         </div>
         {% else %}
         <div class="px-5 py-3 bg-red-50 border-t border-red-200">
             <p class="text-sm text-red-800">A reversal entry will be created to cancel this transaction and restore the account balance.</p>
         </div>
-        <form method="post" class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-end gap-3">
+        <form method="post" class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex flex-wrap items-center justify-end gap-3">
             {% csrf_token %}
-            <a href="{% url 'savings:detail' account.pk %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Go Back</a>
-            <button type="submit" class="px-5 py-1.5 bg-red-600 text-white text-sm font-medium rounded hover:bg-red-700"
+            <a href="{% url 'savings:detail' account.pk %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Go Back</a>
+            <button type="submit" class="px-5 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 shadow-sm"
                     onclick="return confirm('Are you sure you want to cancel this transaction?')">Cancel Transaction</button>
         </form>
         {% endif %}

@@ -7,6 +7,17 @@
 {% block content %}
 <div class="space-y-4">
 
+    <div class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex items-start gap-3" x-data="{ show: true }" x-show="show" x-transition.opacity.duration.200ms>
+        <svg class="h-5 w-5 text-blue-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div class="flex-1">
+            <h3 class="text-sm font-semibold text-blue-800">{% trans "Current Balance Reports" %}</h3>
+            <p class="text-xs text-blue-700 mt-0.5">{% trans "View real-time balances across all account types — savings, current, security deposits, loans, and shares. Export account-wise or summary balances for any branch." %}</p>
+        </div>
+        <button @click="show = false" class="text-blue-400 hover:text-blue-600 shrink-0 p-0.5">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+    </div>
+
     <div>
         <a href="{% url 'reports:index' %}" class="inline-flex items-center text-sm text-primary-600 hover:text-primary-800 font-medium">
             <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
@@ -15,7 +26,7 @@
     </div>
 
     <!-- Filter Bar -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-4">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 px-5 py-4">
         <form method="get" class="flex flex-wrap items-end gap-4">
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Report Type" %}</label>
@@ -39,7 +50,7 @@
                 <input type="number" name="max_amount" value="{{ max_amount }}" step="0.01" placeholder="999999.00"
                        class="border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500 w-32">
             </div>
-            <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "Filter" %}</button>
+            <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">{% trans "Filter" %}</button>
             {% endif %}
             {% include "includes/export_csv.html" %}
         </form>
@@ -47,7 +58,7 @@
 
     <!-- Balance By Type Summary -->
     {% if report_type == 'balance_by_type' and type_summary %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-200">
             <h3 class="text-base font-semibold text-gray-900">{% trans "Balance Summary by Account Type" %}</h3>
         </div>
@@ -76,7 +87,7 @@
 
     <!-- Account List Table -->
     {% if accounts is not None and report_type != 'balance_by_type' %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
             <h3 class="text-base font-semibold text-gray-900">
                 {% if report_type == 'nil_balance' %}{% trans "Nil Balance Accounts" %}

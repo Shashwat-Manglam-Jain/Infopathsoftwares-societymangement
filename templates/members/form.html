@@ -7,6 +7,17 @@
 {% block content %}
 <form method="post" enctype="multipart/form-data" x-data="{ isMinor: {% if form.instance.is_minor %}true{% else %}false{% endif %} }" class="max-w-full">
 
+    <div class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex items-start gap-3 mb-4" x-data="{ show: true }" x-show="show" x-transition.opacity.duration.200ms>
+        <svg class="h-5 w-5 text-blue-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div class="flex-1">
+            <h3 class="text-sm font-semibold text-blue-800">{% if member %}{% trans "Edit Member" %}{% else %}{% trans "New Member Registration" %}{% endif %}</h3>
+            <p class="text-xs text-blue-700 mt-0.5">{% trans "Fill in personal, KYC, and nominee details. Fields marked with * are mandatory. Member number is auto-generated on save." %}</p>
+        </div>
+        <button @click="show = false" class="text-blue-400 hover:text-blue-600 shrink-0 p-0.5">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+    </div>
+
     {% if form.errors or nominee_formset.non_form_errors or nominee_formset.errors %}
     <div class="rounded-lg bg-red-50 border border-red-200 p-4 mb-5">
         <h3 class="text-sm font-medium text-red-800 flex items-center gap-2">
@@ -31,10 +42,34 @@
 
     {% csrf_token %}
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+
+        <!-- Photo Header -->
+        <div class="px-5 py-4 border-b border-gray-200 bg-gradient-to-r from-primary-50 to-white flex items-center gap-4">
+            <div class="relative h-20 w-20 rounded-full bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center group cursor-pointer shrink-0 overflow-hidden border-2 border-white shadow">
+                {% if form.instance.photo %}
+                <img src="{{ form.instance.photo.url }}" alt="Photo" class="h-20 w-20 rounded-full object-cover">
+                {% else %}
+                <svg class="h-10 w-10 text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                {% endif %}
+                <div class="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                </div>
+                <input type="file" name="photo" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+            </div>
+            <div>
+                {% if member %}
+                <h2 class="text-base font-semibold text-gray-900">{{ member.name }}</h2>
+                <p class="text-xs text-gray-500">{% trans "Member No" %}: {{ member.member_no }} &middot; {{ member.get_status_display }}</p>
+                {% else %}
+                <h2 class="text-base font-semibold text-gray-900">{% trans "New Member" %}</h2>
+                <p class="text-xs text-gray-500">{% trans "Upload photo by clicking on the avatar" %}</p>
+                {% endif %}
+            </div>
+        </div>
 
         <!-- Personal -->
-        <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-xl">
+        <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50">
             <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
                 <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 {% trans "Personal Information" %}
@@ -109,8 +144,8 @@
                 {% trans "Address & Contact" %}
             </h3>
         </div>
-        <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-            <div class="md:col-span-2">
+        <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+            <div class="md:col-span-2 lg:col-span-3">
                 <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Address" %}</label>
                 <textarea name="address" rows="2" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">{{ form.address.value|default:'' }}</textarea>
             </div>
@@ -332,20 +367,6 @@
                 </select>
             </div>
             <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Photograph" %}</label>
-                <input type="file" name="photo" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-2 file:py-1 file:px-2.5 file:rounded file:border file:border-gray-300 file:text-xs file:bg-white file:text-gray-700 hover:file:bg-gray-50">
-                {% if form.instance.photo %}
-                <img src="{{ form.instance.photo.url }}" alt="Photo" class="mt-1 h-12 w-12 rounded object-cover border border-gray-200">
-                {% endif %}
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Signature" %}</label>
-                <input type="file" name="signature" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-2 file:py-1 file:px-2.5 file:rounded file:border file:border-gray-300 file:text-xs file:bg-white file:text-gray-700 hover:file:bg-gray-50">
-                {% if form.instance.signature %}
-                <img src="{{ form.instance.signature.url }}" alt="Signature" class="mt-1 h-10 w-20 object-contain border border-gray-200 rounded bg-white">
-                {% endif %}
-            </div>
-            <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Introducer" %}</label>
                 {{ form.introducer }}
             </div>
@@ -363,9 +384,65 @@
                 <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "KYC Date" %}</label>
                 {{ form.kyc_date }}
             </div>
-            <div class="md:col-span-2 lg:col-span-3">
+            <div class="md:col-span-2 lg:col-span-2">
                 <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Additional Info" %}</label>
                 <textarea name="info" rows="2" class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">{{ form.info.value|default:'' }}</textarea>
+            </div>
+        </div>
+
+        <!-- KYC Documents -->
+        <div class="px-5 py-3 border-b border-t border-gray-200 bg-gray-50/50">
+            <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                {% trans "KYC Documents & Signature" %}
+            </h3>
+        </div>
+        <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Signature" %}</label>
+                <input type="file" name="signature" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-gray-300 file:text-xs file:font-medium file:bg-white file:text-gray-700 hover:file:bg-gray-50">
+                {% if form.instance.signature %}
+                <div class="mt-1.5 flex items-center gap-2">
+                    <img src="{{ form.instance.signature.url }}" alt="Signature" class="h-10 w-20 object-contain border border-gray-200 rounded bg-white">
+                    <span class="text-xs text-green-600">{% trans "Current" %}</span>
+                </div>
+                {% endif %}
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Aadhaar Card" %}</label>
+                <input type="file" name="doc_aadhar" accept=".pdf,.jpg,.jpeg,.png" class="block w-full text-sm text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-gray-300 file:text-xs file:font-medium file:bg-white file:text-gray-700 hover:file:bg-gray-50">
+                {% if member %}{% for doc in member.documents.all %}{% if doc.document_type == 'aadhar' %}
+                <div class="mt-1.5"><a href="{{ doc.file.url }}" target="_blank" class="text-xs text-primary-600 hover:underline inline-flex items-center gap-1">
+                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    {% trans "View current" %} &middot; {{ doc.uploaded_at|date:"d M Y" }}</a></div>
+                {% endif %}{% endfor %}{% endif %}
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "PAN Card" %}</label>
+                <input type="file" name="doc_pan" accept=".pdf,.jpg,.jpeg,.png" class="block w-full text-sm text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-gray-300 file:text-xs file:font-medium file:bg-white file:text-gray-700 hover:file:bg-gray-50">
+                {% if member %}{% for doc in member.documents.all %}{% if doc.document_type == 'pan' %}
+                <div class="mt-1.5"><a href="{{ doc.file.url }}" target="_blank" class="text-xs text-primary-600 hover:underline inline-flex items-center gap-1">
+                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    {% trans "View current" %} &middot; {{ doc.uploaded_at|date:"d M Y" }}</a></div>
+                {% endif %}{% endfor %}{% endif %}
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Address Proof" %}</label>
+                <input type="file" name="doc_address_proof" accept=".pdf,.jpg,.jpeg,.png" class="block w-full text-sm text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-gray-300 file:text-xs file:font-medium file:bg-white file:text-gray-700 hover:file:bg-gray-50">
+                {% if member %}{% for doc in member.documents.all %}{% if doc.document_type == 'address_proof' %}
+                <div class="mt-1.5"><a href="{{ doc.file.url }}" target="_blank" class="text-xs text-primary-600 hover:underline inline-flex items-center gap-1">
+                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    {% trans "View current" %} &middot; {{ doc.uploaded_at|date:"d M Y" }}</a></div>
+                {% endif %}{% endfor %}{% endif %}
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Other Document" %}</label>
+                <input type="file" name="doc_other" accept=".pdf,.jpg,.jpeg,.png" class="block w-full text-sm text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-gray-300 file:text-xs file:font-medium file:bg-white file:text-gray-700 hover:file:bg-gray-50">
+                {% if member %}{% for doc in member.documents.all %}{% if doc.document_type == 'other' %}
+                <div class="mt-1.5"><a href="{{ doc.file.url }}" target="_blank" class="text-xs text-primary-600 hover:underline inline-flex items-center gap-1">
+                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    {% trans "View current" %} &middot; {{ doc.uploaded_at|date:"d M Y" }}</a></div>
+                {% endif %}{% endfor %}{% endif %}
             </div>
         </div>
 
@@ -440,27 +517,8 @@
             </div>
         </div>
 
-        <!-- {% trans "KYC Documents" %} (edit only) -->
-        {% if member and member.documents.all %}
-        <div class="px-5 py-3 border-b border-t border-gray-200 bg-gray-50/50">
-            <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                {% trans "KYC Documents" %}
-            </h3>
-        </div>
-        <div class="px-5 py-4">
-            <div class="flex flex-wrap gap-2">
-                {% for doc in member.documents.all %}
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded">
-                    {{ doc.get_document_type_display }} &mdash; {{ doc.uploaded_at|date:"d M Y" }}
-                </span>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-
         <!-- Action Buttons -->
-        <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex items-center justify-end gap-3">
+        <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex flex-wrap items-center justify-end gap-3">
             <a href="{% url 'members:list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
             <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm">
                 {% trans "Save" %}

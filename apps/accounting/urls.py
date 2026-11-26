@@ -27,4 +27,5 @@ urlpatterns = [
     path('opening-balance/', views.opening_balance_update, name='opening_balance'),
     path('account-search/', views.account_search, name='account_search'),
     path('heads/next-code/', views.next_head_code_ajax, name='next_head_code'),
+    path('heads/parent-info/', views.parent_head_info_ajax, name='parent_head_info'),
 ]

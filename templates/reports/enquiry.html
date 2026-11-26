@@ -7,6 +7,17 @@
 {% block content %}
 <div class="space-y-4">
 
+    <div class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex items-start gap-3" x-data="{ show: true }" x-show="show" x-transition.opacity.duration.200ms>
+        <svg class="h-5 w-5 text-blue-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div class="flex-1">
+            <h3 class="text-sm font-semibold text-blue-800">{% trans "Member Enquiry" %}</h3>
+            <p class="text-xs text-blue-700 mt-0.5">{% trans "Quick lookup of a member's complete profile — all accounts, balances, shares, guarantees, and KYC details in one view. Search by member number or name." %}</p>
+        </div>
+        <button @click="show = false" class="text-blue-400 hover:text-blue-600 shrink-0 p-0.5">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+    </div>
+
     <div>
         <a href="{% url 'reports:index' %}" class="inline-flex items-center text-sm text-primary-600 hover:text-primary-800 font-medium">
             <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
@@ -15,7 +26,7 @@
     </div>
 
 <!-- Filter Bar -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-4">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 px-5 py-4">
         <form method="get" class="flex flex-wrap items-end gap-4">
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Report Type" %}</label>
@@ -36,7 +47,7 @@
                     {% endfor %}
                 </select>
             </div>
-            <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "View" %}</button>
+            <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">{% trans "View" %}</button>
             {% endif %}
             {% if report_type == 'opening_register' or report_type == 'closing_register' %}
             <div>
@@ -49,14 +60,14 @@
                 <input type="date" name="to_date" value="{{ to_date }}"
                        class="border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
             </div>
-            <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "View" %}</button>
+            <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">{% trans "View" %}</button>
             {% endif %}
         </form>
     </div>
 
     <!-- All Accounts for Member -->
     {% if report_type == 'all_accounts' and member %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-4">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 px-5 py-4">
         <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ member.name }}</h3>
         <p class="text-sm text-gray-500">{% trans "Member No:" %} {{ member.member_no }} | {% trans "Phone:" %} {{ member.phone|default:"—" }}</p>
     </div>
@@ -64,7 +75,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Savings -->
         {% if savings %}
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-5 py-3 border-b border-gray-200 bg-green-50">
                 <h4 class="text-sm font-semibold text-green-800">{% trans "Savings / Current / Security" %}</h4>
             </div>
@@ -100,7 +111,7 @@
 
         <!-- Shares -->
         {% if shares %}
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-5 py-3 border-b border-gray-200 bg-purple-50">
                 <h4 class="text-sm font-semibold text-purple-800">{% trans "Share Holdings" %}</h4>
             </div>
@@ -129,7 +140,7 @@
 
         <!-- Loans -->
         {% if loans %}
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-5 py-3 border-b border-gray-200 bg-red-50">
                 <h4 class="text-sm font-semibold text-red-800">{% trans "Loan Accounts" %}</h4>
             </div>
@@ -167,7 +178,7 @@
 
         <!-- Fixed Deposits -->
         {% if fds %}
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-5 py-3 border-b border-gray-200 bg-blue-50">
                 <h4 class="text-sm font-semibold text-blue-800">{% trans "Fixed Deposits" %}</h4>
             </div>
@@ -203,7 +214,7 @@
 
         <!-- Recurring Deposits -->
         {% if rds %}
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-5 py-3 border-b border-gray-200 bg-teal-50">
                 <h4 class="text-sm font-semibold text-teal-800">{% trans "Recurring Deposits" %}</h4>
             </div>
@@ -239,7 +250,7 @@
 
         <!-- Pigmmy -->
         {% if pigmmy %}
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-5 py-3 border-b border-gray-200 bg-amber-50">
                 <h4 class="text-sm font-semibold text-amber-800">{% trans "Pigmy / Daily Deposit" %}</h4>
             </div>
@@ -270,7 +281,7 @@
     </div>
 
     {% if report_type == 'all_accounts' and not member and selected_member %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
         <p class="text-gray-400">{% trans "Member not found." %}</p>
     </div>
     {% endif %}
@@ -279,7 +290,7 @@
     <!-- Opening/Closing Register -->
     {% if report_type == 'opening_register' or report_type == 'closing_register' %}
     {% if entries is not None %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
             <h3 class="text-base font-semibold text-gray-900">
                 {% if report_type == 'opening_register' %}{% trans "Account Opening Register" %}{% else %}{% trans "Account Closing Register" %}{% endif %}
@@ -320,20 +331,20 @@
     {% if report_type == 'shareholder_details' %}
     {% if holdings is not None %}
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
             <p class="text-xs font-semibold text-gray-500 uppercase">{% trans "Total Shareholders" %}</p>
             <p class="text-lg font-bold text-gray-800 mt-1">{{ holdings|length }}</p>
         </div>
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
             <p class="text-xs font-semibold text-gray-500 uppercase">{% trans "Total Shares" %}</p>
             <p class="text-lg font-bold text-gray-800 mt-1">{{ total_shares }}</p>
         </div>
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
             <p class="text-xs font-semibold text-gray-500 uppercase">{% trans "Total Amount" %}</p>
             <p class="text-lg font-bold text-purple-700 mt-1">{{ total_amount|floatformat:2 }}</p>
         </div>
     </div>
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">

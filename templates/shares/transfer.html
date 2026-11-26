@@ -4,11 +4,14 @@
 {% block page_title %}{% trans "Shares Module" %}{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl">
+<div class="w-full">
 
     {% if form.errors %}
-    <div class="rounded-lg bg-red-50 border border-red-200 p-3 mb-4">
-        <h3 class="text-sm font-medium text-red-800">{% trans "Please correct the errors below" %}</h3>
+    <div class="rounded-xl bg-red-50 border border-red-200 p-3 mb-4">
+        <h3 class="text-sm font-medium text-red-800 flex items-center gap-2">
+            <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+            {% trans "Please correct the errors below" %}
+        </h3>
         <ul class="mt-1 text-sm text-red-700 list-disc list-inside">
             {% for field, errors in form.errors.items %}
                 {% for e in errors %}<li>{{ e }}</li>{% endfor %}
@@ -20,26 +23,33 @@
     <form method="post">
         {% csrf_token %}
 
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-xl">
+                <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                    {% trans "Transfer Shares" %}
+                </h3>
+            </div>
+
+            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">From Member <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "From Member" %} <span class="text-red-500">*</span></label>
                     {{ form.from_member }}
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">To Member <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "To Member" %} <span class="text-red-500">*</span></label>
                     {{ form.to_member }}
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-0.5">Number of Shares <span class="text-red-500">*</span></label>
-                    <input type="number" name="share_count" min="1" required class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500" value="{{ form.share_count.value|default:'' }}">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Number of Shares" %} <span class="text-red-500">*</span></label>
+                    <input type="number" name="share_count" min="1" required class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500" value="{{ form.share_count.value|default:'' }}">
                 </div>
             </div>
-            <p class="px-5 pb-3 text-xs text-gray-400">Members who are active guarantors on outstanding loans cannot transfer all their shares.</p>
+            <p class="px-5 pb-3 text-xs text-gray-400">{% trans "Members who are active guarantors on outstanding loans cannot transfer all their shares." %}</p>
 
-            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-end gap-3">
-                <a href="{% url 'shares:list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
-                <button type="submit" class="px-5 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">Transfer Shares</button>
+            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex flex-wrap items-center justify-end gap-3">
+                <a href="{% url 'shares:list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
+                <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm">{% trans "Transfer Shares" %}</button>
             </div>
         </div>
     </form>

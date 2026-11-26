@@ -5,7 +5,7 @@
 {% block page_title %}{% trans "Pigmy Module" %}{% endblock %}
 
 {% block content %}
-<div class="max-w-5xl space-y-4">
+<div class="w-full space-y-4">
 
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
@@ -15,7 +15,7 @@
         <a href="{% url 'agents:collection_list' %}" class="text-sm text-primary-600 hover:underline">&larr; {% trans "Back to Collections" %}</a>
     </div>
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
         <div class="px-5 py-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
             <div>
                 <span class="text-gray-500 block text-xs">{% trans "Agent" %}</span>
@@ -36,7 +36,7 @@
         </div>
     </div>
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-3 border-b border-gray-200">
             <h3 class="text-xs font-semibold text-gray-500 uppercase">{% trans "Client-wise Breakdown" %} ({{ transactions|length }})</h3>
         </div>

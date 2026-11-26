@@ -7,7 +7,7 @@
 <div class="max-w-full">
 
     <!-- Summary -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-4">
         <div class="px-5 py-4 grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-3">
             <div>
                 <span class="text-xs text-gray-500">Certificate No</span>
@@ -63,7 +63,7 @@
         </div>
         {% endif %}
 
-        <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-between">
+        <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex items-center justify-between">
             <a href="{% url 'shares:list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">&larr; Back</a>
             {% if holding.status == 'active' and request.user.is_manager %}
             <div class="flex items-center gap-2">
@@ -75,7 +75,7 @@
     </div>
 
     <!-- {% trans "Share Transactions" %} -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-4">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-4">
         <div class="px-5 py-3 border-b border-gray-200">
             <h3 class="text-xs font-semibold text-gray-500 uppercase">{% trans "Share Transactions" %}</h3>
         </div>
@@ -119,7 +119,7 @@
 
     <!-- Dividend History -->
     {% if dividends %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-3 border-b border-gray-200">
             <h3 class="text-xs font-semibold text-gray-500 uppercase">Dividend History</h3>
         </div>

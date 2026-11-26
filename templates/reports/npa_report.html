@@ -50,7 +50,7 @@
 
     {% if report.total_loans %}
     <!-- Category Summary -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
             <h3 class="text-sm font-semibold text-gray-800">{% trans "NPA Classification Summary" %}</h3>
         </div>
@@ -97,7 +97,7 @@
 
     <!-- Product-wise Breakdown -->
     {% for product_name, loans in report.by_product.items %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-4 py-3 bg-blue-50 border-b border-blue-100">
             <h3 class="text-sm font-semibold text-blue-800">{{ product_name }}</h3>
         </div>
@@ -147,7 +147,7 @@
     {% endfor %}
 
     {% else %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
         <p class="text-gray-400 text-sm">{% trans "No active/NPA loans found." %}</p>
     </div>
     {% endif %}

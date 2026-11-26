@@ -7,7 +7,7 @@
 {% block content %}
 <div>
 
-    <form method="get" class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+    <form method="get" class="bg-white rounded-xl shadow-sm border border-gray-200 mb-4">
         <div class="px-5 py-4 grid grid-cols-1 sm:grid-cols-4 gap-x-6 gap-y-3 items-end">
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Account Head" %}</label>
@@ -27,14 +27,14 @@
                 <input type="date" name="to_date" value="{{ to_date|default:'' }}" required class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
             </div>
             <div class="flex items-end gap-2">
-                <button type="submit" class="w-full px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "View Ledger" %}</button>
+                <button type="submit" class="w-full px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">{% trans "View Ledger" %}</button>
                 {% if result %}{% include "includes/export_csv.html" %}{% endif %}
             </div>
         </div>
     </form>
 
     {% if result %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-3 border-b border-gray-200 flex items-center justify-between">
             <div>
                 <h3 class="text-sm font-semibold text-gray-900">{{ result.account.name }}</h3>

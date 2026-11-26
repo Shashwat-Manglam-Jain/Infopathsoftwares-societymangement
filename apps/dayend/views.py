@@ -43,6 +43,8 @@ def dayend_index(request):
     else:
         next_working_date = date.today()
 
+    current_fy = FinancialYear.objects.filter(is_current=True).first()
+
     last_completed = (
         DayEndLog.objects.filter(
             branch=branch,
@@ -114,6 +116,9 @@ def dayend_index(request):
             'last_completed_date': last_completed_date,
             'month_end_done': month_end_done,
             'branch_statuses': branch_statuses,
+            'current_fy': current_fy,
+            'fy_start': current_fy.start_date if current_fy else None,
+            'fy_end': current_fy.end_date if current_fy else None,
         },
     )
 
@@ -127,23 +132,40 @@ class BeginDayView(AccountantRequiredMixin, View):
 
         from apps.dayend.models import FinancialYear
 
-        if not FinancialYear.objects.filter(is_current=True).exists():
+        fy = FinancialYear.objects.filter(is_current=True).first()
+        if not fy:
             fy_start = date(date.today().year, 4, 1)
             if date.today().month < 4:
                 fy_start = date(date.today().year - 1, 4, 1)
             fy_end = date(fy_start.year + 1, 3, 31)
-            FinancialYear.objects.create(
+            fy = FinancialYear.objects.create(
                 fy_code=f'{fy_start.year}-{str(fy_end.year)[-2:]}',
                 start_date=fy_start,
                 end_date=fy_end,
                 is_current=True,
             )
 
-        working_day = WorkingDay.objects.filter(branch=branch).first()
-        if working_day and not working_day.is_day_open:
-            working_date = working_day.current_date + timedelta(days=1)
+        date_str = request.POST.get('working_date', '')
+        if date_str:
+            try:
+                working_date = date.fromisoformat(date_str)
+            except ValueError:
+                messages.error(request, 'Invalid date format.')
+                return redirect('dayend:index')
         else:
-            working_date = date.today()
+            working_day = WorkingDay.objects.filter(branch=branch).first()
+            if working_day and not working_day.is_day_open:
+                working_date = working_day.current_date + timedelta(days=1)
+            else:
+                working_date = date.today()
+
+        if not (fy.start_date <= working_date <= fy.end_date):
+            messages.error(
+                request,
+                f'Date {working_date} is outside the current financial year '
+                f'({fy.start_date} to {fy.end_date}).',
+            )
+            return redirect('dayend:index')
 
         from .services import begin_working_day
 
@@ -418,6 +440,7 @@ def reupdate_gl_balance(request):
                 totals = JournalLine.objects.filter(
                     gl_account=head,
                     journal_entry__is_reversed=False,
+                    journal_entry__is_posted=True,
                 ).aggregate(
                     total_debit=Sum('debit_amount', default=Decimal('0')),
                     total_credit=Sum('credit_amount', default=Decimal('0')),
@@ -622,10 +645,13 @@ class InterestCalculateView(AccountantRequiredMixin, View):
         account_type = request.POST.get('account_type', 'all')
         rows = self._get_accounts(request, branch, account_type)
 
+        import calendar
+
         calculated_count = 0
         skipped_count = 0
         total_interest = Decimal('0')
         results = []
+        days_in_year = Decimal('366' if calendar.isleap(calc_date.year) else '365')
 
         with transaction.atomic():
             for row in rows:
@@ -635,7 +661,7 @@ class InterestCalculateView(AccountantRequiredMixin, View):
                     skipped_count += 1
                     continue
 
-                daily_interest = (row['balance'] * row['rate'] / 100 / 365).quantize(Decimal('0.01'))
+                daily_interest = (row['balance'] * row['rate'] / 100 / days_in_year).quantize(Decimal('0.01'))
                 if daily_interest <= 0:
                     continue
 

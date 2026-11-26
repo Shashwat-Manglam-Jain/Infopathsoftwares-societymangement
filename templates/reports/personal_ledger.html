@@ -18,6 +18,18 @@
 {% block content %}
 <div class="space-y-4">
 
+    <div class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex items-start gap-3" x-data="{ show: true }" x-show="show" x-transition.opacity.duration.200ms>
+        <svg class="h-5 w-5 text-blue-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div class="flex-1">
+            <h3 class="text-sm font-semibold text-blue-800">{% trans "Account Statement / Personal Ledger" %}</h3>
+            <p class="text-xs text-blue-700 mt-0.5">{% trans "View detailed transaction history for any member's savings, loan, FD, RD, or share account. Select a member and account type to see all credits, debits, and running balance." %}</p>
+        </div>
+        <button @click="show = false" class="text-blue-400 hover:text-blue-600 shrink-0 p-0.5">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+    </div>
+
+
     <div class="no-print">
         <a href="{% url 'reports:index' %}" class="inline-flex items-center text-sm text-primary-600 hover:text-primary-800 font-medium">
             <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
@@ -26,7 +38,7 @@
     </div>
 
     <!-- Filter Form -->
-    <form method="get" class="bg-white rounded-lg shadow-sm border border-gray-200 p-5 no-print"
+    <form method="get" class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 no-print"
           x-data="{ fromDate: '{{ from_date|default:'' }}', toDate: '{{ to_date|default:'' }}', today: new Date().toISOString().split('T')[0] }">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
@@ -47,7 +59,7 @@
                 <input type="date" name="to_date" x-model="toDate" :min="fromDate" :max="today" required class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
             </div>
             <div>
-                <button type="submit" class="w-full bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700 text-sm font-medium">{% trans "View Statement" %}</button>
+                <button type="submit" class="w-full bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 text-sm font-medium">{% trans "View Statement" %}</button>
                 {% if accounts %}{% include "includes/export_csv.html" %}{% endif %}
             </div>
         </div>
@@ -61,7 +73,7 @@
 
     {% if member %}
     <!-- Member Header -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5 flex items-center justify-between">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex items-center justify-between">
         <div>
             <h3 class="text-lg font-semibold text-gray-900">{{ member.prefix }} {{ member.name }}</h3>
             <p class="text-sm text-gray-500">{{ member.member_no }} &middot; {{ member.branch.branch_name }}</p>
@@ -73,7 +85,7 @@
 
     {% if accounts %}
     {% for acct in accounts %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
             <div>
                 <h4 class="text-sm font-semibold text-gray-700">{{ acct.type }}</h4>
@@ -129,7 +141,7 @@
     </div>
     {% endfor %}
     {% else %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
         <p class="text-gray-400 text-sm">{% trans "No transactions found for this member in the selected period." %}</p>
     </div>
     {% endif %}

@@ -6,13 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% trans "Sign Up" %} — InfoSociety | InfopathSolutions</title>
     <meta name="description" content="Register your cooperative society on InfoSociety. Start your free 90-day trial — no credit card required.">
-    <link rel="icon" type="image/png" href="{% static 'img/logo.png' %}">
+    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/css/tom-select.css" rel="stylesheet">
     <style>
         .ts-wrapper.single .ts-control { position: relative; cursor: pointer; }
         .ts-wrapper.single.has-items .ts-control > input { opacity: 0 !important; position: absolute !important; left: -9999px !important; width: 0 !important; }
         .ts-wrapper .clear-button { right: 28px !important; font-size: 18px; color: #9ca3af; opacity: 1 !important; cursor: pointer; z-index: 2; }
         .ts-wrapper .clear-button:hover { color: #ef4444; }
+        input[type="text"], input[type="search"], textarea { text-transform: uppercase; }
+        input[type="text"]::placeholder, input[type="search"]::placeholder, textarea::placeholder { text-transform: none; }
     </style>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -54,7 +56,7 @@
         </div>
         {% endif %}
 
-        <form method="post" action="/signup/" class="space-y-6">
+        <form method="post" action="/signup/" enctype="multipart/form-data" class="space-y-6">
             {% csrf_token %}
 
             <!-- Step 1: Society Details -->
@@ -66,10 +68,24 @@
                     <h2 class="text-lg font-bold text-gray-900">{% trans "Society Details" %}</h2>
                 </div>
                 <div class="space-y-4">
-                    <div>
-                        <label for="id_society_name" class="block text-sm font-semibold text-gray-700 mb-1">{{ form.society_name.label }} <span class="text-red-500">*</span></label>
-                        {{ form.society_name }}
-                        {% if form.society_name.errors %}<p class="mt-1 text-sm text-red-600">{{ form.society_name.errors.0 }}</p>{% endif %}
+                    <!-- Society Name + Logo row -->
+                    <div class="flex items-end gap-4">
+                        <div class="flex-1">
+                            <label for="id_society_name" class="block text-sm font-semibold text-gray-700 mb-1">{{ form.society_name.label }} <span class="text-red-500">*</span></label>
+                            {{ form.society_name }}
+                            {% if form.society_name.errors %}<p class="mt-1 text-sm text-red-600">{{ form.society_name.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div class="shrink-0">
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">{% trans "Logo" %}</label>
+                            <div class="relative w-[42px] h-[42px]">
+                                <input type="file" name="logo" id="id_logo" accept="image/*"
+                                       class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                <div id="logo-placeholder" class="w-[42px] h-[42px] rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-indigo-400 transition">
+                                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.41a2.25 2.25 0 013.182 0l2.909 2.91m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+                                </div>
+                                <img id="logo-img" class="hidden w-[42px] h-[42px] object-cover rounded-lg border border-gray-200 cursor-pointer" src="" alt="">
+                            </div>
+                        </div>
                     </div>
                     <div class="grid sm:grid-cols-2 gap-4">
                         <div>
@@ -93,6 +109,51 @@
                             <label for="id_email" class="block text-sm font-semibold text-gray-700 mb-1">{% trans "Email" %} <span class="text-red-500">*</span></label>
                             {{ form.email }}
                             {% if form.email.errors %}<p class="mt-1 text-sm text-red-600">{{ form.email.errors.0 }}</p>{% endif %}
+                        </div>
+                    </div>
+                    <div class="border-t border-gray-100 pt-4 mt-4">
+                        <p class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z"/></svg>
+                            {% trans "KYC Details" %}
+                            <span class="text-xs font-normal text-gray-400">{% trans "(Optional)" %}</span>
+                        </p>
+                        <div class="space-y-3">
+                            <div class="flex items-end gap-2">
+                                <div class="flex-1">
+                                    <label for="id_pan_no" class="block text-sm font-semibold text-gray-700 mb-1">{{ form.pan_no.label }}</label>
+                                    {{ form.pan_no }}
+                                    {% if form.pan_no.errors %}<p class="mt-1 text-sm text-red-600">{{ form.pan_no.errors.0 }}</p>{% endif %}
+                                </div>
+                                <label class="kyc-upload shrink-0 flex items-center gap-1.5 px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-500 hover:border-indigo-400 hover:text-indigo-600 transition cursor-pointer" title="{% trans 'Upload PAN document' %}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+                                    <span class="hidden sm:inline kyc-label">{% trans "Upload" %}</span>
+                                    <input type="file" name="pan_doc" accept="image/*,.pdf" class="hidden kyc-file-input">
+                                </label>
+                            </div>
+                            <div class="flex items-end gap-2">
+                                <div class="flex-1">
+                                    <label for="id_tan_no" class="block text-sm font-semibold text-gray-700 mb-1">{{ form.tan_no.label }}</label>
+                                    {{ form.tan_no }}
+                                    {% if form.tan_no.errors %}<p class="mt-1 text-sm text-red-600">{{ form.tan_no.errors.0 }}</p>{% endif %}
+                                </div>
+                                <label class="kyc-upload shrink-0 flex items-center gap-1.5 px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-500 hover:border-indigo-400 hover:text-indigo-600 transition cursor-pointer" title="{% trans 'Upload TAN document' %}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+                                    <span class="hidden sm:inline kyc-label">{% trans "Upload" %}</span>
+                                    <input type="file" name="tan_doc" accept="image/*,.pdf" class="hidden kyc-file-input">
+                                </label>
+                            </div>
+                            <div class="flex items-end gap-2">
+                                <div class="flex-1">
+                                    <label for="id_gst_no" class="block text-sm font-semibold text-gray-700 mb-1">{{ form.gst_no.label }}</label>
+                                    {{ form.gst_no }}
+                                    {% if form.gst_no.errors %}<p class="mt-1 text-sm text-red-600">{{ form.gst_no.errors.0 }}</p>{% endif %}
+                                </div>
+                                <label class="kyc-upload shrink-0 flex items-center gap-1.5 px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-500 hover:border-indigo-400 hover:text-indigo-600 transition cursor-pointer" title="{% trans 'Upload GST document' %}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+                                    <span class="hidden sm:inline kyc-label">{% trans "Upload" %}</span>
+                                    <input type="file" name="gst_doc" accept="image/*,.pdf" class="hidden kyc-file-input">
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -156,7 +217,15 @@
                     <div class="grid sm:grid-cols-2 gap-4">
                         <div>
                             <label for="id_password" class="block text-sm font-semibold text-gray-700 mb-1">{% trans "Password" %} <span class="text-red-500">*</span></label>
-                            {{ form.password }}
+                            <div class="relative">
+                                <input type="password" name="password" id="id_password" required minlength="8"
+                                       class="w-full px-4 py-2.5 pr-11 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-gray-900"
+                                       placeholder="{% trans 'Minimum 8 characters' %}">
+                                <button type="button" class="pw-toggle absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 transition" tabindex="-1" data-target="id_password">
+                                    <svg class="pw-eye w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                    <svg class="pw-eye-off w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12c1.292 4.338 5.31 7.5 10.066 7.5.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>
+                                </button>
+                            </div>
                             {% if form.password.errors %}<p class="mt-1 text-sm text-red-600">{{ form.password.errors.0 }}</p>{% endif %}
                             <div class="mt-1.5 flex gap-1" id="pw-strength">
                                 <div class="h-1 flex-1 rounded-full bg-gray-200"></div>
@@ -168,7 +237,15 @@
                         </div>
                         <div>
                             <label for="id_confirm_password" class="block text-sm font-semibold text-gray-700 mb-1">{% trans "Confirm Password" %} <span class="text-red-500">*</span></label>
-                            {{ form.confirm_password }}
+                            <div class="relative">
+                                <input type="password" name="confirm_password" id="id_confirm_password" required
+                                       class="w-full px-4 py-2.5 pr-11 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-gray-900"
+                                       placeholder="{% trans 'Confirm password' %}">
+                                <button type="button" class="pw-toggle absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 transition" tabindex="-1" data-target="id_confirm_password">
+                                    <svg class="pw-eye w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                    <svg class="pw-eye-off w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12c1.292 4.338 5.31 7.5 10.066 7.5.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>
+                                </button>
+                            </div>
                             {% if form.confirm_password.errors %}<p class="mt-1 text-sm text-red-600">{{ form.confirm_password.errors.0 }}</p>{% endif %}
                         </div>
                     </div>
@@ -242,6 +319,60 @@ if (pwInput) {
         hint.textContent = pw.length > 0 ? labels[Math.min(score, 3)] : '{% trans "Must be at least 8 characters with letters and numbers" %}';
     });
 }
+
+document.querySelectorAll('.pw-toggle').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var inp = document.getElementById(this.dataset.target);
+        var show = inp.type === 'password';
+        inp.type = show ? 'text' : 'password';
+        this.querySelector('.pw-eye').classList.toggle('hidden', show);
+        this.querySelector('.pw-eye-off').classList.toggle('hidden', !show);
+    });
+});
+
+(function() {
+    var fileInput = document.getElementById('id_logo');
+    var placeholder = document.getElementById('logo-placeholder');
+    var img = document.getElementById('logo-img');
+
+    fileInput.addEventListener('change', function() {
+        var file = this.files[0];
+        if (!file || !file.type.startsWith('image/')) return;
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            img.src = e.target.result;
+            img.classList.remove('hidden');
+            placeholder.classList.add('hidden');
+        };
+        reader.readAsDataURL(file);
+    });
+
+    img.addEventListener('click', function() {
+        fileInput.value = '';
+        img.classList.add('hidden');
+        img.src = '';
+        placeholder.classList.remove('hidden');
+    });
+})();
+
+document.querySelectorAll('.kyc-upload').forEach(function(label) {
+    var input = label.querySelector('.kyc-file-input');
+    var labelSpan = label.querySelector('.kyc-label');
+    input.addEventListener('change', function() {
+        if (this.files[0]) {
+            labelSpan.textContent = this.files[0].name.length > 12
+                ? this.files[0].name.substring(0, 10) + '...'
+                : this.files[0].name;
+            labelSpan.classList.remove('hidden');
+            label.classList.add('border-green-400', 'text-green-600');
+            label.classList.remove('border-gray-300', 'text-gray-500');
+        } else {
+            labelSpan.textContent = '{% trans "Upload" %}';
+            label.classList.remove('border-green-400', 'text-green-600');
+            label.classList.add('border-gray-300', 'text-gray-500');
+        }
+    });
+});
 </script>
 </body>
 </html>

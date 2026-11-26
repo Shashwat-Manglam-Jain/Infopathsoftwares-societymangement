@@ -13,11 +13,11 @@
             <form method="get" class="flex items-center gap-2">
                 <input type="date" name="date" value="{{ cb_date|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}"
                        class="rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
-                <button type="submit" class="px-3 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "Go" %}</button>
+                <button type="submit" class="px-3 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">{% trans "Go" %}</button>
                 {% include "includes/export_csv.html" %}
             </form>
-            <a href="{% url 'accounting:receipt' %}" class="px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700">{% trans "Receipt" %}</a>
-            <a href="{% url 'accounting:payment' %}" class="px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded hover:bg-red-700">{% trans "Payment" %}</a>
+            <a href="{% url 'accounting:receipt' %}" class="px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700">{% trans "Receipt" %}</a>
+            <a href="{% url 'accounting:payment' %}" class="px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700">{% trans "Payment" %}</a>
             <button type="button" onclick="window.print()" class="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded" title="Print">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
             </button>
@@ -47,8 +47,8 @@
     </div>
 
     <!-- Receipts table -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-4">
-        <div class="px-5 py-3 border-b border-gray-200 bg-green-50 flex items-center justify-between">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-4">
+        <div class="px-5 py-3 border-b border-gray-200 bg-green-50 flex flex-wrap items-center justify-between">
             <h3 class="text-xs font-bold text-green-800 uppercase flex items-center gap-2">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 {% trans "Receipts (Money In)" %}
@@ -93,8 +93,8 @@
     </div>
 
     <!-- Payments table -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div class="px-5 py-3 border-b border-gray-200 bg-red-50 flex items-center justify-between">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-5 py-3 border-b border-gray-200 bg-red-50 flex flex-wrap items-center justify-between">
             <h3 class="text-xs font-bold text-red-800 uppercase flex items-center gap-2">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
                 {% trans "Payments (Money Out)" %}

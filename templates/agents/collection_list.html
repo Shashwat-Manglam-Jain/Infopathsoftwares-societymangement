@@ -21,7 +21,7 @@
         {% endif %}
     </div>
 
-    <form method="get" class="bg-white rounded-lg shadow-sm border border-gray-200 px-4 py-3">
+    <form method="get" class="bg-white rounded-xl shadow-sm border border-gray-200 px-4 py-3">
         <div class="flex flex-wrap items-end gap-3">
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Agent" %}</label>
@@ -59,13 +59,13 @@
                 <input type="date" name="date_to" value="{{ request.GET.date_to }}" class="text-sm border border-gray-300 rounded px-2.5 py-1.5 focus:ring-primary-500 focus:border-primary-500">
             </div>
             <div class="flex items-center gap-2">
-                <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "Filter" %}</button>
-                <a href="{% url 'agents:collection_list' %}" class="px-3 py-1.5 border border-gray-300 text-sm font-medium text-gray-600 rounded hover:bg-gray-50">{% trans "Clear" %}</a>
+                <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">{% trans "Filter" %}</button>
+                <a href="{% url 'agents:collection_list' %}" class="px-3 py-1.5 border border-gray-300 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50">{% trans "Clear" %}</a>
             </div>
         </div>
     </form>
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
                 <thead>

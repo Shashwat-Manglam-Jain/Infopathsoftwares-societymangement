@@ -5,27 +5,27 @@
 {% block page_title %}{% trans "Society Details" %}{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl">
+<div class="w-full">
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
 
-        <div class="px-5 py-4 flex items-start gap-4">
+        <div class="px-4 sm:px-5 py-4 flex flex-col sm:flex-row items-start gap-4">
             {% if society.logo %}
-            <img src="{{ society.logo.url }}" alt="{{ society.name }}" class="h-16 w-16 rounded-lg object-contain border border-gray-200 bg-white p-1">
+            <img src="{{ society.logo.url }}" alt="{{ society.name }}" class="h-16 w-16 rounded-lg object-contain border border-gray-200 bg-white p-1 shrink-0">
             {% else %}
-            <div class="h-16 w-16 rounded-lg bg-primary-100 flex items-center justify-center flex-shrink-0">
+            <div class="h-16 w-16 rounded-lg bg-primary-100 flex items-center justify-center shrink-0">
                 <svg class="h-8 w-8 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
             </div>
             {% endif %}
-            <div class="flex-1 min-w-0">
-                <div class="flex items-center justify-between">
+            <div class="flex-1 min-w-0 w-full">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-900">{{ society.name }}</h3>
+                        <h3 class="text-lg font-semibold text-gray-900 break-words">{{ society.name }}</h3>
                         {% if society.name_regional %}<p class="text-sm text-gray-500">{{ society.name_regional }}</p>{% endif %}
                         <span class="inline-block mt-1 px-2 py-0.5 text-xs font-medium rounded-full bg-primary-100 text-primary-700">{{ society.get_society_type_display }}</span>
                     </div>
                     {% if request.user.is_admin %}
-                    <a href="{% url 'society_edit' %}" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">{% trans "Edit" %}</a>
+                    <a href="{% url 'society_edit' %}" class="shrink-0 px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 text-center">{% trans "Edit" %}</a>
                     {% endif %}
                 </div>
             </div>
@@ -33,9 +33,9 @@
 
         <hr class="border-gray-200">
 
-        <div class="px-5 py-4">
+        <div class="px-4 sm:px-5 py-4">
             <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">{% trans "Registration" %}</h4>
-            <dl class="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-2">
+            <dl class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-3">
                 <div>
                     <dt class="text-xs text-gray-500">{% trans "Registration No" %}</dt>
                     <dd class="text-sm font-medium text-gray-900">{{ society.registration_no|default:"—" }}</dd>
@@ -57,10 +57,10 @@
 
         <hr class="border-gray-200">
 
-        <div class="px-5 py-4">
+        <div class="px-4 sm:px-5 py-4">
             <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">{% trans "Contact & Address" %}</h4>
-            <dl class="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-2">
-                <div class="col-span-2">
+            <dl class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-3">
+                <div class="sm:col-span-2">
                     <dt class="text-xs text-gray-500">{% trans "Address" %}</dt>
                     <dd class="text-sm font-medium text-gray-900">{{ society.address|default:"—" }}</dd>
                 </div>
@@ -86,16 +86,16 @@
                 </div>
                 <div>
                     <dt class="text-xs text-gray-500">{% trans "Email" %}</dt>
-                    <dd class="text-sm font-medium text-gray-900">{{ society.email|default:"—" }}</dd>
+                    <dd class="text-sm font-medium text-gray-900 break-all">{{ society.email|default:"—" }}</dd>
                 </div>
             </dl>
         </div>
 
         <hr class="border-gray-200">
 
-        <div class="px-5 py-4">
+        <div class="px-4 sm:px-5 py-4">
             <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">{% trans "Financial & Tax" %}</h4>
-            <dl class="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2">
+            <dl class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3">
                 <div>
                     <dt class="text-xs text-gray-500">{% trans "PAN No" %}</dt>
                     <dd class="text-sm font-medium text-gray-900">{{ society.pan_no|default:"—" }}</dd>
@@ -121,6 +121,97 @@
                     <dd class="text-sm font-medium text-gray-900">{% if society.share_nominal_value %}₹{{ society.share_nominal_value|floatformat:2 }}{% else %}—{% endif %}</dd>
                 </div>
             </dl>
+        </div>
+
+        <hr class="border-gray-200">
+
+        <div class="px-4 sm:px-5 py-4">
+            <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">{% trans "KYC Documents" %}</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <!-- PAN Document -->
+                <div class="border border-gray-200 rounded-lg p-3">
+                    <p class="text-xs font-semibold text-gray-500 mb-2">{% trans "PAN Document" %}</p>
+                    {% if society.pan_doc %}
+                    <a href="{{ society.pan_doc.url }}" target="_blank" class="group block">
+                        {% with doc_name=society.pan_doc.name %}
+                        {% if ".jpg" in doc_name or ".jpeg" in doc_name or ".png" in doc_name or ".webp" in doc_name %}
+                        <img src="{{ society.pan_doc.url }}" alt="PAN Document" class="w-full h-28 object-cover rounded border border-gray-200 group-hover:border-primary-400 transition">
+                        {% else %}
+                        <div class="w-full h-28 bg-gray-50 rounded border border-gray-200 flex flex-col items-center justify-center group-hover:border-primary-400 transition">
+                            <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                            <span class="text-xs text-gray-400 mt-1">PDF</span>
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                        <p class="mt-1.5 text-xs text-primary-600 group-hover:text-primary-800 font-medium flex items-center gap-1">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            {% trans "View Document" %}
+                        </p>
+                    </a>
+                    {% else %}
+                    <div class="w-full h-28 bg-gray-50 rounded border border-dashed border-gray-200 flex flex-col items-center justify-center">
+                        <svg class="w-8 h-8 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                        <span class="text-xs text-gray-300 mt-1">{% trans "Not uploaded" %}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- TAN Document -->
+                <div class="border border-gray-200 rounded-lg p-3">
+                    <p class="text-xs font-semibold text-gray-500 mb-2">{% trans "TAN Document" %}</p>
+                    {% if society.tan_doc %}
+                    <a href="{{ society.tan_doc.url }}" target="_blank" class="group block">
+                        {% with doc_name=society.tan_doc.name %}
+                        {% if ".jpg" in doc_name or ".jpeg" in doc_name or ".png" in doc_name or ".webp" in doc_name %}
+                        <img src="{{ society.tan_doc.url }}" alt="TAN Document" class="w-full h-28 object-cover rounded border border-gray-200 group-hover:border-primary-400 transition">
+                        {% else %}
+                        <div class="w-full h-28 bg-gray-50 rounded border border-gray-200 flex flex-col items-center justify-center group-hover:border-primary-400 transition">
+                            <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                            <span class="text-xs text-gray-400 mt-1">PDF</span>
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                        <p class="mt-1.5 text-xs text-primary-600 group-hover:text-primary-800 font-medium flex items-center gap-1">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            {% trans "View Document" %}
+                        </p>
+                    </a>
+                    {% else %}
+                    <div class="w-full h-28 bg-gray-50 rounded border border-dashed border-gray-200 flex flex-col items-center justify-center">
+                        <svg class="w-8 h-8 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                        <span class="text-xs text-gray-300 mt-1">{% trans "Not uploaded" %}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- GST Document -->
+                <div class="border border-gray-200 rounded-lg p-3">
+                    <p class="text-xs font-semibold text-gray-500 mb-2">{% trans "GST Document" %}</p>
+                    {% if society.gst_doc %}
+                    <a href="{{ society.gst_doc.url }}" target="_blank" class="group block">
+                        {% with doc_name=society.gst_doc.name %}
+                        {% if ".jpg" in doc_name or ".jpeg" in doc_name or ".png" in doc_name or ".webp" in doc_name %}
+                        <img src="{{ society.gst_doc.url }}" alt="GST Document" class="w-full h-28 object-cover rounded border border-gray-200 group-hover:border-primary-400 transition">
+                        {% else %}
+                        <div class="w-full h-28 bg-gray-50 rounded border border-gray-200 flex flex-col items-center justify-center group-hover:border-primary-400 transition">
+                            <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                            <span class="text-xs text-gray-400 mt-1">PDF</span>
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                        <p class="mt-1.5 text-xs text-primary-600 group-hover:text-primary-800 font-medium flex items-center gap-1">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            {% trans "View Document" %}
+                        </p>
+                    </a>
+                    {% else %}
+                    <div class="w-full h-28 bg-gray-50 rounded border border-dashed border-gray-200 flex flex-col items-center justify-center">
+                        <svg class="w-8 h-8 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                        <span class="text-xs text-gray-300 mt-1">{% trans "Not uploaded" %}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
 </div>

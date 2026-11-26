@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% trans "Login" %} — InfoSociety</title>
-    <link rel="icon" type="image/png" href="{% static 'img/logo.png' %}">
+    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
     tailwind.config = {
@@ -21,13 +21,13 @@
 
 {% include "includes/public_navbar.html" with active_page="login" %}
 
-<div class="pt-24 pb-12 px-4 flex items-center justify-center min-h-screen">
+<div class="pt-24 pb-12 px-4 flex items-start sm:items-center justify-center min-h-screen">
     <div class="w-full max-w-md">
 
         <!-- Card -->
-        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100">
             <!-- Header gradient strip -->
-            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6 text-center">
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6 text-center rounded-t-2xl">
                 <div class="inline-flex items-center justify-center w-14 h-14 bg-white/20 rounded-xl backdrop-blur mb-3">
                     <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>
@@ -45,19 +45,32 @@
                 </div>
                 {% endif %}
 
-                <form method="post" class="space-y-5">
+                <form method="post" class="space-y-5" id="society-form">
                     {% csrf_token %}
+                    <input type="hidden" name="domain" id="domain-input" value="">
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">{% trans "Select Your Society" %}</label>
-                        <div class="relative">
-                            <select name="domain" required
-                                    class="w-full appearance-none rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 pr-10 text-sm text-gray-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition cursor-pointer">
-                                <option value="">-- {% trans "Choose Society" %} --</option>
-                                {% for d in domains %}
-                                <option value="{{ d.pk }}">{{ d.tenant.name }}</option>
-                                {% endfor %}
-                            </select>
-                            <svg class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        <div class="relative" id="society-dropdown">
+                            <div id="dropdown-btn"
+                                 class="w-full flex items-center rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 text-sm focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:bg-white transition cursor-pointer text-left">
+                                <svg class="w-4 h-4 text-gray-400 shrink-0 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                <input type="text" id="dropdown-search" autocomplete="off"
+                                       class="flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder-gray-400"
+                                       placeholder="{% trans '-- Choose Society --' %}" readonly>
+                                <svg class="w-5 h-5 text-gray-400 shrink-0 ml-2 transition-transform" id="dropdown-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                            </div>
+                            <div id="dropdown-menu" class="hidden absolute left-0 right-0 top-full mt-1 bg-white rounded-xl border border-gray-200 shadow-xl z-50">
+                                <div id="dropdown-list" class="max-h-72 overflow-y-auto overscroll-contain" style="scrollbar-width:thin;">
+                                    {% for d in domains %}
+                                    <div class="dropdown-item px-4 py-2.5 text-sm text-gray-800 hover:bg-indigo-50 hover:text-indigo-700 cursor-pointer transition border-b border-gray-50 last:border-0"
+                                         data-value="{{ d.pk }}" data-name="{{ d.tenant.name }}">
+                                        <span class="font-medium">{{ d.tenant.name }}</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <div id="dropdown-empty" class="hidden px-4 py-3 text-sm text-gray-400 text-center">{% trans "No society found" %}</div>
+                                <div id="dropdown-count" class="px-3 py-1.5 border-t border-gray-100 text-xs text-gray-400 text-right"></div>
+                            </div>
                         </div>
                     </div>
                     <button type="submit" data-loading-text="{% trans 'Redirecting…' %}"
@@ -94,5 +107,98 @@
 </div>
 
 <script src="{% static 'js/form-guard.js' %}"></script>
+<script>
+(function() {
+    var btn = document.getElementById('dropdown-btn');
+    var menu = document.getElementById('dropdown-menu');
+    var input = document.getElementById('domain-input');
+    var arrow = document.getElementById('dropdown-arrow');
+    var form = document.getElementById('society-form');
+    var search = document.getElementById('dropdown-search');
+    var items = document.querySelectorAll('.dropdown-item');
+    var emptyMsg = document.getElementById('dropdown-empty');
+    var countEl = document.getElementById('dropdown-count');
+    var total = items.length;
+    var selectedName = '';
+
+    function updateCount(visible) {
+        if (countEl) {
+            countEl.textContent = visible === total
+                ? total + ' societies'
+                : visible + ' of ' + total + ' societies';
+        }
+    }
+
+    function openMenu() {
+        menu.classList.remove('hidden');
+        arrow.style.transform = 'rotate(180deg)';
+        search.readOnly = false;
+        search.value = '';
+        search.placeholder = '{% trans "Type to search..." %}';
+        items.forEach(function(el) { el.style.display = ''; });
+        emptyMsg.classList.add('hidden');
+        updateCount(total);
+        search.focus();
+    }
+
+    function closeMenu() {
+        menu.classList.add('hidden');
+        arrow.style.transform = '';
+        search.readOnly = true;
+        if (selectedName) {
+            search.value = selectedName;
+            search.placeholder = '';
+        } else {
+            search.value = '';
+            search.placeholder = '{% trans "-- Choose Society --" %}';
+        }
+    }
+
+    btn.addEventListener('click', function(e) {
+        if (e.target === search && !search.readOnly) return;
+        if (menu.classList.contains('hidden')) {
+            openMenu();
+        } else {
+            closeMenu();
+        }
+    });
+
+    search.addEventListener('input', function() {
+        if (menu.classList.contains('hidden')) openMenu();
+        var q = this.value.toLowerCase();
+        var visible = 0;
+        items.forEach(function(el) {
+            var match = el.dataset.name.toLowerCase().indexOf(q) !== -1;
+            el.style.display = match ? '' : 'none';
+            if (match) visible++;
+        });
+        emptyMsg.classList.toggle('hidden', visible > 0);
+        updateCount(visible);
+    });
+
+    items.forEach(function(item) {
+        item.addEventListener('click', function() {
+            input.value = this.dataset.value;
+            selectedName = this.dataset.name;
+            closeMenu();
+        });
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!document.getElementById('society-dropdown').contains(e.target)) {
+            menu.classList.add('hidden');
+            arrow.style.transform = '';
+        }
+    });
+
+    form.addEventListener('submit', function(e) {
+        if (!input.value) {
+            e.preventDefault();
+            btn.classList.add('border-red-400', 'ring-2', 'ring-red-100');
+            setTimeout(function() { btn.classList.remove('border-red-400', 'ring-2', 'ring-red-100'); }, 2000);
+        }
+    });
+})();
+</script>
 </body>
 </html>

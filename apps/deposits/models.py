@@ -117,6 +117,10 @@ class FixedDeposit(models.Model):
         related_name='introduced_fds',
         help_text='Existing member who introduced this account',
     )
+    loan_against = models.BooleanField(
+        default=False,
+        help_text='Whether this deposit is pledged as collateral for a loan',
+    )
     sign = models.IntegerField(default=0, help_text='1=debit nature, -1=credit nature, 0=default')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -178,6 +182,10 @@ class RecurringDeposit(models.Model):
         max_length=15,
         choices=INTEREST_POSTING_FREQUENCY_CHOICES,
         default='semi_annual',
+    )
+    loan_against = models.BooleanField(
+        default=False,
+        help_text='Whether this deposit is pledged as collateral for a loan',
     )
     sign = models.IntegerField(default=0, help_text='1=debit nature, -1=credit nature, 0=default')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)

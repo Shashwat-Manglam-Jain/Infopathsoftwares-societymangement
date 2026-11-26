@@ -504,7 +504,7 @@ def add_standing_instruction(loan, charge_type, amount, branch, narration, creat
         from apps.core.gl_utils import get_account_gl_code, get_gl_code
 
         loan_code = get_account_gl_code(loan, 'loan', '1003')
-        fee_income_code = get_gl_code('interest_received', '4004')
+        fee_income_code = get_gl_code('interest_received', '3002')
 
         if ChartOfAccounts.objects.filter(code__in=[loan_code, fee_income_code]).count() == 2:
             create_journal_entry(

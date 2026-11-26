@@ -24,6 +24,11 @@ class CustomUser(AbstractUser):
     )
     phone = models.CharField(max_length=20, blank=True)
     profile_photo = models.ImageField(upload_to='staff/photos/', blank=True)
+    pan_no = models.CharField(max_length=10, blank=True)
+    aadhar_no = models.CharField(max_length=12, blank=True)
+    id_proof_doc = models.FileField(upload_to='staff/kyc/', blank=True)
+    address_proof_doc = models.FileField(upload_to='staff/kyc/', blank=True)
+    other_doc = models.FileField(upload_to='staff/kyc/', blank=True)
     can_access_all_branches = models.BooleanField(default=False)
 
     class Meta:

@@ -7,7 +7,7 @@
 {% block content %}
 <div class="max-w-full">
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
         <div class="px-5 py-4 grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2">
             <div>
                 <span class="text-xs text-gray-500">Voucher No</span>
@@ -57,17 +57,17 @@
         </div>
 
         {% if entry.is_reversed %}
-        <div class="px-5 py-3 bg-yellow-50 border-t border-yellow-200 rounded-b-lg">
+        <div class="px-5 py-3 bg-yellow-50 border-t border-yellow-200 rounded-b-xl">
             <p class="text-sm text-yellow-800 font-medium">This voucher has already been reversed.</p>
         </div>
         {% else %}
         <div class="px-5 py-3 bg-red-50 border-t border-red-200">
             <p class="text-sm text-red-800">A reversal entry will be created to cancel this voucher.</p>
         </div>
-        <form method="post" class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-end gap-3">
+        <form method="post" class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex flex-wrap items-center justify-end gap-3">
             {% csrf_token %}
             <a href="{% url 'accounting:vouchers' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Go Back</a>
-            <button type="submit" class="px-5 py-1.5 bg-red-600 text-white text-sm font-medium rounded hover:bg-red-700">Confirm Cancellation</button>
+            <button type="submit" class="px-5 py-1.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700">Confirm Cancellation</button>
         </form>
         {% endif %}
     </div>

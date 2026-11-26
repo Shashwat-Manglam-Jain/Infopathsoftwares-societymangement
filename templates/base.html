@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}InfoSociety — Society Banking Software{% endblock %}</title>
-    <link rel="icon" type="image/png" href="{% static 'img/logo.png' %}">
+    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
 
     <!-- Dark mode: apply before paint to prevent flash -->
     <script>if(localStorage.getItem('darkMode')==='true')document.documentElement.classList.add('dark')</script>
@@ -83,6 +83,14 @@
         #page-loader .bar { position: absolute; top: 0; left: -40%; width: 40%; height: 100%; background: linear-gradient(90deg, transparent, #3b82f6, #60a5fa, #3b82f6, transparent); animation: progress-indeterminate 1s ease-in-out infinite; }
         @media (max-width: 1023px) {
             .desktop-sidebar { display: none !important; }
+        }
+        @media print {
+            .desktop-sidebar, .no-print, #page-loader, header, nav { display: none !important; }
+            [x-cloak] { display: none !important; }
+            main { padding: 0 !important; }
+            body { background: white !important; }
+            .shadow-sm, .shadow { box-shadow: none !important; }
+            .border { border-color: #e5e7eb !important; }
         }
         input[type="text"], input[type="number"], input[type="email"], input[type="tel"],
         input[type="date"], input[type="password"], input[type="url"], input[type="search"],
@@ -385,7 +393,7 @@
                 <div class="flex items-center justify-between h-14 px-4 bg-primary-600 flex-shrink-0">
                     <div class="flex items-center space-x-2 min-w-0">
                         <img src="{% static 'img/logo.png' %}" alt="InfoSociety" class="h-8 flex-shrink-0 brightness-0 invert">
-                        <span class="text-white text-sm font-semibold truncate">{% if LANGUAGE_CODE != 'en' and request.tenant.name_regional %}{{ request.tenant.name_regional }}{% else %}{{ request.tenant.name|default:"InfoSociety" }}{% endif %}</span>
+                        <span class="text-white text-sm font-semibold truncate uppercase">{% if LANGUAGE_CODE != 'en' and request.tenant.name_regional %}{{ request.tenant.name_regional }}{% else %}{{ request.tenant.name|default:"InfoSociety" }}{% endif %}</span>
                     </div>
                     <button @click="sidebarOpen = false" class="text-white/70 hover:text-white flex-shrink-0 p-1">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -405,7 +413,7 @@
                 <div class="flex h-16 items-center justify-between px-4 bg-white/80 backdrop-blur-xl border-b border-gray-200/80">
                     <div class="flex items-center space-x-2 min-w-0">
                         <img src="{% static 'img/logo.png' %}" alt="InfoSociety" class="h-9 flex-shrink-0">
-                        <span class="text-gray-900 text-sm font-semibold truncate">{% if LANGUAGE_CODE != 'en' and request.tenant.name_regional %}{{ request.tenant.name_regional }}{% else %}{{ request.tenant.name|default:"InfoSociety" }}{% endif %}</span>
+                        <span class="text-gray-900 text-sm font-semibold truncate uppercase">{% if LANGUAGE_CODE != 'en' and request.tenant.name_regional %}{{ request.tenant.name_regional }}{% else %}{{ request.tenant.name|default:"InfoSociety" }}{% endif %}</span>
                     </div>
                     <button @click="toggleSidebar()" class="text-gray-400 hover:text-gray-700 flex-shrink-0 ml-2" title="Hide sidebar">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
@@ -423,7 +431,7 @@
 
             <!-- Horizontal nav bar (visible only on lg+ when sidebar is hidden) -->
             <template x-if="!desktopSidebar">
-                <div class="hidden lg:block bg-white border-b border-gray-200 shadow-sm sticky top-16 z-40">
+                <div class="hidden lg:block bg-white border-b border-gray-200 shadow-sm sticky top-14 z-40">
                     {% include "includes/navbar_horizontal.html" %}
                 </div>
             </template>

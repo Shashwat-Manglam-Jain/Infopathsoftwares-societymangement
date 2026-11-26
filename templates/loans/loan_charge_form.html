@@ -4,12 +4,12 @@
 {% block page_title %}{% trans "Add Loan Charge" %}{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl">
+<div class="w-full">
 
     <form method="post">
         {% csrf_token %}
 
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
             <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
                 <div class="md:col-span-2">
                     <label class="block text-xs font-medium text-gray-500 mb-0.5">Loan Account <span class="text-red-500">*</span></label>
@@ -40,9 +40,9 @@
                 </div>
             </div>
 
-            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-end gap-3">
+            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex flex-wrap items-center justify-end gap-3">
                 <a href="{% url 'loans:loan_charge_list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
-                <button type="submit" class="px-5 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700"
+                <button type="submit" class="px-5 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700"
                         onclick="return confirm('Add this charge? This will increase the outstanding principal.')">Add Charge</button>
             </div>
         </div>

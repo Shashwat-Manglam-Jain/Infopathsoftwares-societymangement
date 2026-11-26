@@ -267,6 +267,14 @@ def loan_apply(request):
             branch=request.current_branch,
         )
 
+    from apps.accounting.models import ChartOfAccounts, InterestMaster
+
+    loan_heads = ChartOfAccounts.objects.filter(related_table_name='loan', is_active=True)
+    loan_head = loan_heads.first()
+    has_interest_slabs = False
+    if loan_head:
+        has_interest_slabs = InterestMaster.objects.filter(account_head=loan_head, is_active=True).exists()
+
     return render(
         request,
         'loans/apply.html',
@@ -274,6 +282,8 @@ def loan_apply(request):
             'form': form,
             'guarantor_formset': guarantor_formset,
             'products_json': products_json,
+            'has_interest_slabs': has_interest_slabs,
+            'loan_head_id': loan_head.pk if loan_head else '',
         },
     )
 

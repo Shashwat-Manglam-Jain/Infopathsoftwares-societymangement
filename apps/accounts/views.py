@@ -60,6 +60,7 @@ def change_password_view(request):
 
 @manager_required
 def staff_list(request):
+    from django.core.paginator import Paginator
     from django.db.models import Q
 
     users = CustomUser.objects.select_related('branch').order_by('username')
@@ -73,7 +74,9 @@ def staff_list(request):
     role_filter = request.GET.get('role', '')
     if role_filter:
         users = users.filter(role=role_filter)
-    return render(request, 'accounts/staff_list.html', {'users': users, 'role_filter': role_filter})
+    paginator = Paginator(users, 50)
+    page = paginator.get_page(request.GET.get('page'))
+    return render(request, 'accounts/staff_list.html', {'users': page, 'role_filter': role_filter})
 
 
 @admin_required

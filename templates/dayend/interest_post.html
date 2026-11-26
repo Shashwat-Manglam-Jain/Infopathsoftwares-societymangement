@@ -9,7 +9,7 @@
 
     <!-- Posting Results (shown after POST) -->
     {% if results %}
-    <div class="bg-white rounded-lg shadow-sm border border-green-200 overflow-hidden mb-4">
+    <div class="bg-white rounded-xl shadow-sm border border-green-200 overflow-hidden mb-4">
         <div class="px-5 py-3 border-b border-green-200 bg-green-50 flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <svg class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -52,11 +52,11 @@
     <!-- Summary -->
     {% if summary %}
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-4 py-3">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 px-4 py-3">
             <span class="text-xs font-medium text-gray-500">{% trans "Accounts" %} with Accrued Interest</span>
             <p class="text-lg font-bold text-gray-800">{{ summary.total_accounts }}</p>
         </div>
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-4 py-3">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 px-4 py-3">
             <span class="text-xs font-medium text-gray-500">Total Accrued Interest</span>
             <p class="text-lg font-bold text-indigo-700">₹{{ summary.total_accrued|floatformat:2 }}</p>
         </div>
@@ -64,7 +64,7 @@
     {% endif %}
 
     <!-- Post Form -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
         <form method="post">
             {% csrf_token %}
             <div class="px-5 py-4 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
@@ -74,18 +74,18 @@
                            class="w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
                 </div>
                 <div class="flex items-end">
-                    <button type="submit" class="w-full px-3 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded hover:bg-indigo-700"
+                    <button type="submit" class="w-full px-3 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700"
                             onclick="return confirm('Post accrued interest to {{ summary.total_accounts }} accounts for ₹{{ summary.total_accrued|floatformat:2 }}?\n\nThis will:\n• Credit interest to account balances\n• Create journal entries (DR Interest Expense / CR Account)\n\nThis action cannot be undone.')">Post Interest</button>
                 </div>
             </div>
-            <div class="px-5 py-2 bg-gray-50 border-t border-gray-200 rounded-b-lg flex justify-start">
+            <div class="px-5 py-2 bg-gray-50 border-t border-gray-200 rounded-b-xl flex justify-start">
                 <a href="{% url 'dayend:interest_calculate' %}" class="text-sm text-teal-600 hover:underline font-medium">&larr; {% trans "Interest Calculation" %}</a>
             </div>
         </form>
     </div>
 
     <!-- Pending Accounts Table -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mt-4">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-4">
         <div class="px-5 py-3 border-b border-gray-200">
             <p class="text-xs font-semibold text-gray-500 uppercase">{% trans "Accounts" %} Pending Interest Posting</p>
         </div>
@@ -129,7 +129,7 @@
 
     {% elif not results %}
     <!-- No pending accounts — show status + history -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-5 py-6 text-center mb-4">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 px-5 py-6 text-center mb-4">
         <svg class="mx-auto h-10 w-10 text-green-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         <p class="text-sm font-medium text-gray-700">All interest has been posted. No pending accounts.</p>
         <a href="{% url 'dayend:interest_calculate' %}" class="mt-2 inline-block text-sm text-primary-600 hover:underline">Calculate interest first &rarr;</a>
@@ -138,7 +138,7 @@
 
     <!-- Recent Posting History -->
     {% if recent_postings %}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mt-4">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-4">
         <div class="px-5 py-3 border-b border-gray-200 flex items-center justify-between">
             <p class="text-xs font-semibold text-gray-500 uppercase">Recent Interest Postings</p>
             <div class="flex items-center gap-3">
@@ -147,7 +147,7 @@
                 <form method="post" action="{% url 'dayend:rollback_all_interest_postings' %}" class="inline"
                       onsubmit="return confirm('Rollback ALL {{ today_posting_count }} interest posting(s) for today?\nTotal: ₹{{ today_posting_total|floatformat:2 }}\n\nThis will reverse all journal entries and restore account balances.');">
                     {% csrf_token %}
-                    <button type="submit" class="px-3 py-1 bg-red-600 text-white text-xs font-medium rounded hover:bg-red-700">Rollback All ({{ today_posting_count }})</button>
+                    <button type="submit" class="px-3 py-1 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700">Rollback All ({{ today_posting_count }})</button>
                 </form>
                 {% endif %}
             </div>
@@ -175,7 +175,7 @@
                             <form method="post" action="{% url 'dayend:rollback_interest_posting' p.id %}" class="inline"
                                   onsubmit="return confirm('Rollback interest posting {{ p.voucher_no }} for ₹{{ p.amount|floatformat:2 }}?\n\nThis will reverse the journal entry and restore account balances.');">
                                 {% csrf_token %}
-                                <button type="submit" class="px-2 py-1 bg-red-600 text-white text-xs font-medium rounded hover:bg-red-700">Rollback</button>
+                                <button type="submit" class="px-2 py-1 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700">Rollback</button>
                             </form>
                             {% else %}
                             <span class="text-xs text-gray-400">—</span>

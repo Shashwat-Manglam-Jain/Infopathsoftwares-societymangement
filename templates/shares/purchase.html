@@ -4,27 +4,31 @@
 {% block page_title %}{% trans "Shares Module" %}{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto" x-data="shareForm()">
+<div class="w-full" x-data="shareForm()">
 
     {% if config %}
-    <div class="rounded-lg bg-blue-50 border border-blue-200 p-4 mb-4">
-        <div class="flex items-start gap-2">
-            <svg class="h-5 w-5 text-blue-500 mt-0.5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
-            <div class="text-sm text-blue-800">
-                <p class="font-medium mb-1">Share Configuration</p>
-                <div class="flex flex-wrap gap-x-6 gap-y-1 text-blue-700">
-                    <span>Face Value: <strong>₹{{ config.face_value_per_share }}</strong>/share</span>
-                    <span>Min Required: <strong>{{ config.min_shares_required }}</strong></span>
-                    <span>Max Allowed: <strong>{{ config.max_shares_per_member }}</strong></span>
-                </div>
+    <div class="rounded-xl bg-blue-50 border border-blue-200 p-4 mb-4 flex items-start gap-2" x-data="{ show: true }" x-show="show" x-transition.opacity.duration.200ms>
+        <svg class="h-5 w-5 text-blue-500 mt-0.5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+        <div class="flex-1 text-sm text-blue-800">
+            <p class="font-medium mb-1">{% trans "Share Configuration" %}</p>
+            <div class="flex flex-wrap gap-x-6 gap-y-1 text-blue-700">
+                <span>{% trans "Face Value" %}: <strong>₹{{ config.face_value_per_share }}</strong>/{% trans "share" %}</span>
+                <span>{% trans "Min Required" %}: <strong>{{ config.min_shares_required }}</strong></span>
+                <span>{% trans "Max Allowed" %}: <strong>{{ config.max_shares_per_member }}</strong></span>
             </div>
         </div>
+        <button @click="show = false" class="text-blue-400 hover:text-blue-600 shrink-0 p-0.5">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
     </div>
     {% endif %}
 
     {% if form.errors %}
-    <div class="rounded-lg bg-red-50 border border-red-200 p-3 mb-4">
-        <h3 class="text-sm font-medium text-red-800">{% trans "Please correct the errors below" %}</h3>
+    <div class="rounded-xl bg-red-50 border border-red-200 p-3 mb-4">
+        <h3 class="text-sm font-medium text-red-800 flex items-center gap-2">
+            <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+            {% trans "Please correct the errors below" %}
+        </h3>
         <ul class="mt-1 text-sm text-red-700 list-disc list-inside">
             {% for field, errors in form.errors.items %}
                 {% for e in errors %}<li>{{ field|title }}: {{ e }}</li>{% endfor %}
@@ -36,12 +40,15 @@
     <form method="post">
         {% csrf_token %}
 
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-lg">
-                <h3 class="text-sm font-semibold text-gray-700">{% trans "Purchase Shares" %}</h3>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-xl">
+                <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    {% trans "Purchase Shares" %}
+                </h3>
             </div>
 
-            <div class="px-5 py-4 space-y-4">
+            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Member" %} <span class="text-red-500">*</span></label>
                     {{ form.member }}
@@ -55,14 +62,14 @@
                 </div>
 
                 {% if config %}
-                <div class="rounded-lg bg-gray-50 border border-gray-200 p-4" x-show="count > 0" x-cloak>
-                    <div class="grid grid-cols-2 gap-4 text-sm">
+                <div class="md:col-span-2 rounded-lg bg-gray-50 border border-gray-200 p-4" x-show="count > 0" x-cloak>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                         <div>
-                            <span class="text-gray-500">Shares</span>
+                            <span class="text-gray-500">{% trans "Shares" %}</span>
                             <p class="text-lg font-semibold text-gray-900" x-text="count"></p>
                         </div>
                         <div>
-                            <span class="text-gray-500">Total Amount</span>
+                            <span class="text-gray-500">{% trans "Total Amount" %}</span>
                             <p class="text-lg font-semibold text-green-700">₹<span x-text="(count * {{ config.face_value_per_share }}).toLocaleString('en-IN', {minimumFractionDigits: 2})"></span></p>
                         </div>
                     </div>
@@ -70,9 +77,9 @@
                 {% endif %}
             </div>
 
-            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-lg flex items-center justify-end gap-3">
-                <a href="{% url 'shares:list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</a>
-                <button type="submit" class="px-5 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm">Purchase Shares</button>
+            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex flex-wrap items-center justify-end gap-3">
+                <a href="{% url 'shares:list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
+                <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm">{% trans "Purchase Shares" %}</button>
             </div>
         </div>
     </form>

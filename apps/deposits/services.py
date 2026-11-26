@@ -159,6 +159,8 @@ def mature_fd(fd, user):
 def premature_close_fd(fd, user):
     if fd.status != 'active':
         raise ValueError('FD is not active')
+    if fd.loan_against:
+        raise ValueError('Cannot close FD — it is pledged as collateral for a loan')
 
     with transaction.atomic():
         from apps.deposits.models import FixedDeposit
@@ -262,7 +264,7 @@ def create_rd(
         rd_no = _generate_rd_no(branch)
         rd = RecurringDeposit.objects.create(
             member=member,
-            rd_product=None,
+            rd_product=rd_product,
             branch=branch,
             rd_no=rd_no,
             monthly_installment=monthly_installment,

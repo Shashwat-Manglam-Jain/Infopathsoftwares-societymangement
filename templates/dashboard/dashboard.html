@@ -22,7 +22,7 @@
     {% else %}
 
     {% if working_day %}
-    <div class="flex items-center justify-between bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+    <div class="flex items-center justify-between flex-wrap gap-3 bg-white rounded-xl border border-gray-200 shadow-sm p-4">
         <div class="flex items-center gap-3">
             <div class="w-3 h-3 rounded-full {% if working_day.is_day_open %}bg-green-500 animate-pulse{% else %}bg-gray-400{% endif %}"></div>
             <div>
@@ -33,7 +33,7 @@
         <a href="{% url 'dayend:index' %}" class="px-3 py-1.5 text-xs font-medium text-primary-600 bg-primary-50 rounded-lg hover:bg-primary-100">{% trans "Day Operations" %}</a>
     </div>
     {% if not working_day.is_day_open %}
-    <div class="bg-amber-50 rounded-lg border border-amber-200 p-4 flex items-center justify-between">
+    <div class="bg-amber-50 rounded-lg border border-amber-200 p-4 flex items-center justify-between flex-wrap gap-3">
         <div class="flex items-center gap-3">
             <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
                 <svg class="h-4 w-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
@@ -47,7 +47,7 @@
     </div>
     {% endif %}
     {% else %}
-    <div class="bg-red-50 rounded-lg border border-red-200 p-4 flex items-center justify-between">
+    <div class="bg-red-50 rounded-lg border border-red-200 p-4 flex items-center justify-between flex-wrap gap-3">
         <div class="flex items-center gap-3">
             <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
                 <svg class="h-4 w-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -64,7 +64,7 @@
     {% if not setup_progress.all_done %}
     <!-- Setup Progress -->
     <div class="bg-gradient-to-r from-primary-50 to-indigo-50 rounded-xl shadow-sm border border-primary-100 p-5">
-        <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
             <div class="flex items-center gap-2">
                 <div class="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center">
                     <svg class="h-4 w-4 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>

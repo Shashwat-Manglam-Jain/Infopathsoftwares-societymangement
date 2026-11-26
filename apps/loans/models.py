@@ -180,6 +180,7 @@ class LoanAccount(models.Model):
         help_text='FD/Pigmmy account number used as mortgage',
     )
     mortgage_value = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+    loan_document = models.CharField(max_length=256, blank=True, help_text='Loan agreement / document reference')
     notice_issued = models.BooleanField(default=False)
     notice_date = models.DateField(null=True, blank=True)
     court_case = models.BooleanField(default=False)

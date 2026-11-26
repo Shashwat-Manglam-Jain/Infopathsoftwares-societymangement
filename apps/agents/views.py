@@ -459,15 +459,21 @@ def collection_detail(request, pk):
 
 @auditor_or_above
 def collection_posting_list(request):
+    from django.db.models import Q, Sum
+
+    from apps.accounting.models import JournalEntry
+
+    branch = request.current_branch
+    branch_filter = {}
+    if not request.user.can_access_all_branches and branch:
+        branch_filter['branch'] = branch
+
+    # --- Pending agent collections ---
     collections = (
-        AgentCollection.objects.filter(
-            status='submitted',
-        )
+        AgentCollection.objects.filter(status='submitted', **branch_filter)
         .select_related('agent__member', 'branch')
         .order_by('-collection_date')
     )
-    if not request.user.can_access_all_branches:
-        collections = collections.filter(branch=request.current_branch)
     agent_id = request.GET.get('agent')
     if agent_id:
         collections = collections.filter(agent_id=agent_id)
@@ -484,15 +490,12 @@ def collection_posting_list(request):
             .order_by('account__account_no')
         )
 
+    # --- Recently posted / rejected agent collections ---
     posted = (
-        AgentCollection.objects.filter(
-            status__in=['reconciled', 'discrepancy'],
-        )
+        AgentCollection.objects.filter(status__in=['reconciled', 'discrepancy'], **branch_filter)
         .select_related('agent__member', 'branch', 'reconciled_by')
         .order_by('-collection_date')
     )
-    if not request.user.can_access_all_branches:
-        posted = posted.filter(branch=request.current_branch)
     if agent_id:
         posted = posted.filter(agent_id=agent_id)
     posted = list(posted[:20])
@@ -512,9 +515,66 @@ def collection_posting_list(request):
 
     today_rollbackable = [c for c in posted if c.can_rollback]
 
-    agents = Agent.objects.filter(status='active').select_related('member')
-    if not request.user.can_access_all_branches:
-        agents = agents.filter(branch=request.current_branch)
+    agents = Agent.objects.filter(status='active', **branch_filter).select_related('member')
+
+    # --- All recent journal entries (unified transaction view) ---
+    entries = (
+        JournalEntry.objects.select_related('branch', 'created_by')
+        .annotate(amount=Sum('lines__debit_amount'))
+    )
+    if not request.user.can_access_all_branches and branch:
+        entries = entries.filter(branch=branch)
+
+    q = request.GET.get('q', '').strip()
+    if q:
+        entries = entries.filter(Q(voucher_no__icontains=q) | Q(narration__icontains=q))
+
+    from_date = request.GET.get('from_date', '')
+    to_date = request.GET.get('to_date', '')
+    if from_date:
+        entries = entries.filter(entry_date__gte=from_date)
+    if to_date:
+        entries = entries.filter(entry_date__lte=to_date)
+
+    voucher_type = request.GET.get('type', '')
+    if voucher_type in ('receipt', 'payment', 'journal', 'contra'):
+        entries = entries.filter(voucher_type=voucher_type)
+
+    source_filter = request.GET.get('source', '')
+    if source_filter == 'manual':
+        entries = entries.filter(reference_type='manual')
+    elif source_filter == 'agent':
+        entries = entries.filter(reference_type='pigmmy_collection')
+    elif source_filter == 'system':
+        entries = entries.exclude(reference_type__in=['manual', 'pigmmy_collection', 'modification'])
+
+    status_filter = request.GET.get('status', '')
+    if status_filter == 'posted':
+        entries = entries.filter(is_posted=True, is_reversed=False)
+    elif status_filter == 'reversed':
+        entries = entries.filter(is_reversed=True)
+
+    entries = entries.order_by('-entry_date', '-created_at')
+
+    # --- Summary stats (today) ---
+    today_entries = JournalEntry.objects.filter(
+        entry_date=today, is_posted=True, is_reversed=False, **branch_filter,
+    )
+    today_receipts = today_entries.filter(voucher_type='receipt').aggregate(
+        total=Sum('lines__debit_amount'),
+    )['total'] or Decimal('0')
+    today_payments = today_entries.filter(voucher_type='payment').aggregate(
+        total=Sum('lines__debit_amount'),
+    )['total'] or Decimal('0')
+    today_collections = today_entries.filter(reference_type='pigmmy_collection').aggregate(
+        total=Sum('lines__debit_amount'),
+    )['total'] or Decimal('0')
+    today_journal = today_entries.filter(voucher_type__in=['journal', 'contra']).aggregate(
+        total=Sum('lines__debit_amount'),
+    )['total'] or Decimal('0')
+
+    paginator = Paginator(entries, 25)
+    page_obj = paginator.get_page(request.GET.get('page'))
 
     return render(
         request,
@@ -525,6 +585,23 @@ def collection_posting_list(request):
             'agents': agents,
             'today_rollback_count': len(today_rollbackable),
             'today_rollback_total': sum(c.collected_amount for c in today_rollbackable),
+            # Unified transaction data
+            'entries': page_obj,
+            'page_obj': page_obj,
+            'is_paginated': page_obj.has_other_pages(),
+            'paginator': paginator,
+            'q': q,
+            'from_date': from_date,
+            'to_date': to_date,
+            'voucher_type': voucher_type,
+            'source_filter': source_filter,
+            'status_filter': status_filter,
+            # Summary stats
+            'today_receipts': today_receipts,
+            'today_payments': today_payments,
+            'today_collections': today_collections,
+            'today_journal': today_journal,
+            'today_total': today_receipts + today_payments + today_journal,
         },
     )
 
@@ -580,10 +657,16 @@ def collection_reject(request, pk):
 
                 journals = JournalEntry.objects.filter(
                     reference_type='pigmmy_collection',
-                    entry_date=collection.collection_date,
-                    narration__contains=collection.agent.agent_code,
+                    reference_id=collection.pk,
                     is_reversed=False,
                 )
+                if not journals.exists():
+                    journals = JournalEntry.objects.filter(
+                        reference_type='pigmmy_collection',
+                        entry_date=collection.collection_date,
+                        narration__contains=collection.agent.agent_code,
+                        is_reversed=False,
+                    )
                 for je in journals:
                     reverse_journal_entry(je, request.user)
 

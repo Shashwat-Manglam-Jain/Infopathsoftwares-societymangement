@@ -7,11 +7,11 @@
 <div class="space-y-4">
 
 
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         {% if request.user.is_cashier %}
         <div class="px-5 py-3 border-b border-gray-200 flex items-center justify-between">
             <h3 class="text-xs font-semibold text-gray-500 uppercase">All {% trans "Loan Charges" %}</h3>
-            <a href="{% url 'loans:loan_charge_create' %}" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700">+ Add Charge</a>
+            <a href="{% url 'loans:loan_charge_create' %}" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">+ Add Charge</a>
         </div>
         {% endif %}
         <div class="overflow-x-auto">

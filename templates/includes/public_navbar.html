@@ -35,7 +35,7 @@
                     </div>
                 </div>
 
-                <a href="/accounts/login/" data-main-link class="text-gray-600 hover:text-indigo-600 font-medium transition">{% trans "Login" %}</a>
+                <a href="/accounts/login/" data-main-link class="{% if active_page == 'login' %}text-indigo-600 font-semibold{% else %}text-gray-600 hover:text-indigo-600{% endif %} font-medium transition">{% trans "Login" %}</a>
                 <a href="/signup/" data-main-link class="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 font-medium transition shadow-sm">{% trans "Start Free Trial" %}</a>
             </div>
             <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-gray-100" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
@@ -46,7 +46,7 @@
     <div id="mobile-menu" class="hidden md:hidden border-t bg-white px-4 pb-4">
         <a href="/#features" data-main-link class="block py-2 text-gray-600 hover:text-indigo-600">{% trans "Features" %}</a>
         <a href="/#pricing" data-main-link class="block py-2 text-gray-600 hover:text-indigo-600">{% trans "Pricing" %}</a>
-        <a href="/accounts/login/" data-main-link class="block py-2 text-gray-600 hover:text-indigo-600">{% trans "Login" %}</a>
+        <a href="/accounts/login/" data-main-link class="block py-2 {% if active_page == 'login' %}text-indigo-600 font-semibold{% else %}text-gray-600 hover:text-indigo-600{% endif %}">{% trans "Login" %}</a>
         <!-- Mobile language switcher -->
         <div class="border-t mt-2 pt-2">
             <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">{% trans "Language" %}</p>
@@ -74,9 +74,11 @@ document.addEventListener('click', function(e) {
 });
 (function() {
     var parts = location.hostname.split('.');
-    if (parts.length > 2) {
-        var main = parts.slice(1).join('.');
-        var base = location.protocol + '//' + main;
+    var isSubdomain = parts.length > 2 || (parts.length === 2 && parts[parts.length - 1] === 'localhost');
+    if (isSubdomain) {
+        var main = parts.slice(1).join('.') || parts[parts.length - 1];
+        var port = location.port ? ':' + location.port : '';
+        var base = location.protocol + '//' + main + port;
         document.querySelectorAll('[data-main-link]').forEach(function(a) {
             a.href = base + a.getAttribute('href');
         });

@@ -6,6 +6,7 @@ from django.db import models
 from django.shortcuts import get_object_or_404, redirect, render
 
 from apps.accounting.models import ChartOfAccounts, InterestMaster
+from apps.core.date_utils import get_transaction_date
 from apps.accounts.permissions import (
     auditor_or_above,
     cashier_required,
@@ -91,7 +92,6 @@ def fd_create(request):
                     is_senior=form.cleaned_data.get('is_senior', False),
                     compounding=form.cleaned_data['compounding'],
                     tds_applicable=form.cleaned_data.get('tds_applicable', False),
-                    certificate_no=form.cleaned_data.get('certificate_no'),
                 )
                 messages.success(request, f'Fixed Deposit {fd.fd_no} created successfully.')
                 return redirect('deposits:fd_detail', pk=fd.pk)
@@ -100,6 +100,7 @@ def fd_create(request):
     else:
         form = FDCreateForm()
 
+    txn_date = get_transaction_date(request.current_branch)
     return render(
         request,
         'deposits/fd_create.html',
@@ -108,6 +109,7 @@ def fd_create(request):
             'members': members,
             'slabs_json': slabs_json,
             'head_id': fd_head.pk if fd_head else '',
+            'txn_date': txn_date,
         },
     )
 
@@ -246,6 +248,7 @@ def rd_create(request):
     else:
         form = RDCreateForm()
 
+    txn_date = get_transaction_date(request.current_branch)
     return render(
         request,
         'deposits/rd_create.html',
@@ -254,6 +257,7 @@ def rd_create(request):
             'members': members,
             'slabs_json': slabs_json,
             'head_id': rd_head.pk if rd_head else '',
+            'txn_date': txn_date,
         },
     )
 

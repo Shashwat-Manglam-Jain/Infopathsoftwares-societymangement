@@ -1,5 +1,4 @@
 import calendar
-from datetime import timedelta
 from decimal import ROUND_HALF_UP, Decimal
 
 from django.db import transaction
@@ -97,21 +96,18 @@ def post_interest(account, from_date, to_date, user):
     if account.status != 'active':
         raise ValueError('Account is not active')
 
-    total_interest = Decimal('0.00')
-    current_date = from_date
-    while current_date <= to_date:
-        total_interest += calculate_daily_interest(account, current_date)
-        current_date += timedelta(days=1)
-
-    total_interest = total_interest.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
-    if total_interest <= 0:
-        return None
-
     with transaction.atomic():
         account = SavingsAccount.objects.select_for_update().get(pk=account.pk)
+        total_interest = (account.accrued_interest or Decimal('0')).quantize(
+            Decimal('0.01'), rounding=ROUND_HALF_UP
+        )
+        if total_interest <= 0:
+            return None
+
         account.current_balance += total_interest
+        account.accrued_interest = Decimal('0')
         account.last_interest_posted_date = to_date
-        account.save(update_fields=['current_balance', 'last_interest_posted_date', 'updated_at'])
+        account.save(update_fields=['current_balance', 'accrued_interest', 'last_interest_posted_date', 'updated_at'])
 
         txn = AccountTransaction.objects.create(
             account=account,
