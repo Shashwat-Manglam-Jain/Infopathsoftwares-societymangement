@@ -6,7 +6,6 @@ from django.db import models
 from django.shortcuts import get_object_or_404, redirect, render
 
 from apps.accounting.models import ChartOfAccounts, InterestMaster
-from apps.core.date_utils import get_transaction_date
 from apps.accounts.permissions import (
     auditor_or_above,
     cashier_required,
@@ -14,6 +13,7 @@ from apps.accounts.permissions import (
     has_branch_access,
     manager_required,
 )
+from apps.core.date_utils import get_transaction_date
 
 from .models import FixedDeposit, RDInstallment, RecurringDeposit
 

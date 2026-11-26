@@ -389,12 +389,11 @@ def _classify_npa_category(days_overdue):
     """RBI NPA classification based on days overdue past threshold."""
     if days_overdue < 365:
         return 'sub_standard', Decimal('10')
-    elif days_overdue < 730:
+    if days_overdue < 730:
         return 'doubtful_1', Decimal('20')
-    elif days_overdue < 1095:
+    if days_overdue < 1095:
         return 'doubtful_2', Decimal('30')
-    else:
-        return 'doubtful_3', Decimal('100')
+    return 'doubtful_3', Decimal('100')
 
 
 def _mark_npa_loans(branch, processing_date):
