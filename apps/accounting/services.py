@@ -501,5 +501,3 @@ def generate_voucher_no(voucher_type, branch):
     else:
         seq = 1
     return f'{prefix}/{seq:06d}'
-
-

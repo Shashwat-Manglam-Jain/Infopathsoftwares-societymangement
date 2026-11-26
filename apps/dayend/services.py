@@ -426,12 +426,16 @@ def _mark_npa_loans(branch, processing_date):
                 category, provision_pct = _classify_npa_category(days_overdue)
                 loan.npa_category = category
                 loan.npa_provision_percent = provision_pct
-                loan.npa_provision_amount = (
-                    loan.outstanding_principal * provision_pct / Decimal('100')
-                ).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
-                update_fields.extend([
-                    'npa_category', 'npa_provision_percent', 'npa_provision_amount',
-                ])
+                loan.npa_provision_amount = (loan.outstanding_principal * provision_pct / Decimal('100')).quantize(
+                    Decimal('0.01'), rounding=ROUND_HALF_UP
+                )
+                update_fields.extend(
+                    [
+                        'npa_category',
+                        'npa_provision_percent',
+                        'npa_provision_amount',
+                    ]
+                )
             loan.save(update_fields=list(set(update_fields)))
     return count
 

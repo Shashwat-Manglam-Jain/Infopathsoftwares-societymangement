@@ -162,8 +162,7 @@ class BeginDayView(AccountantRequiredMixin, View):
         if not (fy.start_date <= working_date <= fy.end_date):
             messages.error(
                 request,
-                f'Date {working_date} is outside the current financial year '
-                f'({fy.start_date} to {fy.end_date}).',
+                f'Date {working_date} is outside the current financial year ({fy.start_date} to {fy.end_date}).',
             )
             return redirect('dayend:index')
 

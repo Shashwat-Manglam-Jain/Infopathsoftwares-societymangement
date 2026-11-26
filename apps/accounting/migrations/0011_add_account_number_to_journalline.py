@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('accounting', '0010_voucher_approval_workflow'),
     ]
@@ -13,6 +12,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='journalline',
             name='account_number',
-            field=models.CharField(blank=True, help_text='Personal account no for deferred balance update on posting', max_length=20),
+            field=models.CharField(
+                blank=True, help_text='Personal account no for deferred balance update on posting', max_length=20
+            ),
         ),
     ]

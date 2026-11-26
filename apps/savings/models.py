@@ -133,16 +133,24 @@ class SavingsAccount(models.Model):
         if self.status == 'active' and (self.gl_head_id or self.account_type):
             if self.gl_head_id:
                 qs = SavingsAccount.objects.filter(
-                    member=self.member, gl_head=self.gl_head, status='active',
+                    member=self.member,
+                    gl_head=self.gl_head,
+                    status='active',
                 )
             else:
                 qs = SavingsAccount.objects.filter(
-                    member=self.member, account_type=self.account_type, status='active',
+                    member=self.member,
+                    account_type=self.account_type,
+                    status='active',
                 )
             if self.pk:
                 qs = qs.exclude(pk=self.pk)
             if qs.exists():
-                label = self.gl_head.name if self.gl_head_id else dict(self.ACCOUNT_TYPE_CHOICES).get(self.account_type, self.account_type)
+                label = (
+                    self.gl_head.name
+                    if self.gl_head_id
+                    else dict(self.ACCOUNT_TYPE_CHOICES).get(self.account_type, self.account_type)
+                )
                 raise ValidationError(f'Member already has an active {label}.')
 
 

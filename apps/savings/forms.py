@@ -11,10 +11,13 @@ def _get_leaf_heads(related_types):
     """Return children of heads with matching related_table_name.
     Falls back to the parent heads themselves if no children exist."""
     parents = ChartOfAccounts.objects.filter(
-        related_table_name__in=related_types, is_active=True,
+        related_table_name__in=related_types,
+        is_active=True,
     )
     children = ChartOfAccounts.objects.filter(
-        parent__in=parents, allow_transactions=True, is_active=True,
+        parent__in=parents,
+        allow_transactions=True,
+        is_active=True,
     )
     if children.exists():
         return children.order_by('display_order', 'name')
@@ -84,7 +87,9 @@ class SavingsAccountForm(forms.ModelForm):
             if self.instance.pk:
                 qs = qs.exclude(pk=self.instance.pk)
             if qs.exists():
-                raise forms.ValidationError(f'Member already has an active {gl_head.name}. Only one per member is allowed.')
+                raise forms.ValidationError(
+                    f'Member already has an active {gl_head.name}. Only one per member is allowed.'
+                )
         return cleaned_data
 
 

@@ -34,7 +34,8 @@ def _save_kyc_documents(request, member):
         f = request.FILES.get(field_name)
         if f:
             MemberDocument.objects.update_or_create(
-                member=member, document_type=doc_type,
+                member=member,
+                document_type=doc_type,
                 defaults={'file': f},
             )
 
@@ -86,10 +87,14 @@ GENDER_MAP = {
 class MemberImportView(ManagerRequiredMixin, View):
     def get(self, request):
         branches = Branch.objects.filter(status='active')
-        return render(request, 'members/member_import.html', {
-            'branches': branches,
-            'current_branch': getattr(request, 'current_branch', None),
-        })
+        return render(
+            request,
+            'members/member_import.html',
+            {
+                'branches': branches,
+                'current_branch': getattr(request, 'current_branch', None),
+            },
+        )
 
     def post(self, request):
         file = request.FILES.get('file')

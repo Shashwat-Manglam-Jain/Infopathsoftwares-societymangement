@@ -104,6 +104,7 @@ def savings_create(request):
     if account_type:
         related = _ACCOUNT_TYPE_MAP.get(account_type, account_type)
         from .forms import _get_leaf_heads
+
         form.fields['gl_head'].queryset = _get_leaf_heads((related,))
 
     if branch:
@@ -151,7 +152,9 @@ def savings_detail(request, pk):
         messages.error(request, 'You do not have access to this account.')
         return redirect('savings:list')
 
-    transactions = account.transactions.select_related('reversal_of', 'created_by').order_by('-txn_date', '-created_at')[:20]
+    transactions = account.transactions.select_related('reversal_of', 'created_by').order_by(
+        '-txn_date', '-created_at'
+    )[:20]
     context = {
         'account': account,
         'transactions': transactions,
@@ -378,15 +381,27 @@ def member_savings_api(request):
     member_id = request.GET.get('member_id', '')
     if not member_id:
         return JsonResponse({'accounts': []})
-    accounts = SavingsAccount.objects.filter(
-        member_id=member_id, status='active',
-    ).select_related('gl_head').order_by('account_no')
-    return JsonResponse({
-        'accounts': [
-            {'id': a.pk, 'account_no': a.account_no, 'type': a.get_account_type_display(), 'balance': str(a.current_balance)}
-            for a in accounts
-        ]
-    })
+    accounts = (
+        SavingsAccount.objects.filter(
+            member_id=member_id,
+            status='active',
+        )
+        .select_related('gl_head')
+        .order_by('account_no')
+    )
+    return JsonResponse(
+        {
+            'accounts': [
+                {
+                    'id': a.pk,
+                    'account_no': a.account_no,
+                    'type': a.get_account_type_display(),
+                    'balance': str(a.current_balance),
+                }
+                for a in accounts
+            ]
+        }
+    )
 
 
 @login_required
@@ -405,9 +420,7 @@ def account_type_rate_api(request):
         type_map = {'savings': 'saving', 'current': 'current', 'security': 'security'}
         related = type_map.get(account_type, '')
         if related:
-            head = ChartOfAccounts.objects.filter(
-                related_table_name=related, is_active=True
-            ).first()
+            head = ChartOfAccounts.objects.filter(related_table_name=related, is_active=True).first()
 
     if head:
         head_id = head.pk

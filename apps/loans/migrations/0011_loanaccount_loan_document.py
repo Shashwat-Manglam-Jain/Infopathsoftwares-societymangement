@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('loans', '0010_add_gl_head_to_loanproduct'),
     ]

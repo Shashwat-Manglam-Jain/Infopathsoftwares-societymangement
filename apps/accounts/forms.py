@@ -43,7 +43,9 @@ class CustomUserCreationForm(UserCreationForm):
             'email': forms.EmailInput(attrs={'class': _tw_input}),
             'phone': forms.TextInput(attrs={'class': _tw_input}),
             'pan_no': forms.TextInput(attrs={'class': _tw_input, 'placeholder': 'ABCDE1234F', 'maxlength': '10'}),
-            'aadhar_no': forms.TextInput(attrs={'class': _tw_input, 'placeholder': '1234 5678 9012', 'maxlength': '12'}),
+            'aadhar_no': forms.TextInput(
+                attrs={'class': _tw_input, 'placeholder': '1234 5678 9012', 'maxlength': '12'}
+            ),
             'role': forms.Select(attrs={'class': _tw_input}),
             'branch': forms.Select(attrs={'class': _tw_input}),
         }
@@ -95,7 +97,9 @@ class CustomUserChangeForm(UserChangeForm):
             'email': forms.EmailInput(attrs={'class': _tw_input}),
             'phone': forms.TextInput(attrs={'class': _tw_input}),
             'pan_no': forms.TextInput(attrs={'class': _tw_input, 'placeholder': 'ABCDE1234F', 'maxlength': '10'}),
-            'aadhar_no': forms.TextInput(attrs={'class': _tw_input, 'placeholder': '1234 5678 9012', 'maxlength': '12'}),
+            'aadhar_no': forms.TextInput(
+                attrs={'class': _tw_input, 'placeholder': '1234 5678 9012', 'maxlength': '12'}
+            ),
             'role': forms.Select(attrs={'class': _tw_input}),
             'branch': forms.Select(attrs={'class': _tw_input}),
         }
@@ -137,13 +141,25 @@ class CustomUserChangeForm(UserChangeForm):
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'email', 'phone', 'pan_no', 'aadhar_no', 'profile_photo',
-                  'id_proof_doc', 'address_proof_doc', 'other_doc']
+        fields = [
+            'first_name',
+            'last_name',
+            'email',
+            'phone',
+            'pan_no',
+            'aadhar_no',
+            'profile_photo',
+            'id_proof_doc',
+            'address_proof_doc',
+            'other_doc',
+        ]
         widgets = {
             'first_name': forms.TextInput(attrs={'class': _tw_input}),
             'last_name': forms.TextInput(attrs={'class': _tw_input}),
             'email': forms.EmailInput(attrs={'class': _tw_input}),
             'phone': forms.TextInput(attrs={'class': _tw_input}),
             'pan_no': forms.TextInput(attrs={'class': _tw_input, 'placeholder': 'ABCDE1234F', 'maxlength': '10'}),
-            'aadhar_no': forms.TextInput(attrs={'class': _tw_input, 'placeholder': '1234 5678 9012', 'maxlength': '12'}),
+            'aadhar_no': forms.TextInput(
+                attrs={'class': _tw_input, 'placeholder': '1234 5678 9012', 'maxlength': '12'}
+            ),
         }

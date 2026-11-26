@@ -98,9 +98,7 @@ def post_interest(account, from_date, to_date, user):
 
     with transaction.atomic():
         account = SavingsAccount.objects.select_for_update().get(pk=account.pk)
-        total_interest = (account.accrued_interest or Decimal('0')).quantize(
-            Decimal('0.01'), rounding=ROUND_HALF_UP
-        )
+        total_interest = (account.accrued_interest or Decimal('0')).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
         if total_interest <= 0:
             return None
 

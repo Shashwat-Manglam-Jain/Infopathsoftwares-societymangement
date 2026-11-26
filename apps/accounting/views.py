@@ -139,7 +139,9 @@ def voucher_batch_post(request):
         from apps.accounting.services import post_journal_entry
 
         qs = JournalEntry.objects.filter(
-            is_posted=False, is_reversed=False, is_rejected=False,
+            is_posted=False,
+            is_reversed=False,
+            is_rejected=False,
         ).prefetch_related('lines__gl_account')
         if not request.user.can_access_all_branches:
             qs = qs.filter(branch=request.current_branch)
@@ -385,9 +387,25 @@ def _process_transaction(request, txn_type, heads):
 
         acct_no = account_number if account_number and head.related_table_name in CUSTOMER_ACCOUNT_TYPES else ''
         if txn_type == 'receipt':
-            lines.append({'account_code': head.code, 'debit': Decimal('0'), 'credit': amount, 'narration': desc, 'account_number': acct_no})
+            lines.append(
+                {
+                    'account_code': head.code,
+                    'debit': Decimal('0'),
+                    'credit': amount,
+                    'narration': desc,
+                    'account_number': acct_no,
+                }
+            )
         else:
-            lines.append({'account_code': head.code, 'debit': amount, 'credit': Decimal('0'), 'narration': desc, 'account_number': acct_no})
+            lines.append(
+                {
+                    'account_code': head.code,
+                    'debit': amount,
+                    'credit': Decimal('0'),
+                    'narration': desc,
+                    'account_number': acct_no,
+                }
+            )
         total_amount += amount
 
     if not lines:
@@ -1155,9 +1173,13 @@ def voucher_cancel(request, pk):
                 reversal = reverse_journal_entry(entry, request.user)
                 if entry.voucher_type in ('receipt', 'payment') and cancel_amount > 0:
                     if entry.voucher_type == 'receipt':
-                        update_cashbook(branch, entry.entry_date, payment_amount=cancel_amount, payment_mode=entry.payment_mode)
+                        update_cashbook(
+                            branch, entry.entry_date, payment_amount=cancel_amount, payment_mode=entry.payment_mode
+                        )
                     else:
-                        update_cashbook(branch, entry.entry_date, receipt_amount=cancel_amount, payment_mode=entry.payment_mode)
+                        update_cashbook(
+                            branch, entry.entry_date, receipt_amount=cancel_amount, payment_mode=entry.payment_mode
+                        )
                 _reverse_personal_accounts(entry, reversal, request.user)
             messages.success(request, f'Voucher {entry.voucher_no} cancelled. Reversal: {reversal.voucher_no}')
         except ValueError as e:
@@ -1230,5 +1252,3 @@ def account_search(request):
         results = [{'number': a.rd_no, 'name': a.member.name, 'balance': str(a.monthly_installment)} for a in qs]
 
     return JsonResponse({'results': results})
-
-

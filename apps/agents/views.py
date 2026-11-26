@@ -518,10 +518,7 @@ def collection_posting_list(request):
     agents = Agent.objects.filter(status='active', **branch_filter).select_related('member')
 
     # --- All recent journal entries (unified transaction view) ---
-    entries = (
-        JournalEntry.objects.select_related('branch', 'created_by')
-        .annotate(amount=Sum('lines__debit_amount'))
-    )
+    entries = JournalEntry.objects.select_related('branch', 'created_by').annotate(amount=Sum('lines__debit_amount'))
     if not request.user.can_access_all_branches and branch:
         entries = entries.filter(branch=branch)
 
@@ -558,7 +555,10 @@ def collection_posting_list(request):
 
     # --- Summary stats (today) ---
     today_entries = JournalEntry.objects.filter(
-        entry_date=today, is_posted=True, is_reversed=False, **branch_filter,
+        entry_date=today,
+        is_posted=True,
+        is_reversed=False,
+        **branch_filter,
     )
     today_receipts = today_entries.filter(voucher_type='receipt').aggregate(
         total=Sum('lines__debit_amount'),

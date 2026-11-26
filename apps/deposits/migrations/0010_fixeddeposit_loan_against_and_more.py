@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('deposits', '0009_alter_fixeddeposit_status_alter_rdinstallment_status_and_more'),
     ]
@@ -13,11 +12,15 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='fixeddeposit',
             name='loan_against',
-            field=models.BooleanField(default=False, help_text='Whether this deposit is pledged as collateral for a loan'),
+            field=models.BooleanField(
+                default=False, help_text='Whether this deposit is pledged as collateral for a loan'
+            ),
         ),
         migrations.AddField(
             model_name='recurringdeposit',
             name='loan_against',
-            field=models.BooleanField(default=False, help_text='Whether this deposit is pledged as collateral for a loan'),
+            field=models.BooleanField(
+                default=False, help_text='Whether this deposit is pledged as collateral for a loan'
+            ),
         ),
     ]
