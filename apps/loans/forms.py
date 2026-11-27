@@ -159,7 +159,6 @@ class LoanApprovalForm(forms.Form):
     remarks = forms.CharField(required=False, widget=forms.Textarea(attrs={'class': tw, 'rows': 2}))
 
 
-
 class GuarantorForm(forms.ModelForm):
     class Meta:
         model = LoanGuarantor
