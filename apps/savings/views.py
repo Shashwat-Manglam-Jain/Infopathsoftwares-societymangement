@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import datetime
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -90,6 +90,7 @@ def savings_create(request):
             return redirect('savings:detail', pk=account.pk)
     else:
         from apps.core.date_utils import get_transaction_date
+
         initial = {'opening_date': get_transaction_date(request.current_branch).isoformat()}
         account_type = request.GET.get('type', '')
         if account_type:

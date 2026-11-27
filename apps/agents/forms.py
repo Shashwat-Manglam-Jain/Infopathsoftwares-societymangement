@@ -36,16 +36,20 @@ class AgentForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         branch_filter = {'branch': self._branch} if self._branch else {}
         members_with_savings = set(
-            SavingsAccount.objects.filter(status='active', account_type='savings', **branch_filter)
-            .values_list('member_id', flat=True)
+            SavingsAccount.objects.filter(status='active', account_type='savings', **branch_filter).values_list(
+                'member_id', flat=True
+            )
         )
         members_with_security = set(
-            SavingsAccount.objects.filter(status='active', account_type='security', **branch_filter)
-            .values_list('member_id', flat=True)
+            SavingsAccount.objects.filter(status='active', account_type='security', **branch_filter).values_list(
+                'member_id', flat=True
+            )
         )
         eligible_ids = members_with_savings & members_with_security
         self.fields['member'].queryset = Member.objects.filter(
-            status='active', id__in=eligible_ids, **branch_filter,
+            status='active',
+            id__in=eligible_ids,
+            **branch_filter,
         )
         self.fields['joining_date'].required = True
         self.fields['security_deposit_amount'].required = False
@@ -97,6 +101,7 @@ class PigmmyAccountForm(forms.Form):
             }
         ),
     )
+
     def __init__(self, *args, **kwargs):
         branch = kwargs.pop('branch', None)
         super().__init__(*args, **kwargs)

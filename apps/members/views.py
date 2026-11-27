@@ -1,6 +1,6 @@
 import csv
 import io
-from datetime import date, datetime
+from datetime import datetime
 
 from django.contrib import messages
 from django.core.paginator import Paginator
@@ -10,7 +10,6 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from openpyxl import Workbook, load_workbook
 
-from apps.core.date_utils import get_transaction_date
 from apps.accounts.permissions import (
     AuditorOrAboveMixin,
     ManagerRequiredMixin,
@@ -19,6 +18,7 @@ from apps.accounts.permissions import (
     staff_required,
 )
 from apps.branches.models import Branch
+from apps.core.date_utils import get_transaction_date
 
 from .models import Member, MemberDocument
 
@@ -48,9 +48,7 @@ def member_list(request):
     from apps.shares.models import ShareHolding
 
     members = Member.objects.select_related('branch').annotate(
-        is_shareholder=Exists(
-            ShareHolding.objects.filter(member=OuterRef('pk'), status='active', share_count__gt=0)
-        ),
+        is_shareholder=Exists(ShareHolding.objects.filter(member=OuterRef('pk'), status='active', share_count__gt=0)),
     )
     if not request.user.can_access_all_branches and request.current_branch:
         members = members.filter(branch=request.current_branch)
@@ -478,6 +476,7 @@ def member_create(request):
             return redirect('members:detail', pk=member.pk)
     else:
         from apps.core.date_utils import get_transaction_date
+
         initial = {
             'join_date': get_transaction_date(branch),
             'status': 'active',

@@ -49,10 +49,14 @@ def voucher_list(request):
     _ensure_coa_exists()
     from django.core.paginator import Paginator
 
-    entries = JournalEntry.objects.select_related('branch', 'created_by', 'approved_by').prefetch_related(
-        'lines__gl_account',
-    ).annotate(
-        amount=Sum('lines__debit_amount'),
+    entries = (
+        JournalEntry.objects.select_related('branch', 'created_by', 'approved_by')
+        .prefetch_related(
+            'lines__gl_account',
+        )
+        .annotate(
+            amount=Sum('lines__debit_amount'),
+        )
     )
     if not request.user.can_access_all_branches:
         entries = entries.filter(branch=request.current_branch)
@@ -85,7 +89,9 @@ def voucher_list(request):
     entries = entries.order_by('-entry_date', '-created_at')
 
     pending_count = JournalEntry.objects.filter(
-        is_posted=False, is_reversed=False, is_rejected=False,
+        is_posted=False,
+        is_reversed=False,
+        is_rejected=False,
     )
     if not request.user.can_access_all_branches:
         pending_count = pending_count.filter(branch=request.current_branch)
@@ -114,20 +120,26 @@ def voucher_list(request):
 @cashier_required
 def voucher_detail(request, pk):
     entry = get_object_or_404(
-        JournalEntry.objects.select_related('branch', 'created_by', 'approved_by').prefetch_related('lines__gl_account'),
+        JournalEntry.objects.select_related('branch', 'created_by', 'approved_by').prefetch_related(
+            'lines__gl_account'
+        ),
         pk=pk,
     )
     if not request.user.can_access_all_branches and not has_branch_access(request, entry.branch):
         messages.error(request, 'You do not have access to this voucher.')
         return redirect('accounting:vouchers')
     lines = entry.lines.all()
-    debit_total = sum(l.debit_amount or 0 for l in lines)
-    credit_total = sum(l.credit_amount or 0 for l in lines)
-    return render(request, 'accounting/voucher_detail.html', {
-        'entry': entry,
-        'debit_total': debit_total,
-        'credit_total': credit_total,
-    })
+    debit_total = sum(ln.debit_amount or 0 for ln in lines)
+    credit_total = sum(ln.credit_amount or 0 for ln in lines)
+    return render(
+        request,
+        'accounting/voucher_detail.html',
+        {
+            'entry': entry,
+            'debit_total': debit_total,
+            'credit_total': credit_total,
+        },
+    )
 
 
 @accountant_required
@@ -296,7 +308,6 @@ def _update_personal_account(head, account_number, amount, txn_type, entry_date,
             loan.save(update_fields=['outstanding_principal', 'updated_at'])
 
 
-
 def _reverse_personal_accounts(entry, reversal, user):
     """Reverse personal account balances when a receipt/payment voucher is cancelled."""
     from apps.savings.models import AccountTransaction, SavingsAccount
@@ -382,6 +393,7 @@ def _process_transaction(request, txn_type, heads):
         entry_date = date.fromisoformat(entry_date_str)
     except (ValueError, TypeError):
         from apps.core.date_utils import get_transaction_date
+
         entry_date = get_transaction_date(request.current_branch)
 
     if is_date_locked(request.current_branch, entry_date):
@@ -959,9 +971,15 @@ def interest_master_create(request):
         if head_id:
             initial['account_head'] = head_id
         form = InterestMasterForm(initial=initial)
-    return render(request, 'accounting/interest_master_form.html', {
-        'form': form, 'title': 'Create Interest Slab', 'next_url': next_url,
-    })
+    return render(
+        request,
+        'accounting/interest_master_form.html',
+        {
+            'form': form,
+            'title': 'Create Interest Slab',
+            'next_url': next_url,
+        },
+    )
 
 
 @auditor_or_above
@@ -1277,7 +1295,9 @@ def account_search(request):
         if q:
             q_filter = models.Q(loan_no__icontains=q) | models.Q(member__name__icontains=q)
         head_or_unset = models.Q(gl_head=head) | models.Q(gl_head__isnull=True)
-        qs = LoanAccount.objects.filter(head_or_unset, status='disbursed').filter(q_filter).select_related('member')[:20]
+        qs = (
+            LoanAccount.objects.filter(head_or_unset, status='disbursed').filter(q_filter).select_related('member')[:20]
+        )
         results = [{'number': a.loan_no, 'name': a.member.name, 'balance': str(a.outstanding_principal)} for a in qs]
 
     elif rt in ('agent', 'client'):
@@ -1301,7 +1321,11 @@ def account_search(request):
         if q:
             q_filter = models.Q(rd_no__icontains=q) | models.Q(member__name__icontains=q)
         head_or_unset = models.Q(gl_head=head) | models.Q(gl_head__isnull=True)
-        qs = RecurringDeposit.objects.filter(head_or_unset, status='active').filter(q_filter).select_related('member')[:20]
+        qs = (
+            RecurringDeposit.objects.filter(head_or_unset, status='active')
+            .filter(q_filter)
+            .select_related('member')[:20]
+        )
         results = [{'number': a.rd_no, 'name': a.member.name, 'balance': str(a.monthly_installment)} for a in qs]
 
     return JsonResponse({'results': results})

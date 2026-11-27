@@ -5,7 +5,6 @@ from django.core.paginator import Paginator
 from django.db import transaction as db_transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-
 from django.views import View
 
 from apps.accounts.permissions import (
@@ -64,6 +63,7 @@ def share_list(request):
 
             posted = 0
             from apps.core.date_utils import get_transaction_date
+
             today = get_transaction_date(request.current_branch)
             with db_transaction.atomic():
                 existing_dividend = (
@@ -196,11 +196,15 @@ def share_purchase(request):
 
     config = ShareConfig.objects.filter(is_active=True).first()
     total_shareholders = ShareHolding.objects.filter(status='active', share_count__gt=0).count()
-    return render(request, 'shares/purchase.html', {
-        'form': form,
-        'config': config,
-        'total_shareholders': total_shareholders,
-    })
+    return render(
+        request,
+        'shares/purchase.html',
+        {
+            'form': form,
+            'config': config,
+            'total_shareholders': total_shareholders,
+        },
+    )
 
 
 @cashier_required
@@ -212,14 +216,16 @@ def share_member_info(request, member_id):
     config = ShareConfig.objects.filter(is_active=True).first()
     max_allowed = config.max_shares_per_member if config else 0
     current = holding.share_count if holding else 0
-    return JsonResponse({
-        'name': member.name,
-        'member_no': member.member_no,
-        'current_shares': current,
-        'current_amount': float(holding.total_amount) if holding else 0,
-        'remaining_capacity': max(0, max_allowed - current),
-        'max_shares': max_allowed,
-    })
+    return JsonResponse(
+        {
+            'name': member.name,
+            'member_no': member.member_no,
+            'current_shares': current,
+            'current_amount': float(holding.total_amount) if holding else 0,
+            'remaining_capacity': max(0, max_allowed - current),
+            'max_shares': max_allowed,
+        }
+    )
 
 
 @manager_required
@@ -368,15 +374,22 @@ def share_config(request):
     from django.db.models import Sum
 
     total_shareholders = ShareHolding.objects.filter(status='active', share_count__gt=0).count()
-    total_shares_issued = ShareHolding.objects.filter(status='active').aggregate(
-        total=Sum('share_count'),
-    )['total'] or 0
+    total_shares_issued = (
+        ShareHolding.objects.filter(status='active').aggregate(
+            total=Sum('share_count'),
+        )['total']
+        or 0
+    )
     total_share_capital = ShareHolding.objects.filter(status='active').aggregate(
         total=Sum('total_amount'),
     )['total'] or Decimal('0')
-    return render(request, 'shares/config_form.html', {
-        'config': config,
-        'total_shareholders': total_shareholders,
-        'total_shares_issued': total_shares_issued,
-        'total_share_capital': total_share_capital,
-    })
+    return render(
+        request,
+        'shares/config_form.html',
+        {
+            'config': config,
+            'total_shareholders': total_shareholders,
+            'total_shares_issued': total_shares_issued,
+            'total_share_capital': total_share_capital,
+        },
+    )

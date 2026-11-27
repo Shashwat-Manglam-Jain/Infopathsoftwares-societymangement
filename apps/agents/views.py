@@ -9,7 +9,6 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from apps.accounting.models import ChartOfAccounts, InterestMaster
-from apps.core.date_utils import get_transaction_date
 from apps.accounts.permissions import (
     auditor_or_above,
     cashier_required,
@@ -17,6 +16,7 @@ from apps.accounts.permissions import (
     has_branch_access,
     manager_required,
 )
+from apps.core.date_utils import get_transaction_date
 from apps.savings.models import SavingsAccount
 
 from .forms import AgentForm, CollectionForm, PigmmyAccountForm, PigmmyEditForm
@@ -56,10 +56,16 @@ def agent_create(request):
             member = agent.member
             branch_filter = {'branch': branch} if branch else {}
             savings = SavingsAccount.objects.filter(
-                member=member, status='active', account_type='savings', **branch_filter,
+                member=member,
+                status='active',
+                account_type='savings',
+                **branch_filter,
             ).first()
             security = SavingsAccount.objects.filter(
-                member=member, status='active', account_type='security', **branch_filter,
+                member=member,
+                status='active',
+                account_type='security',
+                **branch_filter,
             ).first()
             if not savings:
                 messages.error(request, 'Selected member does not have an active savings account.')
@@ -196,7 +202,9 @@ def pigmmy_create(request):
                     deposit_type=form.cleaned_data['deposit_type'],
                     created_by=request.user,
                     linked_savings=SavingsAccount.objects.filter(
-                        member=form.cleaned_data['member'], status='active', account_type='savings',
+                        member=form.cleaned_data['member'],
+                        status='active',
+                        account_type='savings',
                     ).first(),
                 )
                 messages.success(request, f'Pigmmy account {account.account_no} created.')
@@ -546,7 +554,8 @@ def collection_posting_list(request):
         total=Sum('collected_amount'),
     )['total'] or Decimal('0')
     today_collected = all_collections.filter(
-        collection_date=working_date, status='reconciled',
+        collection_date=working_date,
+        status='reconciled',
     ).aggregate(total=Sum('collected_amount'))['total'] or Decimal('0')
 
     paginator = Paginator(collections, 25)

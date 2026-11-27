@@ -246,7 +246,11 @@ def loan_apply(request):
                         for gf in guarantor_formset:
                             gf.empty_permitted = True
                             if gf.is_valid():
-                                if gf.cleaned_data and gf.cleaned_data.get('guarantor_member') and not gf.cleaned_data.get('DELETE'):
+                                if (
+                                    gf.cleaned_data
+                                    and gf.cleaned_data.get('guarantor_member')
+                                    and not gf.cleaned_data.get('DELETE')
+                                ):
                                     non_empty_forms.append(gf)
                             else:
                                 if not getattr(gf, '_empty', False) and gf.cleaned_data.get('guarantor_member'):
@@ -273,8 +277,7 @@ def loan_apply(request):
                             )
                         if product.max_guarantors and guarantor_count > product.max_guarantors:
                             raise ValueError(
-                                f'Maximum {product.max_guarantors} guarantor(s) allowed. '
-                                f'{guarantor_count} provided.'
+                                f'Maximum {product.max_guarantors} guarantor(s) allowed. {guarantor_count} provided.'
                             )
                         for gf in non_empty_forms:
                             gf.save()
@@ -371,7 +374,6 @@ def loan_disburse(request, pk):
         messages.error(request, str(e))
 
     return redirect('loans:detail', pk=pk)
-
 
 
 @auditor_or_above

@@ -184,7 +184,11 @@ class Command(BaseCommand):
 
         with transaction.atomic():
             for code, name, group, related, report, opening in SAWITRIBAI_COA:
-                parent = reserves_parent if related in RESERVE_RELATED_TYPES and group == 'liability' and code.startswith('L0') else parents.get(group, parents['liability'])
+                parent = (
+                    reserves_parent
+                    if related in RESERVE_RELATED_TYPES and group == 'liability' and code.startswith('L0')
+                    else parents.get(group, parents['liability'])
+                )
                 _obj, was_created = ChartOfAccounts.objects.get_or_create(
                     code=code,
                     defaults={
