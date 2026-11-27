@@ -50,24 +50,24 @@ SAWITRIBAI_COA = [
     ('L049', 'Agent Security Deposit', 'liability', 'security', 'balance_sheet', Decimal('551288.00')),
     ('L035', 'Fixed Deposit Interest Payable', 'liability', 'interest_payable', 'balance_sheet', Decimal('3126375.00')),
     ('L062', 'Agent TDS Payable', 'liability', 'general', 'balance_sheet', Decimal('1374.00')),
-    # ── Equity — Share Capital ──────────────────────────────────────────────
-    ('L002', 'Share Capital', 'equity', 'shares', 'balance_sheet', Decimal('3626797.00')),
-    # ── Equity — Funds & Reserves ───────────────────────────────────────────
-    ('L004', 'Statutory Reserve Fund', 'equity', 'general', 'balance_sheet', Decimal('490388.89')),
-    ('L005', 'Building Fund and Land', 'equity', 'general', 'balance_sheet', Decimal('1018898.52')),
-    ('L008', 'Depreciation Fund', 'equity', 'general', 'balance_sheet', Decimal('530603.00')),
-    ('L009', 'Deposit Fluctuation Fund', 'equity', 'general', 'balance_sheet', Decimal('35000.00')),
-    ('L022', 'Training Fund', 'equity', 'general', 'balance_sheet', Decimal('31065.00')),
-    ('L023', 'Audit Fee Fund', 'equity', 'general', 'balance_sheet', Decimal('57463.00')),
-    ('L025', 'Uttam Jindagi Fund', 'equity', 'general', 'balance_sheet', Decimal('509815.00')),
-    ('L048', 'Social Welfare Fund', 'equity', 'general', 'balance_sheet', Decimal('12399.00')),
-    ('L053', 'Advertisement Fund', 'equity', 'general', 'balance_sheet', Decimal('23178.00')),
-    ('L054', 'Employee Bonus Fund', 'equity', 'general', 'balance_sheet', Decimal('0')),
-    ('L055', 'Agent Development Fund', 'equity', 'general', 'balance_sheet', Decimal('63985.00')),
-    ('L057', 'Loan Recovery Fund', 'equity', 'general', 'balance_sheet', Decimal('32405.00')),
-    ('L058', 'NPA Provision', 'equity', 'general', 'balance_sheet', Decimal('1159934.00')),
-    ('L060', 'Co-operative Society Fund', 'equity', 'general', 'balance_sheet', Decimal('100000.00')),
-    ('L044', 'Accumulated Profit (Sanchit Nafa)', 'equity', 'general', 'balance_sheet', Decimal('148991.52')),
+    # ── Share Capital ──────────────────────────────────────────────────────
+    ('L002', 'Share Capital', 'liability', 'shares', 'balance_sheet', Decimal('3626797.00')),
+    # ── Funds & Reserves ───────────────────────────────────────────────────
+    ('L004', 'Statutory Reserve Fund', 'liability', 'general', 'balance_sheet', Decimal('490388.89')),
+    ('L005', 'Building Fund and Land', 'liability', 'general', 'balance_sheet', Decimal('1018898.52')),
+    ('L008', 'Depreciation Fund', 'liability', 'general', 'balance_sheet', Decimal('530603.00')),
+    ('L009', 'Deposit Fluctuation Fund', 'liability', 'general', 'balance_sheet', Decimal('35000.00')),
+    ('L022', 'Training Fund', 'liability', 'general', 'balance_sheet', Decimal('31065.00')),
+    ('L023', 'Audit Fee Fund', 'liability', 'general', 'balance_sheet', Decimal('57463.00')),
+    ('L025', 'Uttam Jindagi Fund', 'liability', 'general', 'balance_sheet', Decimal('509815.00')),
+    ('L048', 'Social Welfare Fund', 'liability', 'general', 'balance_sheet', Decimal('12399.00')),
+    ('L053', 'Advertisement Fund', 'liability', 'general', 'balance_sheet', Decimal('23178.00')),
+    ('L054', 'Employee Bonus Fund', 'liability', 'general', 'balance_sheet', Decimal('0')),
+    ('L055', 'Agent Development Fund', 'liability', 'general', 'balance_sheet', Decimal('63985.00')),
+    ('L057', 'Loan Recovery Fund', 'liability', 'general', 'balance_sheet', Decimal('32405.00')),
+    ('L058', 'NPA Provision', 'liability', 'general', 'balance_sheet', Decimal('1159934.00')),
+    ('L060', 'Co-operative Society Fund', 'liability', 'general', 'balance_sheet', Decimal('100000.00')),
+    ('L044', 'Accumulated Profit (Sanchit Nafa)', 'liability', 'general', 'balance_sheet', Decimal('148991.52')),
     # ── Income ──────────────────────────────────────────────────────────────
     ('I003', 'Interest Received on Loan', 'income', 'interest_received', 'profit_loss', Decimal('0')),
     ('I006', 'Penal Interest Received on Loan', 'income', 'interest_received', 'profit_loss', Decimal('0')),
@@ -144,10 +144,12 @@ EXISTING_HEAD_UPDATES = {
 PARENT_MAP = {
     'asset': '1000',
     'liability': '2000',
-    'equity': '2500',
     'income': '3000',
     'expense': '4000',
 }
+# Reserves/funds/share capital go under Capital & Reserves (2500)
+RESERVES_PARENT_CODE = '2500'
+RESERVE_RELATED_TYPES = {'shares', 'general'}
 # fmt: on
 
 
@@ -172,19 +174,24 @@ class Command(BaseCommand):
             except ChartOfAccounts.DoesNotExist:
                 self.stderr.write(self.style.ERROR(f'Parent head {code} not found. Run create_demo_tenant first.'))
                 return
+        try:
+            reserves_parent = ChartOfAccounts.objects.get(code=RESERVES_PARENT_CODE)
+        except ChartOfAccounts.DoesNotExist:
+            reserves_parent = parents['liability']
 
         created = 0
         existed = 0
 
         with transaction.atomic():
             for code, name, group, related, report, opening in SAWITRIBAI_COA:
+                parent = reserves_parent if related in RESERVE_RELATED_TYPES and group == 'liability' and code.startswith('L0') else parents.get(group, parents['liability'])
                 _obj, was_created = ChartOfAccounts.objects.get_or_create(
                     code=code,
                     defaults={
                         'name': name,
                         'account_group': group,
                         'account_type': 'other',
-                        'parent': parents[group],
+                        'parent': parent,
                         'related_table_name': related,
                         'report_position': report,
                         'display_order': 0,

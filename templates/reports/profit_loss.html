@@ -42,13 +42,16 @@
         <div class="flex flex-col sm:flex-row items-end gap-3">
             <div class="flex-1">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{% trans "From Date" %}</label>
-                <input type="date" name="from_date" x-model="fromDate" :max="toDate || today" required class="block w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white">
+                <input type="date" name="from_date" x-model="fromDate" :max="toDate || today" required
+                       @change="if(fromDate && toDate) $el.closest('form').submit()"
+                       class="block w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white">
             </div>
             <div class="flex-1">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{% trans "To Date" %}</label>
-                <input type="date" name="to_date" x-model="toDate" :min="fromDate" :max="today" required class="block w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white">
+                <input type="date" name="to_date" x-model="toDate" :min="fromDate" :max="today" required
+                       @change="if(fromDate && toDate) $el.closest('form').submit()"
+                       class="block w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white">
             </div>
-            <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">{% trans "Generate" %}</button>
             {% if income_groups or expense_groups %}{% include "includes/export_csv.html" %}
             <button onclick="window.print()" type="button" class="inline-flex items-center px-4 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                 <svg class="h-4 w-4 mr-1.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
@@ -57,9 +60,9 @@
         </div>
         <div class="flex flex-wrap gap-2 mt-3">
             <span class="text-xs text-gray-400 self-center mr-1">{% trans "Quick:" %}</span>
-            <button type="button" @click="let d=new Date(); fromDate=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01'; toDate=today" class="px-2.5 py-1 text-xs font-medium rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">{% trans "This Month" %}</button>
-            <button type="button" @click="let d=new Date(); d.setMonth(d.getMonth()-1); let l=new Date(d.getFullYear(),d.getMonth()+1,0); fromDate=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01'; toDate=l.toISOString().split('T')[0]" class="px-2.5 py-1 text-xs font-medium rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">{% trans "Last Month" %}</button>
-            <button type="button" @click="let d=new Date(), fy=d.getMonth()>=3?d.getFullYear():d.getFullYear()-1; fromDate=fy+'-04-01'; toDate=(fy+1)+'-03-31'" class="px-2.5 py-1 text-xs font-medium rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">{% trans "This FY" %}</button>
+            <button type="button" @click="let d=new Date(); fromDate=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01'; toDate=today; $nextTick(()=>$el.closest('form').submit())" class="px-2.5 py-1 text-xs font-medium rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">{% trans "This Month" %}</button>
+            <button type="button" @click="let d=new Date(); d.setMonth(d.getMonth()-1); let l=new Date(d.getFullYear(),d.getMonth()+1,0); fromDate=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01'; toDate=l.toISOString().split('T')[0]; $nextTick(()=>$el.closest('form').submit())" class="px-2.5 py-1 text-xs font-medium rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">{% trans "Last Month" %}</button>
+            <button type="button" @click="let d=new Date(), fy=d.getMonth()>=3?d.getFullYear():d.getFullYear()-1; fromDate=fy+'-04-01'; toDate=(fy+1)+'-03-31'; $nextTick(()=>$el.closest('form').submit())" class="px-2.5 py-1 text-xs font-medium rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">{% trans "This FY" %}</button>
         </div>
     </form>
 

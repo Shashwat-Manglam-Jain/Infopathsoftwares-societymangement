@@ -1,0 +1,77 @@
+{% load i18n %}
+{# Include with: pending_vouchers, posted_vouchers (optional) #}
+{% if pending_vouchers or posted_vouchers %}
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50">
+        <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            {% trans "Voucher History" %}
+        </h3>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{% trans "Date" %}</th>
+                    <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{% trans "Voucher" %}</th>
+                    <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{% trans "Type" %}</th>
+                    <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">{% trans "Narration" %}</th>
+                    <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">{% trans "Amount (₹)" %}</th>
+                    <th class="px-4 py-2 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">{% trans "Status" %}</th>
+                    <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">{% trans "By" %}</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for pv in pending_vouchers %}
+                <tr class="bg-amber-50/30 hover:bg-amber-50/50 transition-colors">
+                    <td class="px-4 py-2.5 text-gray-900 whitespace-nowrap text-xs">{{ pv.journal_entry.entry_date|date:"d M Y" }}</td>
+                    <td class="px-4 py-2.5 whitespace-nowrap"><span class="text-xs font-mono text-gray-700">{{ pv.journal_entry.voucher_no }}</span></td>
+                    <td class="px-4 py-2.5 whitespace-nowrap">
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium
+                            {% if pv.journal_entry.voucher_type == 'receipt' %}bg-green-100 text-green-700
+                            {% elif pv.journal_entry.voucher_type == 'payment' %}bg-red-100 text-red-700
+                            {% else %}bg-blue-100 text-blue-700{% endif %}">
+                            {{ pv.journal_entry.get_voucher_type_display }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-2.5 text-gray-500 text-xs hidden md:table-cell max-w-[200px] truncate">{{ pv.journal_entry.narration|default:pv.narration|default:"—" }}</td>
+                    <td class="px-4 py-2.5 text-right font-medium whitespace-nowrap tabular-nums text-amber-600">
+                        {% if pv.credit_amount %}{{ pv.credit_amount|floatformat:2 }}{% else %}{{ pv.debit_amount|floatformat:2 }}{% endif %}
+                    </td>
+                    <td class="px-4 py-2.5 text-center whitespace-nowrap">
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> {% trans "Pending" %}
+                        </span>
+                    </td>
+                    <td class="px-4 py-2.5 text-xs text-gray-500 hidden lg:table-cell whitespace-nowrap">{{ pv.journal_entry.created_by.get_short_name }}</td>
+                </tr>
+                {% endfor %}
+                {% for pv in posted_vouchers %}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-4 py-2.5 text-gray-900 whitespace-nowrap text-xs">{{ pv.journal_entry.entry_date|date:"d M Y" }}</td>
+                    <td class="px-4 py-2.5 whitespace-nowrap"><span class="text-xs font-mono text-gray-700">{{ pv.journal_entry.voucher_no }}</span></td>
+                    <td class="px-4 py-2.5 whitespace-nowrap">
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium
+                            {% if pv.journal_entry.voucher_type == 'receipt' %}bg-green-100 text-green-700
+                            {% elif pv.journal_entry.voucher_type == 'payment' %}bg-red-100 text-red-700
+                            {% else %}bg-blue-100 text-blue-700{% endif %}">
+                            {{ pv.journal_entry.get_voucher_type_display }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-2.5 text-gray-500 text-xs hidden md:table-cell max-w-[200px] truncate">{{ pv.journal_entry.narration|default:pv.narration|default:"—" }}</td>
+                    <td class="px-4 py-2.5 text-right font-medium whitespace-nowrap tabular-nums text-gray-900">
+                        {% if pv.credit_amount %}{{ pv.credit_amount|floatformat:2 }}{% else %}{{ pv.debit_amount|floatformat:2 }}{% endif %}
+                    </td>
+                    <td class="px-4 py-2.5 text-center whitespace-nowrap">
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                            <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> {% trans "Posted" %}
+                        </span>
+                    </td>
+                    <td class="px-4 py-2.5 text-xs text-gray-500 hidden lg:table-cell whitespace-nowrap">{{ pv.journal_entry.created_by.get_short_name }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}

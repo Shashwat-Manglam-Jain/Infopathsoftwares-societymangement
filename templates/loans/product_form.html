@@ -84,7 +84,7 @@
                     <div class="rounded-lg bg-amber-50 border border-amber-200 p-3">
                         <p class="text-sm font-medium text-amber-800">{% trans "No loan interest slabs configured." %}</p>
                         <p class="text-xs text-amber-700 mt-1">{% trans "Configure interest rate slabs in the Interest Master before creating a loan product." %}
-                            <a href="{% url 'accounting:interest_master_create' %}{% if head_id %}?head={{ head_id }}{% endif %}" class="underline font-medium">{% trans "Configure Interest Master" %} &rarr;</a>
+                            <a href="{% url 'accounting:interest_master_create' %}?{% if head_id %}head={{ head_id }}&{% endif %}next={{ request.path }}" class="underline font-medium">{% trans "Configure Interest Master" %} &rarr;</a>
                         </p>
                     </div>
                 </div>

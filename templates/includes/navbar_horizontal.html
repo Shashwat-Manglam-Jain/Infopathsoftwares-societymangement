@@ -28,8 +28,8 @@
                 <a href="{% url 'accounting:interest_master' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if 'interest-master' in request.path %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Interest Master" %}</a>
                 <div class="border-t border-gray-100 my-1"></div>
                 <a href="{% url 'loans:product_list' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if 'products' in request.path and request.resolver_match.app_name == 'loans' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Loan Products" %}</a>
-                {% if request.user.is_manager %}
-                <a href="{% url 'shares:config_list' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if 'config' in request.path and request.resolver_match.app_name == 'shares' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Share Config" %}</a>
+                {% if request.user.is_accountant %}
+                <a href="{% url 'shares:config' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if 'config' in request.path and request.resolver_match.app_name == 'shares' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Share Config" %}</a>
                 {% endif %}
             </div>
         </div>
@@ -38,7 +38,7 @@
     <!-- Account Opening — flat dropdown -->
     <div x-data="{ hover: false }" @mouseenter="hover = true" @mouseleave="hover = false" class="relative">
         <button class="px-3 py-1.5 text-xs font-semibold rounded transition-colors whitespace-nowrap flex items-center gap-1
-                       {% if request.resolver_match.app_name == 'savings' or request.resolver_match.app_name == 'deposits' or request.resolver_match.app_name == 'loans' and 'products' not in request.path or request.resolver_match.app_name == 'shares' and 'config' not in request.path or request.resolver_match.app_name == 'agents' and 'collections' not in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+                       {% if request.resolver_match.app_name == 'savings' or request.resolver_match.app_name == 'deposits' or request.resolver_match.app_name == 'loans' and 'products' not in request.path or request.resolver_match.app_name == 'shares' and 'config' not in request.path or request.resolver_match.app_name == 'agents' and request.resolver_match.url_name != 'collection_list' and request.resolver_match.url_name != 'collection_posting' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
             {% trans "Accounts" %}
             <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </button>
@@ -55,7 +55,7 @@
                 <div class="border-t border-gray-100 my-1"></div>
                 <a href="{% url 'shares:list' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.app_name == 'shares' and 'config' not in request.path %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Share Holdings" %}</a>
                 <div class="border-t border-gray-100 my-1"></div>
-                <a href="{% url 'agents:list' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.app_name == 'agents' and 'pigmmy' not in request.path and 'collection' not in request.path %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Agents" %}</a>
+                <a href="{% url 'agents:list' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if request.resolver_match.app_name == 'agents' and 'pigmmy' not in request.path and request.resolver_match.url_name != 'collection_list' and request.resolver_match.url_name != 'collection_posting' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Agents" %}</a>
                 <a href="{% url 'agents:pigmmy_list' %}" class="block px-4 py-2 text-sm hover:bg-primary-50 hover:text-primary-700 {% if 'pigmmy' in request.path and request.resolver_match.app_name == 'agents' %}bg-primary-50 text-primary-700 font-semibold{% else %}text-gray-700{% endif %}">{% trans "Pigmy Accounts" %}</a>
             </div>
         </div>
@@ -66,7 +66,7 @@
     <!-- Transaction -->
     <div x-data="{ hover: false }" @mouseenter="hover = true" @mouseleave="hover = false" class="relative">
         <button class="px-3 py-1.5 text-xs font-semibold rounded transition-colors whitespace-nowrap flex items-center gap-1
-                       {% if 'receipt' in request.path and request.resolver_match.app_name == 'accounting' or 'payment' in request.path and request.resolver_match.app_name == 'accounting' or 'voucher/create' in request.path or 'collections' in request.path and request.resolver_match.app_name == 'agents' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+                       {% if 'receipt' in request.path and request.resolver_match.app_name == 'accounting' or 'payment' in request.path and request.resolver_match.app_name == 'accounting' or 'voucher/create' in request.path or request.resolver_match.url_name == 'collection_list' or request.resolver_match.url_name == 'collection_posting' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
             {% trans "Transaction" %}
             <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </button>

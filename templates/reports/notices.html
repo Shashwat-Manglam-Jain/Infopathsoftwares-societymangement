@@ -40,7 +40,7 @@
             {% if notice_type == 'balance_confirmation' %}
             <div class="flex-1 min-w-[200px]">
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Member" %}</label>
-                <select name="member" class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
+                <select name="member" onchange="this.form.submit()" class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
                     <option value="">{% trans "— Select Member —" %}</option>
                     {% for m in members %}
                     <option value="{{ m.pk }}" {% if selected_member == m.pk|stringformat:"d" %}selected{% endif %}>{{ m.member_no }} — {{ m.name }}</option>
@@ -53,6 +53,7 @@
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Maturing in (days)" %}</label>
                 <input type="number" name="days" value="{{ days|default:30 }}" min="1" max="365"
+                       onchange="this.form.submit()"
                        class="w-32 border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
             </div>
             {% endif %}
@@ -61,18 +62,17 @@
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "From Date" %}</label>
                 <input type="date" name="from_date" value="{{ from_date }}"
+                       onchange="this.form.submit()"
                        class="border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "To Date" %}</label>
                 <input type="date" name="to_date" value="{{ to_date }}"
+                       onchange="this.form.submit()"
                        class="border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
             </div>
             {% endif %}
 
-            <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">
-                {% trans "Generate" %}
-            </button>
             {% if member or fds or dividend_txns %}
             <button type="button" onclick="window.print()" class="px-4 py-1.5 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 shadow-sm print:hidden">
                 {% trans "Print" %}

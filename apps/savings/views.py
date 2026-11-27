@@ -89,7 +89,8 @@ def savings_create(request):
             messages.success(request, f'Savings account {account.account_no} created successfully.')
             return redirect('savings:detail', pk=account.pk)
     else:
-        initial = {'opening_date': date.today().isoformat()}
+        from apps.core.date_utils import get_transaction_date
+        initial = {'opening_date': get_transaction_date(request.current_branch).isoformat()}
         account_type = request.GET.get('type', '')
         if account_type:
             related = _ACCOUNT_TYPE_MAP.get(account_type, account_type)
@@ -133,6 +134,8 @@ def savings_edit(request, pk):
         if form.is_valid():
             acct = form.save(commit=False)
             _apply_interest_rate(acct)
+            if acct.status == 'closed' and not acct.closing_date:
+                acct.closing_date = get_transaction_date(request.current_branch)
             acct.save()
             messages.success(request, f'Account {account.account_no} updated successfully.')
             return redirect('savings:detail', pk=pk)
@@ -155,9 +158,24 @@ def savings_detail(request, pk):
     transactions = account.transactions.select_related('reversal_of', 'created_by').order_by(
         '-txn_date', '-created_at'
     )[:20]
+
+    from apps.accounting.models import JournalLine
+
+    pending_vouchers = (
+        JournalLine.objects.filter(
+            account_number=account.account_no,
+            journal_entry__is_posted=False,
+            journal_entry__is_rejected=False,
+            journal_entry__is_reversed=False,
+        )
+        .select_related('journal_entry', 'journal_entry__created_by')
+        .order_by('-journal_entry__entry_date')[:20]
+    )
+
     context = {
         'account': account,
         'transactions': transactions,
+        'pending_vouchers': pending_vouchers,
     }
     if account.status == 'active':
         from apps.dayend.models import WorkingDay

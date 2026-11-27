@@ -407,7 +407,7 @@ def _create_fd_creation_journal(fd, branch, user):
         user=user,
         reference_type='fd_creation',
         reference_id=fd.pk,
-        is_posted=True,
+        is_posted=False,
     )
 
 
@@ -422,6 +422,7 @@ def _create_fd_maturity_journal(fd, branch, user, amount=None):
 
     payout = amount or fd.maturity_amount
     interest = payout - fd.deposit_amount
+    entry_date = get_transaction_date(branch)
     lines = [
         {'account_code': fd_code, 'debit': fd.deposit_amount, 'credit': Decimal('0')},
     ]
@@ -429,7 +430,7 @@ def _create_fd_maturity_journal(fd, branch, user, amount=None):
         lines.append({'account_code': interest_expense_code, 'debit': interest, 'credit': Decimal('0')})
     lines.append({'account_code': _get_cash_code(branch), 'debit': Decimal('0'), 'credit': payout})
     create_journal_entry(
-        entry_date=get_transaction_date(branch),
+        entry_date=entry_date,
         voucher_type='payment',
         branch=branch,
         narration=f'FD maturity/closure {fd.fd_no}',
@@ -437,7 +438,7 @@ def _create_fd_maturity_journal(fd, branch, user, amount=None):
         user=user,
         reference_type='fd_maturity',
         reference_id=fd.pk,
-        is_posted=True,
+        is_posted=False,
     )
 
 
@@ -447,8 +448,9 @@ def _create_rd_journal(rd, amount, branch, user, installment):
     from apps.savings.services import _get_cash_code
 
     rd_code = get_account_gl_code(rd, 'recurring', '2003')
+    entry_date = get_transaction_date(branch)
     create_journal_entry(
-        entry_date=get_transaction_date(branch),
+        entry_date=entry_date,
         voucher_type='receipt',
         branch=branch,
         narration=f'RD installment {rd.rd_no} #{installment.installment_no}',
@@ -459,7 +461,7 @@ def _create_rd_journal(rd, amount, branch, user, installment):
         user=user,
         reference_type='rd_installment',
         reference_id=installment.pk,
-        is_posted=True,
+        is_posted=False,
     )
 
 
@@ -477,6 +479,7 @@ def _create_rd_maturity_journal(rd, branch, user):
     ] or Decimal('0')
     interest = rd.maturity_amount - total_deposited
     payout = rd.maturity_amount
+    entry_date = get_transaction_date(branch)
 
     lines = [
         {'account_code': rd_code, 'debit': total_deposited, 'credit': Decimal('0')},
@@ -485,7 +488,7 @@ def _create_rd_maturity_journal(rd, branch, user):
         lines.append({'account_code': interest_expense_code, 'debit': interest, 'credit': Decimal('0')})
     lines.append({'account_code': _get_cash_code(branch), 'debit': Decimal('0'), 'credit': payout})
     create_journal_entry(
-        entry_date=get_transaction_date(branch),
+        entry_date=entry_date,
         voucher_type='payment',
         branch=branch,
         narration=f'RD maturity {rd.rd_no}',
@@ -493,5 +496,5 @@ def _create_rd_maturity_journal(rd, branch, user):
         user=user,
         reference_type='rd_maturity',
         reference_id=rd.pk,
-        is_posted=True,
+        is_posted=False,
     )

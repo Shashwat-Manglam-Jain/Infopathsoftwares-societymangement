@@ -11,21 +11,30 @@ class BranchMiddleware:
 
         if request.user.is_authenticated:
             branches = Branch.objects.filter(status='active')
-            request.available_branches = list(branches)
 
-            branch_id = request.session.get('current_branch_id')
-            if branch_id and branch_id != 'all':
-                try:
-                    request.current_branch = branches.get(id=int(branch_id))
-                except (Branch.DoesNotExist, ValueError, TypeError):
-                    pass
-
-            if request.current_branch is None and branches.exists():
+            if request.user.can_access_all_branches:
+                request.available_branches = list(branches)
+                branch_id = request.session.get('current_branch_id')
+                if branch_id and branch_id != 'all':
+                    try:
+                        request.current_branch = branches.get(id=int(branch_id))
+                    except (Branch.DoesNotExist, ValueError, TypeError):
+                        pass
+                if request.current_branch is None and branches.exists():
+                    if request.user.branch_id:
+                        request.current_branch = request.user.branch
+                    else:
+                        request.current_branch = branches.filter(is_head_office=True).first() or branches.first()
+                    request.session['current_branch_id'] = request.current_branch.id
+            else:
                 if request.user.branch_id:
                     request.current_branch = request.user.branch
-                else:
+                    request.available_branches = [request.current_branch]
+                    request.session['current_branch_id'] = request.current_branch.id
+                elif branches.exists():
                     request.current_branch = branches.filter(is_head_office=True).first() or branches.first()
-                request.session['current_branch_id'] = request.current_branch.id
+                    request.available_branches = [request.current_branch]
+                    request.session['current_branch_id'] = request.current_branch.id
 
         response = self.get_response(request)
         return response

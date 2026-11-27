@@ -239,8 +239,8 @@ MemberNomineeFormSet = inlineformset_factory(
     Member,
     MemberNominee,
     form=MemberNomineeForm,
-    min_num=1,
-    validate_min=True,
-    extra=3,
+    min_num=0,
+    validate_min=False,
+    extra=4,
     can_delete=True,
 )

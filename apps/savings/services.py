@@ -204,7 +204,7 @@ def _create_deposit_journal(account, amount, branch, user, txn):
         user=user,
         reference_type='savings_txn',
         reference_id=txn.pk,
-        is_posted=True,
+        is_posted=False,
     )
 
 
@@ -225,7 +225,7 @@ def _create_withdrawal_journal(account, amount, branch, user, txn):
         user=user,
         reference_type='savings_txn',
         reference_id=txn.pk,
-        is_posted=True,
+        is_posted=False,
     )
 
 
@@ -248,7 +248,7 @@ def _create_interest_journal(account, amount, branch, user, txn):
         user=user,
         reference_type='interest_posting',
         reference_id=txn.pk,
-        is_posted=True,
+        is_posted=False,
     )
 
 

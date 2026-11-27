@@ -14,9 +14,6 @@ class AgentForm(forms.ModelForm):
         model = Agent
         fields = [
             'member',
-            'savings_account',
-            'security_deposit_account',
-            'commission_rate',
             'phone',
             'area',
             'joining_date',
@@ -26,9 +23,6 @@ class AgentForm(forms.ModelForm):
         ]
         widgets = {
             'member': forms.Select(attrs={'class': 'searchable ' + tw}),
-            'savings_account': forms.Select(attrs={'class': 'searchable ' + tw}),
-            'security_deposit_account': forms.Select(attrs={'class': 'searchable ' + tw}),
-            'commission_rate': forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '0', 'max': '100'}),
             'phone': forms.TextInput(attrs={'class': tw}),
             'area': forms.TextInput(attrs={'class': tw}),
             'joining_date': forms.DateInput(attrs={'class': tw, 'type': 'date'}),
@@ -40,25 +34,19 @@ class AgentForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self._branch = kwargs.pop('branch', None)
         super().__init__(*args, **kwargs)
-        qs_filter = {'status': 'active'}
-        if self._branch:
-            qs_filter['branch'] = self._branch
-        members_with_savings = SavingsAccount.objects.filter(
-            status='active',
-            account_type='savings',
-        ).values_list('member_id', flat=True)
-        self.fields['member'].queryset = Member.objects.filter(
-            **qs_filter,
-            id__in=members_with_savings,
+        branch_filter = {'branch': self._branch} if self._branch else {}
+        members_with_savings = set(
+            SavingsAccount.objects.filter(status='active', account_type='savings', **branch_filter)
+            .values_list('member_id', flat=True)
         )
-        savings_filter = {'status': 'active', 'account_type': 'savings'}
-        security_filter = {'status': 'active', 'account_type': 'security'}
-        if self._branch:
-            savings_filter['branch'] = self._branch
-            security_filter['branch'] = self._branch
-        self.fields['savings_account'].queryset = SavingsAccount.objects.filter(**savings_filter)
-        self.fields['security_deposit_account'].queryset = SavingsAccount.objects.filter(**security_filter)
-        self.fields['security_deposit_account'].required = False
+        members_with_security = set(
+            SavingsAccount.objects.filter(status='active', account_type='security', **branch_filter)
+            .values_list('member_id', flat=True)
+        )
+        eligible_ids = members_with_savings & members_with_security
+        self.fields['member'].queryset = Member.objects.filter(
+            status='active', id__in=eligible_ids, **branch_filter,
+        )
         self.fields['joining_date'].required = True
         self.fields['security_deposit_amount'].required = False
         self.fields['security_document'].required = False
@@ -109,25 +97,16 @@ class PigmmyAccountForm(forms.Form):
             }
         ),
     )
-    linked_savings_account = forms.ModelChoiceField(
-        queryset=SavingsAccount.objects.none(),
-        required=False,
-        widget=forms.Select(attrs={'class': 'searchable ' + tw}),
-    )
-
     def __init__(self, *args, **kwargs):
         branch = kwargs.pop('branch', None)
         super().__init__(*args, **kwargs)
         member_qs = Member.objects.filter(status='active')
         agent_qs = Agent.objects.filter(status='active')
-        sa_qs = SavingsAccount.objects.filter(status='active', account_type='savings')
         if branch:
             member_qs = member_qs.filter(branch=branch)
             agent_qs = agent_qs.filter(branch=branch)
-            sa_qs = sa_qs.filter(branch=branch)
         self.fields['member'].queryset = member_qs
         self.fields['agent'].queryset = agent_qs
-        self.fields['linked_savings_account'].queryset = sa_qs
 
 
 class PigmmyEditForm(forms.ModelForm):

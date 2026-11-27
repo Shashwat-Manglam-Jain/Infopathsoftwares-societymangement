@@ -30,7 +30,7 @@
         <form method="get" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-3 items-end">
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Report Type" %}</label>
-                <select name="type" class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
+                <select name="type" onchange="this.form.submit()" class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
                     <option value="">{% trans "— Select —" %}</option>
                     <option value="defaulter_list" {% if report_type == 'defaulter_list' %}selected{% endif %}>{% trans "Defaulter List" %}</option>
                     <option value="recovery_statement" {% if report_type == 'recovery_statement' %}selected{% endif %}>{% trans "Recovery Statement" %}</option>
@@ -46,17 +46,16 @@
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "From Date" %}</label>
                 <input type="date" name="from_date" value="{{ from_date }}"
+                       onchange="this.form.submit()"
                        class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "To Date" %}</label>
                 <input type="date" name="to_date" value="{{ to_date }}"
+                       onchange="this.form.submit()"
                        class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
             </div>
             <div class="flex items-end gap-2">
-                <button type="submit" class="flex-1 px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">
-                    {% trans "Generate" %}
-                </button>
                 {% include "includes/export_csv.html" %}
             </div>
         </form>

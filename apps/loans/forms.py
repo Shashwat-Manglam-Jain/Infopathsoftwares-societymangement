@@ -48,22 +48,6 @@ class LoanProductForm(forms.ModelForm):
 
 
 class LoanApplicationForm(forms.ModelForm):
-    interest_rate = forms.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        min_value=Decimal('0.01'),
-        widget=forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '0.01'}),
-        help_text='Pre-filled from product. Override if needed.',
-    )
-    penal_interest_rate = forms.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        min_value=Decimal('0'),
-        required=False,
-        widget=forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '0'}),
-        help_text='Pre-filled from product. Override if needed.',
-    )
-
     class Meta:
         model = LoanAccount
         fields = [
@@ -71,11 +55,8 @@ class LoanApplicationForm(forms.ModelForm):
             'loan_product',
             'applied_amount',
             'tenure_months',
-            'interest_rate',
-            'penal_interest_rate',
             'director_recommendation',
             'remarks',
-            'mortgage_value',
         ]
         widgets = {
             'member': forms.Select(attrs={'class': 'searchable ' + tw}),
@@ -84,7 +65,6 @@ class LoanApplicationForm(forms.ModelForm):
             'tenure_months': forms.NumberInput(attrs={'class': tw, 'min': '1'}),
             'director_recommendation': forms.Select(attrs={'class': 'searchable ' + tw}),
             'remarks': forms.Textarea(attrs={'class': tw, 'rows': 3}),
-            'mortgage_value': forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '0'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -120,8 +100,6 @@ class LoanApplicationForm(forms.ModelForm):
             id__in=director_shareholder_ids,
         )
         self.fields['director_recommendation'].required = False
-        self.fields['mortgage_value'].required = False
-        self.fields['penal_interest_rate'].required = False
 
     def clean_member(self):
         member = self.cleaned_data.get('member')
@@ -181,16 +159,6 @@ class LoanApprovalForm(forms.Form):
     remarks = forms.CharField(required=False, widget=forms.Textarea(attrs={'class': tw, 'rows': 2}))
 
 
-class EMICollectionForm(forms.Form):
-    loan_id = forms.IntegerField(widget=forms.HiddenInput())
-    amount = forms.DecimalField(
-        max_digits=15, decimal_places=2, min_value=1, widget=forms.NumberInput(attrs={'class': tw, 'step': '0.01'})
-    )
-    payment_mode = forms.ChoiceField(
-        choices=[('cash', 'Cash'), ('cheque', 'Cheque'), ('transfer', 'Transfer'), ('upi', 'UPI')],
-        widget=forms.Select(attrs={'class': tw}),
-    )
-
 
 class GuarantorForm(forms.ModelForm):
     class Meta:
@@ -201,6 +169,13 @@ class GuarantorForm(forms.ModelForm):
             'guarantee_amount': forms.NumberInput(attrs={'class': tw, 'step': '0.01', 'min': '0.01'}),
             'guarantor_share_account': forms.TextInput(attrs={'class': tw, 'readonly': 'readonly'}),
         }
+
+    def clean(self):
+        cleaned = super().clean()
+        if not cleaned.get('guarantor_member'):
+            self._empty = True
+            return cleaned
+        return cleaned
 
     def clean_guarantor_member(self):
         member = self.cleaned_data.get('guarantor_member')

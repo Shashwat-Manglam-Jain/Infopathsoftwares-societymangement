@@ -115,8 +115,8 @@
         <a href="{% url 'loans:product_list' %}" class="group flex items-center px-3 py-1.5 text-sm rounded-lg {% if 'products' in request.path and request.resolver_match.app_name == 'loans' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100{% endif %}">
             <span class="mr-3 w-5 text-center text-gray-300">&bull;</span> {% trans "Loan Products" %}
         </a>
-        {% if request.user.is_manager %}
-        <a href="{% url 'shares:config_list' %}" class="group flex items-center px-3 py-1.5 text-sm rounded-lg {% if 'config' in request.path and request.resolver_match.app_name == 'shares' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100{% endif %}">
+        {% if request.user.is_accountant %}
+        <a href="{% url 'shares:config' %}" class="group flex items-center px-3 py-1.5 text-sm rounded-lg {% if 'config' in request.path and request.resolver_match.app_name == 'shares' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100{% endif %}">
             <span class="mr-3 w-5 text-center text-gray-300">&bull;</span> {% trans "Share Config" %}
         </a>
         {% endif %}
@@ -152,7 +152,7 @@
         <a href="{% url 'shares:list' %}" class="group flex items-center px-3 py-1.5 text-sm rounded-lg {% if request.resolver_match.app_name == 'shares' and 'config' not in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100{% endif %}">
             <span class="mr-3 w-5 text-center text-gray-300">&bull;</span> {% trans "Share Holdings" %}
         </a>
-        <a href="{% url 'agents:list' %}" class="group flex items-center px-3 py-1.5 text-sm rounded-lg {% if request.resolver_match.app_name == 'agents' and 'pigmmy' not in request.path and 'collections' not in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100{% endif %}">
+        <a href="{% url 'agents:list' %}" class="group flex items-center px-3 py-1.5 text-sm rounded-lg {% if request.resolver_match.app_name == 'agents' and 'pigmmy' not in request.path and request.resolver_match.url_name != 'collection_list' and request.resolver_match.url_name != 'collection_posting' %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100{% endif %}">
             <span class="mr-3 w-5 text-center text-gray-300">&bull;</span> {% trans "Agents" %}
         </a>
         <a href="{% url 'agents:pigmmy_list' %}" class="group flex items-center px-3 py-1.5 text-sm rounded-lg {% if 'pigmmy' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-600 hover:bg-gray-100{% endif %}">

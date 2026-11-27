@@ -18,7 +18,6 @@ from apps.core.account_utils import amount_to_words as _amount_to_words
 from apps.core.account_utils import generate_account_number
 
 from .forms import (
-    EMICollectionForm,
     GuarantorForm,
     GuarantorFormSet,
     LoanApplicationForm,
@@ -37,7 +36,6 @@ from .models import (
 )
 from .services import (
     approve_loan,
-    collect_emi,
     disburse_loan,
     reject_loan,
     validate_loan_application,
@@ -105,11 +103,8 @@ def loan_detail(request, pk):
     repayments = LoanRepayment.objects.filter(loan=loan).order_by('-payment_date')[:20]
 
     approval_form = None
-    emi_form = None
     if loan.status == 'applied':
         approval_form = LoanApprovalForm(initial={'approved_amount': loan.applied_amount})
-    elif loan.status in ('disbursed', 'npa'):
-        emi_form = EMICollectionForm(initial={'loan_id': loan.pk})
 
     product = loan.loan_product
     guarantor_count = guarantors.count()
@@ -124,6 +119,28 @@ def loan_detail(request, pk):
 
     standing_instructions = StandingInstruction.objects.filter(loan=loan).order_by('-charge_date')
 
+    from apps.accounting.models import JournalLine
+
+    pending_vouchers = (
+        JournalLine.objects.filter(
+            account_number=loan.loan_no,
+            journal_entry__is_posted=False,
+            journal_entry__is_rejected=False,
+            journal_entry__is_reversed=False,
+        )
+        .select_related('journal_entry', 'journal_entry__created_by')
+        .order_by('-journal_entry__entry_date')[:20]
+    )
+    posted_vouchers = (
+        JournalLine.objects.filter(
+            account_number=loan.loan_no,
+            journal_entry__is_posted=True,
+            journal_entry__is_reversed=False,
+        )
+        .select_related('journal_entry', 'journal_entry__created_by')
+        .order_by('-journal_entry__entry_date')[:20]
+    )
+
     return render(
         request,
         'loans/detail.html',
@@ -134,13 +151,14 @@ def loan_detail(request, pk):
             'emi_schedule': emi_schedule,
             'repayments': repayments,
             'approval_form': approval_form,
-            'emi_form': emi_form,
             'guarantor_ok': guarantor_ok,
             'collateral_ok': collateral_ok,
             'guarantor_count': guarantor_count,
             'min_guarantors': product.min_guarantors if product.requires_guarantor else 0,
             'has_interest_slab': has_interest_slab,
             'standing_instructions': standing_instructions,
+            'pending_vouchers': pending_vouchers,
+            'posted_vouchers': posted_vouchers,
         },
     )
 
@@ -164,6 +182,9 @@ def loan_apply(request):
                 'penal_interest_rate': str(p.penal_interest_rate),
                 'max_amount': str(p.max_amount),
                 'max_tenure_months': p.max_tenure_months,
+                'interest_type': p.interest_type,
+                'loan_category': p.get_loan_category_display(),
+                'processing_fee_percent': str(p.processing_fee_percent),
                 'requires_guarantor': p.requires_guarantor,
                 'requires_collateral': p.requires_collateral,
                 'min_guarantors': p.min_guarantors,
@@ -195,9 +216,9 @@ def loan_apply(request):
 
                         loan.applied_date = get_transaction_date(request.current_branch)
                         loan.status = 'applied'
-                        loan.interest_rate = form.cleaned_data.get('interest_rate') or product.interest_rate
-                        penal = form.cleaned_data.get('penal_interest_rate')
-                        loan.penal_interest_rate = penal if penal is not None else product.penal_interest_rate
+                        loan.interest_rate = product.interest_rate
+                        loan.penal_interest_rate = product.penal_interest_rate
+                        loan.mortgage_value = amount
                         ac_code = '026'
                         if product.gl_head and product.gl_head.account_code:
                             ac_code = product.gl_head.account_code
@@ -220,21 +241,18 @@ def loan_apply(request):
                             prefix='guarantors',
                             instance=loan,
                         )
-                        if guarantor_formset.is_valid():
-                            saved = [f for f in guarantor_formset.save() if f.guarantor_member_id]
-                            guarantor_count = len(saved)
+                        non_empty_forms = []
+                        has_errors = False
+                        for gf in guarantor_formset:
+                            gf.empty_permitted = True
+                            if gf.is_valid():
+                                if gf.cleaned_data and gf.cleaned_data.get('guarantor_member') and not gf.cleaned_data.get('DELETE'):
+                                    non_empty_forms.append(gf)
+                            else:
+                                if not getattr(gf, '_empty', False) and gf.cleaned_data.get('guarantor_member'):
+                                    has_errors = True
 
-                            if product.requires_guarantor and guarantor_count < product.min_guarantors:
-                                raise ValueError(
-                                    f'This loan requires at least {product.min_guarantors} guarantor(s). '
-                                    f'Only {guarantor_count} provided.'
-                                )
-                            if product.max_guarantors and guarantor_count > product.max_guarantors:
-                                raise ValueError(
-                                    f'Maximum {product.max_guarantors} guarantor(s) allowed. '
-                                    f'{guarantor_count} provided.'
-                                )
-                        else:
+                        if has_errors:
                             errors = []
                             for gf in guarantor_formset:
                                 for _, errs in gf.errors.items():
@@ -246,6 +264,20 @@ def loan_apply(request):
                                 )
                             if errors:
                                 raise ValueError(' '.join(errors))
+
+                        guarantor_count = len(non_empty_forms)
+                        if product.requires_guarantor and guarantor_count < product.min_guarantors:
+                            raise ValueError(
+                                f'This loan requires at least {product.min_guarantors} guarantor(s). '
+                                f'Only {guarantor_count} provided.'
+                            )
+                        if product.max_guarantors and guarantor_count > product.max_guarantors:
+                            raise ValueError(
+                                f'Maximum {product.max_guarantors} guarantor(s) allowed. '
+                                f'{guarantor_count} provided.'
+                            )
+                        for gf in non_empty_forms:
+                            gf.save()
 
                     messages.success(request, f'Loan application {loan.loan_no} submitted.')
                     if product.requires_collateral:
@@ -340,35 +372,6 @@ def loan_disburse(request, pk):
 
     return redirect('loans:detail', pk=pk)
 
-
-@cashier_required
-@day_open_required
-def loan_collect(request, pk):
-    loan = get_object_or_404(LoanAccount, pk=pk)
-    if not has_branch_access(request, loan.branch):
-        messages.error(request, 'You do not have access to this loan.')
-        return redirect('loans:list')
-    if request.current_branch is None:
-        messages.warning(request, 'Please select a specific branch before collecting payments.')
-        return redirect('loans:detail', pk=pk)
-    if request.method != 'POST':
-        return redirect('loans:detail', pk=pk)
-
-    form = EMICollectionForm(request.POST)
-    if form.is_valid():
-        amount = form.cleaned_data['amount']
-        payment_mode = form.cleaned_data['payment_mode']
-        try:
-            repayment = collect_emi(loan, amount, request.current_branch, request.user, payment_mode)
-            messages.success(request, f'Payment of {amount} collected. Receipt: {repayment.receipt_no}')
-        except ValueError as e:
-            messages.error(request, str(e))
-    else:
-        for field_errors in form.errors.values():
-            for e in field_errors:
-                messages.error(request, e)
-
-    return redirect('loans:detail', pk=pk)
 
 
 @auditor_or_above

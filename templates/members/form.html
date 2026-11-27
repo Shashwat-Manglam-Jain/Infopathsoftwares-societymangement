@@ -2,7 +2,7 @@
 {% load i18n %}
 
 {% block title %}{% if member %}{% trans "Edit" %} {{ member.name }}{% else %}{% trans "New Member" %}{% endif %} — InfoSociety{% endblock %}
-{% block page_title %}{% if member %}{% trans "Edit Member" %}{% else %}{% trans "Customer Details Entry" %}{% endif %}{% endblock %}
+{% block page_title %}{% if member %}{% trans "Edit Member" %}{% else %}{% trans "New Member Registration" %}{% endif %}{% endblock %}
 
 {% block content %}
 <form method="post" enctype="multipart/form-data" x-data="{ isMinor: {% if form.instance.is_minor %}true{% else %}false{% endif %} }" class="max-w-full">
@@ -11,7 +11,7 @@
         <svg class="h-5 w-5 text-blue-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         <div class="flex-1">
             <h3 class="text-sm font-semibold text-blue-800">{% if member %}{% trans "Edit Member" %}{% else %}{% trans "New Member Registration" %}{% endif %}</h3>
-            <p class="text-xs text-blue-700 mt-0.5">{% trans "Fill in personal, KYC, and nominee details. Fields marked with * are mandatory. Member number is auto-generated on save." %}</p>
+            <p class="text-xs text-blue-700 mt-0.5">{% trans "Fill in personal, KYC, and nominee details. Fields marked with * are mandatory. Member number is auto-generated. Purchase shares to become a Shareholder and apply for loans." %}</p>
         </div>
         <button @click="show = false" class="text-blue-400 hover:text-blue-600 shrink-0 p-0.5">
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -351,7 +351,12 @@
         <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Branch" %} <span class="text-red-500">*</span></label>
-                {{ form.branch }}
+                {% if form.branch.is_hidden %}
+                    {{ form.branch }}
+                    <div class="block w-full rounded border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-sm text-gray-700 cursor-not-allowed">{{ request.current_branch.branch_name }}</div>
+                {% else %}
+                    {{ form.branch }}
+                {% endif %}
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Join Date" %} <span class="text-red-500">*</span></label>
@@ -534,7 +539,7 @@
 document.addEventListener('alpine:init', function() {
     Alpine.data('nomineeManager', function() {
         return {
-            shown: [{% for nf in nominee_formset %}{% if nf.instance.pk or forloop.first %}true{% else %}false{% endif %}{% if not forloop.last %},{% endif %}{% endfor %}],
+            shown: [{% for nf in nominee_formset %}{% if nf.instance.pk %}true{% else %}false{% endif %}{% if not forloop.last %},{% endif %}{% endfor %}],
             init() {
                 for (var i = 0; i < this.shown.length; i++) {
                     var cb = document.querySelector('[data-nom-del="' + i + '"]');

@@ -10,6 +10,7 @@ urlpatterns = [
     path('payment/', views.payment_transaction, name='payment'),
     path('cashbook/', views.cashbook_entry, name='cashbook'),
     path('voucher/create/', views.voucher_create, name='voucher_create'),
+    path('voucher/<int:pk>/', views.voucher_detail, name='voucher_detail'),
     path('voucher/<int:pk>/edit/', views.voucher_edit, name='voucher_edit'),
     path('voucher/<int:pk>/cancel/', views.voucher_cancel, name='voucher_cancel'),
     path('voucher/<int:pk>/post/', views.voucher_post, name='voucher_post'),

@@ -61,7 +61,7 @@
                     <p id="rate-hint" class="text-xs text-gray-400 mt-0.5 hidden">Auto-filled from Interest Master</p>
                     <div id="rate-missing-banner" class="hidden mt-1 rounded bg-amber-50 border border-amber-200 p-2">
                         <p class="text-xs font-medium text-amber-800">No interest slab found.
-                            <a id="configure-interest-link" href="{% url 'accounting:interest_master_create' %}" class="underline">Configure Interest Master &rarr;</a>
+                            <a id="configure-interest-link" href="{% url 'accounting:interest_master_create' %}?next={{ request.path }}" class="underline">Configure Interest Master &rarr;</a>
                         </p>
                     </div>
                 </div>
@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (hint) hint.classList.add('hidden');
                     if (banner) banner.classList.remove('hidden');
                     if (configLink && d.head_id) {
-                        configLink.href = configBaseUrl + '?head=' + d.head_id;
+                        configLink.href = configBaseUrl + '&head=' + d.head_id;
                     }
                     setSubmitState(false);
                 }

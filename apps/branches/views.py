@@ -20,8 +20,20 @@ def _next_branch_code():
 
 @auditor_or_above
 def branch_list(request):
-    branches = Branch.objects.filter(status='active')
-    return render(request, 'branches/list.html', {'branches': branches})
+    status = request.GET.get('status', '')
+    branches = Branch.objects.all()
+    if status:
+        branches = branches.filter(status=status)
+    current_branch = getattr(request, 'current_branch', None)
+    return render(
+        request,
+        'branches/list.html',
+        {
+            'branches': branches,
+            'current_branch': current_branch,
+            'filter_status': status,
+        },
+    )
 
 
 @admin_required
@@ -60,4 +72,7 @@ def switch_branch(request, branch_id):
             return redirect('dashboard:index')
     request.session['current_branch_id'] = branch.id
     messages.success(request, f'Switched to {branch.branch_name}.')
+    next_url = request.GET.get('next') or request.META.get('HTTP_REFERER', '')
+    if next_url and next_url.startswith('/'):
+        return redirect(next_url)
     return redirect('dashboard:index')

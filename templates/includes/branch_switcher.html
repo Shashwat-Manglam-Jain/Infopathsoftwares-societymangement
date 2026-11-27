@@ -17,7 +17,7 @@
          class="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-gray-200 dark:border-slate-700 py-1 z-50">
         <p class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">{% trans "Switch Branch" %}</p>
         {% for branch in available_branches %}
-        <a href="{% url 'branches:switch' branch.id %}"
+        <a href="{% url 'branches:switch' branch.id %}?next={{ request.path }}"
            class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-slate-700
                   {% if current_branch and branch.id == current_branch.id %}text-primary-700 bg-primary-50 dark:bg-primary-900/30 dark:text-primary-300 font-medium{% else %}text-gray-700 dark:text-gray-300{% endif %}">
             <span class="flex items-center justify-between">

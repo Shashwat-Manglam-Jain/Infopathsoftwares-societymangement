@@ -23,6 +23,7 @@
 
     <form method="post">
         {% csrf_token %}
+        {% if next_url %}<input type="hidden" name="next" value="{{ next_url }}">{% endif %}
 
         <div class="bg-white rounded-xl shadow-sm border border-gray-200">
 
@@ -109,7 +110,7 @@
             </div>
 
             <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex flex-wrap items-center justify-end gap-3">
-                <a href="{% url 'accounting:interest_master' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
+                <a href="{% if next_url %}{{ next_url }}{% else %}{% url 'accounting:interest_master' %}{% endif %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
                 <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm">{% trans "Save" %}</button>
             </div>
         </div>

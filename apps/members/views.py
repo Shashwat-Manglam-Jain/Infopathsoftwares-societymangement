@@ -10,6 +10,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from openpyxl import Workbook, load_workbook
 
+from apps.core.date_utils import get_transaction_date
 from apps.accounts.permissions import (
     AuditorOrAboveMixin,
     ManagerRequiredMixin,
@@ -42,7 +43,15 @@ def _save_kyc_documents(request, member):
 
 @auditor_or_above
 def member_list(request):
-    members = Member.objects.select_related('branch').all()
+    from django.db.models import Exists, OuterRef
+
+    from apps.shares.models import ShareHolding
+
+    members = Member.objects.select_related('branch').annotate(
+        is_shareholder=Exists(
+            ShareHolding.objects.filter(member=OuterRef('pk'), status='active', share_count__gt=0)
+        ),
+    )
     if not request.user.can_access_all_branches and request.current_branch:
         members = members.filter(branch=request.current_branch)
 
@@ -60,6 +69,12 @@ def member_list(request):
     if category:
         members = members.filter(category=category)
 
+    member_type = request.GET.get('type', '')
+    if member_type == 'member':
+        members = members.filter(is_shareholder=True)
+    elif member_type == 'customer':
+        members = members.filter(is_shareholder=False)
+
     paginator = Paginator(members, 25)
     page_obj = paginator.get_page(request.GET.get('page'))
     return render(
@@ -70,6 +85,7 @@ def member_list(request):
             'page_obj': page_obj,
             'is_paginated': page_obj.has_other_pages(),
             'paginator': paginator,
+            'member_type': member_type,
         },
     )
 
@@ -184,7 +200,7 @@ class MemberImportView(ManagerRequiredMixin, View):
                         aadhar_no=aadhar,
                         pan_no=str(row.get('pan_no') or '').strip(),
                         occupation=str(row.get('occupation') or '').strip(),
-                        join_date=date.today(),
+                        join_date=get_transaction_date(branch),
                         status='active',
                         category=str(row.get('category') or 'A').strip().upper()[:1] or 'A',
                         created_by=request.user,
@@ -461,8 +477,9 @@ def member_create(request):
             messages.success(request, f'Member {member.name} created successfully.')
             return redirect('members:detail', pk=member.pk)
     else:
+        from apps.core.date_utils import get_transaction_date
         initial = {
-            'join_date': date.today(),
+            'join_date': get_transaction_date(branch),
             'status': 'active',
         }
         form = MemberForm(initial=initial, current_branch=branch)

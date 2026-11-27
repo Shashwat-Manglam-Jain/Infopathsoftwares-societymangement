@@ -43,14 +43,15 @@
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Min Amount" %}</label>
                 <input type="number" name="min_amount" value="{{ min_amount }}" step="0.01" placeholder="0.00"
+                       onchange="this.form.submit()"
                        class="border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500 w-32">
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Max Amount" %}</label>
                 <input type="number" name="max_amount" value="{{ max_amount }}" step="0.01" placeholder="999999.00"
+                       onchange="this.form.submit()"
                        class="border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500 w-32">
             </div>
-            <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">{% trans "Filter" %}</button>
             {% endif %}
             {% include "includes/export_csv.html" %}
         </form>

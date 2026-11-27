@@ -321,67 +321,67 @@ DEFAULT_CHART_OF_ACCOUNTS = [
     },
 
     # =========================================================================
-    # EQUITY (25xx) — Balance Sheet (Liabilities side in cooperative format)
+    # CAPITAL & RESERVES (25xx) — Balance Sheet (Liabilities side)
     # =========================================================================
     {
-        'code': '2500', 'name': 'Capital & Reserves', 'group': 'equity', 'type': 'other',
+        'code': '2500', 'name': 'Capital & Reserves', 'group': 'liability', 'type': 'other',
         'parent': None, 'related': 'group', 'report': 'balance_sheet',
         'allow_txn': False, 'order': 260,
     },
     {
-        'code': '2501', 'name': 'Share Capital', 'group': 'equity', 'type': 'share_capital',
+        'code': '2501', 'name': 'Share Capital', 'group': 'liability', 'type': 'share_capital',
         'parent': '2500', 'related': 'shares', 'report': 'balance_sheet', 'ac_code': '003', 'order': 261,
     },
     {
-        'code': '2501A', 'name': 'Nominal Share Holder', 'group': 'equity', 'type': 'share_capital',
+        'code': '2501A', 'name': 'Nominal Share Holder', 'group': 'liability', 'type': 'share_capital',
         'parent': '2500', 'related': 'shares', 'report': 'balance_sheet', 'ac_code': '094', 'order': 262,
     },
     {
-        'code': '2502', 'name': 'Statutory Reserve Fund (25%)', 'group': 'equity', 'type': 'reserve_fund',
+        'code': '2502', 'name': 'Statutory Reserve Fund (25%)', 'group': 'liability', 'type': 'reserve_fund',
         'parent': '2500', 'related': 'general', 'report': 'balance_sheet', 'order': 263,
     },
     {
-        'code': '2503', 'name': 'Building Fund', 'group': 'equity', 'type': 'other',
+        'code': '2503', 'name': 'Building Fund', 'group': 'liability', 'type': 'other',
         'parent': '2500', 'related': 'general', 'report': 'balance_sheet', 'order': 264,
     },
     {
-        'code': '2504', 'name': 'Education Fund', 'group': 'equity', 'type': 'other',
+        'code': '2504', 'name': 'Education Fund', 'group': 'liability', 'type': 'other',
         'parent': '2500', 'related': 'general', 'report': 'balance_sheet', 'order': 265,
     },
     {
-        'code': '2505', 'name': 'Depreciation Fund', 'group': 'equity', 'type': 'other',
+        'code': '2505', 'name': 'Depreciation Fund', 'group': 'liability', 'type': 'other',
         'parent': '2500', 'related': 'general', 'report': 'balance_sheet', 'order': 266,
     },
     {
-        'code': '2506', 'name': 'Profit & Loss Account', 'group': 'equity', 'type': 'other',
+        'code': '2506', 'name': 'Profit & Loss Account', 'group': 'liability', 'type': 'other',
         'parent': '2500', 'related': 'general', 'report': 'balance_sheet', 'order': 270,
     },
     {
-        'code': '2506A', 'name': 'Accumulated Profit', 'group': 'equity', 'type': 'other',
+        'code': '2506A', 'name': 'Accumulated Profit', 'group': 'liability', 'type': 'other',
         'parent': '2506', 'related': 'general', 'report': 'balance_sheet', 'order': 271,
     },
     {
-        'code': '2507', 'name': 'Social Welfare Fund', 'group': 'equity', 'type': 'other',
+        'code': '2507', 'name': 'Social Welfare Fund', 'group': 'liability', 'type': 'other',
         'parent': '2500', 'related': 'general', 'report': 'balance_sheet', 'order': 272,
     },
     {
-        'code': '2508', 'name': 'Member Welfare Fund', 'group': 'equity', 'type': 'other',
+        'code': '2508', 'name': 'Member Welfare Fund', 'group': 'liability', 'type': 'other',
         'parent': '2500', 'related': 'general', 'report': 'balance_sheet', 'order': 273,
     },
     {
-        'code': '2509', 'name': 'Election Fund', 'group': 'equity', 'type': 'other',
+        'code': '2509', 'name': 'Election Fund', 'group': 'liability', 'type': 'other',
         'parent': '2500', 'related': 'general', 'report': 'balance_sheet', 'order': 274,
     },
     {
-        'code': '2510', 'name': 'Investment Up/Down Fund', 'group': 'equity', 'type': 'other',
+        'code': '2510', 'name': 'Investment Up/Down Fund', 'group': 'liability', 'type': 'other',
         'parent': '2500', 'related': 'general', 'report': 'balance_sheet', 'order': 275,
     },
     {
-        'code': '2511', 'name': 'Dividend', 'group': 'equity', 'type': 'other',
+        'code': '2511', 'name': 'Dividend', 'group': 'liability', 'type': 'other',
         'parent': '2500', 'related': 'shares', 'report': 'balance_sheet', 'ac_code': '056', 'order': 276,
     },
     {
-        'code': '2512', 'name': 'NPA Profit & Loss Reserve', 'group': 'equity', 'type': 'other',
+        'code': '2512', 'name': 'NPA Profit & Loss Reserve', 'group': 'liability', 'type': 'other',
         'parent': '2500', 'related': 'general', 'report': 'balance_sheet', 'order': 277,
     },
 

@@ -5,7 +5,7 @@
 {% block page_title %}{% trans "New Agent" %}{% endblock %}
 
 {% block content %}
-<div class="w-full" x-data="agentForm()">
+<div class="w-full">
 
     {% if form.errors %}
     <div class="rounded-xl bg-red-50 border border-red-200 p-3 mb-4">
@@ -21,16 +21,16 @@
     </div>
     {% endif %}
 
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
 
         <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-            <!-- Agent Details -->
             <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-xl">
                 <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
                     <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                     {% trans "Agent Details" %}
                 </h3>
+                <p class="text-xs text-gray-400 mt-0.5">{% trans "Only members with both savings and security accounts are listed." %}</p>
             </div>
             <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
                 <div>
@@ -47,32 +47,20 @@
                     {{ form.phone }}
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Commission Rate" %} (%)</label>
-                    {{ form.commission_rate }}
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Joining Date" %} <span class="text-red-500">*</span></label>
+                    {{ form.joining_date }}
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Savings Account" %} <span class="text-red-500">*</span></label>
-                    <select name="savings_account" required
-                            x-model="savingsId"
-                            class="searchable w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500">
-                        <option value="">— {% trans "Select member first" %} —</option>
-                        <template x-for="a in savingsAccounts" :key="a.id">
-                            <option :value="a.id" x-text="a.label"></option>
-                        </template>
-                    </select>
-                    <p x-show="!memberId" class="text-xs text-gray-400 mt-0.5">{% trans "Select a member to load their accounts" %}</p>
-                    <p x-show="memberId && !loading && savingsAccounts.length === 0" class="text-xs text-amber-600 mt-0.5">{% trans "No savings account found for this member" %}</p>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Security Deposit Amount" %}</label>
+                    {{ form.security_deposit_amount }}
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Security Deposit Account" %}</label>
-                    <select name="security_deposit_account"
-                            x-model="securityId"
-                            class="searchable w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500">
-                        <option value="">— {% trans "None" %} —</option>
-                        <template x-for="a in securityAccounts" :key="a.id">
-                            <option :value="a.id" x-text="a.label"></option>
-                        </template>
-                    </select>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Security Document" %}</label>
+                    {{ form.security_document }}
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Status" %}</label>
+                    {{ form.status }}
                 </div>
                 <div class="md:col-span-2 lg:col-span-3">
                     <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Collection Area / Route" %}</label>
@@ -82,56 +70,9 @@
 
             <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex flex-wrap items-center justify-end gap-3">
                 <a href="{% url 'agents:list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
-                <button type="submit" :disabled="!savingsId" class="px-6 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">{% trans "Create Agent" %}</button>
+                <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm">{% trans "Create Agent" %}</button>
             </div>
         </div>
     </form>
 </div>
-
-<script>
-function agentForm() {
-    return {
-        memberId: '',
-        savingsId: '',
-        securityId: '',
-        savingsAccounts: [],
-        securityAccounts: [],
-        loading: false,
-        init() {
-            const memberSelect = this.$el.querySelector('[name="member"]');
-            if (memberSelect) {
-                this.memberId = memberSelect.value;
-                if (this.memberId) this.fetchAccounts();
-                memberSelect.addEventListener('change', () => {
-                    this.memberId = memberSelect.value;
-                    this.savingsId = '';
-                    this.securityId = '';
-                    this.savingsAccounts = [];
-                    this.securityAccounts = [];
-                    if (this.memberId) this.fetchAccounts();
-                });
-            }
-        },
-        async fetchAccounts() {
-            this.loading = true;
-            try {
-                const resp = await fetch(`{% url 'agents:member_accounts_api' member_id=0 %}`.replace('/0/', `/${this.memberId}/`));
-                const data = await resp.json();
-                this.savingsAccounts = data.savings || [];
-                this.securityAccounts = data.security || [];
-                if (this.savingsAccounts.length === 1) {
-                    this.savingsId = this.savingsAccounts[0].id;
-                }
-                if (this.securityAccounts.length === 1) {
-                    this.securityId = this.securityAccounts[0].id;
-                }
-            } catch (e) {
-                this.savingsAccounts = [];
-                this.securityAccounts = [];
-            }
-            this.loading = false;
-        }
-    };
-}
-</script>
 {% endblock %}

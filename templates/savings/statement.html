@@ -32,13 +32,16 @@
         <form method="get" class="px-5 py-3 flex flex-wrap items-end gap-4">
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "From Date" %}</label>
-                <input type="date" name="from_date" value="{{ from_date }}" required class="rounded border border-gray-300 px-2.5 py-1.5 text-sm">
+                <input type="date" name="from_date" value="{{ from_date }}" required
+                       onchange="this.form.submit()"
+                       class="rounded border border-gray-300 px-2.5 py-1.5 text-sm">
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "To Date" %}</label>
-                <input type="date" name="to_date" value="{{ to_date }}" required class="rounded border border-gray-300 px-2.5 py-1.5 text-sm">
+                <input type="date" name="to_date" value="{{ to_date }}" required
+                       onchange="this.form.submit()"
+                       class="rounded border border-gray-300 px-2.5 py-1.5 text-sm">
             </div>
-            <button type="submit" class="px-5 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">{% trans "View Statement" %}</button>
             {% if transactions %}<button type="button" onclick="window.print()" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Print" %}</button>{% endif %}
             <a href="{% url 'savings:detail' pk=account.pk %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">&larr; {% trans "Back" %}</a>
         </form>

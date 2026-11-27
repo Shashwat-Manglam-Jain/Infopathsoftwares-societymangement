@@ -9,10 +9,13 @@
     <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/css/tom-select.css" rel="stylesheet">
     <style>
-        .ts-wrapper.single .ts-control { position: relative; cursor: pointer; }
-        .ts-wrapper.single.has-items .ts-control > input { opacity: 0 !important; position: absolute !important; left: -9999px !important; width: 0 !important; }
-        .ts-wrapper .clear-button { right: 28px !important; font-size: 18px; color: #9ca3af; opacity: 1 !important; cursor: pointer; z-index: 2; }
-        .ts-wrapper .clear-button:hover { color: #ef4444; }
+        .ts-wrapper.plugin-dropdown_input .ts-control { cursor: pointer; }
+        .ts-wrapper.plugin-dropdown_input .ts-control > input { display: none; }
+        .ts-wrapper.plugin-dropdown_input .dropdown-input-wrap { padding: 6px 8px; border-bottom: 1px solid #e5e7eb; }
+        .ts-wrapper.plugin-dropdown_input .dropdown-input { width: 100%; padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.8125rem; outline: none; }
+        .ts-wrapper.plugin-dropdown_input .dropdown-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+        .ts-wrapper { min-width: 7rem; }
+        .ts-dropdown { min-width: 100% !important; }
         input[type="text"], input[type="search"], textarea { text-transform: uppercase; }
         input[type="text"]::placeholder, input[type="search"]::placeholder, textarea::placeholder { text-transform: none; }
     </style>
@@ -280,20 +283,11 @@
 <script>
 document.querySelectorAll('select').forEach(function(el) {
     new TomSelect(el, {
+        plugins: ['dropdown_input'],
         create: false,
+        allowEmptyOption: true,
         sortField: { field: 'text', direction: 'asc' },
-        plugins: { clear_button: { title: 'Clear selection' } },
-        openOnFocus: false,
-        onItemAdd: function() { this.setTextboxValue(''); this.close(); },
-        onInitialize: function() {
-            var ts = this;
-            ts.control.addEventListener('click', function(e) {
-                if (e.target.closest('.clear-button')) return;
-                if (ts.items.length > 0) return;
-                ts.open();
-                ts.control_input.focus();
-            });
-        },
+        onItemAdd: function() { this.setTextboxValue(''); this.close(); this.blur(); },
         render: {
             no_results: function() { return '<div class="no-results" style="padding:10px;text-align:center;color:#94a3b8;">{% trans "No results found" %}</div>'; }
         }

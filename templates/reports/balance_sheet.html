@@ -41,9 +41,10 @@
         <div class="flex flex-col sm:flex-row items-end gap-3">
             <div class="flex-1">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{% trans "As On Date" %}</label>
-                <input type="date" name="as_on_date" value="{{ as_on_date|default:'' }}" max="{% now 'Y-m-d' %}" required class="block w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white">
+                <input type="date" name="as_on_date" value="{{ as_on_date|default:'' }}" max="{% now 'Y-m-d' %}" required
+                       onchange="this.form.submit()"
+                       class="block w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white">
             </div>
-            <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">{% trans "Generate" %}</button>
             {% if liability_groups or asset_groups %}{% include "includes/export_csv.html" %}
             <button onclick="window.print()" type="button" class="inline-flex items-center px-4 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                 <svg class="h-4 w-4 mr-1.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>

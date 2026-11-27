@@ -2,146 +2,237 @@
 {% load i18n %}
 
 {% block title %}{% trans "Agent Collections" %} — InfoSociety{% endblock %}
-{% block page_title %}{% trans "Pigmy Module" %}{% endblock %}
+{% block page_title %}{% trans "Daily Collection" %}{% endblock %}
 
 {% block content %}
-<div class="max-w-full space-y-4">
+<div class="w-full space-y-5">
 
-
+    <!-- Page Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
             <h2 class="text-lg font-semibold text-gray-900">{% trans "Agent Collections" %}</h2>
             <p class="text-sm text-gray-500">{% trans "Agent-wise pigmy collection records" %}</p>
         </div>
         {% if request.user.is_cashier %}
-        <a href="{% url 'agents:collection_create' %}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm">
+        <a href="{% url 'agents:collection_create' %}" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm transition">
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            Record Collection
+            {% trans "Record Collection" %}
         </a>
         {% endif %}
     </div>
 
-    <form method="get" class="bg-white rounded-xl shadow-sm border border-gray-200 px-4 py-3">
-        <div class="flex flex-wrap items-end gap-3">
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Agent" %}</label>
-                <select name="agent" class="searchable text-sm border border-gray-300 rounded px-2.5 py-1.5 focus:ring-primary-500 focus:border-primary-500">
-                    <option value="">{% trans "All Agents" %}</option>
-                    {% for ag in agents %}
-                    <option value="{{ ag.id }}" {% if request.GET.agent == ag.id|stringformat:"d" %}selected{% endif %}>{{ ag.agent_code }} — {{ ag.member.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Type" %}</label>
-                <select name="type" class="text-sm border border-gray-300 rounded px-2.5 py-1.5 focus:ring-primary-500 focus:border-primary-500">
-                    <option value="">{% trans "All Types" %}</option>
-                    <option value="daily" {% if request.GET.type == "daily" %}selected{% endif %}>{% trans "Daily" %}</option>
-                    <option value="weekly" {% if request.GET.type == "weekly" %}selected{% endif %}>{% trans "Weekly" %}</option>
-                    <option value="monthly" {% if request.GET.type == "monthly" %}selected{% endif %}>{% trans "Monthly" %}</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Status" %}</label>
-                <select name="status" class="text-sm border border-gray-300 rounded px-2.5 py-1.5 focus:ring-primary-500 focus:border-primary-500">
-                    <option value="">{% trans "All Status" %}</option>
-                    {% for val, label in status_choices %}
-                    <option value="{{ val }}" {% if request.GET.status == val %}selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "From" %}</label>
-                <input type="date" name="date_from" value="{{ request.GET.date_from }}" class="text-sm border border-gray-300 rounded px-2.5 py-1.5 focus:ring-primary-500 focus:border-primary-500">
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "To" %}</label>
-                <input type="date" name="date_to" value="{{ request.GET.date_to }}" class="text-sm border border-gray-300 rounded px-2.5 py-1.5 focus:ring-primary-500 focus:border-primary-500">
-            </div>
-            <div class="flex items-center gap-2">
-                <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">{% trans "Filter" %}</button>
-                <a href="{% url 'agents:collection_list' %}" class="px-3 py-1.5 border border-gray-300 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50">{% trans "Clear" %}</a>
+    <!-- Filter Card -->
+    <form method="get">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200" x-data="{ open: {% if request.GET.agent or request.GET.type or request.GET.status or request.GET.date_from or request.GET.date_to %}true{% else %}false{% endif %} }">
+            <button type="button" @click="open = !open" class="w-full px-5 py-3 flex items-center justify-between rounded-xl hover:bg-gray-50 transition">
+                <span class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+                    {% trans "Filters" %}
+                    {% if request.GET.agent or request.GET.type or request.GET.status or request.GET.date_from or request.GET.date_to %}
+                    <span class="w-2 h-2 rounded-full bg-primary-500"></span>
+                    {% endif %}
+                </span>
+                <svg class="h-4 w-4 text-gray-400 transition-transform duration-200" :class="open && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <div x-show="open" x-collapse>
+                <div class="px-5 pb-4 pt-1 border-t border-gray-100">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                        <div class="col-span-2 sm:col-span-1 lg:col-span-2">
+                            <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Agent" %}</label>
+                            <select name="agent" onchange="this.form.submit()" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                                <option value="">{% trans "All Agents" %}</option>
+                                {% for ag in agents %}
+                                <option value="{{ ag.id }}" {% if request.GET.agent == ag.id|stringformat:"d" %}selected{% endif %}>{{ ag.agent_code }} — {{ ag.member.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Type" %}</label>
+                            <select name="type" onchange="this.form.submit()" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                                <option value="">{% trans "All" %}</option>
+                                <option value="daily" {% if request.GET.type == "daily" %}selected{% endif %}>{% trans "Daily" %}</option>
+                                <option value="weekly" {% if request.GET.type == "weekly" %}selected{% endif %}>{% trans "Weekly" %}</option>
+                                <option value="monthly" {% if request.GET.type == "monthly" %}selected{% endif %}>{% trans "Monthly" %}</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Status" %}</label>
+                            <select name="status" onchange="this.form.submit()" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                                <option value="">{% trans "All" %}</option>
+                                {% for val, label in status_choices %}
+                                <option value="{{ val }}" {% if request.GET.status == val %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "From" %}</label>
+                            <input type="date" name="date_from" value="{{ request.GET.date_from }}"
+                                   onchange="this.form.submit()"
+                                   class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "To" %}</label>
+                            <input type="date" name="date_to" value="{{ request.GET.date_to }}"
+                                   onchange="this.form.submit()"
+                                   class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-primary-500 focus:border-primary-500">
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">
+                        {% if request.GET.agent or request.GET.type or request.GET.status or request.GET.date_from or request.GET.date_to %}
+                        <a href="{% url 'agents:collection_list' %}" class="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded" title="{% trans 'Clear filters' %}">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
     </form>
 
+    <!-- Collections Table -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        {% if collections %}
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
                 <thead>
-                    <tr class="text-left text-xs font-semibold text-gray-500 uppercase bg-gray-50">
-                        <th class="px-2 py-2 w-8"></th>
-                        <th class="px-4 py-2">{% trans "Date" %}</th>
-                        <th class="px-4 py-2">{% trans "Agent" %}</th>
-                        <th class="px-4 py-2 hidden md:table-cell">{% trans "Branch" %}</th>
-                        <th class="px-4 py-2 text-right">{% trans "Clients" %}</th>
-                        <th class="px-4 py-2 text-right">{% trans "Collected" %}</th>
-                        <th class="px-4 py-2">{% trans "Status" %}</th>
-                        <th class="px-4 py-2 text-right">{% trans "Action" %}</th>
+                    <tr class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-200">
+                        <th class="pl-4 pr-1 py-3 w-8"></th>
+                        <th class="px-4 py-3">{% trans "Date" %}</th>
+                        <th class="px-4 py-3">{% trans "Agent" %}</th>
+                        <th class="px-4 py-3 hidden lg:table-cell">{% trans "Branch" %}</th>
+                        <th class="px-4 py-3 text-right">{% trans "Clients" %}</th>
+                        <th class="px-4 py-3 text-right">{% trans "Amount" %}</th>
+                        <th class="px-4 py-3">{% trans "Status" %}</th>
+                        <th class="px-4 py-3 text-right">{% trans "Action" %}</th>
                     </tr>
                 </thead>
                 {% for col in collections %}
-                <tbody x-data="{ open: false }" class="border-b border-gray-100">
-                    <tr class="hover:bg-gray-50 cursor-pointer" @click="open = !open">
-                        <td class="px-2 py-2 text-gray-400">
-                            <svg class="h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-90' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                <tbody x-data="{ open: false }" class="border-b border-gray-100 last:border-0">
+                    <tr class="hover:bg-gray-50/70 cursor-pointer transition-colors" @click="open = !open">
+                        <td class="pl-4 pr-1 py-3 text-gray-400">
+                            <svg class="h-4 w-4 transition-transform duration-200" :class="open && 'rotate-90'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                         </td>
-                        <td class="px-4 py-2 text-gray-900">{{ col.collection_date|date:"d-M-Y" }}</td>
-                        <td class="px-4 py-2 text-gray-900" @click.stop>
-                            <a href="{% url 'agents:detail' pk=col.agent.pk %}" class="text-primary-600 hover:underline">{{ col.agent.agent_code }}</a>
-                            <span class="text-gray-500"> — {{ col.agent.member.name }}</span>
+                        <td class="px-4 py-3">
+                            <span class="text-gray-900 font-medium">{{ col.collection_date|date:"d M Y" }}</span>
+                            <span class="block text-xs text-gray-400 sm:hidden">{{ col.branch.branch_name }}</span>
                         </td>
-                        <td class="px-4 py-2 text-gray-500 hidden md:table-cell">{{ col.branch.branch_name }}</td>
-                        <td class="px-4 py-2 text-right text-gray-900">{{ col.total_clients_collected }}</td>
-                        <td class="px-4 py-2 text-right font-medium text-gray-900">&#8377;{{ col.collected_amount|floatformat:2 }}</td>
-                        <td class="px-4 py-2">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if col.status == 'reconciled' %}bg-green-100 text-green-800{% elif col.status == 'submitted' %}bg-blue-100 text-blue-800{% elif col.status == 'discrepancy' %}bg-red-100 text-red-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">{{ col.get_status_display }}</span>
+                        <td class="px-4 py-3" @click.stop>
+                            <a href="{% url 'agents:detail' pk=col.agent.pk %}" class="text-primary-600 hover:text-primary-700 font-medium hover:underline">{{ col.agent.agent_code }}</a>
+                            <span class="text-gray-500 text-xs ml-1">{{ col.agent.member.name }}</span>
                         </td>
-                        <td class="px-4 py-2 text-right" @click.stop>
-                            <a href="{% url 'agents:collection_detail' pk=col.pk %}" class="p-1 text-gray-400 hover:text-primary-600" title="{% trans 'View Detail' %}">
-                                <svg class="h-4 w-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        <td class="px-4 py-3 text-gray-500 hidden lg:table-cell">{{ col.branch.branch_name }}</td>
+                        <td class="px-4 py-3 text-right">
+                            <span class="inline-flex items-center justify-center min-w-[1.75rem] px-1.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">{{ col.total_clients_collected }}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right font-semibold text-gray-900 tabular-nums">&#8377;{{ col.collected_amount|floatformat:2 }}</td>
+                        <td class="px-4 py-3">
+                            {% if col.status == 'reconciled' %}
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 ring-1 ring-inset ring-green-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                {{ col.get_status_display }}
+                            </span>
+                            {% elif col.status == 'submitted' %}
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                                {{ col.get_status_display }}
+                            </span>
+                            {% elif col.status == 'discrepancy' %}
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 ring-1 ring-inset ring-red-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                {{ col.get_status_display }}
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                {{ col.get_status_display }}
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3 text-right" @click.stop>
+                            <a href="{% url 'agents:collection_detail' pk=col.pk %}" class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-gray-600 hover:text-primary-700 border border-gray-200 rounded-lg hover:bg-primary-50 hover:border-primary-200 transition" title="{% trans 'View Detail' %}">
+                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                <span class="hidden sm:inline">{% trans "View" %}</span>
                             </a>
                         </td>
                     </tr>
-                    <tr :class="open ? '' : 'hidden'">
-                        <td colspan="8" class="px-0 py-0 bg-gray-50">
-                            <table class="w-full text-xs">
-                                <thead>
-                                    <tr class="text-left text-xs font-semibold text-gray-400 uppercase">
-                                        <th class="px-6 py-1.5">{% trans "Account" %}</th>
-                                        <th class="px-4 py-1.5">{% trans "Member" %}</th>
-                                        <th class="px-4 py-1.5">{% trans "Type" %}</th>
-                                        <th class="px-4 py-1.5 text-right">{% trans "Installment #" %}</th>
-                                        <th class="px-4 py-1.5 text-right">{% trans "Amount" %}</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-100">
-                                    {% for txn in col.client_transactions %}
-                                    <tr>
-                                        <td class="px-6 py-1.5 font-mono text-gray-700">{{ txn.account.account_no }}</td>
-                                        <td class="px-4 py-1.5 text-gray-700">{{ txn.account.member.name }}</td>
-                                        <td class="px-4 py-1.5">
-                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium {% if txn.account.deposit_type == 'daily' %}bg-blue-100 text-blue-700{% elif txn.account.deposit_type == 'weekly' %}bg-amber-100 text-amber-700{% else %}bg-purple-100 text-purple-700{% endif %}">{{ txn.account.get_deposit_type_display }}</span>
-                                        </td>
-                                        <td class="px-4 py-1.5 text-right text-gray-500">{{ txn.installment_no }}</td>
-                                        <td class="px-4 py-1.5 text-right font-medium text-gray-900">{{ txn.amount|floatformat:2 }}</td>
-                                    </tr>
-                                    {% empty %}
-                                    <tr><td colspan="5" class="px-6 py-2 text-gray-400">{% trans "No transactions" %}</td></tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                    <!-- Expanded Detail -->
+                    <tr x-show="open" x-collapse>
+                        <td colspan="8" class="p-0">
+                            <div class="bg-gray-50/70 border-t border-gray-100 px-4 py-3">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <svg class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                                    <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">{% trans "Transaction Details" %}</span>
+                                </div>
+                                <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                                    <table class="w-full text-xs">
+                                        <thead>
+                                            <tr class="text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider bg-gray-50/50">
+                                                <th class="px-4 py-2">{% trans "Account No" %}</th>
+                                                <th class="px-4 py-2">{% trans "Member Name" %}</th>
+                                                <th class="px-4 py-2">{% trans "Type" %}</th>
+                                                <th class="px-4 py-2 text-right">{% trans "Inst #" %}</th>
+                                                <th class="px-4 py-2 text-right">{% trans "Amount" %}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-100">
+                                            {% for txn in col.client_transactions %}
+                                            <tr class="hover:bg-gray-50/50">
+                                                <td class="px-4 py-2 font-mono text-gray-700">{{ txn.account.account_no }}</td>
+                                                <td class="px-4 py-2 text-gray-700">{{ txn.account.member.name }}</td>
+                                                <td class="px-4 py-2">
+                                                    {% if txn.account.deposit_type == 'daily' %}
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-200">{% trans "Daily" %}</span>
+                                                    {% elif txn.account.deposit_type == 'weekly' %}
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-600 ring-1 ring-inset ring-amber-200">{% trans "Weekly" %}</span>
+                                                    {% else %}
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-purple-50 text-purple-600 ring-1 ring-inset ring-purple-200">{% trans "Monthly" %}</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="px-4 py-2 text-right text-gray-500 tabular-nums">{{ txn.installment_no }}</td>
+                                                <td class="px-4 py-2 text-right font-semibold text-gray-900 tabular-nums">&#8377;{{ txn.amount|floatformat:2 }}</td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="5" class="px-4 py-4 text-center text-gray-400">
+                                                    <svg class="w-5 h-5 mx-auto mb-1 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+                                                    {% trans "No transactions" %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </td>
                     </tr>
-                </tbody>
-                {% empty %}
-                <tbody>
-                    <tr><td colspan="8" class="px-4 py-6 text-center text-sm text-gray-400">{% trans "No collections recorded yet." %}</td></tr>
                 </tbody>
                 {% endfor %}
             </table>
         </div>
+
+        <!-- Table Footer Summary -->
+        <div class="px-5 py-3 bg-gray-50/50 border-t border-gray-200 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500">
+            <span>{% trans "Showing" %} {{ collections|length }} {% trans "of" %} {{ paginator.count }} {% trans "collections" %}</span>
+            <span class="text-gray-400">{% trans "Click a row to expand transaction details" %}</span>
+        </div>
+        {% else %}
+        <!-- Empty State -->
+        <div class="px-6 py-16 text-center">
+            <div class="mx-auto w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                <svg class="h-8 w-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+            </div>
+            <h3 class="text-sm font-semibold text-gray-900 mb-1">{% trans "No collections found" %}</h3>
+            <p class="text-sm text-gray-500 mb-4">{% trans "No pigmy collections match your current filters." %}</p>
+            {% if request.user.is_cashier %}
+            <a href="{% url 'agents:collection_create' %}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm transition">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                {% trans "Record Collection" %}
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
+
     {% include "includes/pagination.html" %}
 </div>
 {% endblock %}

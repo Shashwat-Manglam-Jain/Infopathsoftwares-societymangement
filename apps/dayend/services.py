@@ -249,12 +249,13 @@ def run_year_end(branch, financial_year, user):
             reserves_account = ChartOfAccounts.objects.filter(
                 related_table_name='general',
                 name__icontains='reserve',
-                account_group='equity',
+                account_group__in=['liability', 'equity'],
             ).first()
             if not reserves_account:
                 reserves_account = ChartOfAccounts.objects.filter(
-                    account_group='equity',
+                    account_group__in=['liability', 'equity'],
                     allow_transactions=True,
+                    related_table_name='general',
                 ).first()
 
             if reserves_account and profit_or_loss != Decimal('0'):

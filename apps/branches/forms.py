@@ -27,7 +27,7 @@ class BranchForm(forms.ModelForm):
             'manager',
         ]
         widgets = {
-            'branch_code': forms.TextInput(attrs={'class': tw}),
+            'branch_code': forms.HiddenInput(),
             'branch_name': forms.TextInput(attrs={'class': tw}),
             'address': forms.Textarea(attrs={'class': tw, 'rows': 3}),
             'address_line_2': forms.TextInput(attrs={'class': tw}),

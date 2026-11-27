@@ -123,7 +123,33 @@ def fd_detail(request, pk):
     if not has_branch_access(request, fd.branch):
         messages.error(request, 'You do not have access to this FD.')
         return redirect('deposits:fd_list')
-    return render(request, 'deposits/fd_detail.html', {'fd': fd})
+
+    from apps.accounting.models import JournalLine
+
+    pending_vouchers = (
+        JournalLine.objects.filter(
+            account_number=fd.fd_no,
+            journal_entry__is_posted=False,
+            journal_entry__is_rejected=False,
+            journal_entry__is_reversed=False,
+        )
+        .select_related('journal_entry', 'journal_entry__created_by')
+        .order_by('-journal_entry__entry_date')[:20]
+    )
+    posted_vouchers = (
+        JournalLine.objects.filter(
+            account_number=fd.fd_no,
+            journal_entry__is_posted=True,
+            journal_entry__is_reversed=False,
+        )
+        .select_related('journal_entry', 'journal_entry__created_by')
+        .order_by('-journal_entry__entry_date')[:20]
+    )
+    return render(
+        request,
+        'deposits/fd_detail.html',
+        {'fd': fd, 'pending_vouchers': pending_vouchers, 'posted_vouchers': posted_vouchers},
+    )
 
 
 @manager_required
@@ -274,6 +300,28 @@ def rd_detail(request, pk):
     installments = RDInstallment.objects.filter(rd=rd).order_by('installment_no')
     paid_count = installments.filter(status='paid').count()
     total_deposited = sum(i.paid_amount for i in installments if i.status == 'paid')
+
+    from apps.accounting.models import JournalLine
+
+    pending_vouchers = (
+        JournalLine.objects.filter(
+            account_number=rd.rd_no,
+            journal_entry__is_posted=False,
+            journal_entry__is_rejected=False,
+            journal_entry__is_reversed=False,
+        )
+        .select_related('journal_entry', 'journal_entry__created_by')
+        .order_by('-journal_entry__entry_date')[:20]
+    )
+    posted_vouchers = (
+        JournalLine.objects.filter(
+            account_number=rd.rd_no,
+            journal_entry__is_posted=True,
+            journal_entry__is_reversed=False,
+        )
+        .select_related('journal_entry', 'journal_entry__created_by')
+        .order_by('-journal_entry__entry_date')[:20]
+    )
     return render(
         request,
         'deposits/rd_detail.html',
@@ -282,6 +330,8 @@ def rd_detail(request, pk):
             'installments': installments,
             'paid_count': paid_count,
             'total_deposited': total_deposited,
+            'pending_vouchers': pending_vouchers,
+            'posted_vouchers': posted_vouchers,
         },
     )
 

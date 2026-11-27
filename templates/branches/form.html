@@ -5,10 +5,16 @@
 {% block page_title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="max-w-full">
+<div class="max-w-full" x-data="{
+    showAdvanced: false,
+    name: '',
+    isHO: {% if form.is_head_office.value %}true{% else %}false{% endif %},
+    isActive: {% if form.instance.pk %}{{ form.instance.status|yesno:'false,true,true' }}{% else %}true{% endif %},
+    get statusVal() { return this.isActive ? 'active' : 'inactive' }
+}" x-init="isActive = '{{ form.status.value|default:'active' }}' === 'active'">
 
     {% if form.errors %}
-    <div class="rounded-lg bg-red-50 border border-red-200 p-4 mb-5">
+    <div class="rounded-xl bg-red-50 border border-red-200 p-4 mb-5">
         <h3 class="text-sm font-medium text-red-800 flex items-center gap-2">
             <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
             {% trans "Please correct the errors below" %}
@@ -23,109 +29,260 @@
 
     <form method="post">
         {% csrf_token %}
+        {{ form.branch_code }}
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
 
-            <!-- Basic Details -->
-            <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-xl">
-                <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                    {% trans "Branch Details" %}
-                </h3>
-            </div>
-            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ form.branch_code.label }} <span class="text-red-500">*</span></label>
-                    {{ form.branch_code }}
+            <!-- LEFT: Form (3 cols) -->
+            <div class="lg:col-span-3 space-y-5">
+
+                <!-- Branch Identity -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-xl">
+                        <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                            <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                            {% trans "Branch Identity" %}
+                        </h3>
+                    </div>
+                    <div class="px-5 py-5 space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="{{ form.branch_name.id_for_label }}" class="block text-xs font-medium text-gray-500 mb-1">{{ form.branch_name.label }} <span class="text-red-500">*</span></label>
+                                <input type="text" name="branch_name" x-model="name"
+                                       x-init="name = '{{ form.branch_name.value|default:'' }}'"
+                                       value="{{ form.branch_name.value|default:'' }}"
+                                       id="{{ form.branch_name.id_for_label }}"
+                                       maxlength="200" required
+                                       class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500"
+                                       placeholder="{% trans 'e.g. Head Office, Karve Nagar' %}">
+                            </div>
+                            <div class="flex items-end">
+                                <label class="flex items-center gap-2.5 cursor-pointer w-full px-4 py-2.5 rounded-lg border transition-colors"
+                                       :class="isHO ? 'bg-primary-50 border-primary-300 ring-1 ring-primary-200' : 'border-gray-200 hover:bg-gray-50'">
+                                    <input type="checkbox" name="is_head_office" x-model="isHO"
+                                           {% if form.is_head_office.value %}checked{% endif %}
+                                           class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                                    <div>
+                                        <span class="text-sm font-medium text-gray-700">{{ form.is_head_office.label }}</span>
+                                        <p class="text-xs text-gray-400">{% trans "Main office of the society" %}</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ form.branch_name.label }} <span class="text-red-500">*</span></label>
-                    {{ form.branch_name }}
+
+                <!-- Location & Contact -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-xl">
+                        <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                            <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            {% trans "Location & Contact" %}
+                        </h3>
+                    </div>
+                    <div class="px-5 py-5 space-y-4">
+                        <div>
+                            <label for="{{ form.address.id_for_label }}" class="block text-xs font-medium text-gray-500 mb-1">{{ form.address.label }}</label>
+                            {{ form.address }}
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label for="{{ form.city.id_for_label }}" class="block text-xs font-medium text-gray-500 mb-1">{{ form.city.label }}</label>
+                                {{ form.city }}
+                            </div>
+                            <div>
+                                <label for="{{ form.state.id_for_label }}" class="block text-xs font-medium text-gray-500 mb-1">{{ form.state.label }}</label>
+                                {{ form.state }}
+                            </div>
+                            <div>
+                                <label for="{{ form.pincode.id_for_label }}" class="block text-xs font-medium text-gray-500 mb-1">{{ form.pincode.label }}</label>
+                                {{ form.pincode }}
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="{{ form.phone.id_for_label }}" class="block text-xs font-medium text-gray-500 mb-1">{{ form.phone.label }}</label>
+                                {{ form.phone }}
+                            </div>
+                            <div>
+                                <label for="{{ form.email.id_for_label }}" class="block text-xs font-medium text-gray-500 mb-1">{{ form.email.label }}</label>
+                                {{ form.email }}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ form.ifsc_code.label }}</label>
-                    {{ form.ifsc_code }}
+
+                <!-- Services & Management -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-xl">
+                        <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                            <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            {% trans "Services & Management" %}
+                        </h3>
+                    </div>
+                    <div class="px-5 py-5 space-y-4">
+                        <div class="flex flex-wrap gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer px-4 py-2.5 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+                                {{ form.locker_facility }}
+                                <span class="text-sm text-gray-700">{{ form.locker_facility.label }}</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer px-4 py-2.5 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+                                {{ form.neft_imps_service }}
+                                <span class="text-sm text-gray-700">{{ form.neft_imps_service.label }}</span>
+                            </label>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="{{ form.manager.id_for_label }}" class="block text-xs font-medium text-gray-500 mb-1">{{ form.manager.label }}</label>
+                                {{ form.manager }}
+                            </div>
+                            <div>
+                                <label for="{{ form.opening_date.id_for_label }}" class="block text-xs font-medium text-gray-500 mb-1">{{ form.opening_date.label }}</label>
+                                {{ form.opening_date }}
+                            </div>
+                        </div>
+                        <input type="hidden" name="status" :value="statusVal">
+                    </div>
                 </div>
-                <div class="md:col-span-2 lg:col-span-3">
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ form.address.label }}</label>
-                    {{ form.address }}
+
+                <!-- Advanced (collapsible) -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <button type="button" @click="showAdvanced = !showAdvanced" class="w-full px-5 py-3 flex items-center justify-between rounded-xl hover:bg-gray-50 transition-colors">
+                        <h3 class="text-sm font-semibold text-gray-500 flex items-center gap-2">
+                            <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                            {% trans "Additional Details" %}
+                        </h3>
+                        <svg class="h-4 w-4 text-gray-400 transition-transform" :class="showAdvanced && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div x-show="showAdvanced" x-collapse class="border-t border-gray-200">
+                        <div class="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="{{ form.ifsc_code.id_for_label }}" class="block text-xs font-medium text-gray-500 mb-1">{{ form.ifsc_code.label }}</label>
+                                {{ form.ifsc_code }}
+                                <p class="mt-1 text-xs text-gray-400">{% trans "11-character bank IFSC code" %}</p>
+                            </div>
+                            <div>
+                                <label for="{{ form.address_line_2.id_for_label }}" class="block text-xs font-medium text-gray-500 mb-1">{{ form.address_line_2.label }}</label>
+                                {{ form.address_line_2 }}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ form.address_line_2.label }}</label>
-                    {{ form.address_line_2 }}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ form.city.label }}</label>
-                    {{ form.city }}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ form.state.label }}</label>
-                    {{ form.state }}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ form.pincode.label }}</label>
-                    {{ form.pincode }}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ form.phone.label }}</label>
-                    {{ form.phone }}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ form.email.label }}</label>
-                    {{ form.email }}
+
+                <!-- Actions -->
+                <div class="flex flex-wrap items-center justify-end gap-3">
+                    <a href="{% url 'branches:list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
+                    <button type="submit" class="px-6 py-2.5 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm">{% trans "Save Branch" %}</button>
                 </div>
             </div>
 
-            <!-- Features -->
-            <div class="px-5 py-3 border-b border-t border-gray-200 bg-gray-50/50">
-                <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                    {% trans "Features & Services" %}
-                </h3>
-            </div>
-            <div class="px-5 py-4">
-                <div class="flex flex-wrap gap-x-8 gap-y-3">
-                    <label class="flex items-center gap-2 cursor-pointer px-4 py-2.5 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-                        {{ form.is_head_office }}
-                        <span class="text-sm text-gray-700">{{ form.is_head_office.label }}</span>
-                    </label>
-                    <label class="flex items-center gap-2 cursor-pointer px-4 py-2.5 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-                        {{ form.locker_facility }}
-                        <span class="text-sm text-gray-700">{{ form.locker_facility.label }}</span>
-                    </label>
-                    <label class="flex items-center gap-2 cursor-pointer px-4 py-2.5 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-                        {{ form.neft_imps_service }}
-                        <span class="text-sm text-gray-700">{{ form.neft_imps_service.label }}</span>
-                    </label>
+            <!-- RIGHT: Preview & Help (2 cols) -->
+            <div class="lg:col-span-2">
+                <div class="lg:sticky lg:top-6 space-y-5">
+
+                    <!-- Branch Card Preview -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <div class="bg-gradient-to-br from-primary-600 to-primary-700 px-5 py-6 text-white">
+                            <div class="flex items-start gap-3">
+                                <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
+                                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-medium text-white/60 uppercase tracking-wider">{% trans "Preview" %}</p>
+                                    <h3 class="text-lg font-bold truncate mt-0.5" x-text="name.trim() || '{% trans "Branch Name" %}'"></h3>
+                                    <div class="flex items-center gap-2 mt-2">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-white/20">
+                                            <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/></svg>
+                                            {{ form.branch_code.value }}
+                                        </span>
+                                        <span x-show="isHO" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-400/30 text-amber-100">
+                                            <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                                            {% trans "Head Office" %}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-5 py-4 divide-y divide-gray-100">
+                            <div class="flex items-center justify-between py-2.5 text-sm">
+                                <span class="text-gray-500">{% trans "Status" %}</span>
+                                {% if form.instance.pk %}
+                                <button type="button" @click="isActive = !isActive"
+                                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold cursor-pointer transition-colors"
+                                        :class="isActive ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-600 hover:bg-red-200'">
+                                    <span class="w-1.5 h-1.5 rounded-full" :class="isActive ? 'bg-green-500' : 'bg-red-400'"></span>
+                                    <span x-text="isActive ? '{% trans "Active" %}' : '{% trans "Inactive" %}'"></span>
+                                    <svg class="h-3 w-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/></svg>
+                                </button>
+                                {% else %}
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-700">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                    {% trans "Active" %}
+                                </span>
+                                {% endif %}
+                            </div>
+                            <div class="flex items-center justify-between py-2.5 text-sm">
+                                <span class="text-gray-500">{% trans "Branch Code" %}</span>
+                                <span class="font-mono font-semibold text-gray-800">{{ form.branch_code.value }}</span>
+                            </div>
+                            <div class="flex items-center justify-between py-2.5 text-sm">
+                                <span class="text-gray-500">{% trans "Type" %}</span>
+                                <span class="text-gray-800 font-medium" x-text="isHO ? '{% trans "Head Office" %}' : '{% trans "Sub Branch" %}'"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- How Branches Work -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-xl">
+                            <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                <svg class="h-4 w-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                {% trans "How Branches Work" %}
+                            </h3>
+                        </div>
+                        <div class="p-5 space-y-4">
+                            <div class="flex gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
+                                    <svg class="h-4 w-4 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-700">{% trans "Members & Accounts" %}</p>
+                                    <p class="text-xs text-gray-500 mt-0.5">{% trans "Each member, savings account, loan and deposit is linked to a branch. Staff see only their branch data." %}</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
+                                    <svg class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-700">{% trans "Day-End & Transactions" %}</p>
+                                    <p class="text-xs text-gray-500 mt-0.5">{% trans "Each branch runs its own working day. Receipts, payments, and vouchers are recorded per branch." %}</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
+                                    <svg class="h-4 w-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-700">{% trans "Head Office" %}</p>
+                                    <p class="text-xs text-gray-500 mt-0.5">{% trans "The head office is the default branch for new staff and is used for consolidated reporting across all branches." %}</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center shrink-0">
+                                    <svg class="h-4 w-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-700">{% trans "Branch Manager" %}</p>
+                                    <p class="text-xs text-gray-500 mt-0.5">{% trans "The manager can approve loans, manage staff, and run day-begin/day-end operations for this branch." %}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
-            <!-- Management -->
-            <div class="px-5 py-3 border-b border-t border-gray-200 bg-gray-50/50">
-                <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                    {% trans "Management" %}
-                </h3>
-            </div>
-            <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ form.opening_date.label }}</label>
-                    {{ form.opening_date }}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ form.status.label }}</label>
-                    {{ form.status }}
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">{{ form.manager.label }}</label>
-                    {{ form.manager }}
-                </div>
-            </div>
-
-            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex flex-wrap items-center justify-end gap-3">
-                <a href="{% url 'branches:list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
-                <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm">{% trans "Save Branch" %}</button>
-            </div>
         </div>
     </form>
 </div>

@@ -377,7 +377,7 @@ def _create_disbursement_journal(loan, branch, user, processing_fee):
         user=user,
         reference_type='loan_disbursement',
         reference_id=loan.pk,
-        is_posted=True,
+        is_posted=False,
     )
 
 
@@ -413,7 +413,7 @@ def _create_emi_collection_journal(loan, repayment, branch, user):
         user=user,
         reference_type='emi_payment',
         reference_id=repayment.pk,
-        is_posted=True,
+        is_posted=False,
     )
 
 
@@ -519,7 +519,7 @@ def add_standing_instruction(loan, charge_type, amount, branch, narration, creat
                 user=created_by,
                 reference_type='standing_instruction',
                 reference_id=si.pk,
-                is_posted=True,
+                is_posted=False,
             )
 
     return si

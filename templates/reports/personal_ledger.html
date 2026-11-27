@@ -43,7 +43,7 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Member" %}</label>
-                <select name="member" required class="searchable block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                <select name="member" required onchange="if(this.form.checkValidity()) this.form.submit()" class="searchable block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
                     <option value="">{% trans "— Select Member —" %}</option>
                     {% for m in members %}
                     <option value="{{ m.pk }}" {% if selected_member == m.pk|stringformat:"s" %}selected{% endif %}>{{ m.member_no }} — {{ m.name }}</option>
@@ -52,22 +52,25 @@
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "From Date" %}</label>
-                <input type="date" name="from_date" x-model="fromDate" :max="toDate || today" required class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                <input type="date" name="from_date" x-model="fromDate" :max="toDate || today" required
+                       @change="if($el.closest('form').checkValidity()) $el.closest('form').submit()"
+                       class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "To Date" %}</label>
-                <input type="date" name="to_date" x-model="toDate" :min="fromDate" :max="today" required class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                <input type="date" name="to_date" x-model="toDate" :min="fromDate" :max="today" required
+                       @change="if($el.closest('form').checkValidity()) $el.closest('form').submit()"
+                       class="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:border-primary-500 focus:ring-primary-500">
             </div>
             <div>
-                <button type="submit" class="w-full bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 text-sm font-medium">{% trans "View Statement" %}</button>
                 {% if accounts %}{% include "includes/export_csv.html" %}{% endif %}
             </div>
         </div>
         <div class="flex flex-wrap gap-2 mt-3">
             <span class="text-xs text-gray-400 self-center mr-1">{% trans "Quick:" %}</span>
-            <button type="button" @click="let d=new Date(); fromDate=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01'; toDate=today" class="px-2.5 py-1 text-xs font-medium rounded bg-gray-100 text-gray-600 hover:bg-gray-200">{% trans "This Month" %}</button>
-            <button type="button" @click="let d=new Date(); d.setMonth(d.getMonth()-1); let l=new Date(d.getFullYear(),d.getMonth()+1,0); fromDate=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01'; toDate=l.toISOString().split('T')[0]" class="px-2.5 py-1 text-xs font-medium rounded bg-gray-100 text-gray-600 hover:bg-gray-200">{% trans "Last Month" %}</button>
-            <button type="button" @click="let d=new Date(), fy=d.getMonth()>=3?d.getFullYear():d.getFullYear()-1; fromDate=fy+'-04-01'; toDate=(fy+1)+'-03-31'" class="px-2.5 py-1 text-xs font-medium rounded bg-gray-100 text-gray-600 hover:bg-gray-200">{% trans "This FY" %}</button>
+            <button type="button" @click="let d=new Date(); fromDate=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01'; toDate=today; $nextTick(()=>{ if($el.closest('form').checkValidity()) $el.closest('form').submit() })" class="px-2.5 py-1 text-xs font-medium rounded bg-gray-100 text-gray-600 hover:bg-gray-200">{% trans "This Month" %}</button>
+            <button type="button" @click="let d=new Date(); d.setMonth(d.getMonth()-1); let l=new Date(d.getFullYear(),d.getMonth()+1,0); fromDate=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01'; toDate=l.toISOString().split('T')[0]; $nextTick(()=>{ if($el.closest('form').checkValidity()) $el.closest('form').submit() })" class="px-2.5 py-1 text-xs font-medium rounded bg-gray-100 text-gray-600 hover:bg-gray-200">{% trans "Last Month" %}</button>
+            <button type="button" @click="let d=new Date(), fy=d.getMonth()>=3?d.getFullYear():d.getFullYear()-1; fromDate=fy+'-04-01'; toDate=(fy+1)+'-03-31'; $nextTick(()=>{ if($el.closest('form').checkValidity()) $el.closest('form').submit() })" class="px-2.5 py-1 text-xs font-medium rounded bg-gray-100 text-gray-600 hover:bg-gray-200">{% trans "This FY" %}</button>
         </div>
     </form>
 

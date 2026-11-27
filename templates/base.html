@@ -17,6 +17,15 @@
 
     <!-- Tom Select for searchable dropdowns -->
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/css/tom-select.css" rel="stylesheet">
+    <style>
+        .ts-wrapper.plugin-dropdown_input .ts-control { cursor: pointer; }
+        .ts-wrapper.plugin-dropdown_input .ts-control > input { display: none; }
+        .ts-wrapper.plugin-dropdown_input .dropdown-input-wrap { padding: 6px 8px; border-bottom: 1px solid #e5e7eb; }
+        .ts-wrapper.plugin-dropdown_input .dropdown-input { width: 100%; padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.8125rem; outline: none; }
+        .ts-wrapper.plugin-dropdown_input .dropdown-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+        .ts-wrapper { min-width: 7rem; }
+        .ts-dropdown { min-width: 100% !important; }
+    </style>
 
     <!-- Tailwind CSS (CDN for dev — replace with compiled in prod) -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -350,20 +359,16 @@
         /* --- Tom Select overrides --- */
         .ts-wrapper.single .ts-control { border-color: #d1d5db; border-radius: 0.5rem; padding: 0.5rem 0.75rem; font-size: 0.875rem; min-height: 2.5rem; cursor: pointer; }
         .ts-wrapper.single .ts-control > input { font-size: 0.875rem; }
-        .ts-wrapper.single.has-items .ts-control > input { opacity: 0 !important; position: absolute !important; left: -9999px !important; width: 0 !important; }
+        .ts-wrapper.single.has-items:not(.focus) .ts-control > input { opacity: 0 !important; position: absolute !important; left: -9999px !important; width: 0 !important; }
         .ts-wrapper.single.focus .ts-control { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
         .ts-dropdown { border-radius: 0.5rem; border-color: #e5e7eb; font-size: 0.875rem; }
         .ts-dropdown .active { background-color: #eff6ff; color: #1d4ed8; }
-        .ts-wrapper .clear-button { right: 28px !important; font-size: 18px; color: #9ca3af; opacity: 1 !important; cursor: pointer; z-index: 2; }
-        .ts-wrapper .clear-button:hover { color: #ef4444; }
         .dark .ts-wrapper.single .ts-control { background-color: #1e293b !important; border-color: #475569 !important; color: #e2e8f0 !important; }
         .dark .ts-wrapper.single.focus .ts-control { border-color: #60a5fa !important; box-shadow: 0 0 0 2px rgba(96,165,250,0.15) !important; }
         .dark .ts-dropdown { background-color: #1e293b !important; border-color: #475569 !important; }
         .dark .ts-dropdown .option { color: #e2e8f0 !important; }
         .dark .ts-dropdown .active { background-color: rgba(59,130,246,0.2) !important; color: #93c5fd !important; }
         .dark .ts-wrapper.single .ts-control > input { background: transparent !important; color: #e2e8f0 !important; }
-        .dark .ts-wrapper .clear-button { color: #64748b; }
-        .dark .ts-wrapper .clear-button:hover { color: #f87171; }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
@@ -590,31 +595,31 @@
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/js/tom-select.complete.min.js"></script>
     <script>
     (function() {
-        var tsOpts = {
-            create: false,
-            sortField: { field: 'text', direction: 'asc' },
-            plugins: { clear_button: { title: 'Clear selection' } },
-            openOnFocus: false,
-            onItemAdd: function() { this.setTextboxValue(''); this.close(); },
-            onInitialize: function() {
-                var ts = this;
-                ts.control.addEventListener('click', function(e) {
-                    if (e.target.closest('.clear-button')) return;
-                    if (ts.items.length > 0) return;
-                    ts.open();
-                    ts.control_input.focus();
-                });
-            },
-            render: {
-                no_results: function() { return '<div class="no-results" style="padding:10px;text-align:center;color:#94a3b8;">No results found</div>'; }
-            }
-        };
-        document.querySelectorAll('select').forEach(function(el) {
-            if (el.tomselect || el.closest('[data-no-tomselect]')) return;
-            if (el.classList.contains('searchable') || el.options.length >= 8) {
-                new TomSelect(el, tsOpts);
-            }
-        });
+        function initTomSelects(root) {
+            root = root || document;
+            var tsOpts = {
+                plugins: ['dropdown_input'],
+                create: false,
+                allowEmptyOption: true,
+                sortField: { field: 'text', direction: 'asc' },
+                onItemAdd: function() {
+                    this.setTextboxValue('');
+                    this.close();
+                    this.blur();
+                },
+                render: {
+                    no_results: function() { return '<div class="no-results" style="padding:10px;text-align:center;color:#94a3b8;">No results found</div>'; }
+                }
+            };
+            root.querySelectorAll('select').forEach(function(el) {
+                if (el.tomselect || el.closest('[data-no-tomselect]')) return;
+                if (el.classList.contains('searchable') || el.options.length >= 3) {
+                    new TomSelect(el, tsOpts);
+                }
+            });
+        }
+        window.initTomSelects = initTomSelects;
+        initTomSelects();
     })();
     </script>
 </body>

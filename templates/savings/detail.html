@@ -4,140 +4,242 @@
 {% block page_title %}{% trans "Account Details" %}{% endblock %}
 
 {% block content %}
-<div class="max-w-full">
+<div class="max-w-full space-y-5">
 
-    <!-- {% trans "Account Summary" %} -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-4">
-        <div class="px-5 py-4 grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-3">
-            <div>
-                <span class="text-xs text-gray-500">{% trans "Account No" %}</span>
-                <p class="text-sm font-semibold font-mono text-gray-900">{{ account.account_no }}</p>
+    <!-- Header Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+
+        <!-- Member Header -->
+        <div class="px-5 py-4 bg-gradient-to-r from-primary-50 to-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div class="flex items-center gap-4">
+                <div class="h-12 w-12 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                    {% if account.member.photo %}
+                    <img src="{{ account.member.photo.url }}" alt="{{ account.member.name }}" class="h-12 w-12 rounded-full object-cover">
+                    {% else %}
+                    <span class="text-lg font-bold text-primary-600">{{ account.member.name|make_list|first }}</span>
+                    {% endif %}
+                </div>
+                <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <a href="{% url 'members:detail' account.member.pk %}" class="text-base font-semibold text-gray-900 hover:text-primary-600 transition-colors">{{ account.member.name }}</a>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium
+                            {% if account.status == 'active' %}bg-green-100 text-green-700
+                            {% elif account.status == 'frozen' %}bg-blue-100 text-blue-700
+                            {% elif account.status == 'dormant' %}bg-yellow-100 text-yellow-700
+                            {% else %}bg-red-100 text-red-700{% endif %}">
+                            <span class="w-1.5 h-1.5 rounded-full
+                                {% if account.status == 'active' %}bg-green-500
+                                {% elif account.status == 'frozen' %}bg-blue-500
+                                {% elif account.status == 'dormant' %}bg-yellow-500
+                                {% else %}bg-red-500{% endif %}"></span>
+                            {{ account.get_status_display }}
+                        </span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-0.5">
+                        <span class="font-mono">{{ account.account_no }}</span>
+                        &middot; {{ account.branch.branch_name }}
+                        &middot; {% if account.gl_head %}{{ account.gl_head.name }}{% else %}{{ account.get_account_type_display }}{% endif %}
+                    </p>
+                </div>
             </div>
-            <div>
-                <span class="text-xs text-gray-500">{% trans "Member" %}</span>
-                <p class="text-sm font-medium"><a href="{% url 'members:detail' account.member.pk %}" class="text-primary-600 hover:underline">{{ account.member.name }}</a> <span class="text-gray-400">({{ account.member.member_no }})</span></p>
-            </div>
-            <div>
-                <span class="text-xs text-gray-500">{% trans "Type" %}</span>
-                <p class="text-sm font-medium text-gray-900">{% if account.gl_head %}{{ account.gl_head.name }}{% else %}{{ account.get_account_type_display }}{% endif %}</p>
-            </div>
-            <div>
-                <span class="text-xs text-gray-500">{% trans "Status" %}</span>
-                <p class="mt-0.5"><span class="px-2 py-0.5 rounded-full text-xs font-medium {% if account.status == 'active' %}bg-green-100 text-green-700{% elif account.status == 'frozen' %}bg-blue-100 text-blue-700{% elif account.status == 'dormant' %}bg-yellow-100 text-yellow-700{% else %}bg-red-100 text-red-700{% endif %}">{{ account.get_status_display }}</span></p>
+            <div class="flex items-center gap-2 flex-wrap">
+                <a href="{% url 'savings:statement' pk=account.pk %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    {% trans "Statement" %}
+                </a>
+                <a href="{% url 'savings:passbook' account_id=account.pk %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                    {% trans "Passbook" %}
+                </a>
+                {% if request.user.is_manager and account.status != 'closed' %}
+                <a href="{% url 'savings:edit' account.pk %}" class="inline-flex items-center justify-center w-8 h-8 border border-primary-200 rounded-lg text-primary-600 bg-white hover:bg-primary-50 transition-colors" title="{% trans 'Edit' %}">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                </a>
+                {% endif %}
             </div>
         </div>
 
-        <hr class="border-gray-200">
-
-        <div class="px-5 py-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-            <div class="bg-gray-50 rounded-lg py-3 px-2">
-                <span class="text-xs text-gray-500">{% trans "Current Balance" %}</span>
-                <p class="text-xl font-bold text-gray-900" style="font-variant-numeric:tabular-nums">&#8377;{{ account.current_balance|floatformat:2 }}</p>
+        <!-- Stats Row -->
+        <div class="grid grid-cols-2 md:grid-cols-4 divide-x divide-gray-100 border-t border-gray-200">
+            <div class="px-5 py-4 text-center">
+                <p class="text-xs text-gray-500 mb-1">{% trans "Current Balance" %}</p>
+                <p class="text-2xl font-bold text-gray-900" style="font-variant-numeric:tabular-nums">&#8377;{{ account.current_balance|floatformat:2 }}</p>
             </div>
-            <div class="bg-green-50 rounded-lg py-3 px-2">
-                <span class="text-xs text-gray-500">{% trans "Accrued Interest" %}</span>
-                <p class="text-xl font-bold text-green-600" style="font-variant-numeric:tabular-nums">&#8377;{{ account.accrued_interest|floatformat:2 }}</p>
+            <div class="px-5 py-4 text-center">
+                <p class="text-xs text-gray-500 mb-1">{% trans "Accrued Interest" %}</p>
+                <p class="text-2xl font-bold text-green-600" style="font-variant-numeric:tabular-nums">&#8377;{{ account.accrued_interest|floatformat:2 }}</p>
             </div>
-            <div class="bg-primary-50 rounded-lg py-3 px-2">
-                <span class="text-xs text-gray-500">{% trans "Interest Rate" %}</span>
-                <p class="text-xl font-bold text-primary-600">{{ account.interest_rate }}%</p>
+            <div class="px-5 py-4 text-center">
+                <p class="text-xs text-gray-500 mb-1">{% trans "Interest Rate" %}</p>
+                <p class="text-2xl font-bold text-primary-600">{{ account.interest_rate }}%</p>
             </div>
-            <div class="bg-gray-50 rounded-lg py-3 px-2">
-                <span class="text-xs text-gray-500">{% trans "Min Balance" %}</span>
-                <p class="text-xl font-bold text-gray-600" style="font-variant-numeric:tabular-nums">&#8377;{{ account.minimum_balance|floatformat:2 }}</p>
+            <div class="px-5 py-4 text-center">
+                <p class="text-xs text-gray-500 mb-1">{% trans "Min Balance" %}</p>
+                <p class="text-2xl font-bold text-gray-700" style="font-variant-numeric:tabular-nums">&#8377;{{ account.minimum_balance|floatformat:2 }}</p>
             </div>
         </div>
 
-        <hr class="border-gray-200">
-
-        <div class="px-5 py-4">
-            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
-                <div class="flex justify-between"><dt class="text-gray-500">{% trans "Branch" %}</dt><dd class="font-medium">{{ account.branch.branch_name }}</dd></div>
-                <div class="flex justify-between"><dt class="text-gray-500">{% trans "Opened" %}</dt><dd class="font-medium">{{ account.opening_date|date:"d M Y" }}</dd></div>
-                {% if account.member.phone %}<div class="flex justify-between"><dt class="text-gray-500">{% trans "Phone" %}</dt><dd class="font-medium">{{ account.member.phone }}</dd></div>{% endif %}
-                {% if account.member.aadhar_no %}<div class="flex justify-between"><dt class="text-gray-500">{% trans "Aadhar" %}</dt><dd class="font-medium">XXXX-XXXX-{{ account.member.aadhar_no|slice:"-4" }}</dd></div>{% endif %}
-                <div class="flex justify-between"><dt class="text-gray-500">{% trans "KYC" %}</dt><dd>{% if account.member.kyc_verified %}<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">{% trans "Verified" %}</span>{% else %}<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">{% trans "Pending" %}</span>{% endif %}</dd></div>
+        <!-- Account Details -->
+        <div class="border-t border-gray-200 px-5 py-4">
+            <dl class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-3 text-sm">
+                <div>
+                    <dt class="text-xs text-gray-500">{% trans "Opened" %}</dt>
+                    <dd class="font-medium text-gray-900 mt-0.5">{{ account.opening_date|date:"d M Y" }}</dd>
+                </div>
+                <div>
+                    <dt class="text-xs text-gray-500">{% trans "Interest Posting" %}</dt>
+                    <dd class="font-medium text-gray-900 mt-0.5">{{ account.get_interest_posting_frequency_display }}</dd>
+                </div>
+                {% if account.member.phone %}
+                <div>
+                    <dt class="text-xs text-gray-500">{% trans "Phone" %}</dt>
+                    <dd class="font-medium text-gray-900 mt-0.5">{{ account.member.phone }}</dd>
+                </div>
+                {% endif %}
+                {% if account.member.aadhar_no %}
+                <div>
+                    <dt class="text-xs text-gray-500">{% trans "Aadhar" %}</dt>
+                    <dd class="font-medium text-gray-900 mt-0.5">XXXX-XXXX-{{ account.member.aadhar_no|slice:"-4" }}</dd>
+                </div>
+                {% endif %}
+                <div>
+                    <dt class="text-xs text-gray-500">{% trans "KYC" %}</dt>
+                    <dd class="mt-1">{% if account.member.kyc_verified %}<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700"><span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>{% trans "Verified" %}</span>{% else %}<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>{% trans "Pending" %}</span>{% endif %}</dd>
+                </div>
+                {% if account.last_interest_posted_date %}
+                <div>
+                    <dt class="text-xs text-gray-500">{% trans "Last Interest Posted" %}</dt>
+                    <dd class="font-medium text-gray-900 mt-0.5">{{ account.last_interest_posted_date|date:"d M Y" }}</dd>
+                </div>
+                {% endif %}
             </dl>
         </div>
 
-        <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex flex-wrap items-center justify-between gap-2">
-            <div class="flex items-center gap-2">
-                {% if request.user.is_manager and account.status != 'closed' %}
-                <a href="{% url 'savings:edit' account.pk %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Edit" %}</a>
-                <form method="post" action="{% url 'savings:change_status' pk=account.pk %}" class="flex items-center gap-1" onsubmit="return confirm('Change account status?');">
-                    {% csrf_token %}
-                    <select name="status" class="rounded border-gray-300 text-sm py-1 px-2">
-                        <option value="active" {% if account.status == 'active' %}selected{% endif %}>{% trans "Active" %}</option>
-                        <option value="dormant" {% if account.status == 'dormant' %}selected{% endif %}>{% trans "Dormant" %}</option>
-                        <option value="frozen" {% if account.status == 'frozen' %}selected{% endif %}>{% trans "Frozen" %}</option>
-                        <option value="closed" {% if account.status == 'closed' %}selected{% endif %}>{% trans "Closed" %}</option>
-                    </select>
-                    <button type="submit" class="px-3 py-1.5 bg-gray-600 text-white text-xs font-medium rounded-lg hover:bg-gray-700">{% trans "Update" %}</button>
-                </form>
-                {% endif %}
-            </div>
-            <div class="flex items-center gap-2">
-                <a href="{% url 'savings:statement' pk=account.pk %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Statement" %}</a>
-                <a href="{% url 'savings:passbook' account_id=account.pk %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Passbook" %}</a>
-                <a href="{% url 'savings:list' %}" class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">&larr; Back</a>
-            </div>
+        {% if account.meeting_no or account.meeting_date %}
+        <div class="px-5 py-3 border-t border-gray-100 bg-gray-50/50 flex items-center gap-2 text-sm text-gray-600">
+            <svg class="h-4 w-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            {% trans "Meeting" %} #{{ account.meeting_no|default:"—" }} &middot; {{ account.meeting_date|date:"d M Y"|default:"—" }}
         </div>
+        {% endif %}
+
     </div>
 
     <!-- Recent Transactions -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="px-5 py-3 border-b border-gray-200">
-            <h3 class="text-xs font-semibold text-gray-500 uppercase">{% trans "Recent Transactions" %}</h3>
+        <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50">
+            <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                {% trans "Recent Transactions" %}
+                <span class="text-xs font-normal text-gray-400">({{ transactions|length }})</span>
+            </h3>
         </div>
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200 text-sm">
+            <table class="min-w-full text-sm">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase whitespace-nowrap">{% trans "Date" %}</th>
-                        <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase whitespace-nowrap">{% trans "Type" %}</th>
-                        <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Narration" %}</th>
-                        <th class="px-3 py-2.5 text-right text-xs font-semibold text-gray-600 uppercase whitespace-nowrap">{% trans "Amount" %}</th>
-                        <th class="px-3 py-2.5 text-right text-xs font-semibold text-gray-600 uppercase whitespace-nowrap">{% trans "Balance" %}</th>
-                        <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase whitespace-nowrap">{% trans "Voucher" %}</th>
-                        <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase whitespace-nowrap hidden lg:table-cell">{% trans "Mode" %}</th>
-                        <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase whitespace-nowrap hidden lg:table-cell">{% trans "By" %}</th>
-                        {% if request.user.is_manager %}<th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600 uppercase whitespace-nowrap">{% trans "Action" %}</th>{% endif %}
+                        <th class="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{% trans "Date" %}</th>
+                        <th class="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{% trans "Type" %}</th>
+                        <th class="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{% trans "Narration" %}</th>
+                        <th class="px-5 py-2.5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">{% trans "Amount" %}</th>
+                        <th class="px-5 py-2.5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">{% trans "Balance" %}</th>
+                        <th class="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{% trans "Voucher" %}</th>
+                        <th class="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">{% trans "Mode" %}</th>
+                        <th class="px-5 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">{% trans "By" %}</th>
+                        {% if request.user.is_manager %}<th class="px-5 py-2.5 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider"></th>{% endif %}
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
-                    {% for txn in transactions %}
-                    <tr class="hover:bg-gray-50 {% if txn.is_reversed %}opacity-50{% endif %}">
-                        <td class="px-3 py-2.5 text-gray-900 whitespace-nowrap">{{ txn.txn_date }}</td>
-                        <td class="px-3 py-2.5 whitespace-nowrap">
-                            <span class="px-2 py-0.5 rounded-full text-xs font-medium {% if txn.txn_type == 'deposit' or txn.txn_type == 'interest_credit' %}bg-green-100 text-green-700{% elif txn.txn_type == 'withdrawal' %}bg-red-100 text-red-700{% elif txn.txn_type == 'reversal' %}bg-yellow-100 text-yellow-700{% else %}bg-gray-100 text-gray-700{% endif %}">
-                                {{ txn.get_txn_type_display }}{% if txn.is_reversed %} ({% trans "Reversed" %}){% endif %}
+                    {% for pv in pending_vouchers %}
+                    <tr class="hover:bg-amber-50/50 transition-colors bg-amber-50/30">
+                        <td class="px-5 py-3 text-gray-900 whitespace-nowrap">{{ pv.journal_entry.entry_date|date:"d M Y" }}</td>
+                        <td class="px-5 py-3 whitespace-nowrap">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                {{ pv.journal_entry.get_voucher_type_display }} <span class="opacity-75">(Pending)</span>
                             </span>
                         </td>
-                        <td class="px-3 py-2.5 text-gray-600 max-w-[200px] truncate">{{ txn.narration }}</td>
-                        <td class="px-3 py-2.5 text-right font-medium whitespace-nowrap {% if txn.txn_type == 'withdrawal' or txn.txn_type == 'charge' %}text-red-600{% elif txn.txn_type == 'reversal' and txn.reversal_of and txn.reversal_of.txn_type == 'deposit' or txn.txn_type == 'reversal' and txn.reversal_of and txn.reversal_of.txn_type == 'interest_credit' %}text-red-600{% else %}text-green-600{% endif %}" style="font-variant-numeric:tabular-nums">
-                            {% if txn.txn_type == 'withdrawal' or txn.txn_type == 'charge' %}-{% elif txn.txn_type == 'reversal' and txn.reversal_of and txn.reversal_of.txn_type != 'withdrawal' %}-{% endif %}&#8377;{{ txn.amount|floatformat:2 }}
+                        <td class="px-5 py-3 text-gray-500 text-xs max-w-[200px] truncate">{{ pv.journal_entry.narration|default:pv.narration|default:"—" }}</td>
+                        <td class="px-5 py-3 text-right font-medium whitespace-nowrap tabular-nums text-amber-600">
+                            {% if pv.journal_entry.voucher_type == 'receipt' %}+{% else %}-{% endif %}&#8377;{% if pv.credit_amount %}{{ pv.credit_amount|floatformat:2 }}{% else %}{{ pv.debit_amount|floatformat:2 }}{% endif %}
                         </td>
-                        <td class="px-3 py-2.5 text-right font-medium text-gray-900 whitespace-nowrap" style="font-variant-numeric:tabular-nums">&#8377;{{ txn.running_balance|floatformat:2 }}</td>
-                        <td class="px-3 py-2.5 whitespace-nowrap">
+                        <td class="px-5 py-3 text-right text-xs text-gray-400 whitespace-nowrap">—</td>
+                        <td class="px-5 py-3 whitespace-nowrap"><span class="text-xs font-mono text-gray-500">{{ pv.journal_entry.voucher_no }}</span></td>
+                        <td class="px-5 py-3 text-xs text-gray-500 whitespace-nowrap hidden lg:table-cell">{{ pv.journal_entry.get_payment_mode_display }}</td>
+                        <td class="px-5 py-3 text-xs text-gray-500 whitespace-nowrap hidden lg:table-cell">{{ pv.journal_entry.created_by.get_short_name }}</td>
+                        {% if request.user.is_manager %}<td class="px-5 py-3"></td>{% endif %}
+                    </tr>
+                    {% endfor %}
+                    {% for txn in transactions %}
+                    <tr class="hover:bg-gray-50 transition-colors {% if txn.is_reversed %}opacity-50{% endif %}">
+                        <td class="px-5 py-3 text-gray-900 whitespace-nowrap">{{ txn.txn_date|date:"d M Y" }}</td>
+                        <td class="px-5 py-3 whitespace-nowrap">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium
+                                {% if txn.txn_type == 'deposit' or txn.txn_type == 'interest_credit' %}bg-green-100 text-green-700
+                                {% elif txn.txn_type == 'withdrawal' %}bg-red-100 text-red-700
+                                {% elif txn.txn_type == 'reversal' %}bg-yellow-100 text-yellow-700
+                                {% elif txn.txn_type == 'transfer' %}bg-blue-100 text-blue-700
+                                {% else %}bg-gray-100 text-gray-700{% endif %}">
+                                {% if txn.txn_type == 'deposit' or txn.txn_type == 'interest_credit' %}
+                                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                {% elif txn.txn_type == 'withdrawal' %}
+                                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+                                {% elif txn.txn_type == 'reversal' %}
+                                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
+                                {% elif txn.txn_type == 'transfer' %}
+                                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                                {% else %}
+                                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                {% endif %}
+                                {{ txn.get_txn_type_display }}{% if txn.is_reversed %} <span class="opacity-75">({% trans "Rev." %})</span>{% endif %}
+                            </span>
+                        </td>
+                        <td class="px-5 py-3 text-gray-500 text-xs max-w-[200px] truncate">{{ txn.narration|default:"—" }}</td>
+                        <td class="px-5 py-3 text-right font-medium whitespace-nowrap tabular-nums
+                            {% if txn.txn_type == 'withdrawal' or txn.txn_type == 'charge' %}text-red-600
+                            {% elif txn.txn_type == 'reversal' and txn.reversal_of and txn.reversal_of.txn_type != 'withdrawal' %}text-red-600
+                            {% else %}text-green-600{% endif %}">
+                            {% if txn.txn_type == 'withdrawal' or txn.txn_type == 'charge' %}-{% elif txn.txn_type == 'reversal' and txn.reversal_of and txn.reversal_of.txn_type != 'withdrawal' %}-{% else %}+{% endif %}&#8377;{{ txn.amount|floatformat:2 }}
+                        </td>
+                        <td class="px-5 py-3 text-right font-medium text-gray-900 whitespace-nowrap tabular-nums">&#8377;{{ txn.running_balance|floatformat:2 }}</td>
+                        <td class="px-5 py-3 whitespace-nowrap">
                             {% if txn.voucher_no %}<span class="text-xs font-mono text-gray-700">{{ txn.voucher_no }}</span>{% endif %}
-                            {% if txn.receipt_no %}<a href="{% url 'savings:receipt' txn_id=txn.pk %}" class="text-xs text-primary-600 hover:underline ml-1">{{ txn.receipt_no }}</a>{% endif %}
+                            {% if txn.receipt_no %}
+                            <a href="{% url 'savings:receipt' txn_id=txn.pk %}" class="inline-flex items-center gap-1 text-primary-600 hover:text-primary-700 text-xs font-medium transition-colors ml-1" title="{% trans 'View Receipt' %}">
+                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                {{ txn.receipt_no }}
+                            </a>
+                            {% endif %}
                         </td>
-                        <td class="px-3 py-2.5 text-xs text-gray-500 whitespace-nowrap hidden lg:table-cell">{{ txn.get_payment_mode_display }}</td>
-                        <td class="px-3 py-2.5 text-xs text-gray-500 whitespace-nowrap hidden lg:table-cell">{{ txn.created_by.get_short_name }}</td>
+                        <td class="px-5 py-3 text-xs text-gray-500 whitespace-nowrap hidden lg:table-cell">{{ txn.get_payment_mode_display }}</td>
+                        <td class="px-5 py-3 text-xs text-gray-500 whitespace-nowrap hidden lg:table-cell">{{ txn.created_by.get_short_name }}</td>
                         {% if request.user.is_manager %}
-                        <td class="px-3 py-2.5 text-center whitespace-nowrap">
+                        <td class="px-5 py-3 text-center whitespace-nowrap">
                             {% if not txn.is_reversed and txn.txn_type != 'reversal' %}
-                            <a href="{% url 'savings:reverse_txn' pk=account.pk txn_id=txn.pk %}" class="text-xs text-red-600 hover:text-red-800 font-medium">{% trans "Reverse" %}</a>
+                            <a href="{% url 'savings:reverse_txn' pk=account.pk txn_id=txn.pk %}" class="inline-flex items-center gap-1 text-xs text-red-600 hover:text-red-800 font-medium transition-colors" title="{% trans 'Reverse' %}">
+                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
+                                {% trans "Reverse" %}
+                            </a>
                             {% endif %}
                         </td>
                         {% endif %}
                     </tr>
-                    {% empty %}
-                    <tr><td colspan="{% if request.user.is_manager %}9{% else %}8{% endif %}" class="px-4 py-6 text-center text-gray-400">{% trans "No transactions yet." %}</td></tr>
                     {% endfor %}
+                    {% if not transactions and not pending_vouchers %}
+                    <tr>
+                        <td colspan="{% if request.user.is_manager %}9{% else %}8{% endif %}" class="px-5 py-10 text-center">
+                            <div class="flex flex-col items-center">
+                                <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mb-2">
+                                    <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                </div>
+                                <p class="text-sm text-gray-500">{% trans "No transactions yet." %}</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>
     </div>
+
 </div>
 {% endblock %}

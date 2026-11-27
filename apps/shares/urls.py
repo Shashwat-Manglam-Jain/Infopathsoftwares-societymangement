@@ -9,10 +9,8 @@ urlpatterns = [
     path('purchase/', views.share_purchase, name='purchase'),
     path('transfer/', views.share_transfer, name='transfer'),
     path('surrender/', views.share_surrender, name='surrender'),
-    path('config/', views.share_config_list, name='config_list'),
-    path('config/create/', views.share_config_create, name='config_create'),
-    path('config/<int:pk>/edit/', views.share_config_edit, name='config_edit'),
-    path('config/<int:pk>/toggle/', views.share_config_toggle, name='config_toggle'),
+    path('config/', views.share_config, name='config'),
+    path('api/member-info/<int:member_id>/', views.share_member_info, name='member_info'),
     path('<int:pk>/', views.share_detail, name='detail'),
     path('receipt/<int:txn_id>/', views.ShareReceiptView.as_view(), name='receipt'),
 ]

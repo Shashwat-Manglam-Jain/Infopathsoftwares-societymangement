@@ -29,12 +29,14 @@
         <div class="flex flex-col sm:flex-row items-end gap-3">
             <div class="flex-1">
                 <label class="block text-sm font-medium text-gray-700 mb-1">{% trans "Date" %}</label>
-                <input type="date" name="date" value="{{ report_date }}" max="{% now 'Y-m-d' %}" required class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
+                <input type="date" name="date" value="{{ report_date }}" max="{% now 'Y-m-d' %}" required
+                       onchange="this.form.submit()"
+                       class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
             </div>
             {% if branches %}
             <div class="flex-1">
                 <label class="block text-sm font-medium text-gray-700 mb-1">{% trans "Branch" %}</label>
-                <select name="branch" class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
+                <select name="branch" onchange="this.form.submit()" class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500">
                     <option value="">All Branches (Consolidated)</option>
                     {% for b in branches %}
                     <option value="{{ b.pk }}" {% if selected_branch == b.pk|stringformat:"d" %}selected{% endif %}>{{ b.branch_name }}</option>
@@ -42,7 +44,6 @@
                 </select>
             </div>
             {% endif %}
-            <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 shadow-sm">{% trans "Generate" %}</button>
             {% if heads %}{% include "includes/export_csv.html" %}{% endif %}
         </div>
     </form>

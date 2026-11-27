@@ -15,8 +15,8 @@
         <div class="flex items-center gap-2">
             <form method="get" class="flex items-center gap-2">
                 <input type="date" name="date" value="{{ book_date|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}"
+                       onchange="this.form.submit()"
                        class="rounded border border-gray-300 px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
-                <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">{% trans "View" %}</button>
             </form>
             {% if entries %}{% include "includes/export_csv.html" %}{% endif %}
             <button type="button" onclick="window.print()" class="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded" title="Print">

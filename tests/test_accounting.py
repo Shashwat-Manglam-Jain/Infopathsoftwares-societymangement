@@ -74,7 +74,6 @@ class ChartOfAccountsTests(BaseTestCase):
         self.assertIn('liability', groups)
         self.assertIn('income', groups)
         self.assertIn('expense', groups)
-        self.assertIn('equity', groups)
 
     def test_system_accounts_cannot_be_deleted(self):
         """System accounts (is_system=True) should be protected from deletion.

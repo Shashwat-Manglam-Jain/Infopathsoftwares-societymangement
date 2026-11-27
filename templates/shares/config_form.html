@@ -1,101 +1,165 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{{ title }} — InfoSociety{% endblock %}
-{% block page_title %}{{ title }}{% endblock %}
+{% block title %}{% trans "Share Configuration" %} — InfoSociety{% endblock %}
+{% block page_title %}{% trans "Share Configuration" %}{% endblock %}
 
 {% block content %}
-<div class="w-full max-w-3xl space-y-4">
+<div class="w-full" x-data="{
+    faceValue: {{ config.face_value_per_share|default:'10' }},
+    minShares: {{ config.min_shares_required|default:'1' }},
+    maxShares: {{ config.max_shares_per_member|default:'100' }},
+    get minInvestment() { return (this.faceValue * this.minShares).toFixed(2); },
+    get maxInvestment() { return (this.faceValue * this.maxShares).toFixed(2); },
+    get isValid() { return this.faceValue > 0 && this.minShares > 0 && this.maxShares >= this.minShares; },
+    get hasWarning() { return this.maxShares < this.minShares; }
+}">
 
-    <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.200ms
-         class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex items-start gap-3">
-        <svg class="h-5 w-5 text-blue-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        <p class="text-sm text-blue-800 flex-1">{% trans "Share configuration defines the face value, minimum purchase requirement, and upper limit for each member. When a new config is created, it automatically becomes the active config." %}</p>
-        <button @click="show = false" class="text-blue-400 hover:text-blue-600 shrink-0 p-0.5">
-            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-    </div>
-
-    <form method="post" x-data="{
-        faceValue: {{ config.face_value_per_share|default:'10' }},
-        minShares: {{ config.min_shares_required|default:'1' }},
-        maxShares: {{ config.max_shares_per_member|default:'100' }},
-        get minInvestment() { return (this.faceValue * this.minShares).toFixed(2); },
-        get maxInvestment() { return (this.faceValue * this.maxShares).toFixed(2); }
-    }">
+    <form method="post">
         {% csrf_token %}
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-5">
 
-            <!-- Section Header -->
-            <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-xl">
-                <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    {% trans "Share Configuration" %}
-                </h3>
-            </div>
+            <!-- LEFT: Form Fields -->
+            <div class="lg:col-span-3 space-y-5">
 
-            <!-- Config Name -->
-            <div class="px-5 pt-4 pb-2">
-                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">{% trans "Configuration Name" %} <span class="text-red-500">*</span></label>
-                <input type="text" name="name" value="{{ config.name|default:'' }}" required placeholder="{% trans 'e.g. FY 2026-27 Config' %}"
-                       class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500">
-                <p class="mt-1 text-xs text-gray-400">{% trans "A descriptive name to identify this configuration." %}</p>
-            </div>
-
-            <!-- Share Value & Limits -->
-            <div class="px-5 py-3 border-t border-gray-100 mt-1">
-                <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3">{% trans "Value & Limits" %}</p>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Face Value per Share" %} (₹) <span class="text-red-500">*</span></label>
-                        <input type="number" name="face_value_per_share" x-model.number="faceValue" step="0.01" min="1" required
-                               class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500">
+                <!-- Share Value & Limits Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-xl">
+                        <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                            <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            {% trans "Share Value & Limits" %}
+                        </h3>
                     </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Minimum Shares" %} <span class="text-red-500">*</span></label>
-                        <input type="number" name="min_shares_required" x-model.number="minShares" min="1" required
-                               class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500">
-                        <p class="mt-1 text-xs text-gray-400">{% trans "Required at membership" %}</p>
+                    <div class="px-5 py-4 space-y-5">
+
+                        <!-- Face Value -->
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Face Value per Share" %} (₹) <span class="text-red-500">*</span></label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 text-sm pointer-events-none">₹</span>
+                                <input type="number" name="face_value_per_share" x-model.number="faceValue" step="0.01" min="1" required
+                                       class="block w-full rounded-lg border border-gray-300 pl-8 pr-3 py-2.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                            </div>
+                            <p class="mt-1.5 text-xs text-gray-400">{% trans "The nominal value of each share unit." %}</p>
+                        </div>
+
+                        <div class="border-t border-gray-100"></div>
+
+                        <!-- Min & Max Shares side by side -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Minimum Shares" %} <span class="text-red-500">*</span></label>
+                                <input type="number" name="min_shares_required" x-model.number="minShares" min="1" required
+                                       class="block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                                <p class="mt-1.5 text-xs text-gray-400">{% trans "Required at the time of membership." %}</p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Maximum per Member" %} <span class="text-red-500">*</span></label>
+                                <input type="number" name="max_shares_per_member" x-model.number="maxShares" min="1" required
+                                       class="block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:ring-primary-500">
+                                <p class="mt-1.5 text-xs text-gray-400">{% trans "Upper limit a single member can hold." %}</p>
+                            </div>
+                        </div>
+
+                        <!-- Validation Warning -->
+                        <div x-show="hasWarning" x-transition class="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200">
+                            <svg class="h-4 w-4 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            <p class="text-xs text-amber-700">{% trans "Maximum shares cannot be less than minimum shares required." %}</p>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">{% trans "Maximum per Member" %} <span class="text-red-500">*</span></label>
-                        <input type="number" name="max_shares_per_member" x-model.number="maxShares" min="1" required
-                               class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500">
-                        <p class="mt-1 text-xs text-gray-400">{% trans "Upper limit per member" %}</p>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="px-5 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <p class="text-xs text-gray-400">{% trans "Only one share configuration is maintained for the society." %}</p>
+                        <div class="flex items-center gap-3 w-full sm:w-auto">
+                            <a href="{% url 'shares:list' %}" class="flex-1 sm:flex-none text-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
+                            <button type="submit" :disabled="!isValid"
+                                    class="flex-1 sm:flex-none px-6 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition">
+                                {% trans "Save Configuration" %}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Live Preview -->
-            <div class="mx-5 my-3 bg-gray-50 border border-gray-200 rounded-lg p-3">
-                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{% trans "Preview" %}</p>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
-                    <div class="bg-white rounded-lg border border-gray-100 px-3 py-2.5">
-                        <p class="text-xs text-gray-400 mb-0.5">{% trans "Face Value" %}</p>
-                        <p class="text-lg font-bold text-gray-800 tabular-nums">₹<span x-text="parseFloat(faceValue || 0).toFixed(2)"></span></p>
+            <!-- RIGHT: Live Preview + Stats (sticky) -->
+            <div class="lg:col-span-2">
+                <div class="lg:sticky lg:top-16 space-y-5">
+
+                    <!-- Preview Card -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                        <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-xl">
+                            <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                {% trans "Live Preview" %}
+                            </h3>
+                        </div>
+                        <div class="p-5 space-y-4">
+
+                            <!-- Face Value -->
+                            <div class="text-center py-4 bg-gradient-to-br from-primary-50 to-primary-100/50 rounded-xl border border-primary-100">
+                                <p class="text-xs font-medium text-primary-600 mb-1">{% trans "Face Value per Share" %}</p>
+                                <p class="text-3xl font-bold text-primary-700 tabular-nums">₹<span x-text="parseFloat(faceValue || 0).toFixed(2)"></span></p>
+                            </div>
+
+                            <!-- Investment Range -->
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="bg-emerald-50 rounded-xl border border-emerald-100 p-3 text-center">
+                                    <div class="flex items-center justify-center gap-1 mb-1">
+                                        <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+                                        <p class="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider">{% trans "Min Investment" %}</p>
+                                    </div>
+                                    <p class="text-xl font-bold text-emerald-700 tabular-nums">₹<span x-text="parseFloat(minInvestment).toLocaleString('en-IN')"></span></p>
+                                    <p class="text-[10px] text-emerald-500 mt-0.5 tabular-nums" x-text="minShares + ' shares'"></p>
+                                </div>
+                                <div class="bg-blue-50 rounded-xl border border-blue-100 p-3 text-center">
+                                    <div class="flex items-center justify-center gap-1 mb-1">
+                                        <svg class="w-3.5 h-3.5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+                                        <p class="text-[10px] font-semibold text-blue-600 uppercase tracking-wider">{% trans "Max Investment" %}</p>
+                                    </div>
+                                    <p class="text-xl font-bold text-blue-700 tabular-nums">₹<span x-text="parseFloat(maxInvestment).toLocaleString('en-IN')"></span></p>
+                                    <p class="text-[10px] text-blue-500 mt-0.5 tabular-nums" x-text="maxShares + ' shares'"></p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="bg-white rounded-lg border border-gray-100 px-3 py-2.5">
-                        <p class="text-xs text-gray-400 mb-0.5">{% trans "Min. Investment" %}</p>
-                        <p class="text-lg font-bold text-emerald-600 tabular-nums">₹<span x-text="parseFloat(minInvestment).toLocaleString('en-IN')"></span></p>
-                        <p class="text-[10px] text-gray-400" x-text="minShares + ' × ₹' + parseFloat(faceValue || 0).toFixed(2)"></p>
+
+                    <!-- Current Stats -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                        <div class="px-5 py-3 border-b border-gray-200 bg-gray-50/50 rounded-t-xl">
+                            <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                <svg class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                                {% trans "Current Statistics" %}
+                            </h3>
+                        </div>
+                        <div class="p-5">
+                            <div class="border border-gray-200 rounded-lg overflow-hidden">
+                                <table class="w-full text-sm">
+                                    <tbody class="divide-y divide-gray-100">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-500">{% trans "Total Shareholders" %}</td>
+                                            <td class="px-3 py-2 text-right font-semibold text-gray-800">{{ total_shareholders }}</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-500">{% trans "Total Shares Issued" %}</td>
+                                            <td class="px-3 py-2 text-right font-semibold text-gray-800">{{ total_shares_issued }}</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-500">{% trans "Total Share Capital" %}</td>
+                                            <td class="px-3 py-2 text-right font-semibold text-green-700">₹{{ total_share_capital|floatformat:2 }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
-                    <div class="bg-white rounded-lg border border-gray-100 px-3 py-2.5">
-                        <p class="text-xs text-gray-400 mb-0.5">{% trans "Max. Investment" %}</p>
-                        <p class="text-lg font-bold text-primary-600 tabular-nums">₹<span x-text="parseFloat(maxInvestment).toLocaleString('en-IN')"></span></p>
-                        <p class="text-[10px] text-gray-400" x-text="maxShares + ' × ₹' + parseFloat(faceValue || 0).toFixed(2)"></p>
-                    </div>
+
                 </div>
             </div>
 
-            <!-- Footer -->
-            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl flex flex-wrap items-center justify-between gap-3">
-                <p class="text-xs text-gray-400">{% trans "This config will become the active configuration." %}</p>
-                <div class="flex items-center gap-3">
-                    <a href="{% url 'shares:config_list' %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">{% trans "Cancel" %}</a>
-                    <button type="submit" class="px-6 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 shadow-sm">{% trans "Save Config" %}</button>
-                </div>
-            </div>
         </div>
     </form>
 </div>

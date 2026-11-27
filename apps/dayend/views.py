@@ -41,7 +41,7 @@ def dayend_index(request):
     if working_day and not working_day.is_day_open:
         next_working_date = working_day.current_date + timedelta(days=1)
     else:
-        next_working_date = date.today()
+        next_working_date = working_day.current_date if working_day else date.today()
 
     current_fy = FinancialYear.objects.filter(is_current=True).first()
 
@@ -55,7 +55,8 @@ def dayend_index(request):
     )
     last_completed_date = last_completed.processing_date if last_completed else None
 
-    current_month = date.today().replace(day=1)
+    wd_date = working_day.current_date if working_day else date.today()
+    current_month = wd_date.replace(day=1)
     month_end_done = MonthEndLog.objects.filter(
         branch=branch,
         month=current_month,
@@ -111,7 +112,7 @@ def dayend_index(request):
             'logs': logs,
             'month_logs': month_logs,
             'opening_cash': opening_cash,
-            'today': date.today(),
+            'today': wd_date,
             'next_working_date': next_working_date,
             'last_completed_date': last_completed_date,
             'month_end_done': month_end_done,
@@ -130,21 +131,6 @@ class BeginDayView(AccountantRequiredMixin, View):
             messages.error(request, 'Please select a branch.')
             return redirect('dayend:index')
 
-        from apps.dayend.models import FinancialYear
-
-        fy = FinancialYear.objects.filter(is_current=True).first()
-        if not fy:
-            fy_start = date(date.today().year, 4, 1)
-            if date.today().month < 4:
-                fy_start = date(date.today().year - 1, 4, 1)
-            fy_end = date(fy_start.year + 1, 3, 31)
-            fy = FinancialYear.objects.create(
-                fy_code=f'{fy_start.year}-{str(fy_end.year)[-2:]}',
-                start_date=fy_start,
-                end_date=fy_end,
-                is_current=True,
-            )
-
         date_str = request.POST.get('working_date', '')
         if date_str:
             try:
@@ -158,6 +144,22 @@ class BeginDayView(AccountantRequiredMixin, View):
                 working_date = working_day.current_date + timedelta(days=1)
             else:
                 working_date = date.today()
+
+        from apps.dayend.models import FinancialYear
+
+        fy = FinancialYear.objects.filter(is_current=True).first()
+        if not fy:
+            if working_date.month >= 4:
+                fy_start = date(working_date.year, 4, 1)
+            else:
+                fy_start = date(working_date.year - 1, 4, 1)
+            fy_end = date(fy_start.year + 1, 3, 31)
+            fy = FinancialYear.objects.create(
+                fy_code=f'{fy_start.year}-{str(fy_end.year)[-2:]}',
+                start_date=fy_start,
+                end_date=fy_end,
+                is_current=True,
+            )
 
         if not (fy.start_date <= working_date <= fy.end_date):
             messages.error(

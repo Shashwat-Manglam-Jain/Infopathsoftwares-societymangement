@@ -40,27 +40,27 @@
             {% if report_type == 'all_accounts' %}
             <div class="min-w-[200px]">
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Member" %}</label>
-                <select name="member" class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
+                <select name="member" onchange="this.form.submit()" class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
                     <option value="">{% trans "— Select Member —" %}</option>
                     {% for m in members %}
                     <option value="{{ m.pk }}" {% if selected_member == m.pk|stringformat:"d" %}selected{% endif %}>{{ m.member_no }} — {{ m.name }}</option>
                     {% endfor %}
                 </select>
             </div>
-            <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">{% trans "View" %}</button>
             {% endif %}
             {% if report_type == 'opening_register' or report_type == 'closing_register' %}
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "From Date" %}</label>
                 <input type="date" name="from_date" value="{{ from_date }}"
+                       onchange="this.form.submit()"
                        class="border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "To Date" %}</label>
                 <input type="date" name="to_date" value="{{ to_date }}"
+                       onchange="this.form.submit()"
                        class="border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
             </div>
-            <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">{% trans "View" %}</button>
             {% endif %}
         </form>
     </div>

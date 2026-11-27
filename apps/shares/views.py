@@ -3,8 +3,9 @@ from decimal import Decimal, InvalidOperation
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import transaction as db_transaction
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils import timezone
+
 from django.views import View
 
 from apps.accounts.permissions import (
@@ -62,7 +63,8 @@ def share_list(request):
             from apps.savings.models import AccountTransaction, SavingsAccount
 
             posted = 0
-            today = timezone.now().date()
+            from apps.core.date_utils import get_transaction_date
+            today = get_transaction_date(request.current_branch)
             with db_transaction.atomic():
                 existing_dividend = (
                     ShareTransaction.objects.select_for_update()
@@ -192,10 +194,32 @@ def share_purchase(request):
             status='active',
         )
 
-    from apps.shares.models import ShareConfig
-
     config = ShareConfig.objects.filter(is_active=True).first()
-    return render(request, 'shares/purchase.html', {'form': form, 'config': config})
+    total_shareholders = ShareHolding.objects.filter(status='active', share_count__gt=0).count()
+    return render(request, 'shares/purchase.html', {
+        'form': form,
+        'config': config,
+        'total_shareholders': total_shareholders,
+    })
+
+
+@cashier_required
+def share_member_info(request, member_id):
+    from apps.members.models import Member
+
+    member = get_object_or_404(Member, pk=member_id, status='active')
+    holding = ShareHolding.objects.filter(member=member, status='active').first()
+    config = ShareConfig.objects.filter(is_active=True).first()
+    max_allowed = config.max_shares_per_member if config else 0
+    current = holding.share_count if holding else 0
+    return JsonResponse({
+        'name': member.name,
+        'member_no': member.member_no,
+        'current_shares': current,
+        'current_amount': float(holding.total_amount) if holding else 0,
+        'remaining_capacity': max(0, max_allowed - current),
+        'max_shares': max_allowed,
+    })
 
 
 @manager_required
@@ -310,65 +334,49 @@ class ShareReceiptView(AuditorOrAboveMixin, View):
 
 
 @admin_required
-def share_config_list(request):
-    configs = ShareConfig.objects.all()
-    return render(request, 'shares/config_list.html', {'configs': configs})
-
-
-@admin_required
-def share_config_create(request):
+def share_config(request):
+    config = ShareConfig.objects.first()
     if request.method == 'POST':
         try:
-            name = request.POST.get('name', '').strip()
-            if not name:
-                raise ValueError('Name is required.')
-            with db_transaction.atomic():
-                ShareConfig.objects.filter(is_active=True).update(is_active=False)
-                ShareConfig.objects.create(
-                    name=name,
-                    face_value_per_share=Decimal(request.POST.get('face_value_per_share', '10')),
-                    max_shares_per_member=int(request.POST.get('max_shares_per_member', '100')),
-                    min_shares_required=int(request.POST.get('min_shares_required', '1')),
+            fv = Decimal(request.POST.get('face_value_per_share', '10'))
+            max_s = int(request.POST.get('max_shares_per_member', '100'))
+            min_s = int(request.POST.get('min_shares_required', '1'))
+            if fv <= 0:
+                raise ValueError('Face value must be greater than zero.')
+            if min_s < 1:
+                raise ValueError('Minimum shares must be at least 1.')
+            if max_s < min_s:
+                raise ValueError('Maximum shares cannot be less than minimum.')
+            if config:
+                config.face_value_per_share = fv
+                config.max_shares_per_member = max_s
+                config.min_shares_required = min_s
+                config.is_active = True
+                config.save()
+            else:
+                config = ShareConfig.objects.create(
+                    name='Default',
+                    face_value_per_share=fv,
+                    max_shares_per_member=max_s,
+                    min_shares_required=min_s,
                     is_active=True,
                 )
-            messages.success(request, 'Share configuration created and set as active.')
+            messages.success(request, 'Share configuration saved.')
+            return redirect('shares:config')
         except (ValueError, InvalidOperation) as e:
             messages.error(request, str(e))
-            return render(request, 'shares/config_form.html', {'title': 'New Share Config'})
-        return redirect('shares:config_list')
-    return render(request, 'shares/config_form.html', {'title': 'New Share Config'})
+    from django.db.models import Sum
 
-
-@admin_required
-def share_config_edit(request, pk):
-    config = get_object_or_404(ShareConfig, pk=pk)
-    if request.method == 'POST':
-        try:
-            config.name = request.POST.get('name', config.name).strip()
-            config.face_value_per_share = Decimal(request.POST.get('face_value_per_share', '10'))
-            config.max_shares_per_member = int(request.POST.get('max_shares_per_member', '100'))
-            config.min_shares_required = int(request.POST.get('min_shares_required', '1'))
-            config.save()
-            messages.success(request, 'Share configuration updated.')
-        except (ValueError, InvalidOperation) as e:
-            messages.error(request, str(e))
-            return render(request, 'shares/config_form.html', {'config': config, 'title': f'Edit: {config.name}'})
-        return redirect('shares:config_list')
-    return render(request, 'shares/config_form.html', {'config': config, 'title': f'Edit: {config.name}'})
-
-
-@admin_required
-def share_config_toggle(request, pk):
-    config = get_object_or_404(ShareConfig, pk=pk)
-    if request.method == 'POST':
-        if config.is_active:
-            config.is_active = False
-            config.save(update_fields=['is_active'])
-            messages.success(request, f'"{config.name}" disabled.')
-        else:
-            with db_transaction.atomic():
-                ShareConfig.objects.filter(is_active=True).update(is_active=False)
-                config.is_active = True
-                config.save(update_fields=['is_active'])
-            messages.success(request, f'"{config.name}" is now the active configuration.')
-    return redirect('shares:config_list')
+    total_shareholders = ShareHolding.objects.filter(status='active', share_count__gt=0).count()
+    total_shares_issued = ShareHolding.objects.filter(status='active').aggregate(
+        total=Sum('share_count'),
+    )['total'] or 0
+    total_share_capital = ShareHolding.objects.filter(status='active').aggregate(
+        total=Sum('total_amount'),
+    )['total'] or Decimal('0')
+    return render(request, 'shares/config_form.html', {
+        'config': config,
+        'total_shareholders': total_shareholders,
+        'total_shares_issued': total_shares_issued,
+        'total_share_capital': total_share_capital,
+    })

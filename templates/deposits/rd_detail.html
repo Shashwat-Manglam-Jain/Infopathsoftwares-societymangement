@@ -4,10 +4,10 @@
 {% block page_title %}{% trans "Recurring Deposit Details" %}{% endblock %}
 
 {% block content %}
-<div class="max-w-full">
+<div class="max-w-full space-y-4">
 
     <!-- Summary -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-4">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
         <div class="px-5 py-4 grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-3">
             <div>
                 <span class="text-xs text-gray-500">{% trans "RD No" %}</span>
@@ -117,5 +117,7 @@
             </table>
         </div>
     </div>
+
+    {% include "includes/voucher_history.html" %}
 </div>
 {% endblock %}

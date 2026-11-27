@@ -41,35 +41,35 @@
             {% if report_type == 'agent_clients' %}
             <div class="min-w-[180px]">
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Agent" %}</label>
-                <select name="agent" class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
+                <select name="agent" onchange="this.form.submit()" class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
                     <option value="">{% trans "All Agents" %}</option>
                     {% for a in agents %}
                     <option value="{{ a.pk }}" {% if selected_agent == a.pk|stringformat:"d" %}selected{% endif %}>{{ a.agent_code }} — {{ a.member.name }}</option>
                     {% endfor %}
                 </select>
             </div>
-            <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">{% trans "View" %}</button>
             {% endif %}
             {% if report_type == 'date_daybook' %}
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Date" %}</label>
                 <input type="date" name="date" value="{{ report_date }}"
+                       onchange="this.form.submit()"
                        class="border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
             </div>
-            <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">{% trans "View" %}</button>
             {% endif %}
             {% if report_type == 'commission' %}
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "From Date" %}</label>
                 <input type="date" name="from_date" value="{{ from_date }}"
+                       onchange="this.form.submit()"
                        class="border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "To Date" %}</label>
                 <input type="date" name="to_date" value="{{ to_date }}"
+                       onchange="this.form.submit()"
                        class="border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
             </div>
-            <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700">{% trans "View" %}</button>
             {% endif %}
             {% include "includes/export_csv.html" %}
         </form>

@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import timedelta
 from decimal import Decimal
 
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -14,10 +14,19 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         context['is_member_only'] = getattr(user, 'is_member_only', False)
+        context['user_role'] = getattr(user, 'role', 'member')
+        context['is_director'] = getattr(user, 'is_director_role', False)
+        context['is_auditor'] = user.role == 'auditor'
+        context['is_staff'] = getattr(user, 'is_staff_role', False)
+        context['is_cashier_role'] = getattr(user, 'is_cashier', False)
+        context['is_accountant_role'] = getattr(user, 'is_accountant', False)
+        context['is_manager_role'] = getattr(user, 'is_manager', False)
         if context['is_member_only']:
             return context
         branch = getattr(self.request, 'current_branch', None)
-        today = date.today()
+        from apps.core.date_utils import get_transaction_date
+
+        today = get_transaction_date(branch)
 
         context['setup_progress'] = self._get_setup_progress()
 
@@ -153,7 +162,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         steps.append(
             {
                 'name': 'Add Members',
-                'description': 'Register your society members (or import from Excel)',
+                'description': 'Register society members (or import from Excel)',
                 'done': member_count >= 1,
                 'count': member_count,
                 'url': '/members/',

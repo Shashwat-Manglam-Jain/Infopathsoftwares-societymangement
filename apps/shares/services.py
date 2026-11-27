@@ -1,4 +1,3 @@
-import logging
 from decimal import Decimal
 
 from django.db import models, transaction
@@ -6,8 +5,6 @@ from django.db import models, transaction
 from apps.core.date_utils import get_transaction_date
 
 from .models import ShareConfig, ShareHolding, ShareTransaction
-
-logger = logging.getLogger(__name__)
 
 
 def _get_config():
@@ -66,10 +63,7 @@ def purchase_shares(member, branch, count, user):
         created_by=user,
     )
 
-    try:
-        _create_share_journal(branch, total_amount, user, 'purchase', holding.pk)
-    except ValueError as e:
-        logger.warning('Share journal entry failed: %s', e)
+    _create_share_journal(branch, total_amount, user, 'purchase', holding.pk)
     return holding
 
 
@@ -252,10 +246,7 @@ def surrender_shares(member, count, user):
         narration=f'Surrender of {count} shares',
         created_by=user,
     )
-    try:
-        _create_share_journal(member.branch, amount, user, 'surrender')
-    except ValueError as e:
-        logger.warning('Share journal entry failed: %s', e)
+    _create_share_journal(member.branch, amount, user, 'surrender')
     return amount
 
 
@@ -290,6 +281,7 @@ def _create_share_journal(branch, amount, user, txn_type, ref_id=None):
     from apps.savings.services import _get_cash_code
 
     share_capital_code = get_gl_code('shares', '2501')
+    entry_date = get_transaction_date(branch)
 
     if txn_type == 'purchase':
         lines = [
@@ -307,7 +299,7 @@ def _create_share_journal(branch, amount, user, txn_type, ref_id=None):
         voucher_type = 'payment'
 
     create_journal_entry(
-        entry_date=get_transaction_date(branch),
+        entry_date=entry_date,
         voucher_type=voucher_type,
         branch=branch,
         narration=narration,
@@ -315,5 +307,5 @@ def _create_share_journal(branch, amount, user, txn_type, ref_id=None):
         user=user,
         reference_type=f'share_{txn_type}',
         reference_id=ref_id,
-        is_posted=True,
+        is_posted=False,
     )

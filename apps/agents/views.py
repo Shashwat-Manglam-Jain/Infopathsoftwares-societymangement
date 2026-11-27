@@ -1,5 +1,4 @@
 import json
-from datetime import date
 from decimal import Decimal, InvalidOperation
 
 from django.contrib import messages
@@ -10,6 +9,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from apps.accounting.models import ChartOfAccounts, InterestMaster
+from apps.core.date_utils import get_transaction_date
 from apps.accounts.permissions import (
     auditor_or_above,
     cashier_required,
@@ -53,6 +53,19 @@ def agent_create(request):
         if form.is_valid():
             agent = form.save(commit=False)
             agent.created_by = request.user
+            member = agent.member
+            branch_filter = {'branch': branch} if branch else {}
+            savings = SavingsAccount.objects.filter(
+                member=member, status='active', account_type='savings', **branch_filter,
+            ).first()
+            security = SavingsAccount.objects.filter(
+                member=member, status='active', account_type='security', **branch_filter,
+            ).first()
+            if not savings:
+                messages.error(request, 'Selected member does not have an active savings account.')
+                return render(request, 'agents/create.html', {'form': form})
+            agent.savings_account = savings
+            agent.security_deposit_account = security
             max_code = Agent.objects.aggregate(m=Max('agent_code'))['m']
             if max_code:
                 try:
@@ -66,7 +79,7 @@ def agent_create(request):
             messages.success(request, f'Agent {agent.agent_code} created successfully.')
             return redirect('agents:detail', pk=agent.pk)
     else:
-        form = AgentForm(branch=branch, initial={'joining_date': date.today().isoformat()})
+        form = AgentForm(branch=branch, initial={'joining_date': get_transaction_date(branch).isoformat()})
     return render(request, 'agents/create.html', {'form': form})
 
 
@@ -182,7 +195,9 @@ def pigmmy_create(request):
                     interest_rate=interest_rate,
                     deposit_type=form.cleaned_data['deposit_type'],
                     created_by=request.user,
-                    linked_savings=form.cleaned_data.get('linked_savings_account'),
+                    linked_savings=SavingsAccount.objects.filter(
+                        member=form.cleaned_data['member'], status='active', account_type='savings',
+                    ).first(),
                 )
                 messages.success(request, f'Pigmmy account {account.account_no} created.')
                 return redirect('agents:pigmmy_detail', pk=account.pk)
@@ -225,12 +240,26 @@ def pigmmy_detail(request, pk):
         messages.error(request, 'You do not have access to this account.')
         return redirect('agents:pigmmy_list')
     transactions = PigmmyTransaction.objects.filter(account=account).order_by('-txn_date', '-created_at')[:50]
+
+    from apps.accounting.models import JournalLine
+
+    pending_vouchers = (
+        JournalLine.objects.filter(
+            account_number=account.account_no,
+            journal_entry__is_posted=False,
+            journal_entry__is_rejected=False,
+            journal_entry__is_reversed=False,
+        )
+        .select_related('journal_entry', 'journal_entry__created_by')
+        .order_by('-journal_entry__entry_date')[:20]
+    )
     return render(
         request,
         'agents/pigmmy_detail.html',
         {
             'account': account,
             'transactions': transactions,
+            'pending_vouchers': pending_vouchers,
         },
     )
 
@@ -459,149 +488,87 @@ def collection_detail(request, pk):
 
 @auditor_or_above
 def collection_posting_list(request):
-    from django.db.models import Q, Sum
-
-    from apps.accounting.models import JournalEntry
+    from django.db.models import Sum
 
     branch = request.current_branch
     branch_filter = {}
     if not request.user.can_access_all_branches and branch:
         branch_filter['branch'] = branch
 
-    # --- Pending agent collections ---
-    collections = (
-        AgentCollection.objects.filter(status='submitted', **branch_filter)
-        .select_related('agent__member', 'branch')
-        .order_by('-collection_date')
-    )
-    agent_id = request.GET.get('agent')
-    if agent_id:
-        collections = collections.filter(agent_id=agent_id)
-    collections = list(collections)
-
-    for col in collections:
-        col.client_transactions = (
-            PigmmyTransaction.objects.filter(
-                collected_by=col.agent,
-                txn_date=col.collection_date,
-                is_reversed=False,
-            )
-            .select_related('account__member')
-            .order_by('account__account_no')
-        )
-
-    # --- Recently posted / rejected agent collections ---
-    posted = (
-        AgentCollection.objects.filter(status__in=['reconciled', 'discrepancy'], **branch_filter)
-        .select_related('agent__member', 'branch', 'reconciled_by')
-        .order_by('-collection_date')
-    )
-    if agent_id:
-        posted = posted.filter(agent_id=agent_id)
-    posted = list(posted[:20])
-
-    today = date.today()
-    for col in posted:
-        col.client_transactions = (
-            PigmmyTransaction.objects.filter(
-                collected_by=col.agent,
-                txn_date=col.collection_date,
-                is_reversed=False,
-            )
-            .select_related('account__member')
-            .order_by('account__account_no')
-        )
-        col.can_rollback = col.status == 'reconciled' and col.collection_date == today
-
-    today_rollbackable = [c for c in posted if c.can_rollback]
-
+    working_date = get_transaction_date(branch)
     agents = Agent.objects.filter(status='active', **branch_filter).select_related('member')
 
-    # --- All recent journal entries (unified transaction view) ---
-    entries = JournalEntry.objects.select_related('branch', 'created_by').annotate(amount=Sum('lines__debit_amount'))
-    if not request.user.can_access_all_branches and branch:
-        entries = entries.filter(branch=branch)
+    # --- Single unified query: all collections except 'open' ---
+    qs = (
+        AgentCollection.objects.filter(**branch_filter)
+        .exclude(status='open')
+        .select_related('agent__member', 'branch', 'reconciled_by')
+    )
 
-    q = request.GET.get('q', '').strip()
-    if q:
-        entries = entries.filter(Q(voucher_no__icontains=q) | Q(narration__icontains=q))
+    agent_id = request.GET.get('agent')
+    if agent_id:
+        qs = qs.filter(agent_id=agent_id)
 
     from_date = request.GET.get('from_date', '')
     to_date = request.GET.get('to_date', '')
     if from_date:
-        entries = entries.filter(entry_date__gte=from_date)
+        qs = qs.filter(collection_date__gte=from_date)
     if to_date:
-        entries = entries.filter(entry_date__lte=to_date)
-
-    voucher_type = request.GET.get('type', '')
-    if voucher_type in ('receipt', 'payment', 'journal', 'contra'):
-        entries = entries.filter(voucher_type=voucher_type)
-
-    source_filter = request.GET.get('source', '')
-    if source_filter == 'manual':
-        entries = entries.filter(reference_type='manual')
-    elif source_filter == 'agent':
-        entries = entries.filter(reference_type='pigmmy_collection')
-    elif source_filter == 'system':
-        entries = entries.exclude(reference_type__in=['manual', 'pigmmy_collection', 'modification'])
+        qs = qs.filter(collection_date__lte=to_date)
 
     status_filter = request.GET.get('status', '')
-    if status_filter == 'posted':
-        entries = entries.filter(is_posted=True, is_reversed=False)
-    elif status_filter == 'reversed':
-        entries = entries.filter(is_reversed=True)
+    if status_filter in ('submitted', 'reconciled', 'discrepancy'):
+        qs = qs.filter(status=status_filter)
 
-    entries = entries.order_by('-entry_date', '-created_at')
+    qs = qs.order_by('-collection_date', '-created_at')
 
-    # --- Summary stats (today) ---
-    today_entries = JournalEntry.objects.filter(
-        entry_date=today,
-        is_posted=True,
-        is_reversed=False,
-        **branch_filter,
-    )
-    today_receipts = today_entries.filter(voucher_type='receipt').aggregate(
-        total=Sum('lines__debit_amount'),
-    )['total'] or Decimal('0')
-    today_payments = today_entries.filter(voucher_type='payment').aggregate(
-        total=Sum('lines__debit_amount'),
-    )['total'] or Decimal('0')
-    today_collections = today_entries.filter(reference_type='pigmmy_collection').aggregate(
-        total=Sum('lines__debit_amount'),
-    )['total'] or Decimal('0')
-    today_journal = today_entries.filter(voucher_type__in=['journal', 'contra']).aggregate(
-        total=Sum('lines__debit_amount'),
-    )['total'] or Decimal('0')
+    # Attach client transactions for pending (submitted) rows
+    collections = list(qs)
+    for col in collections:
+        if col.status == 'submitted':
+            col.client_transactions = (
+                PigmmyTransaction.objects.filter(
+                    collected_by=col.agent,
+                    txn_date=col.collection_date,
+                    is_reversed=False,
+                )
+                .select_related('account__member')
+                .order_by('account__account_no')
+            )
 
-    paginator = Paginator(entries, 25)
+    # --- Summary stats ---
+    all_collections = AgentCollection.objects.filter(**branch_filter)
+    pending_count = all_collections.filter(status='submitted').count()
+    posted_total = all_collections.filter(status='reconciled').aggregate(
+        total=Sum('collected_amount'),
+    )['total'] or Decimal('0')
+    rejected_total = all_collections.filter(status='discrepancy').aggregate(
+        total=Sum('collected_amount'),
+    )['total'] or Decimal('0')
+    today_collected = all_collections.filter(
+        collection_date=working_date, status='reconciled',
+    ).aggregate(total=Sum('collected_amount'))['total'] or Decimal('0')
+
+    paginator = Paginator(collections, 25)
     page_obj = paginator.get_page(request.GET.get('page'))
 
     return render(
         request,
         'agents/collection_posting.html',
         {
-            'pending': collections,
-            'posted': posted,
-            'agents': agents,
-            'today_rollback_count': len(today_rollbackable),
-            'today_rollback_total': sum(c.collected_amount for c in today_rollbackable),
-            # Unified transaction data
             'entries': page_obj,
             'page_obj': page_obj,
             'is_paginated': page_obj.has_other_pages(),
             'paginator': paginator,
-            'q': q,
+            'agents': agents,
+            'selected_agent': agent_id,
             'from_date': from_date,
             'to_date': to_date,
-            'voucher_type': voucher_type,
-            'source_filter': source_filter,
             'status_filter': status_filter,
-            # Summary stats
-            'today_receipts': today_receipts,
-            'today_payments': today_payments,
-            'today_collections': today_collections,
-            'today_journal': today_journal,
-            'today_total': today_receipts + today_payments + today_journal,
+            'pending_count': pending_count,
+            'posted_total': posted_total,
+            'rejected_total': rejected_total,
+            'today_collected': today_collected,
         },
     )
 
@@ -710,9 +677,9 @@ def collection_rollback_all(request):
 
     from apps.agents.services import rollback_collection
 
-    today = date.today()
     branch = getattr(request, 'current_branch', None)
-    qs = AgentCollection.objects.filter(status='reconciled', collection_date=today)
+    working_date = get_transaction_date(branch)
+    qs = AgentCollection.objects.filter(status='reconciled', collection_date=working_date)
     if branch and not request.user.can_access_all_branches:
         qs = qs.filter(branch=branch)
 
@@ -781,6 +748,6 @@ def agent_client_sheet(request, pk):
             'agent': agent,
             'accounts': accounts,
             'total_installment': total_installment,
-            'today': date.today(),
+            'today': get_transaction_date(getattr(request, 'current_branch', None)),
         },
     )

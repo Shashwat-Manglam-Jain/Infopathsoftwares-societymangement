@@ -10,7 +10,6 @@ urlpatterns = [
     path('<int:pk>/', views.loan_detail, name='detail'),
     path('<int:pk>/approve/', views.loan_approve, name='approve'),
     path('<int:pk>/disburse/', views.loan_disburse, name='disburse'),
-    path('<int:pk>/collect/', views.loan_collect, name='collect'),
     path('loan-charges/', views.loan_charge_list, name='loan_charge_list'),
     path('loan-charges/create/', views.loan_charge_create, name='loan_charge_create'),
     path('receipt/<int:repayment_id>/', views.EMIReceiptView.as_view(), name='emi_receipt'),

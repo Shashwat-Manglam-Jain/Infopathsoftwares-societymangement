@@ -241,13 +241,17 @@ class LoanGuarantor(models.Model):
     )
 
     def __str__(self):
-        return f'{self.guarantor_member.name} for {self.loan.loan_no}'
+        name = self.guarantor_member.name if self.guarantor_member_id else '—'
+        loan_no = self.loan.loan_no if self.loan_id else '—'
+        return f'{name} for {loan_no}'
 
     def clean(self):
+        if not self.guarantor_member_id:
+            return
         from apps.shares.models import ShareHolding
 
         if not ShareHolding.objects.filter(
-            member=self.guarantor_member,
+            member_id=self.guarantor_member_id,
             status='active',
         ).exists():
             raise ValidationError('Guarantor must have an active share holding.')

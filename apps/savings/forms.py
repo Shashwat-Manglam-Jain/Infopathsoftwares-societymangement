@@ -96,8 +96,9 @@ class SavingsAccountForm(forms.ModelForm):
 class SavingsAccountEditForm(forms.ModelForm):
     class Meta:
         model = SavingsAccount
-        fields = ['interest_rate', 'minimum_balance', 'interest_posting_frequency']
+        fields = ['status', 'interest_rate', 'minimum_balance', 'interest_posting_frequency']
         widgets = {
+            'status': forms.Select(attrs={'class': _tw}),
             'interest_rate': forms.NumberInput(
                 attrs={
                     'class': _tw + ' bg-gray-50 cursor-not-allowed',
@@ -111,6 +112,15 @@ class SavingsAccountEditForm(forms.ModelForm):
             'minimum_balance': forms.NumberInput(attrs={'class': _tw, 'step': '0.01', 'min': '0'}),
             'interest_posting_frequency': forms.Select(attrs={'class': _tw}),
         }
+
+    def clean_status(self):
+        status = self.cleaned_data['status']
+        if status == 'closed' and self.instance.current_balance != 0:
+            raise forms.ValidationError(
+                'Account cannot be closed while balance is non-zero. '
+                f'Current balance: ₹{self.instance.current_balance:,.2f}'
+            )
+        return status
 
 
 class DepositForm(forms.Form):

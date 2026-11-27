@@ -49,7 +49,9 @@ def voucher_list(request):
     _ensure_coa_exists()
     from django.core.paginator import Paginator
 
-    entries = JournalEntry.objects.select_related('branch', 'created_by', 'approved_by').annotate(
+    entries = JournalEntry.objects.select_related('branch', 'created_by', 'approved_by').prefetch_related(
+        'lines__gl_account',
+    ).annotate(
         amount=Sum('lines__debit_amount'),
     )
     if not request.user.can_access_all_branches:
@@ -71,12 +73,23 @@ def voucher_list(request):
         entries = entries.filter(voucher_type=voucher_type)
 
     status_filter = request.GET.get('status', '')
-    if status_filter == 'posted':
+    if status_filter == 'pending':
+        entries = entries.filter(is_posted=False, is_reversed=False, is_rejected=False)
+    elif status_filter == 'posted':
         entries = entries.filter(is_posted=True, is_reversed=False)
     elif status_filter == 'reversed':
         entries = entries.filter(is_reversed=True)
+    elif status_filter == 'rejected':
+        entries = entries.filter(is_rejected=True)
 
     entries = entries.order_by('-entry_date', '-created_at')
+
+    pending_count = JournalEntry.objects.filter(
+        is_posted=False, is_reversed=False, is_rejected=False,
+    )
+    if not request.user.can_access_all_branches:
+        pending_count = pending_count.filter(branch=request.current_branch)
+    pending_count = pending_count.count()
 
     paginator = Paginator(entries, 25)
     page_obj = paginator.get_page(request.GET.get('page'))
@@ -93,8 +106,28 @@ def voucher_list(request):
             'to_date': to_date,
             'voucher_type': voucher_type,
             'status_filter': status_filter,
+            'pending_count': pending_count,
         },
     )
+
+
+@cashier_required
+def voucher_detail(request, pk):
+    entry = get_object_or_404(
+        JournalEntry.objects.select_related('branch', 'created_by', 'approved_by').prefetch_related('lines__gl_account'),
+        pk=pk,
+    )
+    if not request.user.can_access_all_branches and not has_branch_access(request, entry.branch):
+        messages.error(request, 'You do not have access to this voucher.')
+        return redirect('accounting:vouchers')
+    lines = entry.lines.all()
+    debit_total = sum(l.debit_amount or 0 for l in lines)
+    credit_total = sum(l.credit_amount or 0 for l in lines)
+    return render(request, 'accounting/voucher_detail.html', {
+        'entry': entry,
+        'debit_total': debit_total,
+        'credit_total': credit_total,
+    })
 
 
 @accountant_required
@@ -263,6 +296,7 @@ def _update_personal_account(head, account_number, amount, txn_type, entry_date,
             loan.save(update_fields=['outstanding_principal', 'updated_at'])
 
 
+
 def _reverse_personal_accounts(entry, reversal, user):
     """Reverse personal account balances when a receipt/payment voucher is cancelled."""
     from apps.savings.models import AccountTransaction, SavingsAccount
@@ -347,7 +381,8 @@ def _process_transaction(request, txn_type, heads):
     try:
         entry_date = date.fromisoformat(entry_date_str)
     except (ValueError, TypeError):
-        entry_date = date.today()
+        from apps.core.date_utils import get_transaction_date
+        entry_date = get_transaction_date(request.current_branch)
 
     if is_date_locked(request.current_branch, entry_date):
         messages.error(request, 'Day-end has been completed for this date. No transactions allowed.')
@@ -384,6 +419,18 @@ def _process_transaction(request, txn_type, heads):
             continue
         if amount <= 0:
             continue
+
+        if head.related_table_name in CUSTOMER_ACCOUNT_TYPES and not account_number:
+            messages.error(
+                request,
+                f'Account number is required for "{head.name}". Select the member account.',
+            )
+            title = 'Receipt Transaction' if txn_type == 'receipt' else 'Payment Transaction'
+            return render(
+                request,
+                'accounting/transaction.html',
+                {'heads': heads, 'txn_type': txn_type, 'title': title, 'txn_date': entry_date.isoformat()},
+            )
 
         acct_no = account_number if account_number and head.related_table_name in CUSTOMER_ACCOUNT_TYPES else ''
         if txn_type == 'receipt':
@@ -467,10 +514,8 @@ def _process_transaction(request, txn_type, heads):
                 lines=lines,
                 user=request.user,
                 payment_mode=payment_mode,
-                is_posted=True,
             )
-            _post_side_effects(entry, request.user)
-        messages.success(request, f'{txn_type.title()} {entry.voucher_no} created and posted.')
+        messages.success(request, f'{txn_type.title()} {entry.voucher_no} created. Pending approval.')
         return redirect('accounting:vouchers')
     except ValueError as e:
         messages.error(request, str(e))
@@ -490,14 +535,16 @@ def _process_transaction(request, txn_type, heads):
 def cashbook_entry(request):
     heads = ChartOfAccounts.objects.filter(allow_transactions=True, is_active=True).order_by('name')
 
+    from apps.core.date_utils import get_transaction_date
+
     cb_date = request.GET.get('date')
     if cb_date:
         try:
             cb_date = date.fromisoformat(cb_date)
         except ValueError:
-            cb_date = date.today()
+            cb_date = get_transaction_date(request.current_branch)
     else:
-        cb_date = date.today()
+        cb_date = get_transaction_date(request.current_branch)
 
     today_entries = (
         JournalEntry.objects.filter(
@@ -569,7 +616,7 @@ def cashbook_entry(request):
         'closing_cash': closing_cash,
         'cash_in_hand': receipt_total - payment_total,
         'cb_date': cb_date,
-        'today': date.today(),
+        'today': get_transaction_date(request.current_branch),
     }
 
     if request.GET.get('format') == 'csv':
@@ -633,10 +680,8 @@ def voucher_create(request):
                             },
                         ],
                         user=request.user,
-                        is_posted=True,
                     )
-                    _post_side_effects(entry, request.user)
-                messages.success(request, f'Voucher {entry.voucher_no} created and posted.')
+                messages.success(request, f'Voucher {entry.voucher_no} created. Pending approval.')
                 return redirect('accounting:vouchers')
             except ValueError as e:
                 messages.error(request, str(e))
@@ -687,7 +732,7 @@ def chart_of_accounts_list(request):
 
 def _next_head_code(group):
     """Return the next available head code for the given account_group."""
-    prefix_map = {'asset': '1', 'liability': '2', 'equity': '25', 'income': '3', 'expense': '4'}
+    prefix_map = {'asset': '1', 'liability': '2', 'income': '3', 'expense': '4'}
     prefix = prefix_map.get(group, '9')
     last = (
         ChartOfAccounts.objects.filter(code__startswith=prefix, code__regex=r'^\d+$')
@@ -735,7 +780,6 @@ def _next_account_code():
 GROUP_RELATED_TABLE_MAP = {
     'asset': 'general',
     'liability': 'general',
-    'equity': 'general',
     'income': 'interest_received',
     'expense': 'interest_paid',
 }
@@ -743,7 +787,6 @@ GROUP_RELATED_TABLE_MAP = {
 GROUP_REPORT_MAP = {
     'asset': 'balance_sheet',
     'liability': 'balance_sheet',
-    'equity': 'balance_sheet',
     'income': 'profit_loss',
     'expense': 'profit_loss',
 }
@@ -832,14 +875,16 @@ def general_ledger(request):
 
 @auditor_or_above
 def day_book(request):
+    from apps.core.date_utils import get_transaction_date
+
     book_date = request.GET.get('date')
     if book_date:
         try:
             book_date = date.fromisoformat(book_date)
         except ValueError:
-            book_date = date.today()
+            book_date = get_transaction_date(request.current_branch)
     else:
-        book_date = date.today()
+        book_date = get_transaction_date(request.current_branch)
 
     entries = (
         JournalEntry.objects.filter(
@@ -880,7 +925,7 @@ def day_book(request):
         {
             'book_date': book_date,
             'entries': entries,
-            'today': date.today(),
+            'today': get_transaction_date(request.current_branch),
         },
     )
 
@@ -899,11 +944,14 @@ def interest_master_list(request):
 
 @admin_required
 def interest_master_create(request):
+    next_url = request.POST.get('next') or request.GET.get('next', '')
     if request.method == 'POST':
         form = InterestMasterForm(request.POST)
         if form.is_valid():
             form.save()
             messages.success(request, 'Interest slab created.')
+            if next_url and next_url.startswith('/'):
+                return redirect(next_url)
             return redirect('accounting:interest_master')
     else:
         initial = {}
@@ -911,7 +959,9 @@ def interest_master_create(request):
         if head_id:
             initial['account_head'] = head_id
         form = InterestMasterForm(initial=initial)
-    return render(request, 'accounting/interest_master_form.html', {'form': form, 'title': 'Create Interest Slab'})
+    return render(request, 'accounting/interest_master_form.html', {
+        'form': form, 'title': 'Create Interest Slab', 'next_url': next_url,
+    })
 
 
 @auditor_or_above
@@ -959,7 +1009,7 @@ def opening_balance_update(request):
 
     total_debit = sum(h.opening_balance for h in heads if h.opening_balance and h.account_group in ('asset', 'expense'))
     total_credit = sum(
-        h.opening_balance for h in heads if h.opening_balance and h.account_group in ('liability', 'income', 'equity')
+        h.opening_balance for h in heads if h.opening_balance and h.account_group in ('liability', 'income')
     )
 
     if request.method == 'POST':
@@ -1105,9 +1155,7 @@ def voucher_edit(request, pk):
                         user=request.user,
                         reference_type='modification',
                         reference_id=entry.pk,
-                        is_posted=True,
                     )
-                    _post_side_effects(new_entry, request.user)
                 messages.success(request, f'Voucher modified. Old: {entry.voucher_no} → New: {new_entry.voucher_no}')
                 return redirect('accounting:vouchers')
             except ValueError as e:
@@ -1144,10 +1192,6 @@ def voucher_cancel(request, pk):
     )
     if not has_branch_access(request, entry.branch):
         messages.error(request, 'You do not have access to this voucher.')
-        return redirect('accounting:vouchers')
-
-    if entry.is_system_entry:
-        messages.error(request, 'System-generated entries cannot be cancelled from the voucher list.')
         return redirect('accounting:vouchers')
 
     from apps.accounts.permissions import is_date_locked
@@ -1218,7 +1262,13 @@ def account_search(request):
     if rt in ('saving', 'current', 'security'):
         from apps.savings.models import SavingsAccount
 
-        qs = SavingsAccount.objects.filter(status='active').filter(q_filter).select_related('member')[:20]
+        head_or_unset = models.Q(gl_head=head) | models.Q(gl_head__isnull=True)
+        type_map = {'saving': 'savings', 'current': 'current', 'security': 'security'}
+        qs = (
+            SavingsAccount.objects.filter(head_or_unset, status='active', account_type=type_map.get(rt, 'savings'))
+            .filter(q_filter)
+            .select_related('member')[:20]
+        )
         results = [{'number': a.account_no, 'name': a.member.name, 'balance': str(a.current_balance)} for a in qs]
 
     elif rt in ('loan', 'advance'):
@@ -1226,7 +1276,8 @@ def account_search(request):
 
         if q:
             q_filter = models.Q(loan_no__icontains=q) | models.Q(member__name__icontains=q)
-        qs = LoanAccount.objects.filter(status='disbursed').filter(q_filter).select_related('member')[:20]
+        head_or_unset = models.Q(gl_head=head) | models.Q(gl_head__isnull=True)
+        qs = LoanAccount.objects.filter(head_or_unset, status='disbursed').filter(q_filter).select_related('member')[:20]
         results = [{'number': a.loan_no, 'name': a.member.name, 'balance': str(a.outstanding_principal)} for a in qs]
 
     elif rt in ('agent', 'client'):
@@ -1240,7 +1291,8 @@ def account_search(request):
 
         if q:
             q_filter = models.Q(fd_no__icontains=q) | models.Q(member__name__icontains=q)
-        qs = FixedDeposit.objects.filter(status='active').filter(q_filter).select_related('member')[:20]
+        head_or_unset = models.Q(gl_head=head) | models.Q(gl_head__isnull=True)
+        qs = FixedDeposit.objects.filter(head_or_unset, status='active').filter(q_filter).select_related('member')[:20]
         results = [{'number': a.fd_no, 'name': a.member.name, 'balance': str(a.deposit_amount)} for a in qs]
 
     elif rt == 'recurring':
@@ -1248,7 +1300,8 @@ def account_search(request):
 
         if q:
             q_filter = models.Q(rd_no__icontains=q) | models.Q(member__name__icontains=q)
-        qs = RecurringDeposit.objects.filter(status='active').filter(q_filter).select_related('member')[:20]
+        head_or_unset = models.Q(gl_head=head) | models.Q(gl_head__isnull=True)
+        qs = RecurringDeposit.objects.filter(head_or_unset, status='active').filter(q_filter).select_related('member')[:20]
         results = [{'number': a.rd_no, 'name': a.member.name, 'balance': str(a.monthly_installment)} for a in qs]
 
     return JsonResponse({'results': results})
