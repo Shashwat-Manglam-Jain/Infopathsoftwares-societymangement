@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('members', '0006_alter_member_status'),
     ]
@@ -13,6 +12,20 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='member',
             name='prefix',
-            field=models.CharField(blank=True, choices=[('', '—'), ('Mr.', 'Mr.'), ('Mrs.', 'Mrs.'), ('Ms.', 'Ms.'), ('Dr.', 'Dr.'), ('Shri', 'Shri'), ('Smt', 'Smt'), ('M/S', 'M/S'), ('Ku', 'Ku')], max_length=10),
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ('', '—'),
+                    ('Mr.', 'Mr.'),
+                    ('Mrs.', 'Mrs.'),
+                    ('Ms.', 'Ms.'),
+                    ('Dr.', 'Dr.'),
+                    ('Shri', 'Shri'),
+                    ('Smt', 'Smt'),
+                    ('M/S', 'M/S'),
+                    ('Ku', 'Ku'),
+                ],
+                max_length=10,
+            ),
         ),
     ]
