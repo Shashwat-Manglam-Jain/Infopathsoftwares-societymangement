@@ -13,6 +13,17 @@ class Member(models.Model):
     ]
     CATEGORY_CHOICES = [('A', 'Category A'), ('B', 'Category B'), ('C', 'Category C')]
     GENDER_CHOICES = [('male', 'Male'), ('female', 'Female'), ('other', 'Other')]
+    PREFIX_CHOICES = [
+        ('', '—'),
+        ('Mr.', 'Mr.'),
+        ('Mrs.', 'Mrs.'),
+        ('Ms.', 'Ms.'),
+        ('Dr.', 'Dr.'),
+        ('Shri', 'Shri'),
+        ('Smt', 'Smt'),
+        ('M/S', 'M/S'),
+        ('Ku', 'Ku'),
+    ]
 
     member_no = models.CharField(max_length=20, unique=True)
     branch = models.ForeignKey('branches.Branch', on_delete=models.PROTECT, related_name='members')
@@ -63,7 +74,7 @@ class Member(models.Model):
     )
 
     # Extended profile fields
-    prefix = models.CharField(max_length=10, blank=True, help_text='Mr./Mrs./Ms./Dr./Shri/Smt')
+    prefix = models.CharField(max_length=10, choices=PREFIX_CHOICES, blank=True)
     name_regional = models.CharField(max_length=500, blank=True, help_text='Name in regional language (Marathi/Hindi)')
     district = models.CharField(max_length=100, blank=True)
     tahsil = models.CharField(max_length=100, blank=True)

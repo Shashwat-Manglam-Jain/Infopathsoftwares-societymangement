@@ -1202,7 +1202,8 @@ def enquiry(request):
         from_date = request.GET.get('from_date', '')
         to_date = request.GET.get('to_date', '')
         if from_date and to_date:
-            from apps.deposits.models import FixedDeposit
+            from apps.agents.models import PigmmyAccount
+            from apps.deposits.models import FixedDeposit, RecurringDeposit
             from apps.loans.models import LoanAccount
             from apps.savings.models import SavingsAccount
 
@@ -1240,6 +1241,28 @@ def enquiry(request):
                         'date': fd.premature_closure_date or fd.maturity_date,
                     }
                 )
+            for rd in RecurringDeposit.objects.filter(
+                maturity_date__gte=from_date, maturity_date__lte=to_date, status__in=['matured', 'closed']
+            ).select_related('member'):
+                entries.append(
+                    {
+                        'type': 'Recurring Deposit',
+                        'account_no': rd.rd_no,
+                        'member': rd.member.name,
+                        'date': rd.maturity_date,
+                    }
+                )
+            for pa in PigmmyAccount.objects.filter(
+                maturity_date__gte=from_date, maturity_date__lte=to_date, status__in=['matured', 'closed']
+            ).select_related('member'):
+                entries.append(
+                    {
+                        'type': f'Pigmmy ({pa.get_deposit_type_display()})',
+                        'account_no': pa.account_no,
+                        'member': pa.member.name,
+                        'date': pa.maturity_date,
+                    }
+                )
             entries.sort(key=lambda e: e['date'])
             context['entries'] = entries
 
@@ -1252,6 +1275,17 @@ def enquiry(request):
         context['holdings'] = holdings
         context['total_shares'] = holdings.aggregate(t=Sum('share_count'))['t'] or 0
         context['total_amount'] = holdings.aggregate(t=Sum('total_amount'))['t'] or Decimal('0')
+
+    elif report_type == 'cheque_lookup':
+        cheque_no = request.GET.get('cheque_no', '').strip()
+        context['cheque_no'] = cheque_no
+        if cheque_no:
+            from apps.savings.models import AccountTransaction
+
+            txns = AccountTransaction.objects.filter(cheque_no=cheque_no).select_related('account__member')
+            if branch:
+                txns = txns.filter(branch=branch)
+            context['cheque_txns'] = txns.order_by('-txn_date')
 
     return render(request, 'reports/enquiry.html', context)
 

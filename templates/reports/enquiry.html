@@ -35,6 +35,7 @@
                     <option value="opening_register" {% if report_type == 'opening_register' %}selected{% endif %}>{% trans "Account Opening Register" %}</option>
                     <option value="closing_register" {% if report_type == 'closing_register' %}selected{% endif %}>{% trans "Account Closing Register" %}</option>
                     <option value="shareholder_details" {% if report_type == 'shareholder_details' %}selected{% endif %}>{% trans "Shareholder Details" %}</option>
+                    <option value="cheque_lookup" {% if report_type == 'cheque_lookup' %}selected{% endif %}>{% trans "Cheque Lookup" %}</option>
                 </select>
             </div>
             {% if report_type == 'all_accounts' %}
@@ -60,6 +61,16 @@
                 <input type="date" name="to_date" value="{{ to_date }}"
                        onchange="this.form.submit()"
                        class="border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
+            </div>
+            {% endif %}
+            {% if report_type == 'cheque_lookup' %}
+            <div class="min-w-[180px]">
+                <label class="block text-xs font-medium text-gray-500 mb-0.5">{% trans "Cheque Number" %}</label>
+                <input type="text" name="cheque_no" value="{{ cheque_no|default:'' }}" placeholder="{% trans 'Enter cheque no.' %}"
+                       class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:ring-primary-500 focus:border-primary-500">
+            </div>
+            <div>
+                <button type="submit" class="px-4 py-1.5 bg-primary-600 text-white text-sm rounded hover:bg-primary-700">{% trans "Search" %}</button>
             </div>
             {% endif %}
         </form>
@@ -371,6 +382,48 @@
         </div>
     </div>
     {% endif %}
+    {% endif %}
+
+    <!-- Cheque Lookup Results -->
+    {% if report_type == 'cheque_lookup' and cheque_no %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+            <h3 class="text-base font-semibold text-gray-900">{% trans "Cheque Lookup" %}: {{ cheque_no }}</h3>
+            {% if cheque_txns %}<span class="text-sm text-gray-500">{{ cheque_txns|length }} result{{ cheque_txns|length|pluralize }}</span>{% endif %}
+        </div>
+        {% if cheque_txns %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Date" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Account No." %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Member" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Type" %}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">{% trans "Amount" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Cheque Date" %}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{% trans "Bank" %}</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for txn in cheque_txns %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-sm text-gray-900">{{ txn.txn_date|date:"d M Y" }}</td>
+                        <td class="px-4 py-3 text-sm font-mono text-gray-900">{{ txn.account.account_no }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">{{ txn.account.member.name }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">{{ txn.get_txn_type_display }}</td>
+                        <td class="px-4 py-3 text-sm text-right font-medium">{{ txn.amount|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">{{ txn.cheque_date|date:"d M Y"|default:"—" }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">{{ txn.bank_name|default:"—" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="px-5 py-8 text-center text-sm text-gray-400">{% trans "No transactions found for this cheque number." %}</div>
+        {% endif %}
+    </div>
     {% endif %}
 
 </div>

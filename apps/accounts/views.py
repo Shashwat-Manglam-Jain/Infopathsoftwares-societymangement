@@ -13,7 +13,10 @@ def login_view(request):
     if request.user.is_authenticated:
         return redirect('dashboard:index')
     if request.method == 'POST':
-        form = AuthenticationForm(request, data=request.POST)
+        data = request.POST.copy()
+        if data.get('username'):
+            data['username'] = data['username'].upper()
+        form = AuthenticationForm(request, data=data)
         if form.is_valid():
             login(request, form.get_user())
             next_url = request.GET.get('next', 'dashboard:index')

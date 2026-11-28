@@ -473,6 +473,80 @@ def get_ledger(account_code, from_date, to_date, branch=None):
     }
 
 
+def get_ledger_short(account_code, from_date, to_date, branch=None):
+    """Monthly summary version of the general ledger."""
+    from django.db.models import Sum
+    from django.db.models.functions import TruncMonth
+
+    account = ChartOfAccounts.objects.get(code=account_code)
+    is_debit_normal = account.account_group in ('asset', 'expense')
+
+    lines_qs = JournalLine.objects.filter(
+        gl_account=account,
+        journal_entry__entry_date__gte=from_date,
+        journal_entry__entry_date__lte=to_date,
+        journal_entry__is_posted=True,
+        journal_entry__is_reversed=False,
+    )
+    if branch:
+        lines_qs = lines_qs.filter(journal_entry__branch=branch)
+
+    opening_lines = JournalLine.objects.filter(
+        gl_account=account,
+        journal_entry__entry_date__lt=from_date,
+        journal_entry__is_posted=True,
+        journal_entry__is_reversed=False,
+    )
+    if branch:
+        opening_lines = opening_lines.filter(journal_entry__branch=branch)
+    opening = opening_lines.aggregate(dr=Sum('debit_amount'), cr=Sum('credit_amount'))
+    pre_dr = opening['dr'] or Decimal('0')
+    pre_cr = opening['cr'] or Decimal('0')
+    ob = account.opening_balance or Decimal('0')
+    if is_debit_normal:
+        opening_balance = ob + pre_dr - pre_cr
+    else:
+        opening_balance = ob + pre_cr - pre_dr
+
+    monthly = (
+        lines_qs.annotate(month=TruncMonth('journal_entry__entry_date'))
+        .values('month')
+        .annotate(debit=Sum('debit_amount'), credit=Sum('credit_amount'))
+        .order_by('month')
+    )
+
+    entries = []
+    running = opening_balance
+    total_debit = Decimal('0')
+    total_credit = Decimal('0')
+    for row in monthly:
+        dr = row['debit'] or Decimal('0')
+        cr = row['credit'] or Decimal('0')
+        if is_debit_normal:
+            running += dr - cr
+        else:
+            running += cr - dr
+        total_debit += dr
+        total_credit += cr
+        entries.append(
+            {
+                'month': row['month'],
+                'debit': dr,
+                'credit': cr,
+                'balance': running,
+            }
+        )
+
+    return {
+        'account': account,
+        'opening_balance': opening_balance,
+        'entries': entries,
+        'closing_balance': running,
+        'total_debit': total_debit,
+        'total_credit': total_credit,
+    }
+
+
 def generate_voucher_no(voucher_type, branch):
     prefix_map = {
         'receipt': 'R',

@@ -852,31 +852,49 @@ def general_ledger(request):
         is_active=True,
     ).order_by('code')
 
+    mode = request.GET.get('mode', 'detail')
     context = {
         'heads': heads,
         'selected_account': account_code,
         'from_date': from_date,
         'to_date': to_date,
+        'mode': mode,
     }
     if account_code and from_date and to_date:
-        from apps.accounting.services import get_ledger
+        from apps.accounting.services import get_ledger, get_ledger_short
 
         branch = None if request.user.can_access_all_branches else request.current_branch
         try:
-            result = get_ledger(account_code, from_date, to_date, branch=branch)
+            if mode == 'short':
+                result = get_ledger_short(account_code, from_date, to_date, branch=branch)
+            else:
+                result = get_ledger(account_code, from_date, to_date, branch=branch)
             context['result'] = result
 
             if request.GET.get('format') == 'csv' and result:
                 response = HttpResponse(content_type='text/csv')
+                suffix = '_short' if mode == 'short' else ''
                 response['Content-Disposition'] = (
-                    f'attachment; filename="ledger_{account_code}_{from_date}_to_{to_date}.csv"'
+                    f'attachment; filename="ledger_{account_code}{suffix}_{from_date}_to_{to_date}.csv"'
                 )
                 writer = csv.writer(response)
-                writer.writerow(['Date', 'Voucher', 'Narration', 'Debit', 'Credit', 'Balance'])
-                for txn in result.get('entries', []):
-                    writer.writerow(
-                        [txn['date'], txn['voucher_no'], txn['narration'], txn['debit'], txn['credit'], txn['balance']]
-                    )
+                if mode == 'short':
+                    writer.writerow(['Month', 'Debit', 'Credit', 'Balance'])
+                    for txn in result.get('entries', []):
+                        writer.writerow([txn['month'].strftime('%b %Y'), txn['debit'], txn['credit'], txn['balance']])
+                else:
+                    writer.writerow(['Date', 'Voucher', 'Narration', 'Debit', 'Credit', 'Balance'])
+                    for txn in result.get('entries', []):
+                        writer.writerow(
+                            [
+                                txn['date'],
+                                txn['voucher_no'],
+                                txn['narration'],
+                                txn['debit'],
+                                txn['credit'],
+                                txn['balance'],
+                            ]
+                        )
                 return response
 
         except ChartOfAccounts.DoesNotExist:
